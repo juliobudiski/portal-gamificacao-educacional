@@ -8,3 +8,15 @@ createRoot(document.getElementById('root')).render(
     <App />
   </StrictMode>,
 )
+
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom'; // Importe BrowserRouter
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <BrowserRouter> {/* Envolva seu App com BrowserRouter */}
+      <App />
+    </BrowserRouter>
+  </React.StrictMode>,
+);
