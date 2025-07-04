@@ -1,6 +1,6 @@
 import { Routes, Route, Link } from 'react-router-dom';
 import './App.css'; // Mantenha ou remova se não for usar os estilos padrão
-
+import PrivateRoute from './components/PrivateRoute'; // Certifique-se de que o caminho está correto
 // Importe os componentes das suas novas páginas
 import HomePage from './pages/HomePage'; // Certifique-se de que está importando a Homepage
 import LoginPage from './pages/LoginPage';
@@ -38,23 +38,35 @@ function App() {
       <div className="w-full max-w-4xl bg-white p-8 rounded-lg shadow-lg mx-auto
                     dark:bg-gray-800 dark:text-gray-100"> {/* Cor do conteúdo principal no modo escuro */}
         <Routes>
-          {/* ... suas rotas ... */}
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/cadastro" element={<RegisterPage />} />
           <Route path="/recuperar-senha" element={<ForgotPasswordPage />} />
-          <Route path="/perfil" element={<UserProfilePage />} />
+          
+          {/* Rotas Protegidas - Apenas para usuários autenticados */}
+          {/* Para rotas que qualquer usuário autenticado pode acessar, use PrivateRoute sem allowedRoles */}
+          <Route element={<PrivateRoute />}>
+            <Route path="/perfil" element={<UserProfilePage />} />
+            {/* Adicione outras rotas que qualquer usuário logado pode acessar aqui */}
+          </Route>
 
-          <Route path="/professor/dashboard" element={<TeacherDashboardPage />} />
-          <Route path="/professor/criar-atividade" element={<ActivityCreationPage />} />
-          <Route path="/professor/banco-atividades" element={<ActivityBankPage />} />
-          <Route path="/professor/gerenciar-turmas" element={<ClassManagementPage />} />
-          <Route path="/professor/desempenho-alunos" element={<StudentPerformancePage />} />
+          {/* Rotas Protegidas - Apenas para Professores */}
+          <Route element={<PrivateRoute allowedRoles={['professor']} />}>
+            <Route path="/professor/dashboard" element={<TeacherDashboardPage />} />
+            <Route path="/professor/criar-atividade" element={<ActivityCreationPage />} />
+            <Route path="/professor/banco-atividades" element={<ActivityBankPage />} />
+            <Route path="/professor/gerenciar-turmas" element={<ClassManagementPage />} />
+            <Route path="/professor/desempenho-alunos" element={<StudentPerformancePage />} />
+          </Route>
 
-          <Route path="/aluno/dashboard" element={<StudentDashboardPage />} />
-          <Route path="/aluno/entrar-turma" element={<JoinClassPage />} />
-          <Route path="/aluno/atividade/:id" element={<StudentActivityPage />} />
+          {/* Rotas Protegidas - Apenas para Alunos */}
+          <Route element={<PrivateRoute allowedRoles={['aluno']} />}>
+            <Route path="/aluno/dashboard" element={<StudentDashboardPage />} />
+            <Route path="/aluno/entrar-turma" element={<JoinClassPage />} />
+            <Route path="/aluno/atividade/:id" element={<StudentActivityPage />} />
+          </Route>
 
+          {/* Rota para páginas não encontradas */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </div>

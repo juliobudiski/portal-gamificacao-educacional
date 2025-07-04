@@ -28,6 +28,8 @@ const getUserFromToken = (token) => {
       name: decoded.name,
       role: decoded.role,
       profile_picture: decoded.profile_picture, // Se o backend incluir a imagem do Google
+      institutionName: decoded.institutionName, // <--- VERIFIQUE ESTA LINHA
+      discipline: decoded.discipline,         // <--- E ESTA LINHA
       token: token // Armazenamos o token junto para facilitar o acesso
     };
   } catch (error) {

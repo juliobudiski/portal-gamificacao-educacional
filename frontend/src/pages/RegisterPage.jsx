@@ -99,6 +99,8 @@ function RegisterPage() {
 
       if (response.ok) {
         setSuccess('Cadastro realizado com sucesso! Redirecionando para o perfil...');
+        // ADICIONE ESTA LINHA:
+        login(data.user); // Assume que 'data.user' contém o JWT ou as informações para o login
         setTimeout(() => navigate('/perfil'), 2000);
       } else {
         setError(data.message || 'Erro ao cadastrar. Tente novamente.');
