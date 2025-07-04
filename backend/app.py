@@ -3,6 +3,8 @@ from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy # Importa SQLAlchemy
 import os
 from dotenv import load_dotenv # Importa para carregar variáveis do .env
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, decode_token
+from datetime import timedelta # Para definir o tempo de expiração do token
 
 # Carrega as variáveis de ambiente do arquivo .env
 load_dotenv()
@@ -18,10 +20,16 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # Pega a chave secreta para segurança de sessões do Flask do arquivo .env
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
+jwt = JWTManager(app) # Inicializa o Flask-JWT-Extended
+
 db = SQLAlchemy(app) # Inicializa o SQLAlchemy com o aplicativo Flask
 
 # Importa as funções de segurança para hash de senha
 from werkzeug.security import generate_password_hash, check_password_hash
+from google.oauth2 import id_token
+from google.auth.transport import requests
+
+GOOGLE_CLIENT_ID_BACKEND = os.getenv('GOOGLE_CLIENT_ID')
 
 # Definir o modelo de Usuário (estrutura da tabela no banco de dados)
 # Esta classe representa a tabela 'user' no seu banco de dados
@@ -32,8 +40,7 @@ class User(db.Model):
     # Colunas da tabela
     id = db.Column(db.Integer, primary_key=True) # Chave primária, auto-incrementável
     email = db.Column(db.String(120), unique=True, nullable=False) # E-mail, deve ser único e não nulo
-    password_hash = db.Column(db.String(128), nullable=False) # Armazena o hash da senha
-    # Campos adicionais para Google Sign-In
+    password_hash = db.Column(db.String(255), nullable=False) # Armazena o hash da senha    # Campos adicionais para Google Sign-In
     google_id = db.Column(db.String(120), unique=True, nullable=True) # ID único do usuário do Google
     name = db.Column(db.String(100), nullable=True) # Nome do usuário
     profile_picture = db.Column(db.String(255), nullable=True) # URL da foto de perfil do Google
@@ -67,6 +74,7 @@ def register_user():
     email = data.get('email')
     password = data.get('password')
     name = data.get('name') # Pega o nome do corpo da requisição
+    role = data.get('role', 'aluno') 
 
     # Validação básica dos campos obrigatórios
     if not email or not password or not name:
@@ -80,16 +88,34 @@ def register_user():
     # Gera o hash da senha antes de armazenar (SEGURANÇA!)
     hashed_password = generate_password_hash(password)
     # Cria uma nova instância de User
-    new_user = User(email=email, password_hash=hashed_password, name=name, role='aluno') # Define 'aluno' como padrão
+    new_user = User(email=email, password_hash=hashed_password, name=name, role=role) # Define 'aluno' como padrão
 
     try:
         db.session.add(new_user) # Adiciona o novo usuário à sessão do banco de dados
         db.session.commit() # Salva as mudanças no banco de dados
-        return jsonify({"message": "Usuário cadastrado com sucesso!", "user_id": new_user.id, "email": new_user.email}), 201 # Código 201 para Criado
+        # Gerar o token JWT para o usuário recém-cadastrado
+        additional_claims = {
+            "email": new_user.email,
+            "name": new_user.name,
+            "role": new_user.role,
+            "profile_picture": new_user.profile_picture # Pode ser None
+        }
+        access_token = create_access_token(identity=new_user.id, additional_claims=additional_claims)
+        
+        return jsonify(access_token=access_token, user={
+            "id": new_user.id,
+            "email": new_user.email,
+            "name": new_user.name,
+            "role": new_user.role,
+            "profile_picture": new_user.profile_picture,
+            "token": access_token # Incluir o token aqui para o frontend
+        }), 201 # Retorna 201 Created
+        # --- FIM DO NOVO CÓDIGO ---
+
     except Exception as e:
-        db.session.rollback() # Desfaz a transação em caso de erro
-        print(f"Erro ao cadastrar usuário: {str(e)}") # Loga o erro para depuração
-        return jsonify({"message": f"Erro interno ao cadastrar usuário: {str(e)}"}), 500 # Código 500 para Erro Interno do Servidor
+        db.session.rollback()
+        print(f"Erro ao cadastrar usuário: {str(e)}")
+        return jsonify({"message": f"Erro interno ao cadastrar usuário: {str(e)}"}), 500
 
 # Rota de login tradicional (com e-mail e senha)
 @app.route('/api/login', methods=['POST'])
@@ -103,8 +129,24 @@ def login_user():
 
     # Verifica se o usuário existe e se a senha está correta (comparando o hash)
     if user and check_password_hash(user.password_hash, password):
-        # Futuramente, aqui você implementaria a criação de uma sessão ou JWT
-        return jsonify({"message": "Login bem-sucedido!", "user": {"id": user.id, "email": user.email, "name": user.name, "role": user.role}}), 200
+        # Gerar o token JWT para o usuário logado
+        # O payload do token (identity) pode ser o ID do usuário ou um objeto com mais dados
+        # Vamos incluir dados úteis diretamente no token (email, name, role) para evitar consultas futuras ao DB no frontend
+        additional_claims = {
+            "email": user.email,
+            "name": user.name,
+            "role": user.role,
+            "profile_picture": user.profile_picture # Pode ser None
+        }
+        access_token = create_access_token(identity=user.id, additional_claims=additional_claims)
+        return jsonify(access_token=access_token, user={
+            "id": user.id,
+            "email": user.email,
+            "name": user.name,
+            "role": user.role,
+            "profile_picture": user.profile_picture,
+            "token": access_token # Incluir o token aqui para o frontend
+        }), 200
     else:
         return jsonify({"message": "Credenciais inválidas."}), 401 # Código 401 para Não Autorizado
 
@@ -120,6 +162,7 @@ GOOGLE_CLIENT_ID_BACKEND = os.getenv('GOOGLE_CLIENT_ID')
 def google_auth():
     data = request.get_json()
     token = data.get('id_token') # O token de ID enviado pelo frontend
+    role = data.get('role', 'aluno') 
 
     if not token:
         return jsonify({"message": "Token do Google não fornecido."}), 400
@@ -139,6 +182,9 @@ def google_auth():
 
         if user:
             # Se o usuário já existe com este Google ID, é um login
+            if user.role != role:
+                user.role = role
+                db.session.commit()
             message = "Login Google bem-sucedido!"
             status_code = 200
         else:
@@ -167,16 +213,23 @@ def google_auth():
                 db.session.commit() # Salva no banco
                 message = "Cadastro Google bem-sucedido!"
                 status_code = 201
+        # Gerar o token JWT para o usuário logado com Google
+        additional_claims = {
+            "email": user.email,
+            "name": user.name,
+            "role": user.role,
+            "profile_picture": user.profile_picture # Pode ser None
+        }
+        access_token = create_access_token(identity=user.id, additional_claims=additional_claims)
 
-        return jsonify({
-            "message": message,
-            "user": {
-                "id": user.id,
-                "email": user.email,
-                "name": user.name,
-                "role": user.role,
-                "google_id": user.google_id # Inclui o google_id na resposta
-            }
+        return jsonify(access_token=access_token, user={
+            "id": user.id,
+            "email": user.email,
+            "name": user.name,
+            "role": user.role,
+            "profile_picture": user.profile_picture,
+            "google_id": user.google_id,
+            "token": access_token # Incluir o token aqui para o frontend
         }), status_code
 
     except ValueError as e:
@@ -189,6 +242,63 @@ def google_auth():
         print(f"Erro inesperado no Google Auth: {str(e)}")
         return jsonify({"message": f"Erro interno no servidor durante autenticação Google: {str(e)}"}), 500
 
+# Rota protegida de exemplo (apenas para usuários autenticados)
+@app.route('/api/protected', methods=['GET'])
+@jwt_required() # Protege esta rota
+def protected():
+    # Acessa a identidade do usuário a partir do token JWT
+    current_user_id = get_jwt_identity()
+    return jsonify({"message": f"Olá, usuário com ID: {current_user_id}! Você acessou uma rota protegida."}), 200
+
+# Rota para alterar senha (agora protegida por JWT)
+@app.route('/api/change-password', methods=['POST'])
+@jwt_required() # Esta rota agora exige um JWT válido
+def change_password():
+    current_user_id = get_jwt_identity() # Obtém o ID do usuário do token
+    data = request.get_json()
+    current_password = data.get('currentPassword')
+    new_password = data.get('newPassword')
+
+    if not current_password or not new_password:
+        return jsonify({"message": "Senha atual e nova senha são obrigatórios."}), 400
+
+    user = User.query.get(current_user_id) # Encontra o usuário pelo ID do token
+
+    if not user:
+        # Isso não deveria acontecer se o token for válido e o usuário existir
+        return jsonify({"message": "Usuário não encontrado."}), 404
+
+    # Verifica se a senha atual está correta (apenas para usuários com password_hash)
+    if user.password_hash == 'google_auth_only' or not check_password_hash(user.password_hash, current_password):
+        return jsonify({"message": "Senha atual incorreta ou usuário Google."}), 401
+    
+    # Validações adicionais para a nova senha (ex: comprimento mínimo)
+    if len(new_password) < 6:
+        return jsonify({"message": "A nova senha deve ter pelo menos 6 caracteres."}), 400
+
+    # Atualiza a senha com o novo hash
+    user.password_hash = generate_password_hash(new_password)
+
+    try:
+        db.session.commit()
+        return jsonify({"message": "Senha alterada com sucesso!"}), 200
+    except Exception as e:
+        db.session.rollback()
+        print(f"Erro ao alterar senha do usuário {current_user_id}: {str(e)}")
+        return jsonify({"message": "Erro interno ao alterar a senha."}), 500
+
+# Adicione esta função para lidar com erros de JWT inválidos/expirados
+@jwt.unauthorized_loader
+def unauthorized_response(callback):
+    return jsonify({"message": "Token de acesso ausente ou inválido."}), 401
+
+@jwt.invalid_token_loader
+def invalid_token_response(callback):
+    return jsonify({"message": "Token inválido ou malformado."}), 422
+
+@jwt.expired_token_loader
+def expired_token_response(callback):
+    return jsonify({"message": "Token de acesso expirado."}), 401
 
 # Bloco principal para execução do aplicativo
 if __name__ == '__main__':

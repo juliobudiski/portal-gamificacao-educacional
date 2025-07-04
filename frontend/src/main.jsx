@@ -1,22 +1,18 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.jsx'
+// frontend/src/main.jsx
+import React from 'react'; // Importe React
+import ReactDOM from 'react-dom/client'; // Importe ReactDOM
+import { BrowserRouter as Router } from 'react-router-dom'; // Importe BrowserRouter e renomeie para Router para consistência
+import './index.css'; // Mantenha a importação do seu CSS principal
+import App from './App.jsx'; // Importe seu componente App
+import { AuthProvider } from './context/AuthContext.jsx'; // Importe o AuthProvider
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
-
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom'; // Importe BrowserRouter
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter> {/* Envolva seu App com BrowserRouter */}
-      <App />
-    </BrowserRouter>
+    <Router> 
+      <AuthProvider> 
+        <App />
+      </AuthProvider>
+    </Router>
   </React.StrictMode>,
 );
