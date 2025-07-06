@@ -1,6 +1,9 @@
 from flask import Flask, jsonify, request
-from flask_cors import CORS, cross_origin # Importe cross_origin aqui
+from flask_cors import CORS, cross_origin
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate # IMPORTANTE: Adicione esta importação
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Text
 import os
 from dotenv import load_dotenv
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, decode_token
@@ -13,27 +16,23 @@ from google.auth.transport import requests
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app) # Habilita CORS para todas as rotas (importante para desenvolvimento local)
+CORS(app) # Habilita CORS para todas as rotas
 
 # Configuração do Banco de Dados
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY') # Chave para sessões do Flask
-print(f"DEBUG: SECRET_KEY carregada: {app.config['SECRET_KEY']}") # Para depuração
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 
-# Configuração da chave secreta para JWT
-# É CRÍTICO que esta chave seja a mesma usada para assinar e verificar tokens.
-# Usamos JWT_SECRET_KEY do .env, que é a chave específica para JWTs.
-app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY') # <--- CORREÇÃO AQUI!
-print(f"DEBUG: JWT_SECRET_KEY carregada: {app.config['JWT_SECRET_KEY']}") # Para depuração
+jwt = JWTManager(app)
+db = SQLAlchemy(app)
 
-jwt = JWTManager(app) # Inicializa o Flask-JWT-Extended
-
-db = SQLAlchemy(app) # Inicializa o SQLAlchemy com o aplicativo Flask
+# IMPORTANTE: Inicializa o Flask-Migrate AQUI, APÓS 'app' e 'db' serem definidos
+migrate = Migrate(app, db) # Garante que o Flask-Migrate esteja associado ao seu app e DB
 
 GOOGLE_CLIENT_ID_BACKEND = os.getenv('GOOGLE_CLIENT_ID')
 
-# Definir o modelo de Usuário (estrutura da tabela no banco de dados)
+# Modelo de Usuário
 class User(db.Model):
     __tablename__ = 'user'
 
@@ -48,11 +47,60 @@ class User(db.Model):
     gender = db.Column(db.String(50), nullable=True)
     game_preferences = db.Column(db.String(500), nullable=True)
     learning_preferences = db.Column(db.String(500), nullable=True)
-    institution_name = db.Column(db.String(255), nullable=True) # Nova coluna
-    discipline = db.Column(db.String(100), nullable=True) # Nova coluna
+    institution_name = db.Column(db.String(255), nullable=True)
+    discipline = db.Column(db.String(100), nullable=True)
 
     def __repr__(self):
         return f'<User {self.email}>'
+
+# Modelo de Atividade Gamificada
+class Activity(db.Model):
+    __tablename__ = 'activity'
+
+    id = db.Column(db.Integer, primary_key=True)
+    professor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    title = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+
+    current_scenario = db.Column(JSONB, nullable=True)
+    desired_scenario = db.Column(JSONB, nullable=True)
+    activity_planning = db.Column(JSONB, nullable=True)
+    player_profile = db.Column(JSONB, nullable=True)
+    game_elements = db.Column(JSONB, nullable=True)
+    rewards_offered = db.Column(JSONB, nullable=True)
+    rewarded_actions = db.Column(JSONB, nullable=True)
+    gamification_rules = db.Column(JSONB, nullable=True)
+
+    area_knowledge = db.Column(db.String(100), nullable=True)
+    is_public = db.Column(db.Boolean, default=False, nullable=False)
+
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+
+    professor = db.relationship('User', backref='activities', lazy=True)
+
+    def __repr__(self):
+        return f'<Activity {self.title}>'
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'professor_id': self.professor_id,
+            'title': self.title,
+            'description': self.description,
+            'currentScenario': self.current_scenario,
+            'desiredScenario': self.desired_scenario,
+            'activityPlanning': self.activity_planning,
+            'playerProfile': self.player_profile,
+            'gameElements': self.game_elements,
+            'rewardsOffered': self.rewards_offered,
+            'rewardedActions': self.rewarded_actions,
+            'gamificationRules': self.gamification_rules,
+            'areaKnowledge': self.area_knowledge,
+            'isPublic': self.is_public,
+            'createdAt': self.created_at.isoformat() if self.created_at else None,
+            'updatedAt': self.updated_at.isoformat() if self.updated_at else None,
+        }
 
 # --- Rotas da API ---
 
@@ -87,10 +135,10 @@ def register_user():
             "name": new_user.name,
             "role": new_user.role,
             "profile_picture": new_user.profile_picture,
-            "institutionName": new_user.institution_name, # Inclui no token
-            "discipline": new_user.discipline # Inclui no token
+            "institutionName": new_user.institution_name,
+            "discipline": new_user.discipline
         }
-        access_token = create_access_token(identity=str(new_user.id), additional_claims=additional_claims) # Converta para string
+        access_token = create_access_token(identity=str(new_user.id), additional_claims=additional_claims)
 
         return jsonify(access_token=access_token, user={
             "id": new_user.id,
@@ -98,8 +146,8 @@ def register_user():
             "name": new_user.name,
             "role": new_user.role,
             "profile_picture": new_user.profile_picture,
-            "institutionName": new_user.institution_name, # Inclui no objeto user
-            "discipline": new_user.discipline, # Inclui no objeto user
+            "institutionName": new_user.institution_name,
+            "discipline": new_user.discipline,
             "token": access_token
         }), 201
 
@@ -122,10 +170,10 @@ def login_user():
             "name": user.name,
             "role": user.role,
             "profile_picture": user.profile_picture,
-            "institutionName": user.institution_name, # Inclui no token
-            "discipline": user.discipline # Inclui no token
+            "institutionName": user.institution_name,
+            "discipline": user.discipline
         }
-        access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims) # Converta para string
+        access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
         return jsonify(access_token=access_token, user={
             "id": user.id,
             "email": user.email,
@@ -133,8 +181,8 @@ def login_user():
             "role": user.role,
             "profile_picture": user.profile_picture,
             "google_id": user.google_id,
-            "institutionName": user.institution_name, # Inclui no objeto user
-            "discipline": user.discipline, # Inclui no objeto user
+            "institutionName": user.institution_name,
+            "discipline": user.discipline,
             "token": access_token
         }), 200
     else:
@@ -182,7 +230,7 @@ def google_auth():
                     google_id=google_id,
                     name=name,
                     profile_picture=picture,
-                    role=role # Use o role selecionado pelo usuário
+                    role=role
                 )
                 db.session.add(user)
                 db.session.commit()
@@ -194,10 +242,10 @@ def google_auth():
             "name": user.name,
             "role": user.role,
             "profile_picture": user.profile_picture,
-            "institutionName": user.institution_name, # Inclui no token
-            "discipline": user.discipline # Inclui no token
+            "institutionName": user.institution_name,
+            "discipline": user.discipline
         }
-        access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims) # Converta para string
+        access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
 
         return jsonify(access_token=access_token, user={
             "id": user.id,
@@ -206,8 +254,8 @@ def google_auth():
             "role": user.role,
             "profile_picture": user.profile_picture,
             "google_id": user.google_id,
-            "institutionName": user.institution_name, # Inclui no objeto user
-            "discipline": user.discipline, # Inclui no objeto user
+            "institutionName": user.institution_name,
+            "discipline": user.discipline,
             "token": access_token
         }), status_code
 
@@ -257,85 +305,112 @@ def change_password():
         print(f"Erro ao alterar senha do usuário {current_user_id}: {str(e)}")
         return jsonify({"message": "Erro interno ao alterar a senha."}), 500
 
-# Rota para atualizar informações de perfil (exclusiva para professor)
 @app.route('/api/user/update-profile', methods=['POST'])
-@cross_origin() # Garante que CORS funcione para esta rota
+@cross_origin()
 @jwt_required()
 def update_profile():
     try:
-        current_user_id = get_jwt_identity() # Obtém o ID do usuário do token JWT
-        print(f"DEBUG: update_profile - current_user_id do token: {current_user_id}")
-
+        current_user_id = get_jwt_identity()
         user = User.query.get(current_user_id)
-        print(f"DEBUG: update_profile - Usuário encontrado no DB: {user}")
 
         if not user:
-            print(f"DEBUG: update_profile - Usuário com ID {current_user_id} NÃO encontrado.")
             return jsonify({"message": "Usuário não encontrado."}), 404
 
-        # Apenas professores podem atualizar essas informações de perfil específicas
         if user.role != 'professor':
-            print(f"DEBUG: update_profile - Usuário {user.email} (ID: {user.id}) NÃO é professor. Role: {user.role}")
             return jsonify({"message": "Acesso negado. Apenas professores podem atualizar essas informações."}), 403
 
         data = request.get_json()
         institution_name = data.get('institution_name')
         discipline = data.get('discipline')
-        print(f"DEBUG: update_profile - Dados recebidos: Instituição='{institution_name}', Disciplina='{discipline}'")
 
-        # Atualiza os campos se eles forem fornecidos na requisição
-        # Permite que o professor "limpe" o campo enviando uma string vazia
         if institution_name is not None:
             user.institution_name = institution_name
         if discipline is not None:
             user.discipline = discipline
         
-        # O commit e a geração do token devem ser feitos APÓS todas as atualizações de campos
-        db.session.commit() # <--- MOVIDO PARA FORA DOS IFS DE ATUALIZAÇÃO DE CAMPO
+        db.session.commit()
 
-        # Gerar um NOVO token JWT com as informações de perfil atualizadas
-        # Isso é crucial para que o frontend tenha os dados mais recentes no user object do AuthContext
         additional_claims = {
             "email": user.email,
             "name": user.name,
             "role": user.role,
             "profile_picture": user.profile_picture,
-            "institutionName": user.institution_name, # Inclui a nova info no token (camelCase para o frontend)
-            "discipline": user.discipline # Inclui a nova info no token (camelCase para o frontend)
+            "institutionName": user.institution_name,
+            "discipline": user.discipline
         }
-        new_access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims) # Converta para string
-        print(f"DEBUG: update_profile - Novo token gerado para usuário {user.id}")
+        new_access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
 
         return jsonify({
             "message": "Informações do perfil atualizadas com sucesso!",
-            "access_token": new_access_token # Retorna o novo token
+            "access_token": new_access_token
         }), 200
 
     except Exception as e:
         db.session.rollback()
         print(f"ERRO CRÍTICO EM update_profile: {str(e)}")
-        # Retorna um erro 500 com a mensagem de erro para depuração
         return jsonify({"message": f"Erro interno ao atualizar o perfil: {str(e)}"}), 500
 
+# ROTA PARA CRIAR NOVA ATIVIDADE GAMIFICADA
+@app.route('/api/activities', methods=['POST'])
+@cross_origin()
+@jwt_required()
+def create_activity():
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
 
-# Adicione esta função para lidar com erros de JWT inválidos/expirados
+    # Verifica se o usuário existe e tem o papel de professor
+    if not user or user.role != 'professor':
+        return jsonify({"message": "Acesso negado. Apenas professores podem criar atividades."}), 403
+
+    data = request.get_json()
+
+    # Validação básica: verificar se o título da atividade foi fornecido
+    # Você pode adicionar mais validações aqui conforme necessário
+    if not data or not data.get('title'):
+        return jsonify({"message": "O título da atividade é obrigatório."}), 400
+
+    try:
+        new_activity = Activity(
+            professor_id=user.id,
+            title=data.get('title'),
+            description=data.get('description', ''), # Valor padrão vazio se não fornecido
+            current_scenario=data.get('currentScenario', {}), # Garante que é um dict vazio se ausente
+            desired_scenario=data.get('desiredScenario', {}),
+            activity_planning=data.get('activityPlanning', {}),
+            player_profile=data.get('playerProfile', {}),
+            game_elements=data.get('gameElements', {}),
+            rewards_offered=data.get('rewardsOffered', {}),
+            rewarded_actions=data.get('rewardedActions', {}),
+            gamification_rules=data.get('gamificationRules', {}),
+            area_knowledge=data.get('areaKnowledge'), # Este campo virá do frontend
+            is_public=data.get('isPublic', False)
+        )
+        db.session.add(new_activity)
+        db.session.commit()
+
+        return jsonify({"message": "Atividade criada com sucesso!", "activity": new_activity.to_dict()}), 201
+
+    except Exception as e:
+        db.session.rollback() # Em caso de erro, desfaz a transação
+        print(f"Erro ao criar atividade: {str(e)}")
+        return jsonify({"message": f"Erro interno do servidor ao criar atividade: {str(e)}"}), 500
+
+
 @jwt.unauthorized_loader
 def unauthorized_response(callback):
-    print(f"DEBUG: Unauthorized loader - {callback}")
     return jsonify({"message": "Token de acesso ausente ou inválido."}), 401
 
 @jwt.invalid_token_loader
 def invalid_token_response(callback):
-    print(f"DEBUG: Invalid token loader - {callback}")
     return jsonify({"message": "Token inválido ou malformado."}), 422
 
 @jwt.expired_token_loader
 def expired_token_response(callback):
-    print(f"DEBUG: Expired token loader - {callback}")
     return jsonify({"message": "Token de acesso expirado."}), 401
 
 # Bloco principal para execução do aplicativo
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
+    # REMOVA OU COMENTE a linha db.create_all() se for usar Flask-Migrate
+    # with app.app_context():
+    #     db.create_all()
     app.run(debug=True, port=5000)

@@ -1,10 +1,10 @@
 // frontend/src/pages/UserProfilePage.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react'; // Adicionado 'useRef'
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 function UserProfilePage() {
-  const { user, logout, login } = useAuth(); // Adicionado 'login' para atualizar o contexto
+  const { user, logout, login } = useAuth();
   const navigate = useNavigate();
 
   // Estados para controle de visibilidade dos formulários
@@ -18,25 +18,35 @@ function UserProfilePage() {
   const [message, setMessage] = useState('');
 
   // Estados para o formulário de completar perfil (Professor)
-  // Inicializa os estados com os dados do usuário, se existirem no objeto 'user' do contexto
   const [profileInstitutionName, setProfileInstitutionName] = useState(user?.institutionName || '');
   const [profileDiscipline, setProfileDiscipline] = useState(user?.discipline || '');
-  const [profileMessage, setProfileMessage] = useState(''); // Mensagens para o formulário de perfil
+  const [profileMessage, setProfileMessage] = useState('');
 
-  // Efeito para redirecionar se o usuário não estiver logado e limpar mensagens
+  // Flag para controlar se a atualização de perfil foi bem-sucedida
+  const profileUpdateSuccessRef = useRef(false);
+
+  // Efeito para redirecionar se o usuário não estiver logado e preencher campos
   useEffect(() => {
     if (!user) {
       navigate('/login');
+      return;
     }
-    setMessage('');
-    setProfileMessage('');
-    // Garante que os campos do perfil sejam preenchidos ao carregar a página
-    // caso os dados já estejam no objeto 'user' do contexto.
-    if (user) {
-      setProfileInstitutionName(user.institutionName || '');
-      setProfileDiscipline(user.discipline || '');
+    // Preenche os campos do perfil ao carregar ou quando o usuário é atualizado
+    setProfileInstitutionName(user.institutionName || '');
+    setProfileDiscipline(user.discipline || '');
+
+    // Limpa a mensagem se o formulário de perfil for fechado por outros meios
+    // ou se o usuário navegar para esta página e não houver um sucesso pendente.
+    // Apenas limpa a mensagem se não foi um sucesso de atualização de perfil.
+    if (!profileUpdateSuccessRef.current) {
+        setProfileMessage('');
+    } else {
+        // Reseta a flag após a mensagem ser exibida na nova renderização
+        profileUpdateSuccessRef.current = false;
     }
+    setMessage(''); // Sempre limpa a mensagem de senha ao renderizar/re-renderizar
   }, [user, navigate]);
+
 
   if (!user) {
     return null; // Ou um spinner de carregamento, enquanto o redirecionamento acontece
@@ -61,10 +71,9 @@ function UserProfilePage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.token}` // INCLUA O TOKEN JWT AQUI
+          'Authorization': `Bearer ${user.token}`
         },
         body: JSON.stringify({
-          // userId: user.id, // O backend deve obter o ID do usuário do token JWT
           currentPassword,
           newPassword,
         }),
@@ -77,7 +86,11 @@ function UserProfilePage() {
         setCurrentPassword('');
         setNewPassword('');
         setConfirmNewPassword('');
-        setShowPasswordChangeForm(false);
+        // Fecha o formulário após a mensagem de sucesso
+        setTimeout(() => {
+          setShowPasswordChangeForm(false);
+          setMessage(''); // Limpa a mensagem após fechar o formulário
+        }, 2000); // Exibe a mensagem por 2 segundos
       } else {
         setMessage(data.message || 'Erro ao alterar a senha.');
       }
@@ -90,17 +103,17 @@ function UserProfilePage() {
   // Função para lidar com o envio do formulário de perfil (Professor)
   const handleSubmitProfile = async (e) => {
     e.preventDefault();
-    setProfileMessage('');
+    setProfileMessage(''); // Limpa mensagens anteriores antes de uma nova tentativa
 
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/user/update-profile', { // Nova rota no backend
+      const response = await fetch('http://127.0.0.1:5000/api/user/update-profile', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.token}` // Envia o token JWT para autenticar o usuário
+          'Authorization': `Bearer ${user.token}`
         },
         body: JSON.stringify({
-          institution_name: profileInstitutionName, // Alterado para snake_case para backend
+          institution_name: profileInstitutionName,
           discipline: profileDiscipline,
         }),
       });
@@ -109,22 +122,22 @@ function UserProfilePage() {
 
       if (response.ok) {
         setProfileMessage('Informações do perfil salvas com sucesso!');
+        profileUpdateSuccessRef.current = true; // Define a flag de sucesso
+
         if (data.access_token) {
-          login({ access_token: data.access_token }); // Isso atualiza o 'user' no contexto
+          login({ access_token: data.access_token }); // Atualiza o 'user' no contexto
         } else {
           console.warn("Backend não retornou 'access_token' após atualização de perfil. O perfil pode não estar totalmente atualizado no frontend.");
         }
-        
+
         // Atraso de 2 segundos para exibir a mensagem antes de esconder o formulário
         setTimeout(() => {
-          setProfileMessage(''); // Limpa a mensagem (opcional)
-          setShowProfileCompletionForm(false); // Esconde o formulário APÓS o atraso
+          setProfileMessage(''); // Limpa a mensagem
+          setShowProfileCompletionForm(false); // Esconde o formulário
         }, 2000); // 2 segundos de atraso
 
       } else {
-        // Se houver erro, a mensagem é exibida e o formulário permanece aberto
         setProfileMessage(data.message || 'Erro ao salvar informações do perfil.');
-        // Não fechamos o formulário aqui para que o usuário veja a mensagem de erro
       }
     } catch (error) {
       console.error('Erro ao salvar perfil:', error);
@@ -207,7 +220,11 @@ function UserProfilePage() {
           <>
             <h3 className="text-2xl font-bold text-gray-900 mb-4 dark:text-white">Informações Complementares</h3>
             <button
-              onClick={() => setShowProfileCompletionForm(!showProfileCompletionForm)}
+              onClick={() => {
+                setShowProfileCompletionForm(!showProfileCompletionForm);
+                setProfileMessage(''); // Limpa a mensagem ao abrir/fechar o formulário manualmente
+                profileUpdateSuccessRef.current = false; // Reseta a flag
+              }}
               className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out dark:bg-blue-700 dark:hover:bg-blue-800"
             >
               {showProfileCompletionForm ? 'Cancelar Edição de Informações' : 'Completar/Editar Informações Profissionais'}
@@ -265,7 +282,10 @@ function UserProfilePage() {
           <>
             <h3 className="text-2xl font-bold text-gray-900 mb-4 dark:text-white">Segurança da Conta</h3>
             <button
-              onClick={() => setShowPasswordChangeForm(!showPasswordChangeForm)}
+              onClick={() => {
+                setShowPasswordChangeForm(!showPasswordChangeForm);
+                setMessage(''); // Limpa a mensagem ao abrir/fechar o formulário manualmente
+              }}
               className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out dark:bg-indigo-700 dark:hover:bg-indigo-800"
             >
               {showPasswordChangeForm ? 'Cancelar Alteração de Senha' : 'Alterar Senha'}
