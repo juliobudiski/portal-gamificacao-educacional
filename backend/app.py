@@ -396,6 +396,44 @@ def create_activity():
         return jsonify({"message": f"Erro interno do servidor ao criar atividade: {str(e)}"}), 500
 
 
+# --- NOVOS ENDPOINTS PARA ADMIN ---
+@app.route('/api/admin/dashboard_data', methods=['GET'])
+@jwt_required()
+def get_admin_dashboard_data():
+    if current_user.role != 'admin':
+        return jsonify({"msg": "Unauthorized: Only administrators can access this data"}), 403
+
+    total_users = User.query.count()
+    total_professors = User.query.filter_by(role='professor').count()
+    total_students = User.query.filter_by(role='aluno').count()
+    total_activities = Activity.query.count()
+
+    # Placeholder para visitas. Implementação real requer um sistema de logging.
+    # Por exemplo, um middleware que registra cada requisição com um timestamp e IP.
+    # Para este exemplo, vamos usar um número fixo ou derivado de outras métricas.
+    total_visits = 12345 # Valor mockado
+
+    return jsonify({
+        "total_users": total_users,
+        "total_professors": total_professors,
+        "total_students": total_students,
+        "total_activities": total_activities,
+        "total_visits": total_visits
+    }), 200
+
+@app.route('/api/admin/users', methods=['GET'])
+@jwt_required()
+def get_all_users():
+    if current_user.role != 'admin':
+        return jsonify({"msg": "Unauthorized: Only administrators can access this data"}), 403
+
+    users = User.query.all()
+    users_data = [user.to_dict() for user in users]
+    return jsonify(users_data), 200
+
+# --- FIM DOS NOVOS ENDPOINTS PARA ADMIN ---
+
+
 @jwt.unauthorized_loader
 def unauthorized_response(callback):
     return jsonify({"message": "Token de acesso ausente ou inválido."}), 401

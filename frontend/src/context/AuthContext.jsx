@@ -2,8 +2,8 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { jwtDecode } from 'jwt-decode';
 
-// 1. Cria o Contexto de Autenticação
-const AuthContext = createContext(null);
+// 1. Cria e EXPORTA o Contexto de Autenticação
+export const AuthContext = createContext(null); // <-- AQUI ESTÁ A CORREÇÃO
 
 // 2. Cria um Hook customizado para usar o AuthContext
 export const useAuth = () => {
@@ -28,8 +28,8 @@ const getUserFromToken = (token) => {
       name: decoded.name,
       role: decoded.role,
       profile_picture: decoded.profile_picture, // Se o backend incluir a imagem do Google
-      institutionName: decoded.institutionName, // <--- VERIFIQUE ESTA LINHA
-      discipline: decoded.discipline,         // <--- E ESTA LINHA
+      institutionName: decoded.institutionName,
+      discipline: decoded.discipline,
       token: token // Armazenamos o token junto para facilitar o acesso
     };
   } catch (error) {
@@ -45,28 +45,38 @@ export const AuthProvider = ({ children }) => {
   // Começamos com null, ou podemos tentar carregar do localStorage
   const [user, setUser] = useState(() => {
     try {
-      const storedUser = localStorage.getItem('user');
-      return storedUser ? JSON.parse(storedUser) : null;
+      const storedToken = localStorage.getItem('token'); // Carrega o token
+      return storedToken ? getUserFromToken(storedToken) : null; // Tenta decodificar o token
     } catch (error) {
-      console.error("Failed to parse user from localStorage", error);
+      console.error("Failed to parse user from localStorage or decode token", error);
       return null;
     }
   });
 
+  // Efeito para manter o estado de autenticação consistente com o localStorage
+  useEffect(() => {
+    const handleStorageChange = () => {
+      try {
+        const storedToken = localStorage.getItem('token');
+        setUser(storedToken ? getUserFromToken(storedToken) : null);
+      } catch (error) {
+        console.error("Failed to re-sync user from localStorage on storage change", error);
+        setUser(null);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   // Função para fazer login
   // Agora 'userData' deve conter o JWT do backend
-  const login = (userData) => {
-    // Aqui 'userData' é o objeto que vem do backend.
-    // Assumimos que 'userData.access_token' é o JWT
-    const token = userData.access_token;
-    if (token) {
-      localStorage.setItem('token', token); // Armazena APENAS o token
-      setUser(getUserFromToken(token)); // Decodifica e salva os dados do usuário derivados do token
+  const login = (access_token) => { // Aceita diretamente o access_token como string
+    if (access_token && typeof access_token === 'string') { // Verifica se é uma string
+      localStorage.setItem('token', access_token); // Armazena APENAS o token
+      setUser(getUserFromToken(access_token)); // Decodifica e salva os dados do usuário derivados do token
     } else {
-      console.error("Token de acesso não encontrado no payload de login.");
-      // Se não houver token, ainda podemos salvar os dados do usuário diretamente (caso de Google Sign-In sem JWT inicialmente)
-      // Ou você pode forçar que o token sempre venha.
-      setUser(userData); // Se o backend não retornar JWT no data.user para o Google
+      console.error("Token de acesso não fornecido ou não é uma string válida para login.");
     }
   };
 
@@ -79,6 +89,7 @@ export const AuthProvider = ({ children }) => {
   // O valor que será fornecido para os componentes que consumirem este contexto
   const value = {
     user,
+    isAuthenticated: !!user, // Adicionando um booleano para fácil verificação de autenticação
     login,
     logout,
   };

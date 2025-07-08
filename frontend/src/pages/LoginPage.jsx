@@ -1,19 +1,17 @@
 // frontend/src/pages/LoginPage.jsx
-import React, { useState, useEffect, useCallback } from 'react'; // <--- Modifique esta linha!
+import React, { useState, useEffect, useCallback, useContext } from 'react'; // Adicionado useContext
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; // Importe o hook useAuth
-
+import { AuthContext } from '../context/AuthContext'; // Importe o AuthContext diretamente
 
 function LoginPage() {
-  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const navigate = useNavigate();
-  const { login } = useAuth(); // Use o hook para acessar a função de login do contexto
+  const { login } = useContext(AuthContext); // Use useContext para acessar a função de login do contexto
+
   // Callback para o Google Sign-In após a autenticação
-  // Usamos useCallback para memoizar a função, evitando recriações desnecessárias
   const handleGoogleSignInCallback = useCallback(async (response) => {
     if (response.credential) {
       try {
@@ -23,15 +21,16 @@ function LoginPage() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ id_token: response.credential }), // Correção para id_token
+          body: JSON.stringify({ id_token: response.credential }),
         });
 
         const data = await backendResponse.json();
 
         if (backendResponse.ok) {
           setSuccess('Login com Google bem-sucedido! Redirecionando para o perfil...');
-          login(data.user); // Salva os dados do usuário e o token no contexto
-          setTimeout(() => navigate('/perfil'), 2000); // Redireciona para /perfil
+          // CORREÇÃO AQUI para Google Sign-In: Passe apenas o access_token
+          login(data.access_token);
+          setTimeout(() => navigate('/perfil'), 2000);
         } else {
           setError(data.message || 'Erro ao fazer login com Google. Tente novamente.');
         }
@@ -42,7 +41,7 @@ function LoginPage() {
     } else {
       setError('Autenticação Google falhou. Nenhuma credencial recebida.');
     }
-  }, [navigate, login]); // navigate e login são dependências de useCallback
+  }, [navigate, login]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -62,8 +61,8 @@ function LoginPage() {
 
       if (response.ok) {
         setSuccess('Login bem-sucedido! Redirecionando para o perfil...');
-        // Salva o usuário no contexto (agora incluindo o token JWT!)
-        login(data.user); // data.user deve conter o token JWT retornado pelo backend
+        // CORREÇÃO AQUI para Login Padrão: Passe apenas o access_token
+        login(data.access_token);
         
         // Redireciona para o perfil após 2 segundos
         setTimeout(() => navigate('/perfil'), 2000);
@@ -75,6 +74,7 @@ function LoginPage() {
       console.error('Erro de login:', err);
     }
   };
+
   // Carrega o script da API do Google e inicializa o botão
   useEffect(() => {
     const script = document.createElement('script');
@@ -97,8 +97,6 @@ function LoginPage() {
           document.getElementById('googleSignInDivLogin'), // ID do elemento onde o botão será renderizado
           { theme: 'outline', size: 'large', text: 'signin_with' } // Opções de tema e tamanho
         );
-        // O modo "one tap" pode ser útil mas precisa de mais consideração de UX
-        // window.google.accounts.id.prompt(); // Para mostrar o "One Tap" automaticamente
       }
     };
 
@@ -185,10 +183,8 @@ function LoginPage() {
       </div>
 
       {/* Div onde o botão do Google será renderizado */}
-      {/* Aqui você pode renderizar o botão do Google Sign-In, similar ao RegisterPage */}
-      {/* Para simplificar, não vou adicionar a lógica do Google aqui, mas é o mesmo pattern do RegisterPage */}
       <div id="googleSignInDivLogin" className="w-full max-w-sm flex justify-center">
-        {/* Futuramente, lógica do botão Google Sign-In */}
+        {/* O botão do Google Sign-In será injetado aqui pelo script */}
       </div>
 
       <div className="mt-6 text-center">
