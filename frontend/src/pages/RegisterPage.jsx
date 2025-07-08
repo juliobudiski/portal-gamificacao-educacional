@@ -29,7 +29,7 @@ function RegisterPage() {
 
         if (backendResponse.ok) {
           setSuccess('Login com Google bem-sucedido! Redirecionando para o perfil...');
-          login(data.user); // Salva os dados do usuário no contexto
+          login(data.access_token); // Salva os dados do usuário no contexto
           setTimeout(() => navigate('/perfil'), 2000);
         } else {
           setError(data.message || 'Erro ao fazer login com Google. Tente novamente.');
@@ -41,7 +41,7 @@ function RegisterPage() {
     } else {
       setError('Autenticação Google falhou. Nenhuma credencial recebida.');
     }
-  }, [navigate, login]);
+  }, [navigate, login, selectedRole]);
 
   useEffect(() => {
     const script = document.createElement('script');
@@ -60,7 +60,7 @@ function RegisterPage() {
 
         window.google.accounts.id.renderButton(
           document.getElementById('googleSignInDiv'),
-          { theme: 'outline', size: 'large', text: 'signup_with' }
+        { theme: 'outline', size: 'large', text: 'signup_with', width: '360' }
         );
       }
     };
@@ -100,7 +100,7 @@ function RegisterPage() {
       if (response.ok) {
         setSuccess('Cadastro realizado com sucesso! Redirecionando para o perfil...');
         // ADICIONE ESTA LINHA:
-        login(data.user); // Assume que 'data.user' contém o JWT ou as informações para o login
+        login(data.access_token); // Assume que 'data.user' contém o JWT ou as informações para o login
         setTimeout(() => navigate('/perfil'), 2000);
       } else {
         setError(data.message || 'Erro ao cadastrar. Tente novamente.');

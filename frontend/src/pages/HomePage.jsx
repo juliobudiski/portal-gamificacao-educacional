@@ -20,13 +20,13 @@ function Homepage() {
       <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6 mb-12">
         <Link
           to="/login"
-          className="bg-gray-700 text-blue-400 font-bold py-3 px-8 rounded-full shadow-lg hover:bg-gray-600 hover:scale-105 transition duration-300 ease-in-out text-lg border-2 border-blue-400"
+          className="bg-gray-700 text-accent-teal font-bold py-3 px-8 rounded-full shadow-lg hover:bg-gray-600 hover:scale-105 transition duration-300 ease-in-out text-lg border-2 border-accent-teal"
         >
           Entrar
         </Link>
         <Link
           to="/cadastro"
-          className="bg-purple-900 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-purple-800 hover:scale-105 transition duration-300 ease-in-out text-lg border-2 border-white"
+          className="bg-purple-950 text-accent-yellow font-bold py-3 px-8 rounded-full shadow-lg hover:bg-purple-800 hover:scale-105 transition duration-300 ease-in-out text-lg border-2 border-accent-yellow"
         >
           Cadastre-se
         </Link>

@@ -1,8 +1,8 @@
 // frontend/src/pages/AdminPage.jsx
-import React, { useEffect, useState, useContext } from 'react';
-import { AuthContext } from '../context/AuthContext'; // Ajuste o caminho se necessário
-import { useNavigate } from 'react-router-dom';
-import { Users, BookOpen, BarChart2, Eye, Mail, User as UserIcon } from 'lucide-react'; // Importe os ícones necessários
+import React, { useEffect, useState, useContext, useMemo } from 'react';
+import { AuthContext } from '../context/AuthContext';
+import { Link, useNavigate } from 'react-router-dom';
+import { Users, BookOpen, BarChart2, Eye, Mail, User as UserIcon, Building, GraduationCap, ChevronUp, ChevronDown, Pencil, Trash2, Save, X } from 'lucide-react'; // Adicionado Pencil, Trash2, Save, X
 
 function AdminPage() {
   const { user, isAuthenticated } = useContext(AuthContext);
@@ -12,155 +12,355 @@ function AdminPage() {
   const [usersList, setUsersList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+
+  // Estado para controlar a linha que está sendo editada
+  const [editingUserId, setEditingUserId] = useState(null);
+  // Estado para armazenar os dados do formulário de edição
+  const [editFormData, setEditFormData] = useState({});
+
+  const fetchAdminData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const token = localStorage.getItem('token');
+
+      const dashboardResponse = await fetch('http://127.0.0.1:5000/api/admin/dashboard_data', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!dashboardResponse.ok) {
+        throw new Error(`HTTP error! status: ${dashboardResponse.status}`);
+      }
+      const dashboardJson = await dashboardResponse.json();
+      setDashboardData(dashboardJson);
+
+      const usersResponse = await fetch('http://127.0.0.1:5000/api/admin/users', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!usersResponse.ok) {
+        throw new Error(`HTTP error! status: ${usersResponse.status}`);
+      }
+      const usersJson = await usersResponse.json();
+      setUsersList(usersJson);
+
+    } catch (e) {
+      console.error("Erro ao buscar dados do administrador:", e);
+      setError("Não foi possível carregar os dados do dashboard. Verifique a conexão com o servidor.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // Redireciona se não for admin ou não estiver autenticado
     if (!isAuthenticated || user?.role !== 'admin') {
-      navigate('/login'); // Ou para uma página de erro/não autorizado
+      navigate('/login');
       return;
     }
-
-    const fetchAdminData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const token = localStorage.getItem('token'); // Pega o token do localStorage
-
-        // Fetch Dashboard Data
-        const dashboardResponse = await fetch('http://127.0.0.1:5000/api/admin/dashboard_data', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-        if (!dashboardResponse.ok) {
-          throw new Error(`HTTP error! status: ${dashboardResponse.status}`);
-        }
-        const dashboardJson = await dashboardResponse.json();
-        setDashboardData(dashboardJson);
-
-        // Fetch Users List
-        const usersResponse = await fetch('http://127.0.0.1:5000/api/admin/users', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-        if (!usersResponse.ok) {
-          throw new Error(`HTTP error! status: ${usersResponse.status}`);
-        }
-        const usersJson = await usersResponse.json();
-        setUsersList(usersJson);
-
-      } catch (e) {
-        console.error("Failed to fetch admin data:", e);
-        setError("Erro ao carregar dados do administrador. Verifique sua conexão ou permissões.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchAdminData();
-  }, [isAuthenticated, user, navigate]); // Dependências do useEffect
+  }, [isAuthenticated, user, navigate]);
+
+  const handleSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const sortedUsers = useMemo(() => {
+    let sortableUsers = [...usersList];
+    if (sortConfig.key) {
+      sortableUsers.sort((a, b) => {
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
+
+        if (aValue === null || aValue === undefined) return sortConfig.direction === 'asc' ? 1 : -1;
+        if (bValue === null || bValue === undefined) return sortConfig.direction === 'asc' ? -1 : 1;
+
+        if (typeof aValue === 'string' && typeof bValue === 'string') {
+          return sortConfig.direction === 'asc'
+            ? aValue.localeCompare(bValue)
+            : bValue.localeCompare(aValue);
+        }
+
+        if (typeof aValue === 'number' && typeof bValue === 'number') {
+            return sortConfig.direction === 'asc' ? aValue - bValue : bValue - aValue;
+        }
+
+        if (aValue < bValue) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableUsers;
+  }, [usersList, sortConfig]);
+
+  // Funções de Edição e Exclusão
+  const handleEditClick = (userItem) => {
+    setEditingUserId(userItem.id);
+    setEditFormData({ ...userItem }); // Copia os dados do usuário para o formulário de edição
+  };
+
+  const handleEditInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditFormData(prevData => ({
+      ...prevData,
+      [name]: value
+    }));
+  };
+
+  const handleSaveEdit = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://127.0.0.1:5000/api/admin/users/${editingUserId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(editFormData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.msg || 'Erro ao salvar as alterações do usuário.');
+      }
+
+      await response.json(); // Pega a resposta de sucesso
+      setEditingUserId(null); // Sai do modo de edição
+      setEditFormData({}); // Limpa os dados do formulário
+      fetchAdminData(); // Recarrega os dados para ver as alterações
+    } catch (e) {
+      console.error("Erro ao salvar usuário:", e);
+      alert(`Erro ao salvar: ${e.message}`); // Exibe um alerta simples com a mensagem de erro
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingUserId(null);
+    setEditFormData({});
+  };
+
+  const handleDeleteClick = async (userId, userName) => {
+    if (window.confirm(`Tem certeza que deseja excluir a conta de ${userName} (ID: ${userId})? Esta ação é irreversível.`)) {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`http://127.0.0.1:5000/api/admin/users/${userId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.msg || 'Erro ao excluir a conta do usuário.');
+        }
+
+        await response.json(); // Pega a resposta de sucesso
+        fetchAdminData(); // Recarrega os dados para remover o usuário excluído
+      } catch (e) {
+        console.error("Erro ao excluir usuário:", e);
+        alert(`Erro ao excluir: ${e.message}`);
+      }
+    }
+  };
+
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64 dark:text-gray-300">
-        <p>Carregando dados do administrador...</p>
+      <div className="flex justify-center items-center min-h-screen text-white">
+        <p>Carregando Dashboard...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center text-red-500 dark:text-red-400 p-4">
-        <p>{error}</p>
-      </div>
-    );
-  }
-
-  if (!dashboardData) {
-    return (
-      <div className="text-center text-gray-500 dark:text-gray-400 p-4">
-        <p>Nenhum dado de dashboard disponível.</p>
+      <div className="flex justify-center items-center min-h-screen text-red-500">
+        <p>Erro: {error}</p>
       </div>
     );
   }
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-lg dark:bg-gray-800 dark:text-gray-100">
-      <h1 className="text-4xl font-bold mb-8 text-gray-900 dark:text-white text-center">Dashboard do Administrador</h1>
+    <div className="min-h-screen w-full bg-dark-background p-4">
+      
+      {/* Conteúdo da Dashboard */}
+      <main className="container mx-auto mt-8 p-4">
+        <h1 className="text-3xl font-bold text-white mb-6">Dashboard do Administrador</h1>
 
-      {/* Seção de Resumo */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-blue-100 dark:bg-blue-900 p-6 rounded-lg shadow-md flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold text-blue-800 dark:text-blue-200">Total de Usuários</h2>
-            <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">{dashboardData.total_users}</p>
+        {/* Cards de Totais */}
+        {dashboardData && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div className="bg-gray-700 p-6 rounded-lg shadow-md text-white flex items-center space-x-4">
+              <Users size={32} className="text-accent-teal" />
+              <div>
+                <p className="text-xl font-semibold">Total de Usuários</p>
+                <p className="text-3xl font-bold">{dashboardData.total_users}</p>
+              </div>
+            </div>
+            <div className="bg-gray-700 p-6 rounded-lg shadow-md text-white flex items-center space-x-4">
+              <UserIcon size={32} className="text-accent-purple" />
+              <div>
+                <p className="text-xl font-semibold">Total de Professores</p>
+                <p className="text-3xl font-bold">{dashboardData.total_professors}</p>
+              </div>
+            </div>
+            <div className="bg-gray-700 p-6 rounded-lg shadow-md text-white flex items-center space-x-4">
+              <GraduationCap size={32} className="text-accent-yellow" />
+              <div>
+                <p className="text-xl font-semibold">Total de Alunos</p>
+                <p className="text-3xl font-bold">{dashboardData.total_students}</p>
+              </div>
+            </div>
+            <div className="bg-gray-700 p-6 rounded-lg shadow-md text-white flex items-center space-x-4">
+              <BookOpen size={32} className="text-blue-400" />
+              <div>
+                <p className="text-xl font-semibold">Total de Atividades</p>
+                <p className="text-3xl font-bold">{dashboardData.total_activities}</p>
+              </div>
+            </div>
+            <div className="bg-gray-700 p-6 rounded-lg shadow-md text-white flex items-center space-x-4">
+              <Eye size={32} className="text-green-400" />
+              <div>
+                <p className="text-xl font-semibold">Visitas (Mock)</p>
+                <p className="text-3xl font-bold">{dashboardData.total_visits}</p>
+              </div>
+            </div>
           </div>
-          <Users size={48} className="text-blue-600 dark:text-blue-400" />
-        </div>
-        <div className="bg-green-100 dark:bg-green-900 p-6 rounded-lg shadow-md flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold text-green-800 dark:text-green-200">Professores</h2>
-            <p className="text-3xl font-bold text-green-900 dark:text-green-100">{dashboardData.total_professors}</p>
-          </div>
-          <BookOpen size={48} className="text-green-600 dark:text-green-400" />
-        </div>
-        <div className="bg-yellow-100 dark:bg-yellow-900 p-6 rounded-lg shadow-md flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold text-yellow-800 dark:text-yellow-200">Alunos</h2>
-            <p className="text-3xl font-bold text-yellow-900 dark:text-yellow-100">{dashboardData.total_students}</p>
-          </div>
-          <UserIcon size={48} className="text-yellow-600 dark:text-yellow-400" />
-        </div>
-        <div className="bg-purple-100 dark:bg-purple-900 p-6 rounded-lg shadow-md flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold text-purple-800 dark:text-purple-200">Atividades Criadas</h2>
-            <p className="text-3xl font-bold text-purple-900 dark:text-purple-100">{dashboardData.total_activities}</p>
-          </div>
-          <BarChart2 size={48} className="text-purple-600 dark:text-purple-400" />
-        </div>
-        <div className="bg-gray-200 dark:bg-gray-700 p-6 rounded-lg shadow-md flex items-center justify-between col-span-full md:col-span-2 mx-auto w-full md:w-1/2">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200">Visitas no Portal (Mock)</h2>
-            <p className="text-3xl font-bold text-gray-800 dark:text-gray-100">{dashboardData.total_visits}</p>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                *Este é um valor mockado. A implementação real de rastreamento de visitas requer um sistema de logging dedicado no backend.
-            </p>
-          </div>
-          <Eye size={48} className="text-gray-500 dark:text-gray-400" />
-        </div>
-      </div>
+        )}
 
-      {/* Lista de Usuários Cadastrados */}
-      <h2 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white text-center">Usuários Cadastrados</h2>
-      <div className="overflow-x-auto rounded-lg shadow-md">
-        <table className="min-w-full bg-gray-700 dark:bg-gray-900 text-white">
-          <thead>
-            <tr className="bg-gray-600 dark:bg-gray-950">
-              <th className="py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider">ID</th>
-              <th className="py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider">Nome</th>
-              <th className="py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider">Email</th>
-              <th className="py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider">Role</th>
-              <th className="py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider">Instituição</th>
-              <th className="py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider">Disciplina</th>
-            </tr>
-          </thead>
-          <tbody>
-            {usersList.map((userItem) => (
-              <tr key={userItem.id} className="border-b border-gray-600 dark:border-gray-700 hover:bg-gray-600 dark:hover:bg-gray-800">
-                <td className="py-3 px-4 text-sm">{userItem.id}</td>
-                <td className="py-3 px-4 text-sm">{userItem.name}</td>
-                <td className="py-3 px-4 text-sm">{userItem.email}</td>
-                <td className="py-3 px-4 text-sm">{userItem.role}</td>
-                <td className="py-3 px-4 text-sm">{userItem.institution_name || 'N/A'}</td>
-                <td className="py-3 px-4 text-sm">{userItem.discipline || 'N/A'}</td>
+        {/* Lista de Usuários */}
+        <h2 className="text-2xl font-bold text-white mb-4">Lista de Usuários</h2>
+        <div className="bg-gray-800 rounded-lg shadow-md overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-700">
+            <thead>
+              <tr>
+                <th className="py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider text-gray-400 dark:bg-gray-950 cursor-pointer hover:text-white transition-colors duration-200"
+                    onClick={() => handleSort('id')}>
+                  ID {sortConfig.key === 'id' && (sortConfig.direction === 'asc' ? <ChevronUp size={16} className="inline ml-1" /> : <ChevronDown size={16} className="inline ml-1" />)}
+                </th>
+                <th className="py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider text-gray-400 dark:bg-gray-950 cursor-pointer hover:text-white transition-colors duration-200"
+                    onClick={() => handleSort('name')}>
+                  Nome {sortConfig.key === 'name' && (sortConfig.direction === 'asc' ? <ChevronUp size={16} className="inline ml-1" /> : <ChevronDown size={16} className="inline ml-1" />)}
+                </th>
+                <th className="py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider text-gray-400 dark:bg-gray-950 cursor-pointer hover:text-white transition-colors duration-200"
+                    onClick={() => handleSort('email')}>
+                  Email {sortConfig.key === 'email' && (sortConfig.direction === 'asc' ? <ChevronUp size={16} className="inline ml-1" /> : <ChevronDown size={16} className="inline ml-1" />)}
+                </th>
+                <th className="py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider text-gray-400 dark:bg-gray-950 cursor-pointer hover:text-white transition-colors duration-200"
+                    onClick={() => handleSort('role')}>
+                  Tipo {sortConfig.key === 'role' && (sortConfig.direction === 'asc' ? <ChevronUp size={16} className="inline ml-1" /> : <ChevronDown size={16} className="inline ml-1" />)}
+                </th>
+                <th className="py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider text-gray-400 dark:bg-gray-950 cursor-pointer hover:text-white transition-colors duration-200"
+                    onClick={() => handleSort('institution_name')}>
+                  Instituição {sortConfig.key === 'institution_name' && (sortConfig.direction === 'asc' ? <ChevronUp size={16} className="inline ml-1" /> : <ChevronDown size={16} className="inline ml-1" />)}
+                </th>
+                <th className="py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider text-gray-400 dark:bg-gray-950 cursor-pointer hover:text-white transition-colors duration-200"
+                    onClick={() => handleSort('discipline')}>
+                  Disciplina {sortConfig.key === 'discipline' && (sortConfig.direction === 'asc' ? <ChevronUp size={16} className="inline ml-1" /> : <ChevronDown size={16} className="inline ml-1" />)}
+                </th>
+                <th className="py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider text-gray-400 dark:bg-gray-950">Ações</th> {/* Nova coluna para ações */}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="divide-y divide-gray-700">
+              {sortedUsers.map((userItem) => (
+                <tr key={userItem.id} className="border-b border-gray-600 dark:border-gray-700 hover:bg-gray-600 dark:hover:bg-gray-800">
+                  {editingUserId === userItem.id ? (
+                    <>
+                      <td className="py-3 px-4 text-sm text-white">{userItem.id}</td>
+                      <td className="py-3 px-4 text-sm">
+                        <input
+                          type="text"
+                          name="name"
+                          value={editFormData.name || ''}
+                          onChange={handleEditInputChange}
+                          className="bg-gray-700 text-white border border-gray-600 rounded px-2 py-1 w-full"
+                        />
+                      </td>
+                      <td className="py-3 px-4 text-sm">
+                        <input
+                          type="email"
+                          name="email"
+                          value={editFormData.email || ''}
+                          onChange={handleEditInputChange}
+                          className="bg-gray-700 text-white border border-gray-600 rounded px-2 py-1 w-full"
+                        />
+                      </td>
+                      <td className="py-3 px-4 text-sm">
+                        <select
+                          name="role"
+                          value={editFormData.role || ''}
+                          onChange={handleEditInputChange}
+                          className="bg-gray-700 text-white border border-gray-600 rounded px-2 py-1 w-full"
+                        >
+                          <option value="aluno">Aluno</option>
+                          <option value="professor">Professor</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                      </td>
+                      <td className="py-3 px-4 text-sm">
+                        <input
+                          type="text"
+                          name="institution_name"
+                          value={editFormData.institution_name || ''}
+                          onChange={handleEditInputChange}
+                          className="bg-gray-700 text-white border border-gray-600 rounded px-2 py-1 w-full"
+                        />
+                      </td>
+                      <td className="py-3 px-4 text-sm">
+                        <input
+                          type="text"
+                          name="discipline"
+                          value={editFormData.discipline || ''}
+                          onChange={handleEditInputChange}
+                          className="bg-gray-700 text-white border border-gray-600 rounded px-2 py-1 w-full"
+                        />
+                      </td>
+                      <td className="py-3 px-4 text-sm flex space-x-2">
+                        <button onClick={handleSaveEdit} className="text-green-400 hover:text-green-300">
+                          <Save size={20} />
+                        </button>
+                        <button onClick={handleCancelEdit} className="text-red-400 hover:text-red-300">
+                          <X size={20} />
+                        </button>
+                      </td>
+                    </>
+                  ) : (
+                    <>
+                      <td className="py-3 px-4 text-sm text-white">{userItem.id}</td>
+                      <td className="py-3 px-4 text-sm text-white">{userItem.name}</td>
+                      <td className="py-3 px-4 text-sm text-white">{userItem.email}</td>
+                      <td className="py-3 px-4 text-sm text-white">{userItem.role}</td>
+                      <td className="py-3 px-4 text-sm text-white">{userItem.institution_name || 'N/A'}</td>
+                      <td className="py-3 px-4 text-sm text-white">{userItem.discipline || 'N/A'}</td>
+                      <td className="py-3 px-4 text-sm flex space-x-2">
+                        <button onClick={() => handleEditClick(userItem)} className="text-blue-400 hover:text-blue-300">
+                          <Pencil size={20} />
+                        </button>
+                        <button onClick={() => handleDeleteClick(userItem.id, userItem.name)} className="text-red-400 hover:text-red-300">
+                          <Trash2 size={20} />
+                        </button>
+                      </td>
+                    </>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </main>
     </div>
   );
 }

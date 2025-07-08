@@ -50,15 +50,17 @@ function App() {
 
   return (
     // O fundo padrão será 'bg-gray-100', mas no modo escuro será 'dark:bg-gray-900'
-    <div className="min-h-screen w-full bg-gray-100 dark:bg-gray-900 p-4"> {/* Removido 'flex flex-col items-center justify-center' daqui */}
+    <div className="min-h-screen w-full bg-dark-background p-4"> {/* Removido 'flex flex-col items-center justify-center' daqui */}
       {/* Cabeçalho da aplicação */}
-      <header className="w-full max-w-6xl bg-gray-800 text-white p-4 rounded-lg shadow-xl mb-8 mx-auto dark:bg-gray-900">
+      <header className="w-full max-w-6xl bg-gray-800 text-white p-4 rounded-lg shadow-xl mb-8 mx-auto dark:bg-dark-background ring-2 ring-offset-2 ring-accent-yellow ring-offset-dark-background">
         <nav className="flex flex-col sm:flex-row justify-between items-center">
           {/* Logo do Portal */}
           <Link to="/" className="flex items-center space-x-2 mb-4 sm:mb-0" onClick={closeAllMenus}>
-            {/* Certifique-se de que a imagem 'logotipo.png' está em 'frontend/public/images/' */}
-            <img src="/images/logotipo.png" alt="Logo do Portal" className="h-14 w-14 rounded-full" />
-            <span className="text-2xl font-bold text-blue-400">GamificaEdu</span>
+            <img
+              src="/images/logotipo.png"
+              alt="Logo GamificaEdu" // Alterado para refletir o logo combinado
+              className="h-20" // Ajuste a altura conforme necessário para que o texto fique visível
+            />
           </Link>
 
           {/* Menu de Navegação Principal */}
@@ -293,9 +295,9 @@ function App() {
             <Route path="/aluno/atividade/:id" element={<StudentActivityPage />} /> {/* Rota para atividade específica do aluno */}
           </Route>
 
-          {/* Rota para Dashboard Admin (se implementado futuramente) */}
+          {/* Rota para Dashboard Admin */}
           <Route element={<PrivateRoute allowedRoles={['admin']} />}>
-            <Route path="/admin/dashboard" element={<div><h1>Dashboard do Administrador</h1><p>Conteúdo exclusivo para administradores.</p></div>} />
+            <Route path="/admin/dashboard" element={<AdminPage />} /> 
           </Route>
 
           {/* Rota para páginas não encontradas */}

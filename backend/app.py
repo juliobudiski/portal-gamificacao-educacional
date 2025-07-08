@@ -6,7 +6,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import Text
 import os
 from dotenv import load_dotenv
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, decode_token
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, decode_token, current_user
 from datetime import timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 from google.oauth2 import id_token
@@ -26,6 +26,11 @@ app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 
 jwt = JWTManager(app)
 db = SQLAlchemy(app)
+
+@jwt.user_lookup_loader
+def user_lookup_callback(_jwt_header, jwt_data):
+    identity = jwt_data["sub"] # 'sub' é onde geralmente armazenamos o ID do usuário
+    return User.query.filter_by(id=identity).first()
 
 # IMPORTANTE: Inicializa o Flask-Migrate AQUI, APÓS 'app' e 'db' serem definidos
 migrate = Migrate(app, db) # Garante que o Flask-Migrate esteja associado ao seu app e DB
@@ -52,6 +57,16 @@ class User(db.Model):
 
     def __repr__(self):
         return f'<User {self.email}>'
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'email': self.email,
+            'role': self.role,
+            'institution_name': self.institution_name,
+            'discipline': self.discipline
+        }
 
 # Modelo de Atividade Gamificada
 class Activity(db.Model):
@@ -189,10 +204,11 @@ def login_user():
         return jsonify({"message": "Credenciais inválidas."}), 401
 
 @app.route('/api/auth/google', methods=['POST'])
+@cross_origin()
 def google_auth():
     data = request.get_json()
     token = data.get('id_token')
-    role = data.get('role', 'aluno')
+    selected_role = data.get('role', 'aluno') # Use selected_role para evitar confusão com a variável 'role' interna do Flask-JWT-Extended
 
     if not token:
         return jsonify({"message": "Token do Google não fornecido."}), 400
@@ -208,29 +224,38 @@ def google_auth():
         user = User.query.filter_by(google_id=google_id).first()
 
         if user:
-            if user.role != role:
-                user.role = role
+            # Usuário encontrado pelo google_id
+            if user.role != selected_role: # Compara com a role selecionada pelo frontend
+                user.role = selected_role # Atualiza a role
                 db.session.commit()
             message = "Login Google bem-sucedido!"
             status_code = 200
         else:
+            # Usuário não encontrado pelo google_id, tenta encontrar pelo email
             existing_email_user = User.query.filter_by(email=email).first()
             if existing_email_user:
+                # Usuário encontrado pelo email, vincular conta Google
                 existing_email_user.google_id = google_id
-                existing_email_user.name = name
-                existing_email_user.profile_picture = picture
+                existing_email_user.name = name # Atualiza o nome com o do Google
+                existing_email_user.profile_picture = picture # Atualiza a foto de perfil
+                
+                # NOVO: Atualiza a role se for diferente da selecionada no frontend
+                if existing_email_user.role != selected_role:
+                    existing_email_user.role = selected_role
+                    
                 db.session.commit()
                 user = existing_email_user
                 message = "Conta existente vinculada ao Google!"
                 status_code = 200
             else:
+                # Novo usuário, cria a conta
                 user = User(
                     email=email,
-                    password_hash='google_auth_only',
+                    password_hash='google_auth_only', # Placeholder para senha
                     google_id=google_id,
                     name=name,
                     profile_picture=picture,
-                    role=role
+                    role=selected_role # Usa a role selecionada pelo frontend
                 )
                 db.session.add(user)
                 db.session.commit()
@@ -240,13 +265,14 @@ def google_auth():
         additional_claims = {
             "email": user.email,
             "name": user.name,
-            "role": user.role,
+            "role": user.role, # Garante que a role atualizada esteja no token
             "profile_picture": user.profile_picture,
             "institutionName": user.institution_name,
             "discipline": user.discipline
         }
         access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
 
+        # Este é o bloco de retorno FINAL e CORRETO
         return jsonify(access_token=access_token, user={
             "id": user.id,
             "email": user.email,
@@ -256,8 +282,8 @@ def google_auth():
             "google_id": user.google_id,
             "institutionName": user.institution_name,
             "discipline": user.discipline,
-            "token": access_token
-        }), status_code
+            # "token": access_token # Não é necessário enviar o token aqui, pois já está em access_token
+        }), status_code # Usa o status_code definido acima (200 ou 201)
 
     except ValueError as e:
         print(f"Erro de validação do token Google: {str(e)}")
@@ -266,6 +292,7 @@ def google_auth():
         db.session.rollback()
         print(f"Erro inesperado no Google Auth: {str(e)}")
         return jsonify({"message": f"Erro interno no servidor durante autenticação Google: {str(e)}"}), 500
+
 
 @app.route('/api/protected', methods=['GET'])
 @jwt_required()
@@ -430,6 +457,56 @@ def get_all_users():
     users = User.query.all()
     users_data = [user.to_dict() for user in users]
     return jsonify(users_data), 200
+
+# Endpoint para atualizar um usuário (apenas para admin)
+@app.route('/api/admin/users/<int:user_id>', methods=['PUT'])
+@jwt_required()
+@cross_origin()
+def update_user(user_id):
+    if current_user.role != 'admin':
+        return jsonify({"msg": "Unauthorized: Only administrators can update user data"}), 403
+
+    user_to_update = User.query.get(user_id)
+    if not user_to_update:
+        return jsonify({"msg": "User not found"}), 404
+
+    data = request.get_json()
+
+    # Atualiza apenas os campos permitidos
+    user_to_update.name = data.get('name', user_to_update.name)
+    user_to_update.email = data.get('email', user_to_update.email)
+    user_to_update.role = data.get('role', user_to_update.role)
+    user_to_update.institution_name = data.get('institution_name', user_to_update.institution_name)
+    user_to_update.discipline = data.get('discipline', user_to_update.discipline)
+
+    try:
+        db.session.commit()
+        return jsonify({"msg": "User updated successfully", "user": user_to_update.to_dict()}), 200
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error updating user: {e}")
+        return jsonify({"msg": "Internal server error during user update"}), 500
+
+# Endpoint para deletar um usuário (apenas para admin)
+@app.route('/api/admin/users/<int:user_id>', methods=['DELETE'])
+@jwt_required()
+@cross_origin()
+def delete_user(user_id):
+    if current_user.role != 'admin':
+        return jsonify({"msg": "Unauthorized: Only administrators can delete user accounts"}), 403
+
+    user_to_delete = User.query.get(user_id)
+    if not user_to_delete:
+        return jsonify({"msg": "User not found"}), 404
+
+    try:
+        db.session.delete(user_to_delete)
+        db.session.commit()
+        return jsonify({"msg": "User deleted successfully"}), 200
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error deleting user: {e}")
+        return jsonify({"msg": "Internal server error during user deletion"}), 500
 
 # --- FIM DOS NOVOS ENDPOINTS PARA ADMIN ---
 
