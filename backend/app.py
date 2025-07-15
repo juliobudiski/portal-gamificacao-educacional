@@ -1,43 +1,78 @@
+# -*- coding: utf-8 -*-
+
+# --- Importações de Bibliotecas ---
+# Flask e extensões para criar o servidor web, lidar com CORS, banco de dados e autenticação JWT
 from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate # IMPORTANTE: Adicione esta importação
+from flask_migrate import Migrate
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import Text
+
+# Módulos padrão do Python para manipulação do sistema operacional, variáveis de ambiente e tempo
 import os
+import logging
 from dotenv import load_dotenv
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, decode_token, current_user
 from datetime import timedelta
+
+# Werkzeug para hashing de senhas
 from werkzeug.security import generate_password_hash, check_password_hash
+
+# Bibliotecas do Google para autenticação com o Google Sign-In
 from google.oauth2 import id_token
 from google.auth.transport import requests
 
-# Carrega as variáveis de ambiente do arquivo .env
+# Flask-JWT-Extended para gerenciar tokens de autenticação
+from flask_jwt_extended import (
+    JWTManager, create_access_token, jwt_required,
+    get_jwt_identity, current_user
+)
+
+# --- Configuração Inicial ---
+
+# Carrega as variáveis de ambiente do arquivo .env para a aplicação
 load_dotenv()
 
+# Cria a instância principal da aplicação Flask
 app = Flask(__name__)
-CORS(app) # Habilita CORS para todas as rotas
 
-# Configuração do Banco de Dados
+# Configuração do Logging
+# Define o nível de log para DEBUG, para capturar todas as informações durante o desenvolvimento.
+# Em produção, pode ser alterado para INFO ou WARNING.
+logging.basicConfig(level=logging.DEBUG)
+handler = logging.StreamHandler()
+handler.setLevel(logging.DEBUG)
+app.logger.addHandler(handler)
+
+
+# Habilita o CORS (Cross-Origin Resource Sharing) para permitir requisições de diferentes origens (ex: frontend em React)
+CORS(app)
+
+# --- Configurações da Aplicação Flask ---
+# Define a URI do banco de dados a partir da variável de ambiente DATABASE_URL
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+# Desativa o rastreamento de modificações do SQLAlchemy para economizar recursos
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# Chave secreta para proteger a aplicação contra ataques CSRF (Cross-Site Request Forgery)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+# Chave secreta para assinar os tokens JWT, garantindo sua integridade
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 
+
+# --- Inicialização das Extensões ---
+# Inicializa o JWTManager para gerenciar a autenticação baseada em token
 jwt = JWTManager(app)
+# Inicializa o SQLAlchemy para interagir com o banco de dados
 db = SQLAlchemy(app)
+# Inicializa o Flask-Migrate para gerenciar as migrações do esquema do banco de dados
+migrate = Migrate(app, db)
 
-@jwt.user_lookup_loader
-def user_lookup_callback(_jwt_header, jwt_data):
-    identity = jwt_data["sub"] # 'sub' é onde geralmente armazenamos o ID do usuário
-    return User.query.filter_by(id=identity).first()
-
-# IMPORTANTE: Inicializa o Flask-Migrate AQUI, APÓS 'app' e 'db' serem definidos
-migrate = Migrate(app, db) # Garante que o Flask-Migrate esteja associado ao seu app e DB
-
+# Define o Client ID do Google para o backend, usado para verificar os tokens do Google Sign-In
 GOOGLE_CLIENT_ID_BACKEND = os.getenv('GOOGLE_CLIENT_ID')
 
-# Modelo de Usuário
+# --- Modelos de Banco de Dados (SQLAlchemy) ---
+
+# Modelo para a tabela 'user'
 class User(db.Model):
     __tablename__ = 'user'
 
@@ -57,7 +92,8 @@ class User(db.Model):
 
     def __repr__(self):
         return f'<User {self.email}>'
-    
+
+    # Converte o objeto User para um dicionário, útil para serialização em JSON
     def to_dict(self):
         return {
             'id': self.id,
@@ -68,7 +104,7 @@ class User(db.Model):
             'discipline': self.discipline
         }
 
-# Modelo de Atividade Gamificada
+# Modelo para a tabela 'activity' (Atividade Gamificada)
 class Activity(db.Model):
     __tablename__ = 'activity'
 
@@ -77,6 +113,7 @@ class Activity(db.Model):
     title = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text, nullable=True)
 
+    # Campos JSONB para armazenar dados estruturados da gamificação
     current_scenario = db.Column(JSONB, nullable=True)
     desired_scenario = db.Column(JSONB, nullable=True)
     activity_planning = db.Column(JSONB, nullable=True)
@@ -92,11 +129,13 @@ class Activity(db.Model):
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
 
+    # Relacionamento com o modelo User (um professor tem muitas atividades)
     professor = db.relationship('User', backref='activities', lazy=True)
 
     def __repr__(self):
         return f'<Activity {self.title}>'
 
+    # Converte o objeto Activity para um dicionário
     def to_dict(self):
         return {
             'id': self.id,
@@ -117,25 +156,193 @@ class Activity(db.Model):
             'updatedAt': self.updated_at.isoformat() if self.updated_at else None,
         }
 
+# --- Funções de Callback do JWT ---
+
+# Esta função é chamada sempre que uma rota protegida é acessada.
+# Ela usa o 'sub' (subject, que é o ID do usuário) do token para carregar o objeto User do banco.
+# Isso permite que usemos a variável `current_user` nas rotas protegidas.
+@jwt.user_lookup_loader
+def user_lookup_callback(_jwt_header, jwt_data):
+    identity = jwt_data["sub"]
+    app.logger.debug(f"Procurando usuário com ID: {identity}")
+    return User.query.filter_by(id=identity).one_or_none()
+
+
+# --- Dados dos Templates Predefinidos ---
+# Estes templates são definidos diretamente no backend como uma lista de dicionários.
+# Eles contêm os dados que serão pré-preenchidos no formulário de criação de atividade.
+PREDEFINED_TEMPLATES = [
+    {
+        "id": "quiz-requisitos",
+        "name": "Quiz de Requisitos Funcionais e Não Funcionais",
+        "description": "Um template para criar um quiz rápido sobre requisitos de software, ideal para revisão de conceitos.",
+        "icon": "🧠",
+        "data": {
+            "title": "Quiz: Requisitos de Software",
+            "description": "Avalie seu conhecimento sobre requisitos funcionais e não funcionais com este quiz interativo.",
+            "areaKnowledge": "Engenharia de Software",
+            "currentScenario": {
+                "problems": ["Dificuldades na compreensão de conceitos complexos de programação.", "Dificuldades em aplicar as teorias aprendidas na prática."],
+                "otherProblem": ""
+            },
+            "desiredScenario": {
+                "objectives": ["Aumentar a retenção de conhecimentos e habilidades adquiridos ao longo do curso", "Promover a participação ativa dos alunos nas atividades de aprendizagem"],
+                "otherObjective": ""
+            },
+            "activityPlanning": {
+                "characteristics": ["Online", "Individual", "Formativa (atividade de prática ou revisão)"],
+                "participantsQuantity": "Turma toda",
+                "expectedDuration": "30 minutos",
+                "location": "Online",
+                "otherInfo": "Pode ser usado como atividade pré-aula ou pós-aula."
+            },
+            "playerProfile": {
+                "selectedProfiles": ["Jogador de realização", "Jogador competitivo"]
+            },
+            "gameElements": {
+                "selectedElements": ["Níveis", "Sistema de pontuação", "Feedback claro sobre o desempenho", "Sistema de classificação e ranking", "Narrativas envolventes"],
+                "otherElement": "",
+                "narrativeTitle": "Desafio do Conhecimento",
+                "narrativeContent": "Embarque em uma jornada para provar seu domínio sobre os requisitos de software, superando cada nível de dificuldade."
+            },
+            "rewardsOffered": {
+                "selectedRewards": ["Pontos de bônus para a participação na aula.", "Conquistas digitais para metas alcançadas."],
+                "otherReward": ""
+            },
+            "rewardedActions": {
+                "selectedActions": ["Responder corretamente a perguntas de revisão de material", "Atingir uma pontuação elevada em um jogo educacional"],
+                "otherAction": ""
+            },
+            "gamificationRules": {
+                "generalRules": ["Respeite as regras do jogo e as decisões do professor em todas as atividades.", "Busque sempre aprender e se esforçar para alcançar seus objetivos em cada atividade."],
+                "specificRules": "Cada questão tem um tempo limite de 30 segundos. Respostas corretas concedem pontos, incorretas não."
+            }
+        }
+    },
+    {
+        "id": "desafio-teste-software",
+        "name": "Desafio de Teste de Software",
+        "description": "Um cenário prático para identificar e propor soluções para defeitos em software.",
+        "icon": "🐛",
+        "data": {
+            "title": "Desafio: Identificação de Bugs",
+            "description": "Participe de um desafio prático para encontrar e documentar bugs em um sistema simulado.",
+            "areaKnowledge": "Engenharia de Software",
+            "currentScenario": {
+                "problems": ["Dificuldades em aplicar as teorias aprendidas na prática.", "Dificuldades em lidar com ferramentas de desenvolvimento complexas."],
+                "otherProblem": ""
+            },
+            "desiredScenario": {
+                "objectives": ["Incentivar a aplicação prática dos conhecimentos teóricos em projetos reais", "Desenvolver habilidades cognitivas, sociais e de aprendizagem"],
+                "otherObjective": ""
+            },
+            "activityPlanning": {
+                "characteristics": ["Presencial", "Em grupos", "Somativa (avaliação)", "Foco em projetos ou desenvolvimento de software real"],
+                "participantsQuantity": "Grupos de 3-4 alunos",
+                "expectedDuration": "4 horas",
+                "location": "Laboratório de Informática",
+                "otherInfo": "Requer computadores com ambiente de desenvolvimento configurado."
+            },
+            "playerProfile": {
+                "selectedProfiles": ["Jogador cooperativo", "Jogador de realização"]
+            },
+            "gameElements": {
+                "selectedElements": ["Níveis", "Reconhecimento", "Progressão baseada em habilidade", "Cooperação", "Objetivo (missão, meta do jogo)", "Narrativas envolventes"],
+                "otherElement": "",
+                "narrativeTitle": "Caça aos Bugs",
+                "narrativeContent": "A cidade digital está sob ataque de bugs traiçoeiros! Sua equipe de elite de testadores é a única esperança para restaurar a ordem."
+            },
+            "rewardsOffered": {
+                "selectedRewards": ["Vantagens para jogos e desafios.", "Certificados digitais.", "Destaque na apresentação de trabalhos."],
+                "otherReward": ""
+            },
+            "rewardedActions": {
+                "selectedActions": ["Colaboração com outros alunos em projetos de grupo", "Demonstrar pensamento crítico em tarefas desafiadoras", "Apresentar um trabalho com excelência"],
+                "otherAction": ""
+            },
+            "gamificationRules": {
+                "generalRules": ["Seja respeitoso e colaborativo com outros jogadores em todas as atividades.", "Comunique-se com outros jogadores de forma clara e objetiva em todas as atividades."],
+                "specificRules": "Cada bug identificado e documentado corretamente concede pontos. A equipe com mais pontos vence."
+            }
+        }
+    },
+    {
+        "id": "estudo-caso-padroes-projeto",
+        "name": "Estudo de Caso de Padrões de Projeto",
+        "description": "Analise um problema de design de software e aplique padrões de projeto para uma solução elegante.",
+        "icon": "📐",
+        "data": {
+            "title": "Estudo de Caso: Padrões de Projeto",
+            "description": "Resolva um problema de design de software aplicando padrões de projeto GoF.",
+            "areaKnowledge": "Engenharia de Software",
+            "currentScenario": {
+                "problems": ["Dificuldades em aplicar as teorias aprendidas na prática.", "Dificuldades na compreensão de conceitos complexos de programação."],
+                "otherProblem": ""
+            },
+            "desiredScenario": {
+                "objectives": ["Incentivar a aplicação prática dos conhecimentos teóricos em projetos reais", "Estimular a criatividade e a inovação"],
+                "otherObjective": ""
+            },
+            "activityPlanning": {
+                "characteristics": ["Individual", "Online", "Somativa (avaliação)"],
+                "participantsQuantity": "Individual",
+                "expectedDuration": "2 horas",
+                "location": "Online ou Presencial",
+                "otherInfo": "Pode ser adaptado para trabalho em grupo."
+            },
+            "playerProfile": {
+                "selectedProfiles": ["Jogador de realização", "Jogador imersivo"]
+            },
+            "gameElements": {
+                "selectedElements": ["Sistema de pontuação", "Feedback claro sobre o desempenho", "Narrativas envolventes"],
+                "otherElement": "",
+                "narrativeTitle": "O Arquiteto de Software",
+                "narrativeContent": "Você é um arquiteto de software renomado, e um novo cliente apresenta um desafio de design. Sua missão é criar a solução mais robusta e elegante usando os padrões de projeto corretos."
+            },
+            "rewardsOffered": {
+                "selectedRewards": ["Pontos de bônus para a participação na aula.", "Reconhecimento público (por exemplo, menção em redes sociais ou na frente da turma)."],
+                "otherReward": ""
+            },
+            "rewardedActions": {
+                "selectedActions": ["Apresentar um trabalho com excelência", "Demonstrar pensamento crítico em tarefas desafiadoras"],
+                "otherAction": ""
+            },
+            "gamificationRules": {
+                "generalRules": ["Respeite as regras e políticas da instituição em todas as atividades.", "Busque sempre a supervisão do professor em todas as atividades."],
+                "specificRules": "A solução será avaliada pela correção da aplicação do padrão, clareza do código e justificativa das escolhas."
+            }
+        }
+    }
+]
+
+
 # --- Rotas da API ---
 
+# Rota para verificar o status da API
 @app.route('/api/status', methods=['GET'])
 def get_status():
+    app.logger.info("Rota /api/status acessada.")
     return jsonify({"status": "online", "message": "Backend do Portal de Gamificação está funcionando!"}), 200
 
+# Rota para registrar um novo usuário
 @app.route('/api/register', methods=['POST'])
 def register_user():
+    app.logger.info("Tentativa de registro de usuário iniciada.")
     data = request.get_json()
+    app.logger.debug(f"Dados recebidos para registro: {data}")
+
     email = data.get('email')
     password = data.get('password')
     name = data.get('name')
     role = data.get('role', 'aluno')
 
     if not email or not password or not name:
+        app.logger.warning("Falha no registro: campos obrigatórios ausentes.")
         return jsonify({"message": "Nome, e-mail e senha são obrigatórios."}), 400
 
     existing_user = User.query.filter_by(email=email).first()
     if existing_user:
+        app.logger.warning(f"Falha no registro: e-mail '{email}' já cadastrado.")
         return jsonify({"message": "E-mail já cadastrado."}), 409
 
     hashed_password = generate_password_hash(password)
@@ -144,77 +351,82 @@ def register_user():
     try:
         db.session.add(new_user)
         db.session.commit()
+        app.logger.info(f"Usuário '{email}' registrado com sucesso com ID: {new_user.id}")
 
+        # Cria claims adicionais para incluir no token JWT
         additional_claims = {
-            "email": new_user.email,
-            "name": new_user.name,
-            "role": new_user.role,
+            "email": new_user.email, "name": new_user.name, "role": new_user.role,
             "profile_picture": new_user.profile_picture,
             "institutionName": new_user.institution_name,
             "discipline": new_user.discipline
         }
         access_token = create_access_token(identity=str(new_user.id), additional_claims=additional_claims)
 
-        return jsonify(access_token=access_token, user={
-            "id": new_user.id,
-            "email": new_user.email,
-            "name": new_user.name,
-            "role": new_user.role,
+        user_data = {
+            "id": new_user.id, "email": new_user.email, "name": new_user.name, "role": new_user.role,
             "profile_picture": new_user.profile_picture,
             "institutionName": new_user.institution_name,
             "discipline": new_user.discipline,
             "token": access_token
-        }), 201
+        }
+        return jsonify(access_token=access_token, user=user_data), 201
 
     except Exception as e:
         db.session.rollback()
-        print(f"Erro ao cadastrar usuário: {str(e)}")
+        app.logger.error(f"Erro ao registrar usuário '{email}': {str(e)}", exc_info=True)
         return jsonify({"message": f"Erro interno ao cadastrar usuário: {str(e)}"}), 500
 
+# Rota para login de usuário com e-mail e senha
 @app.route('/api/login', methods=['POST'])
 def login_user():
+    app.logger.info("Tentativa de login iniciada.")
     data = request.get_json()
+    app.logger.debug(f"Dados recebidos para login: {data.get('email')}")
+
     email = data.get('email')
     password = data.get('password')
 
     user = User.query.filter_by(email=email).first()
 
     if user and check_password_hash(user.password_hash, password):
+        app.logger.info(f"Login bem-sucedido para o usuário: {email}")
         additional_claims = {
-            "email": user.email,
-            "name": user.name,
-            "role": user.role,
+            "email": user.email, "name": user.name, "role": user.role,
             "profile_picture": user.profile_picture,
             "institutionName": user.institution_name,
             "discipline": user.discipline
         }
         access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
-        return jsonify(access_token=access_token, user={
-            "id": user.id,
-            "email": user.email,
-            "name": user.name,
-            "role": user.role,
-            "profile_picture": user.profile_picture,
-            "google_id": user.google_id,
-            "institutionName": user.institution_name,
-            "discipline": user.discipline,
+        
+        user_data = {
+            "id": user.id, "email": user.email, "name": user.name, "role": user.role,
+            "profile_picture": user.profile_picture, "google_id": user.google_id,
+            "institutionName": user.institution_name, "discipline": user.discipline,
             "token": access_token
-        }), 200
+        }
+        return jsonify(access_token=access_token, user=user_data), 200
     else:
+        app.logger.warning(f"Falha no login para o e-mail: {email}. Credenciais inválidas.")
         return jsonify({"message": "Credenciais inválidas."}), 401
 
+# Rota para autenticação via Google Sign-In
 @app.route('/api/auth/google', methods=['POST'])
 @cross_origin()
 def google_auth():
+    app.logger.info("Tentativa de autenticação com Google iniciada.")
     data = request.get_json()
     token = data.get('id_token')
-    selected_role = data.get('role', 'aluno') # Use selected_role para evitar confusão com a variável 'role' interna do Flask-JWT-Extended
+    selected_role = data.get('role', 'aluno')
+    app.logger.debug(f"Token do Google recebido. Role selecionada: {selected_role}")
 
     if not token:
+        app.logger.warning("Token do Google não fornecido na requisição.")
         return jsonify({"message": "Token do Google não fornecido."}), 400
 
     try:
+        # Verifica o token com o backend do Google
         idinfo = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID_BACKEND)
+        app.logger.debug(f"Informações do token Google verificado: {idinfo.get('email')}")
 
         google_id = idinfo['sub']
         email = idinfo['email']
@@ -222,145 +434,139 @@ def google_auth():
         picture = idinfo.get('picture', '')
 
         user = User.query.filter_by(google_id=google_id).first()
+        status_code = 200
 
         if user:
-            # Usuário encontrado pelo google_id
-            if user.role != selected_role: # Compara com a role selecionada pelo frontend
-                user.role = selected_role # Atualiza a role
+            app.logger.info(f"Usuário encontrado pelo google_id: {email}")
+            if user.role != selected_role:
+                app.logger.info(f"Atualizando role do usuário {email} de '{user.role}' para '{selected_role}'.")
+                user.role = selected_role
                 db.session.commit()
-            message = "Login Google bem-sucedido!"
-            status_code = 200
         else:
-            # Usuário não encontrado pelo google_id, tenta encontrar pelo email
+            app.logger.info(f"Usuário não encontrado pelo google_id. Buscando por e-mail: {email}")
             existing_email_user = User.query.filter_by(email=email).first()
             if existing_email_user:
-                # Usuário encontrado pelo email, vincular conta Google
+                app.logger.info(f"Usuário existente encontrado por e-mail. Vinculando conta Google para {email}.")
                 existing_email_user.google_id = google_id
-                existing_email_user.name = name # Atualiza o nome com o do Google
-                existing_email_user.profile_picture = picture # Atualiza a foto de perfil
-                
-                # NOVO: Atualiza a role se for diferente da selecionada no frontend
+                existing_email_user.name = name
+                existing_email_user.profile_picture = picture
                 if existing_email_user.role != selected_role:
+                    app.logger.info(f"Atualizando role do usuário {email} de '{existing_email_user.role}' para '{selected_role}'.")
                     existing_email_user.role = selected_role
-                    
                 db.session.commit()
                 user = existing_email_user
-                message = "Conta existente vinculada ao Google!"
-                status_code = 200
             else:
-                # Novo usuário, cria a conta
+                app.logger.info(f"Nenhum usuário encontrado. Criando novo usuário Google para {email}.")
                 user = User(
-                    email=email,
-                    password_hash='google_auth_only', # Placeholder para senha
-                    google_id=google_id,
-                    name=name,
-                    profile_picture=picture,
-                    role=selected_role # Usa a role selecionada pelo frontend
+                    email=email, password_hash='google_auth_only', google_id=google_id,
+                    name=name, profile_picture=picture, role=selected_role
                 )
                 db.session.add(user)
                 db.session.commit()
-                message = "Cadastro Google bem-sucedido!"
                 status_code = 201
 
+        app.logger.info(f"Gerando token de acesso para o usuário {user.email}")
         additional_claims = {
-            "email": user.email,
-            "name": user.name,
-            "role": user.role, # Garante que a role atualizada esteja no token
+            "email": user.email, "name": user.name, "role": user.role,
             "profile_picture": user.profile_picture,
             "institutionName": user.institution_name,
             "discipline": user.discipline
         }
         access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
 
-        # Este é o bloco de retorno FINAL e CORRETO
-        return jsonify(access_token=access_token, user={
-            "id": user.id,
-            "email": user.email,
-            "name": user.name,
-            "role": user.role,
-            "profile_picture": user.profile_picture,
-            "google_id": user.google_id,
-            "institutionName": user.institution_name,
-            "discipline": user.discipline,
-            # "token": access_token # Não é necessário enviar o token aqui, pois já está em access_token
-        }), status_code # Usa o status_code definido acima (200 ou 201)
+        user_data = {
+            "id": user.id, "email": user.email, "name": user.name, "role": user.role,
+            "profile_picture": user.profile_picture, "google_id": user.google_id,
+            "institutionName": user.institution_name, "discipline": user.discipline,
+        }
+        return jsonify(access_token=access_token, user=user_data), status_code
 
     except ValueError as e:
-        print(f"Erro de validação do token Google: {str(e)}")
+        app.logger.error(f"Erro de validação do token Google: {str(e)}", exc_info=True)
         return jsonify({"message": f"Token do Google inválido ou expirado. {str(e)}"}), 401
     except Exception as e:
         db.session.rollback()
-        print(f"Erro inesperado no Google Auth: {str(e)}")
+        app.logger.error(f"Erro inesperado na autenticação Google: {str(e)}", exc_info=True)
         return jsonify({"message": f"Erro interno no servidor durante autenticação Google: {str(e)}"}), 500
 
-
+# Rota protegida de exemplo
 @app.route('/api/protected', methods=['GET'])
 @jwt_required()
 def protected():
-    current_user_id = get_jwt_identity()
-    return jsonify({"message": f"Olá, usuário com ID: {current_user_id}! Você acessou uma rota protegida."}), 200
+    app.logger.info(f"Rota protegida acessada pelo usuário ID: {current_user.id}")
+    return jsonify({"message": f"Olá, usuário {current_user.name}! Você acessou uma rota protegida."}), 200
 
+# Rota para alterar a senha do usuário
 @app.route('/api/change-password', methods=['POST'])
 @jwt_required()
 def change_password():
     current_user_id = get_jwt_identity()
+    app.logger.info(f"Usuário ID {current_user_id} tentando alterar a senha.")
     data = request.get_json()
     current_password = data.get('currentPassword')
     new_password = data.get('newPassword')
 
     if not current_password or not new_password:
+        app.logger.warning(f"Tentativa de alterar senha do ID {current_user_id} falhou: senhas não fornecidas.")
         return jsonify({"message": "Senha atual e nova senha são obrigatórios."}), 400
 
     user = User.query.get(current_user_id)
 
     if not user:
+        app.logger.error(f"Tentativa de alterar senha para usuário inexistente: ID {current_user_id}")
         return jsonify({"message": "Usuário não encontrado."}), 404
 
     if user.password_hash == 'google_auth_only' or not check_password_hash(user.password_hash, current_password):
+        app.logger.warning(f"Tentativa de alterar senha do ID {current_user_id} falhou: senha atual incorreta.")
         return jsonify({"message": "Senha atual incorreta ou usuário Google."}), 401
     
     if len(new_password) < 6:
+        app.logger.warning(f"Tentativa de alterar senha do ID {current_user_id} falhou: nova senha muito curta.")
         return jsonify({"message": "A nova senha deve ter pelo menos 6 caracteres."}), 400
 
     user.password_hash = generate_password_hash(new_password)
 
     try:
         db.session.commit()
+        app.logger.info(f"Senha do usuário ID {current_user_id} alterada com sucesso.")
         return jsonify({"message": "Senha alterada com sucesso!"}), 200
     except Exception as e:
         db.session.rollback()
-        print(f"Erro ao alterar senha do usuário {current_user_id}: {str(e)}")
+        app.logger.error(f"Erro ao alterar senha do usuário {current_user_id}: {str(e)}", exc_info=True)
         return jsonify({"message": "Erro interno ao alterar a senha."}), 500
 
+# Rota para professores atualizarem informações de instituição e disciplina
 @app.route('/api/user/update-profile', methods=['POST'])
 @cross_origin()
 @jwt_required()
 def update_profile():
+    current_user_id = get_jwt_identity()
+    app.logger.info(f"Usuário ID {current_user_id} tentando atualizar o perfil.")
+    
+    user = User.query.get(current_user_id)
+
+    if not user:
+        app.logger.error(f"Tentativa de atualizar perfil para usuário inexistente: ID {current_user_id}")
+        return jsonify({"message": "Usuário não encontrado."}), 404
+
+    if user.role != 'professor':
+        app.logger.warning(f"Acesso negado para ID {current_user_id} na rota update-profile. Role: {user.role}")
+        return jsonify({"message": "Acesso negado. Apenas professores podem atualizar essas informações."}), 403
+
+    data = request.get_json()
+    app.logger.debug(f"Dados recebidos para atualização do perfil do ID {current_user_id}: {data}")
+
     try:
-        current_user_id = get_jwt_identity()
-        user = User.query.get(current_user_id)
-
-        if not user:
-            return jsonify({"message": "Usuário não encontrado."}), 404
-
-        if user.role != 'professor':
-            return jsonify({"message": "Acesso negado. Apenas professores podem atualizar essas informações."}), 403
-
-        data = request.get_json()
-        institution_name = data.get('institution_name')
-        discipline = data.get('discipline')
-
-        if institution_name is not None:
-            user.institution_name = institution_name
-        if discipline is not None:
-            user.discipline = discipline
+        if 'institution_name' in data:
+            user.institution_name = data['institution_name']
+        if 'discipline' in data:
+            user.discipline = data['discipline']
         
         db.session.commit()
+        app.logger.info(f"Perfil do usuário ID {current_user_id} atualizado com sucesso.")
 
         additional_claims = {
-            "email": user.email,
-            "name": user.name,
-            "role": user.role,
+            "email": user.email, "name": user.name, "role": user.role,
             "profile_picture": user.profile_picture,
             "institutionName": user.institution_name,
             "discipline": user.discipline
@@ -374,34 +580,36 @@ def update_profile():
 
     except Exception as e:
         db.session.rollback()
-        print(f"ERRO CRÍTICO EM update_profile: {str(e)}")
+        app.logger.error(f"ERRO CRÍTICO em update_profile para ID {current_user_id}: {str(e)}", exc_info=True)
         return jsonify({"message": f"Erro interno ao atualizar o perfil: {str(e)}"}), 500
 
-# ROTA PARA CRIAR NOVA ATIVIDADE GAMIFICADA
+# Rota para criar uma nova atividade gamificada
 @app.route('/api/activities', methods=['POST'])
 @cross_origin()
 @jwt_required()
 def create_activity():
     current_user_id = get_jwt_identity()
+    app.logger.info(f"Usuário ID {current_user_id} tentando criar uma nova atividade.")
+    
     user = User.query.get(current_user_id)
 
-    # Verifica se o usuário existe e tem o papel de professor
     if not user or user.role != 'professor':
+        app.logger.warning(f"Acesso negado para ID {current_user_id} na criação de atividade. Role: {user.role if user else 'N/A'}")
         return jsonify({"message": "Acesso negado. Apenas professores podem criar atividades."}), 403
 
     data = request.get_json()
+    app.logger.debug(f"Dados recebidos para nova atividade: {data}")
 
-    # Validação básica: verificar se o título da atividade foi fornecido
-    # Você pode adicionar mais validações aqui conforme necessário
     if not data or not data.get('title'):
+        app.logger.warning(f"Tentativa de criar atividade pelo ID {current_user_id} falhou: título ausente.")
         return jsonify({"message": "O título da atividade é obrigatório."}), 400
 
     try:
         new_activity = Activity(
             professor_id=user.id,
             title=data.get('title'),
-            description=data.get('description', ''), # Valor padrão vazio se não fornecido
-            current_scenario=data.get('currentScenario', {}), # Garante que é um dict vazio se ausente
+            description=data.get('description', ''),
+            current_scenario=data.get('currentScenario', {}),
             desired_scenario=data.get('desiredScenario', {}),
             activity_planning=data.get('activityPlanning', {}),
             player_profile=data.get('playerProfile', {}),
@@ -409,123 +617,155 @@ def create_activity():
             rewards_offered=data.get('rewardsOffered', {}),
             rewarded_actions=data.get('rewardedActions', {}),
             gamification_rules=data.get('gamificationRules', {}),
-            area_knowledge=data.get('areaKnowledge'), # Este campo virá do frontend
+            area_knowledge=data.get('areaKnowledge'),
             is_public=data.get('isPublic', False)
         )
         db.session.add(new_activity)
         db.session.commit()
+        app.logger.info(f"Atividade '{new_activity.title}' (ID: {new_activity.id}) criada com sucesso pelo usuário ID {current_user_id}.")
 
         return jsonify({"message": "Atividade criada com sucesso!", "activity": new_activity.to_dict()}), 201
 
     except Exception as e:
-        db.session.rollback() # Em caso de erro, desfaz a transação
-        print(f"Erro ao criar atividade: {str(e)}")
+        db.session.rollback()
+        app.logger.error(f"Erro ao criar atividade para o usuário ID {current_user_id}: {str(e)}", exc_info=True)
         return jsonify({"message": f"Erro interno do servidor ao criar atividade: {str(e)}"}), 500
 
+# Nova rota para obter templates predefinidos
+@app.route('/api/templates', methods=['GET'])
+@cross_origin()
+@jwt_required()
+def get_predefined_templates():
+    app.logger.info(f"Usuário ID {current_user.id} solicitou a lista de templates predefinidos.")
+    # Verifica se o usuário é um professor. Se não for, nega o acesso.
+    if current_user.role != 'professor':
+        app.logger.warning(f"Acesso negado à lista de templates para o ID {current_user.id}. Role: {current_user.role}")
+        return jsonify({"message": "Acesso negado. Apenas professores podem acessar os templates."}), 403
+    
+    # Retorna a lista de templates predefinidos
+    return jsonify(PREDEFINED_TEMPLATES), 200
 
-# --- NOVOS ENDPOINTS PARA ADMIN ---
+# --- Endpoints de Administração ---
+
+# Rota para buscar dados para o dashboard do admin
 @app.route('/api/admin/dashboard_data', methods=['GET'])
 @jwt_required()
 def get_admin_dashboard_data():
+    app.logger.info(f"Usuário ID {current_user.id} (Role: {current_user.role}) acessando dashboard de admin.")
     if current_user.role != 'admin':
-        return jsonify({"msg": "Unauthorized: Only administrators can access this data"}), 403
+        app.logger.warning(f"Acesso negado ao dashboard de admin para o usuário ID {current_user.id}.")
+        return jsonify({"msg": "Acesso não autorizado: Apenas administradores podem acessar estes dados."}), 403
 
     total_users = User.query.count()
     total_professors = User.query.filter_by(role='professor').count()
     total_students = User.query.filter_by(role='aluno').count()
     total_activities = Activity.query.count()
+    total_visits = 12345  # Valor mockado para visitas
 
-    # Placeholder para visitas. Implementação real requer um sistema de logging.
-    # Por exemplo, um middleware que registra cada requisição com um timestamp e IP.
-    # Para este exemplo, vamos usar um número fixo ou derivado de outras métricas.
-    total_visits = 12345 # Valor mockado
-
-    return jsonify({
+    dashboard_data = {
         "total_users": total_users,
         "total_professors": total_professors,
         "total_students": total_students,
         "total_activities": total_activities,
         "total_visits": total_visits
-    }), 200
+    }
+    app.logger.debug(f"Dados do dashboard de admin: {dashboard_data}")
+    return jsonify(dashboard_data), 200
 
+# Rota para listar todos os usuários (apenas admin)
 @app.route('/api/admin/users', methods=['GET'])
 @jwt_required()
 def get_all_users():
+    app.logger.info(f"Admin ID {current_user.id} solicitou a lista de todos os usuários.")
     if current_user.role != 'admin':
-        return jsonify({"msg": "Unauthorized: Only administrators can access this data"}), 403
+        app.logger.warning(f"Acesso negado à lista de usuários para o ID {current_user.id}.")
+        return jsonify({"msg": "Acesso não autorizado: Apenas administradores podem acessar estes dados."}), 403
 
     users = User.query.all()
     users_data = [user.to_dict() for user in users]
+    app.logger.info(f"Retornando {len(users_data)} usuários para o admin ID {current_user.id}.")
     return jsonify(users_data), 200
 
-# Endpoint para atualizar um usuário (apenas para admin)
+# Rota para atualizar um usuário (apenas admin)
 @app.route('/api/admin/users/<int:user_id>', methods=['PUT'])
 @jwt_required()
 @cross_origin()
 def update_user(user_id):
+    app.logger.info(f"Admin ID {current_user.id} tentando atualizar o usuário ID {user_id}.")
     if current_user.role != 'admin':
-        return jsonify({"msg": "Unauthorized: Only administrators can update user data"}), 403
+        app.logger.warning(f"Acesso negado para admin ID {current_user.id} ao tentar atualizar usuário ID {user_id}.")
+        return jsonify({"msg": "Acesso não autorizado: Apenas administradores podem atualizar dados de usuários."}), 403
 
     user_to_update = User.query.get(user_id)
     if not user_to_update:
-        return jsonify({"msg": "User not found"}), 404
+        app.logger.error(f"Admin ID {current_user.id} tentou atualizar um usuário inexistente: ID {user_id}")
+        return jsonify({"msg": "Usuário não encontrado"}), 404
 
     data = request.get_json()
-
-    # Atualiza apenas os campos permitidos
-    user_to_update.name = data.get('name', user_to_update.name)
-    user_to_update.email = data.get('email', user_to_update.email)
-    user_to_update.role = data.get('role', user_to_update.role)
-    user_to_update.institution_name = data.get('institution_name', user_to_update.institution_name)
-    user_to_update.discipline = data.get('discipline', user_to_update.discipline)
+    app.logger.debug(f"Dados recebidos para atualização do usuário ID {user_id}: {data}")
 
     try:
+        user_to_update.name = data.get('name', user_to_update.name)
+        user_to_update.email = data.get('email', user_to_update.email)
+        user_to_update.role = data.get('role', user_to_update.role)
+        user_to_update.institution_name = data.get('institution_name', user_to_update.institution_name)
+        user_to_update.discipline = data.get('discipline', user_to_update.discipline)
+        
         db.session.commit()
-        return jsonify({"msg": "User updated successfully", "user": user_to_update.to_dict()}), 200
+        app.logger.info(f"Usuário ID {user_id} atualizado com sucesso pelo admin ID {current_user.id}.")
+        return jsonify({"msg": "Usuário atualizado com sucesso", "user": user_to_update.to_dict()}), 200
     except Exception as e:
         db.session.rollback()
-        print(f"Error updating user: {e}")
-        return jsonify({"msg": "Internal server error during user update"}), 500
+        app.logger.error(f"Erro ao atualizar usuário ID {user_id}: {e}", exc_info=True)
+        return jsonify({"msg": "Erro interno do servidor durante a atualização do usuário"}), 500
 
-# Endpoint para deletar um usuário (apenas para admin)
+# Rota para deletar um usuário (apenas admin)
 @app.route('/api/admin/users/<int:user_id>', methods=['DELETE'])
 @jwt_required()
 @cross_origin()
 def delete_user(user_id):
+    app.logger.info(f"Admin ID {current_user.id} tentando deletar o usuário ID {user_id}.")
     if current_user.role != 'admin':
-        return jsonify({"msg": "Unauthorized: Only administrators can delete user accounts"}), 403
+        app.logger.warning(f"Acesso negado para admin ID {current_user.id} ao tentar deletar usuário ID {user_id}.")
+        return jsonify({"msg": "Acesso não autorizado: Apenas administradores podem deletar contas de usuário."}), 403
 
     user_to_delete = User.query.get(user_id)
     if not user_to_delete:
+        app.logger.error(f"Admin ID {current_user.id} tentou deletar um usuário inexistente: ID {user_id}")
         return jsonify({"msg": "User not found"}), 404
 
     try:
         db.session.delete(user_to_delete)
         db.session.commit()
-        return jsonify({"msg": "User deleted successfully"}), 200
+        app.logger.info(f"Usuário ID {user_id} deletado com sucesso pelo admin ID {current_user.id}.")
+        return jsonify({"msg": "Usuário deletado com sucesso"}), 200
     except Exception as e:
         db.session.rollback()
-        print(f"Error deleting user: {e}")
-        return jsonify({"msg": "Internal server error during user deletion"}), 500
+        app.logger.error(f"Erro ao deletar usuário ID {user_id}: {e}", exc_info=True)
+        return jsonify({"msg": "Erro interno do servidor durante a deleção do usuário"}), 500
 
-# --- FIM DOS NOVOS ENDPOINTS PARA ADMIN ---
 
+# --- Handlers de Erro do JWT ---
 
 @jwt.unauthorized_loader
 def unauthorized_response(callback):
+    app.logger.warning(f"Requisição não autorizada: {callback}")
     return jsonify({"message": "Token de acesso ausente ou inválido."}), 401
 
 @jwt.invalid_token_loader
-def invalid_token_response(callback):
+def invalid_token_response(error):
+    app.logger.warning(f"Token inválido: {error}")
     return jsonify({"message": "Token inválido ou malformado."}), 422
 
 @jwt.expired_token_loader
-def expired_token_response(callback):
+def expired_token_response(jwt_header, jwt_payload):
+    app.logger.info(f"Token expirado para identidade: {jwt_payload.get('sub')}")
     return jsonify({"message": "Token de acesso expirado."}), 401
 
-# Bloco principal para execução do aplicativo
+# --- Bloco de Execução Principal ---
 if __name__ == '__main__':
-    # REMOVA OU COMENTE a linha db.create_all() se for usar Flask-Migrate
+    # A linha db.create_all() é geralmente removida quando se usa Flask-Migrate,
+    # pois as migrações cuidam da criação e atualização das tabelas.
     # with app.app_context():
     #     db.create_all()
     app.run(debug=True, port=5000)
