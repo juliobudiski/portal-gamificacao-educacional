@@ -21,6 +21,11 @@ import JoinClassPage from './pages/JoinClassPage';
 import NotFoundPage from './pages/NotFoundPage';
 import AboutUsPage from './pages/AboutUsPage';
 import AdminPage from './pages/AdminPage';
+// Importar as novas páginas e componentes
+import CreateClassPage from './pages/CreateClassPage'; // << NOVA PÁGINA >>
+import ClassListPage from './pages/ClassManagementPage'; // << PÁGINA ATUALIZADA/NOVA >>
+import ClassDetailsPage from './pages/ClassDetailsPage'; // << NOVA PÁGINA >>
+import ClassEditPage from './pages/ClassEditPage';
 
 // Importação dos ícones da biblioteca Lucide React para a UI
 import { Home, LogIn, UserPlus, Key, User, BookOpen, LayoutDashboard, PlusCircle, Users, BarChart2, Award, LogOut, Info, Settings, ShieldCheck } from 'lucide-react';
@@ -230,6 +235,7 @@ function App() {
           {/* Rotas Protegidas Genéricas (qualquer usuário logado) */}
           <Route element={<PrivateRoute />}>
             <Route path="/perfil" element={<UserProfilePage />} />
+            <Route path="/classes/:class_id" element={<ClassDetailsPage />} />
           </Route>
 
           {/* Rotas Protegidas para Professores */}
@@ -239,6 +245,9 @@ function App() {
             <Route path="/professor/banco-atividades" element={<ActivityBankPage />} />
             <Route path="/professor/gerenciar-turmas" element={<ClassManagementPage />} />
             <Route path="/professor/desempenho-alunos" element={<StudentPerformancePage />} />
+            <Route path="/teacher/classes/new" element={<CreateClassPage />} />
+            <Route path="/teacher/classes" element={<ClassListPage />} />
+            <Route path="/classes/:class_id/edit" element={<ClassEditPage />} /> 
           </Route>
 
           {/* Rotas Protegidas para Alunos */}
@@ -248,6 +257,7 @@ function App() {
             <Route path="/aluno/minhas-atividades" element={<StudentActivityPage />} />
             <Route path="/aluno/desempenho" element={<StudentPerformancePage />} />
             <Route path="/aluno/atividade/:id" element={<StudentActivityPage />} />
+            <Route path="/student/join-class" element={<JoinClassPage />} />
           </Route>
 
           {/* Rota Protegida para Administradores */}
