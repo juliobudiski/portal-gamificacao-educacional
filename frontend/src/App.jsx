@@ -81,9 +81,9 @@ function App() {
 
   return (
     // Container principal da aplicação com fundo padrão para modo claro e escuro.
-    <div className="min-h-screen w-full bg-gray-100 dark:bg-gray-900 p-4">
+    <div className="min-h-screen w-full bg-gray-100 dark:bg-dark-background p-4">
       {/* Cabeçalho da aplicação, fixo no topo. */}
-      <header className="w-full max-w-6xl bg-gray-800 text-white p-4 rounded-lg shadow-xl mb-8 mx-auto">
+      <header className="w-full max-w-6xl bg-gray-800 dark:bg-dark-background text-white p-4 rounded-lg shadow-xl mb-8 mx-auto border-4 border-accent-yellow">
         <nav className="flex flex-col sm:flex-row justify-between items-center">
           {/* Logo do Portal com link para a página inicial. */}
           <Link to="/" className="flex items-center space-x-2 mb-4 sm:mb-0" onClick={closeAllMenus}>
@@ -94,13 +94,13 @@ function App() {
           <ul className="flex flex-wrap justify-center sm:justify-end items-center space-x-4">
             {/* Links públicos, visíveis para todos os usuários. */}
             <li>
-              <Link to="/" className="flex items-center space-x-1 px-3 py-2 rounded-md hover:bg-gray-700 text-gray-300 hover:text-white" onClick={closeAllMenus}>
+              <Link to="/" className="flex items-center space-x-1 px-3 py-2 rounded-md hover:bg-gray-700 text-accent-yellow hover:text-[#FFEA00]" onClick={closeAllMenus}>
                 <Home size={18} />
                 <span>Início</span>
               </Link>
             </li>
             <li>
-              <Link to="/sobre-nos" className="flex items-center space-x-1 px-3 py-2 rounded-md hover:bg-gray-700 text-gray-300 hover:text-white" onClick={closeAllMenus}>
+              <Link to="/sobre-nos" className="flex items-center space-x-1 px-3 py-2 rounded-md hover:bg-gray-700 text-accent-yellow hover:text-[#FFEA00]" onClick={closeAllMenus}>
                 <Info size={18} />
                 <span>Sobre Nós</span>
               </Link>
@@ -110,13 +110,13 @@ function App() {
             {!isAuthenticated && (
               <>
                 <li>
-                  <Link to="/login" className="flex items-center space-x-1 px-3 py-2 rounded-md hover:bg-gray-700 text-gray-300 hover:text-white" onClick={closeAllMenus}>
+                  <Link to="/login" className="flex items-center space-x-1 px-3 py-2 rounded-md hover:bg-gray-700 text-accent-yellow hover:text-[#FFEA00]" onClick={closeAllMenus}>
                     <LogIn size={18} />
                     <span>Login</span>
                   </Link>
                 </li>
                 <li>
-                  <Link to="/cadastro" className="flex items-center space-x-1 px-3 py-2 rounded-md hover:bg-gray-700 text-gray-300 hover:text-white" onClick={closeAllMenus}>
+                  <Link to="/cadastro" className="flex items-center space-x-1 px-3 py-2 rounded-md hover:bg-gray-700 text-accent-yellow hover:text-[#FFEA00]" onClick={closeAllMenus}>
                     <UserPlus size={18} />
                     <span>Cadastro</span>
                   </Link>
@@ -136,7 +136,7 @@ function App() {
                       setIsTeacherMenuOpen(false); // Fecha outros menus
                       setIsStudentMenuOpen(false); // Fecha outros menus
                     }}
-                    className="flex items-center space-x-1 px-3 py-2 rounded-md hover:bg-gray-700 text-gray-300 hover:text-white focus:outline-none"
+                    className="flex items-center space-x-1 px-3 py-2 rounded-md hover:bg-gray-700 text-accent-yellow hover:text-[#FFEA00] focus:outline-none"
                   >
                     <User size={18} />
                     <span>Perfil</span>
@@ -159,7 +159,7 @@ function App() {
                         setIsStudentMenuOpen(false); // Fecha outros menus
                         setIsProfileMenuOpen(false);  // Fecha outros menus
                       }}
-                      className="flex items-center space-x-1 px-3 py-2 rounded-md hover:bg-gray-700 text-gray-300 hover:text-white focus:outline-none"
+                      className="flex items-center space-x-1 px-3 py-2 rounded-md hover:bg-gray-700 text-accent-yellow hover:text-[#FFEA00] focus:outline-none"
                     >
                       <BookOpen size={18} />
                       <span>Professor</span>
@@ -186,7 +186,7 @@ function App() {
                         setIsTeacherMenuOpen(false); // Fecha outros menus
                         setIsProfileMenuOpen(false);  // Fecha outros menus
                       }}
-                      className="flex items-center space-x-1 px-3 py-2 rounded-md hover:bg-gray-700 text-gray-300 hover:text-white focus:outline-none"
+                      className="flex items-center space-x-1 px-3 py-2 rounded-md hover:bg-gray-700 text-accent-yellow hover:text-[#FFEA00] focus:outline-none"
                     >
                       <User size={18} />
                       <span>Aluno</span>

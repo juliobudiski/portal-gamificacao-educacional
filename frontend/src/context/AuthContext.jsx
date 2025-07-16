@@ -1,24 +1,18 @@
 // frontend/src/context/AuthContext.jsx
 
 // --- 1. IMPORTAÇÕES ---
-// Importa as ferramentas necessárias do React e a biblioteca para decodificar JSON Web Tokens (JWT).
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { jwtDecode } from 'jwt-decode'; // Biblioteca para decodificar tokens JWT.
+import { jwtDecode } from 'jwt-decode';
 
 // --- 2. CRIAÇÃO DO CONTEXTO DE AUTENTICAÇÃO ---
-// Cria um "Contêiner Global" (Context) para compartilhar dados de autenticação (usuário, token)
-// por toda a aplicação, sem precisar passar props manualmente por todos os componentes.
 export const AuthContext = createContext(null);
 
 // --- 3. HOOK CUSTOMIZADO (useAuth) ---
-// Criar um hook customizado `useAuth` é uma boa prática.
-// Ele simplifica o uso do contexto nos componentes, substituindo `useContext(AuthContext)` por apenas `useAuth()`.
 export const useAuth = () => {
   return useContext(AuthContext);
 };
 
 // --- 4. FUNÇÃO AUXILIAR PARA DECODIFICAR O TOKEN ---
-// Esta função recebe um token JWT, o decodifica e extrai as informações do usuário.
 const getUserFromToken = (token) => {
   console.log('[AuthContext] Tentando decodificar o token:', token);
   if (!token) {
@@ -29,15 +23,12 @@ const getUserFromToken = (token) => {
     const decoded = jwtDecode(token);
     console.log('[AuthContext] Token decodificado com sucesso:', decoded);
 
-    // Verifica se o token expirou. O campo 'exp' vem em segundos, então convertemos para milissegundos.
     if (decoded.exp * 1000 < Date.now()) {
       console.warn('[AuthContext] Token JWT expirado. Data de expiração:', new Date(decoded.exp * 1000));
-      localStorage.removeItem('token'); // Limpa o token expirado do storage.
+      localStorage.removeItem('token');
       return null;
     }
 
-    // Retorna um objeto de usuário com os dados extraídos do payload do token.
-    // 'sub' (subject) é um campo padrão para o ID do usuário.
     return {
       id: decoded.sub,
       email: decoded.email,
@@ -46,7 +37,7 @@ const getUserFromToken = (token) => {
       profile_picture: decoded.profile_picture,
       institutionName: decoded.institutionName,
       discipline: decoded.discipline,
-      token: token // Também armazenamos o token original para fácil acesso.
+      token: token
     };
   } catch (error) {
     console.error('[AuthContext] Erro ao decodificar o token JWT:', error);
@@ -56,64 +47,106 @@ const getUserFromToken = (token) => {
 
 
 // --- 5. COMPONENTE PROVEDOR (AuthProvider) ---
-// Este componente irá "envelopar" a aplicação (ou partes dela) e fornecer
-// os dados e funções de autenticação para todos os componentes filhos.
 export const AuthProvider = ({ children }) => {
   // --- Estado do Usuário ---
-  // O estado `user` armazena as informações do usuário logado.
-  // A função de inicialização tenta carregar o token do localStorage na primeira vez que a página carrega.
+  // A função de inicialização do useState carrega o token do localStorage apenas uma vez.
   const [user, setUser] = useState(() => {
-    console.log('[AuthContext] Inicializando o estado de autenticação.');
+    console.log('[AuthContext] Inicializando o estado de autenticação via useState.');
     try {
       const storedToken = localStorage.getItem('token');
       if (storedToken) {
-        console.log('[AuthContext] Token encontrado no localStorage. Tentando decodificar...');
+        console.log('[AuthContext] Token encontrado no localStorage na inicialização do estado.');
         return getUserFromToken(storedToken);
       }
-      console.log('[AuthContext] Nenhum token encontrado no localStorage na inicialização.');
+      console.log('[AuthContext] Nenhum token encontrado no localStorage na inicialização do estado.');
       return null;
     } catch (error) {
-      console.error('[AuthContext] Falha ao ler o token do localStorage na inicialização:', error);
+      console.error('[AuthContext] Falha ao ler o token do localStorage na inicialização do estado:', error);
       return null;
     }
   });
 
-  // --- Efeito para Sincronização entre Abas ---
-  // Este `useEffect` ouve por mudanças no `localStorage`. Se o usuário fizer login ou logout
-  // em outra aba, esta aba será atualizada automaticamente.
+  // --- Estado de Autenticação ---
+  // NOVO: Adiciona a declaração do estado isAuthenticated
+  const [isAuthenticated, setIsAuthenticated] = useState(!!user);
+
+  // Efeito para sincronizar `isAuthenticated` quando `user` muda
+  useEffect(() => {
+    setIsAuthenticated(!!user);
+    console.log('[AuthContext] Estado isAuthenticated atualizado:', !!user);
+  }, [user]); // Depende do objeto user
+
+  // --- Efeito para Sincronização entre Abas (via evento 'storage') ---
   useEffect(() => {
     const handleStorageChange = (event) => {
-      // Verifica se a mudança foi na chave 'token'
       if (event.key === 'token') {
         console.log('[AuthContext] Evento de "storage" detectado. Sincronizando estado.');
         try {
           const storedToken = localStorage.getItem('token');
-          setUser(storedToken ? getUserFromToken(storedToken) : null);
+          // Use getUserFromToken aqui
+          const decodedUser = storedToken ? getUserFromToken(storedToken) : null;
+          setUser(decodedUser);
+          setIsAuthenticated(!!decodedUser); // Atualiza isAuthenticated também
         } catch (error) {
           console.error('[AuthContext] Falha ao sincronizar o usuário a partir do evento de storage:', error);
           setUser(null);
+          setIsAuthenticated(false);
         }
       }
     };
 
     window.addEventListener('storage', handleStorageChange);
 
-    // Função de limpeza: remove o listener quando o componente é desmontado.
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   // --- Função de Login ---
-  // Recebe o token de acesso do backend, armazena e atualiza o estado do usuário.
-  const login = (access_token) => {
+  const login = (data) => {
     console.log('[AuthContext] Função de login chamada.');
+    const { access_token } = data;
+
     if (access_token && typeof access_token === 'string') {
-      console.log('[AuthContext] Armazenando token no localStorage e atualizando o estado do usuário.');
       localStorage.setItem('token', access_token);
-      const userData = getUserFromToken(access_token);
-      setUser(userData);
-      console.log('[AuthContext] Usuário logado:', userData);
+      console.log('[AuthContext] Armazenando token no localStorage.');
+
+      // Use getUserFromToken aqui
+      const decodedUser = getUserFromToken(access_token);
+
+      if (decodedUser) {
+        setUser(decodedUser);
+        setIsAuthenticated(true);
+        console.log('[AuthContext] Usuário logado com sucesso:', decodedUser);
+      } else {
+        console.error('[AuthContext] Tentativa de login falhou: token de acesso inválido ou não decodificável.');
+        logout();
+      }
     } else {
-      console.error('[AuthContext] Tentativa de login falhou: token de acesso inválido ou não fornecido.');
+      console.error('[AuthContext] Tentativa de login falhou: access_token não fornecido ou tipo incorreto.');
+    }
+  };
+
+  // NOVA FUNÇÃO: Atualiza os dados do usuário no contexto
+  const updateUserData = (updatedData) => {
+    console.log('[AuthContext] Função updateUserData chamada com:', updatedData);
+    if (updatedData.access_token) {
+      localStorage.setItem('token', updatedData.access_token);
+      // Use getUserFromToken aqui
+      const decodedUser = getUserFromToken(updatedData.access_token);
+      if (decodedUser) {
+        setUser(decodedUser);
+        setIsAuthenticated(true);
+        console.log('[AuthContext] Dados do usuário atualizados via novo token:', decodedUser);
+      } else {
+        console.error('[AuthContext] Falha ao decodificar o novo token em updateUserData. Token inválido.');
+      }
+    } else if (user) {
+      setUser(prevUser => {
+        const newUser = { ...prevUser, ...updatedData };
+        console.log('[AuthContext] Dados do usuário atualizados via objeto de dados:', newUser);
+        return newUser;
+      });
+    } else {
+      console.warn('[AuthContext] updateUserData chamada sem token ou usuário existente.');
     }
   };
 
@@ -121,22 +154,22 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     console.log('[AuthContext] Função de logout chamada. Limpando dados de autenticação.');
     setUser(null);
+    setIsAuthenticated(false);
     localStorage.removeItem('token');
   };
 
   // --- Valor do Contexto ---
-  // Objeto que contém os dados e funções que serão compartilhados com os componentes filhos.
   const value = {
     user,
-    isAuthenticated: !!user, // Um booleano para verificar facilmente se o usuário está logado.
+    isAuthenticated, // Agora isAuthenticated é um estado próprio
     login,
     logout,
+    updateUserData, // Inclua updateUserData no value
   };
 
   // --- Renderização do Provedor ---
-  // O `AuthContext.Provider` disponibiliza o `value` para todos os `children`.
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={value}> {/* Use o objeto 'value' explicitamente */}
       {children}
     </AuthContext.Provider>
   );

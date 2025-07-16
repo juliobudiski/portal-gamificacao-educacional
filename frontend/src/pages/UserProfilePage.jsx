@@ -1,72 +1,100 @@
 // frontend/src/pages/UserProfilePage.jsx
-import React, { useState, useEffect, useRef } from 'react'; // Adicionado 'useRef'
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 function UserProfilePage() {
-  const { user, logout, login } = useAuth();
+  console.log('UserProfilePage: Componente renderizado.');
+  const { user, logout, login, updateUserData} = useAuth();
   const navigate = useNavigate();
+
+  console.log('UserProfilePage: Estado inicial do usuário:', user);
 
   // Estados para controle de visibilidade dos formulários
   const [showPasswordChangeForm, setShowPasswordChangeForm] = useState(false);
   const [showProfileCompletionForm, setShowProfileCompletionForm] = useState(false);
+  console.log('UserProfilePage: Estados de visibilidade inicializados.');
 
   // Estados para o formulário de alteração de senha
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [message, setMessage] = useState('');
+  console.log('UserProfilePage: Estados do formulário de senha inicializados.');
 
   // Estados para o formulário de completar perfil (Professor)
   const [profileInstitutionName, setProfileInstitutionName] = useState(user?.institutionName || '');
   const [profileDiscipline, setProfileDiscipline] = useState(user?.discipline || '');
   const [profileMessage, setProfileMessage] = useState('');
+  console.log('UserProfilePage: Estados do formulário de perfil inicializados com:', { profileInstitutionName, profileDiscipline });
 
   // Flag para controlar se a atualização de perfil foi bem-sucedida
   const profileUpdateSuccessRef = useRef(false);
+  console.log('UserProfilePage: useRef para profileUpdateSuccessRef inicializado.');
 
   // Efeito para redirecionar se o usuário não estiver logado e preencher campos
   useEffect(() => {
+    console.log('UserProfilePage: useEffect executado. Verificando estado do usuário...');
     if (!user) {
+      console.log('UserProfilePage: Usuário não logado, redirecionando para /login.');
       navigate('/login');
       return;
     }
+    console.log('UserProfilePage: Usuário logado:', user);
+    console.log('UserProfilePage: Dados do usuário no contexto (useEffect):', user);
+
     // Preenche os campos do perfil ao carregar ou quando o usuário é atualizado
+    console.log('UserProfilePage: Preenchendo campos de perfil com dados do usuário.');
     setProfileInstitutionName(user.institutionName || '');
     setProfileDiscipline(user.discipline || '');
+    console.log('UserProfilePage: Campos de perfil preenchidos:', { institution: user.institutionName, discipline: user.discipline });
+
 
     // Limpa a mensagem se o formulário de perfil for fechado por outros meios
     // ou se o usuário navegar para esta página e não houver um sucesso pendente.
     // Apenas limpa a mensagem se não foi um sucesso de atualização de perfil.
     if (!profileUpdateSuccessRef.current) {
+        console.log('UserProfilePage: profileUpdateSuccessRef.current é false, limpando profileMessage.');
         setProfileMessage('');
     } else {
+        console.log('UserProfilePage: profileUpdateSuccessRef.current é true, resetando a flag após exibição da mensagem.');
         // Reseta a flag após a mensagem ser exibida na nova renderização
         profileUpdateSuccessRef.current = false;
     }
+    console.log('UserProfilePage: Limpando mensagem de senha.');
     setMessage(''); // Sempre limpa a mensagem de senha ao renderizar/re-renderizar
-  }, [user, navigate]);
 
+    
+    
+
+
+  }, [user, navigate]); // Dependências do useEffect
 
   if (!user) {
+    console.log('UserProfilePage: Usuário é nulo na renderização, retornando null.');
     return null; // Ou um spinner de carregamento, enquanto o redirecionamento acontece
   }
 
   // Função para lidar com a alteração de senha
   const handleChangePassword = async (e) => {
+    console.log('handleChangePassword: Função iniciada.');
     e.preventDefault();
     setMessage('');
+    console.log('handleChangePassword: Mensagem de senha limpa.');
 
     if (newPassword !== confirmNewPassword) {
+      console.log('handleChangePassword: Erro - Senhas não coincidem.');
       setMessage('Erro: A nova senha e a confirmação não coincidem.');
       return;
     }
     if (newPassword.length < 6) {
+      console.log('handleChangePassword: Erro - Nova senha muito curta.');
       setMessage('Erro: A nova senha deve ter pelo menos 6 caracteres.');
       return;
     }
 
     try {
+      console.log('handleChangePassword: Tentando chamar a API de alteração de senha.');
       const response = await fetch('http://127.0.0.1:5000/api/change-password', {
         method: 'POST',
         headers: {
@@ -78,34 +106,44 @@ function UserProfilePage() {
           newPassword,
         }),
       });
+      console.log('handleChangePassword: Resposta da API recebida.', response);
 
       const data = await response.json();
+      console.log('handleChangePassword: Dados da resposta da API:', data);
 
       if (response.ok) {
+        console.log('handleChangePassword: Senha alterada com sucesso!');
         setMessage('Senha alterada com sucesso!');
         setCurrentPassword('');
         setNewPassword('');
         setConfirmNewPassword('');
+        console.log('handleChangePassword: Campos de senha limpos.');
         // Fecha o formulário após a mensagem de sucesso
         setTimeout(() => {
+          console.log('handleChangePassword: Fechando formulário de alteração de senha.');
           setShowPasswordChangeForm(false);
           setMessage(''); // Limpa a mensagem após fechar o formulário
+          console.log('handleChangePassword: Mensagem de senha limpa após fechar formulário.');
         }, 2000); // Exibe a mensagem por 2 segundos
       } else {
+        console.log('handleChangePassword: Erro ao alterar a senha:', data.message);
         setMessage(data.message || 'Erro ao alterar a senha.');
       }
     } catch (error) {
-      console.error('Erro ao alterar senha:', error);
+      console.error('handleChangePassword: Erro ao alterar senha (catch):', error);
       setMessage('Erro de conexão ao tentar alterar a senha.');
     }
   };
 
   // Função para lidar com o envio do formulário de perfil (Professor)
   const handleSubmitProfile = async (e) => {
+    console.log('handleSubmitProfile: Função iniciada.');
     e.preventDefault();
     setProfileMessage(''); // Limpa mensagens anteriores antes de uma nova tentativa
+    console.log('handleSubmitProfile: Mensagem de perfil limpa.');
 
     try {
+      console.log('handleSubmitProfile: Tentando chamar a API de atualização de perfil.');
       const response = await fetch('http://127.0.0.1:5000/api/user/update-profile', {
         method: 'POST',
         headers: {
@@ -117,40 +155,54 @@ function UserProfilePage() {
           discipline: profileDiscipline,
         }),
       });
+      console.log('handleSubmitProfile: Resposta da API recebida.', response);
 
       const data = await response.json();
+      console.log('handleSubmitProfile: Dados da resposta da API:', data);
 
       if (response.ok) {
+        console.log('handleSubmitProfile: Informações do perfil salvas com sucesso!');
         setProfileMessage('Informações do perfil salvas com sucesso!');
         profileUpdateSuccessRef.current = true; // Define a flag de sucesso
+        console.log('handleSubmitProfile: profileUpdateSuccessRef.current definido como true.');
 
         if (data.access_token) {
-          login({ access_token: data.access_token }); // Atualiza o 'user' no contexto
-        } else {
-          console.warn("Backend não retornou 'access_token' após atualização de perfil. O perfil pode não estar totalmente atualizado no frontend.");
+          console.log('handleSubmitProfile: Chamando updateUserData com novo access_token.');
+          updateUserData({ access_token: data.access_token }); // <-- MUDANÇA AQUI
+        } else if (data.user) {
+          console.log('handleSubmitProfile: Chamando updateUserData com objeto user (sem novo token).');
+          updateUserData(data.user); // <-- MUDANÇA AQUI (Fallback, se o backend não retornar token)
+        }
+        else {
+          console.warn("handleSubmitProfile: Backend não retornou 'access_token' ou 'user' após atualização de perfil. O perfil pode não estar totalmente atualizado no frontend.");
         }
 
         // Atraso de 2 segundos para exibir a mensagem antes de esconder o formulário
         setTimeout(() => {
+          console.log('handleSubmitProfile: Limpando mensagem de perfil e escondendo formulário.');
           setProfileMessage(''); // Limpa a mensagem
           setShowProfileCompletionForm(false); // Esconde o formulário
         }, 2000); // 2 segundos de atraso
 
       } else {
+        console.log('handleSubmitProfile: Erro ao salvar informações do perfil:', data.message);
         setProfileMessage(data.message || 'Erro ao salvar informações do perfil.');
       }
     } catch (error) {
-      console.error('Erro ao salvar perfil:', error);
+      console.error('handleSubmitProfile: Erro ao salvar perfil (catch):', error);
       setProfileMessage('Erro de conexão ao tentar salvar as informações do perfil.');
     }
   };
 
   // Função para lidar com o logout
   const handleLogout = () => {
+    console.log('handleLogout: Função iniciada. Realizando logout...');
     logout();
     navigate('/login');
+    console.log('handleLogout: Usuário deslogado e redirecionado para /login.');
   };
 
+  console.log('UserProfilePage: Renderizando JSX do componente.');
   return (
     <div className="flex flex-col items-center justify-center p-6 bg-white rounded-lg shadow-xl dark:bg-gray-800 dark:text-gray-100">
       <h2 className="text-3xl font-extrabold text-gray-900 mb-6 dark:text-white">
@@ -221,9 +273,11 @@ function UserProfilePage() {
             <h3 className="text-2xl font-bold text-gray-900 mb-4 dark:text-white">Informações Complementares</h3>
             <button
               onClick={() => {
+                console.log('Botão "Completar/Editar Informações Profissionais" clicado. showProfileCompletionForm antes:', showProfileCompletionForm);
                 setShowProfileCompletionForm(!showProfileCompletionForm);
                 setProfileMessage(''); // Limpa a mensagem ao abrir/fechar o formulário manualmente
                 profileUpdateSuccessRef.current = false; // Reseta a flag
+                console.log('Botão "Completar/Editar Informações Profissionais" clicado. showProfileCompletionForm depois:', !showProfileCompletionForm);
               }}
               className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out dark:bg-blue-700 dark:hover:bg-blue-800"
             >
@@ -235,6 +289,7 @@ function UserProfilePage() {
         {/* Formulário de Completar Perfil (condicionalmente visível) */}
         {user.role === 'professor' && showProfileCompletionForm && (
           <form onSubmit={handleSubmitProfile} className="w-full space-y-4 mt-4">
+            {console.log('Renderizando formulário de completar perfil. profileMessage:', profileMessage)}
             {profileMessage && (
               <div className={`px-4 py-3 rounded relative ${profileMessage.startsWith('Erro') ? 'bg-red-100 border border-red-400 text-red-700 dark:bg-red-900 dark:border-red-700 dark:text-red-100' : 'bg-green-100 border border-green-400 text-green-700 dark:bg-green-900 dark:border-green-700 dark:text-green-100'}`} role="alert">
                 <span className="block sm:inline">{profileMessage}</span>
@@ -248,7 +303,10 @@ function UserProfilePage() {
                 type="text"
                 id="profileInstitutionName"
                 value={profileInstitutionName}
-                onChange={(e) => setProfileInstitutionName(e.target.value)}
+                onChange={(e) => {
+                  console.log('Input Instituição: Novo valor:', e.target.value);
+                  setProfileInstitutionName(e.target.value);
+                }}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 placeholder="Ex: Universidade XYZ"
               />
@@ -261,13 +319,17 @@ function UserProfilePage() {
                 type="text"
                 id="profileDiscipline"
                 value={profileDiscipline}
-                onChange={(e) => setProfileDiscipline(e.target.value)}
+                onChange={(e) => {
+                  console.log('Input Disciplina: Novo valor:', e.target.value);
+                  setProfileDiscipline(e.target.value);
+                }}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 placeholder="Ex: Engenharia de Software"
               />
             </div>
             <button
               type="submit"
+              onClick={() => console.log('Botão de submit clicado!')} // NOVO LOG TEMPORÁRIO
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out dark:bg-green-700 dark:hover:bg-green-800"
             >
               Salvar Informações do Perfil
@@ -283,8 +345,10 @@ function UserProfilePage() {
             <h3 className="text-2xl font-bold text-gray-900 mb-4 dark:text-white">Segurança da Conta</h3>
             <button
               onClick={() => {
+                console.log('Botão "Alterar Senha" clicado. showPasswordChangeForm antes:', showPasswordChangeForm);
                 setShowPasswordChangeForm(!showPasswordChangeForm);
                 setMessage(''); // Limpa a mensagem ao abrir/fechar o formulário manualmente
+                console.log('Botão "Alterar Senha" clicado. showPasswordChangeForm depois:', !showPasswordChangeForm);
               }}
               className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out dark:bg-indigo-700 dark:hover:bg-indigo-800"
             >
@@ -303,6 +367,7 @@ function UserProfilePage() {
         {/* Formulário de Alteração de Senha (condicionalmente visível) */}
         {!user.google_id && showPasswordChangeForm && (
           <form onSubmit={handleChangePassword} className="w-full space-y-4 mt-4">
+            {console.log('Renderizando formulário de alteração de senha. message:', message)}
             {message && (
               <div className={`px-4 py-3 rounded relative ${message.startsWith('Erro') ? 'bg-red-100 border border-red-400 text-red-700 dark:bg-red-900 dark:border-red-700 dark:text-red-100' : 'bg-green-100 border border-green-400 text-green-700 dark:bg-green-900 dark:border-green-700 dark:text-green-100'}`} role="alert">
                 <span className="block sm:inline">{message}</span>
@@ -316,7 +381,10 @@ function UserProfilePage() {
                 type="password"
                 id="current-password"
                 value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
+                onChange={(e) => {
+                  console.log('Input Senha Atual: Novo valor (oculto):', e.target.value ? '******' : '');
+                  setCurrentPassword(e.target.value);
+                }}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 required
               />
@@ -329,7 +397,10 @@ function UserProfilePage() {
                 type="password"
                 id="new-password"
                 value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
+                onChange={(e) => {
+                  console.log('Input Nova Senha: Novo valor (oculto):', e.target.value ? '******' : '');
+                  setNewPassword(e.target.value);
+                }}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 required
               />
@@ -342,7 +413,10 @@ function UserProfilePage() {
                 type="password"
                 id="confirm-new-password"
                 value={confirmNewPassword}
-                onChange={(e) => setConfirmNewPassword(e.target.value)}
+                onChange={(e) => {
+                  console.log('Input Confirmar Nova Senha: Novo valor (oculto):', e.target.value ? '******' : '');
+                  setConfirmNewPassword(e.target.value);
+                }}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 required
               />

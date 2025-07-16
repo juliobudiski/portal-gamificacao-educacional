@@ -9,8 +9,8 @@ html, body {
   padding: 0;
   width: 100%;
   min-height: 100vh; /* Garante que ocupem a altura mínima da viewport */
-  background-color: #2c3135; /* Aplica a cor de fundo ao corpo */
-  color: #f0f0f0;
+  /*background-color: #2c3135; /* Aplica a cor de fundo ao corpo */
+  /*color: #f0f0f0;*/
 }
 
 /* Garante que a div #root preencha a largura total e possa centralizar seu filho (o componente App) */

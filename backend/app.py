@@ -94,6 +94,7 @@ class User(db.Model):
         return f'<User {self.email}>'
 
     # Converte o objeto User para um dicionário, útil para serialização em JSON
+    # Este método DEVE retornar APENAS os atributos do User.
     def to_dict(self):
         return {
             'id': self.id,
@@ -104,6 +105,7 @@ class User(db.Model):
             'discipline': self.discipline
         }
 
+# Modelo para a tabela 'activity' (Atividade Gamificada)
 # Modelo para a tabela 'activity' (Atividade Gamificada)
 class Activity(db.Model):
     __tablename__ = 'activity'
@@ -132,9 +134,6 @@ class Activity(db.Model):
     # Relacionamento com o modelo User (um professor tem muitas atividades)
     professor = db.relationship('User', backref='activities', lazy=True)
 
-    def __repr__(self):
-        return f'<Activity {self.title}>'
-
     # Converte o objeto Activity para um dicionário
     def to_dict(self):
         return {
@@ -154,6 +153,9 @@ class Activity(db.Model):
             'isPublic': self.is_public,
             'createdAt': self.created_at.isoformat() if self.created_at else None,
             'updatedAt': self.updated_at.isoformat() if self.updated_at else None,
+            # Incluir dados do professor para facilitar no frontend
+            'professor_name': self.professor.name,
+            'professor_email': self.professor.email,
         }
 
 # --- Funções de Callback do JWT ---
@@ -565,18 +567,37 @@ def update_profile():
         db.session.commit()
         app.logger.info(f"Perfil do usuário ID {current_user_id} atualizado com sucesso.")
 
+        # Recrie as claims adicionais com os dados MAIS RECENTES do objeto 'user'
+        # após o commit no banco de dados.
         additional_claims = {
-            "email": user.email, "name": user.name, "role": user.role,
+            "email": user.email,
+            "name": user.name,
+            "role": user.role,
             "profile_picture": user.profile_picture,
-            "institutionName": user.institution_name,
-            "discipline": user.discipline
+            "institutionName": user.institution_name, # <-- AGORA PEGA O VALOR ATUALIZADO
+            "discipline": user.discipline # <-- AGORA PEGA O VALOR ATUALIZADO
         }
         new_access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
 
+        # Opcional: Inclua também o objeto user completo na resposta para o frontend
+        # Isso pode simplificar a lógica do frontend, embora o token já contenha os dados.
+        user_data = {
+            "id": user.id,
+            "email": user.email,
+            "name": user.name,
+            "role": user.role,
+            "profile_picture": user.profile_picture,
+            "google_id": user.google_id, # Inclua se aplicável
+            "institutionName": user.institution_name,
+            "discipline": user.discipline,
+        }
+
         return jsonify({
             "message": "Informações do perfil atualizadas com sucesso!",
-            "access_token": new_access_token
+            "access_token": new_access_token,
+            "user": user_data # <--- ADICIONADO
         }), 200
+
 
     except Exception as e:
         db.session.rollback()
@@ -743,6 +764,42 @@ def delete_user(user_id):
         db.session.rollback()
         app.logger.error(f"Erro ao deletar usuário ID {user_id}: {e}", exc_info=True)
         return jsonify({"msg": "Erro interno do servidor durante a deleção do usuário"}), 500
+
+# NEW: Rota para listar todas as atividades (apenas admin)
+@app.route('/api/admin/activities', methods=['GET'])
+@jwt_required()
+def get_all_activities_admin():
+    app.logger.info(f"Admin ID {current_user.id} solicitou a lista de todas as atividades.")
+    if current_user.role != 'admin':
+        app.logger.warning(f"Acesso negado à lista de atividades para o ID {current_user.id}.")
+        return jsonify({"msg": "Acesso não autorizado: Apenas administradores podem acessar estes dados."}), 403
+
+    # Busca todas as atividades e as retorna como dicionários
+    activities = Activity.query.all()
+    activities_data = [activity.to_dict() for activity in activities]
+    app.logger.info(f"Retornando {len(activities_data)} atividades para o admin ID {current_user.id}.")
+    return jsonify(activities_data), 200
+
+# NEW: Rota para listar atividades de um professor específico (apenas professor logado ou admin)
+@app.route('/api/professor/activities', methods=['GET'])
+@jwt_required()
+def get_professor_activities():
+    current_user_id = get_jwt_identity()
+    app.logger.info(f"Usuário ID {current_user_id} solicitou a lista de suas atividades.")
+    
+    # Permite que um admin veja as atividades de qualquer professor, ou um professor veja as suas próprias.
+    # Se for um professor, filtra pelas atividades dele. Se for um admin, pode ver todas.
+    # Por enquanto, esta rota será apenas para o professor logado ver as suas.
+    # A lógica para admin ver todas as atividades já está na rota '/api/admin/activities'.
+    if current_user.role != 'professor':
+        app.logger.warning(f"Acesso negado à lista de atividades do professor para o ID {current_user.id}. Role: {current_user.role}")
+        return jsonify({"msg": "Acesso negado. Apenas professores podem acessar suas atividades."}), 403
+
+    activities = Activity.query.filter_by(professor_id=current_user_id).all()
+    activities_data = [activity.to_dict() for activity in activities]
+    app.logger.info(f"Retornando {len(activities_data)} atividades para o professor ID {current_user_id}.")
+    return jsonify(activities_data), 200
+
 
 
 # --- Handlers de Erro do JWT ---
