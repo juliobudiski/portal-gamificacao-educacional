@@ -32,7 +32,8 @@ function ActivityCreationPage() {
   const [loadingTemplates, setLoadingTemplates] = useState(true);
   // Estado para armazenar erros ao carregar templates.
   const [templateError, setTemplateError] = useState(null);
-
+  const [newlyCreatedActivityId, setNewlyCreatedActivityId] = useState(null);
+  const [showAssignmentPrompt, setShowAssignmentPrompt] = useState(false);
 
   // --- Estrutura de Dados da Atividade ---
 
@@ -236,9 +237,9 @@ function ActivityCreationPage() {
 
         if (response.ok) {
           console.log("handleNext: Atividade criada com sucesso! Resposta do servidor:", result);
-          // Substituir alert por um modal ou toast de sucesso
-          // alert('Atividade criada com sucesso! ID: ' + result.activity.id);
-          navigate('/professor/dashboard'); // Redireciona para o dashboard após o sucesso
+          setNewlyCreatedActivityId(result.activity.id);
+          setShowAssignmentPrompt(true);
+          //navigate('/professor/dashboard'); // Redireciona para o dashboard após o sucesso
         } else {
           console.error('handleNext: Erro ao criar atividade. Resposta do servidor:', result);
           // Substituir alert por um modal ou toast de erro
@@ -591,152 +592,271 @@ function ActivityCreationPage() {
   // --- Renderização Principal do Componente ---
 
   return (
-    <div className="flex flex-col items-center justify-center p-6 bg-white rounded-lg shadow-xl dark:bg-gray-800 dark:text-gray-100">
-      <h2 className="text-3xl font-extrabold text-gray-900 mb-6 dark:text-white">
-        Criar Nova Atividade Gamificada
-      </h2>
-
-      {showInitialSelection ? (
-        // Tela de seleção inicial (Iniciar do Zero / Escolher um Template)
-        <div className="w-full max-w-4xl bg-gray-50 p-6 rounded-lg shadow-inner dark:bg-gray-700">
-          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">
-            Como você gostaria de começar?
-          </h3>
-
-          {!showTemplateList ? ( // Exibe as duas opções principais se a lista de templates não estiver visível
-            <div className="flex flex-col md:flex-row gap-6 justify-center">
-              {/* Opção: Iniciar do Zero */}
-              <div className="flex flex-col items-center p-6 bg-white rounded-lg shadow-md dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:shadow-lg transition-shadow duration-200">
-                <span className="text-5xl mb-4">✨</span>
-                <h4 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                  Iniciar do Zero
-                </h4>
-                <p className="text-gray-700 dark:text-gray-300 text-center mb-4">
-                  Comece com um formulário completamente vazio e personalize cada detalhe.
-                </p>
-                <button
-                  onClick={handleStartFromScratch}
-                  className="py-2 px-6 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out"
-                >
-                  Atividade em Branco
-                </button>
-              </div>
-
-              {/* Opção: Escolher um Template */}
-              <div className="flex flex-col items-center p-6 bg-white rounded-lg shadow-md dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:shadow-lg transition-shadow duration-200">
-                <span className="text-5xl mb-4">📚</span>
-                <h4 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                  Escolher um Template
-                </h4>
-                <p className="text-gray-700 dark:text-gray-300 text-center mb-4">
-                  Use um de nossos templates predefinidos para agilizar a criação.
-                </p>
-                <button
-                  onClick={handleShowTemplates} // Agora chama a função para mostrar a lista de templates
-                  className="py-2 px-6 bg-green-600 hover:bg-green-700 text-white font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out"
-                >
-                  Ver Templates
-                </button>
-              </div>
+    <div className="min-h-screen bg-gradient-to-br from-[#1e2226] to-[#2c3135] py-10 px-4 sm:px-6">
+      <div className="max-w-4xl mx-auto">
+        {/* Cabeçalho com gradiente */}
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center bg-gradient-to-r from-accent-purple/10 to-accent-teal/10 p-1 rounded-full mb-4">
+            <div className="bg-[#2c3135] rounded-full p-2">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-accent-yellow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+              </svg>
             </div>
-          ) : ( // Exibe a lista de templates se showTemplateList for true
-            <div className="mt-10">
-              <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-4 text-center">
-                Templates Predefinidos
-              </h4>
-              {loadingTemplates ? (
-                <p className="text-center text-gray-600 dark:text-gray-300">Carregando templates...</p>
-              ) : templateError ? (
-                <p className="text-center text-red-500">Erro: {templateError}</p>
-              ) : templates.length === 0 ? (
-                <p className="text-center text-gray-600 dark:text-gray-300">Nenhum template disponível no momento.</p>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {templates.map(template => (
-                    <div key={template.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-600 flex flex-col items-center text-center">
-                      <span className="text-4xl mb-3">{template.icon}</span>
-                      <h5 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{template.name}</h5>
-                      <p className="text-gray-700 dark:text-gray-300 text-sm mb-4 flex-grow">{template.description}</p>
-                      <button
-                        onClick={() => handleSelectTemplate(template.data)}
-                        className="py-2 px-4 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition duration-150 ease-in-out mt-auto"
-                      >
-                        Usar Template
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <div className="mt-8 text-center">
-                <button
-                  onClick={handleBackToInitialSelection} // Volta para a tela de seleção inicial
-                  className="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600"
-                >
-                  Voltar para Seleção Inicial
-                </button>
-              </div>
-            </div>
-          )}
+          </div>
+          <h2 className="text-3xl font-extrabold bg-gradient-to-r from-accent-yellow to-accent-teal bg-clip-text text-transparent">
+            Criar Nova Atividade Gamificada
+          </h2>
+          <p className="mt-2 text-gray-400 max-w-md mx-auto">
+            Crie experiências de aprendizado envolventes com nossa ferramenta de gamificação
+          </p>
         </div>
-      ) : (
-        // Formulário de criação de atividade (existente)
-        <>
-          {/* Barra de Progresso: indica visualmente a etapa atual. */}
-          <div className="w-full max-w-4xl bg-gray-200 rounded-full h-4 dark:bg-gray-700 mb-8">
-            <div
-              className="bg-blue-600 h-4 rounded-full transition-all duration-500 ease-out"
-              style={{ width: `${(currentStep / totalSteps) * 100}%` }}
-            ></div>
-          </div>
 
-          {/* Contêiner do Formulário: onde o conteúdo da etapa atual é renderizado. */}
-          <div className="w-full max-w-4xl bg-gray-50 p-6 rounded-lg shadow-inner dark:bg-gray-700">
-            {renderStep()}
+        {showInitialSelection ? (
+          // Tela de seleção inicial (Iniciar do Zero / Escolher um Template)
+          <div className="bg-gradient-to-br from-[#3a4046] to-[#2c3135] p-8 rounded-2xl shadow-2xl">
+            <h3 className="text-2xl font-bold text-center mb-8 bg-gradient-to-r from-accent-purple to-accent-teal bg-clip-text text-transparent">
+              Como você gostaria de começar?
+            </h3>
 
-            {/* Botões de Navegação: Anterior, Próximo e Concluir. */}
-            <div className="flex justify-between mt-8">
-              {/* O botão 'Anterior' só aparece a partir da segunda etapa. */}
-              {currentStep > 1 && (
-                <button
-                  onClick={handlePrevious}
-                  className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150 ease-in-out dark:bg-gray-700 dark:hover:bg-gray-800"
-                >
-                  Anterior
-                </button>
-              )}
-              {/* O botão 'Próximo' muda de texto e cor na última etapa. */}
-              <button
-                onClick={handleNext}
-                className={`py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-                  currentStep === totalSteps ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500' : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
-                } focus:outline-none focus:ring-2 focus:ring-offset-2 transition duration-150 ease-in-out ml-auto`}
-              >
-                {currentStep === totalSteps ? 'Concluir e Salvar' : 'Próximo'}
-              </button>
-            </div>
-          </div>
+            {!showTemplateList ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Opção: Iniciar do Zero */}
+                <div className="relative bg-gradient-to-br from-[#3a4046] to-[#2c3135] rounded-2xl shadow-xl overflow-hidden border border-[#4a525a] hover:border-accent-yellow/50 transition-all duration-300 group">
+                  <div className="absolute inset-0 bg-gradient-to-r from-accent-teal/5 to-accent-purple/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="relative z-10 p-6 flex flex-col items-center text-center h-full">
+                    <div className="mb-4 bg-gradient-to-r from-accent-yellow to-accent-teal p-1 rounded-full">
+                      <div className="bg-[#3a4046] rounded-full p-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-accent-yellow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                      </div>
+                    </div>
+                    <h4 className="text-xl font-semibold text-gray-200 mb-2">
+                      Iniciar do Zero
+                    </h4>
+                    <p className="text-gray-400 mb-6 flex-grow">
+                      Comece com um formulário completamente vazio e personalize cada detalhe.
+                    </p>
+                    <button
+                      onClick={handleStartFromScratch}
+                      className="w-full py-3 px-6 bg-gradient-to-r from-accent-yellow to-accent-teal text-gray-900 font-bold rounded-xl shadow-lg hover:shadow-xl hover:from-accent-yellow/90 hover:to-accent-teal/90 transform hover:-translate-y-0.5 transition-all duration-300 ease-out"
+                    >
+                      Atividade em Branco
+                    </button>
+                  </div>
+                </div>
 
-          {/* Modal de Ajuda: exibido condicionalmente com base no estado `showHelpModal`. */}
-          {showHelpModal && (
-            <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center z-50">
-              <div className="bg-white p-8 rounded-lg shadow-xl max-w-xl w-full mx-4 dark:bg-gray-800 dark:text-gray-100 max-h-[90vh] overflow-y-auto">
-                <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">{helpContent.title}</h3>
-                <p className="text-gray-700 whitespace-pre-wrap dark:text-gray-300">{helpContent.text}</p>
-                <div className="mt-6 text-right">
+                {/* Opção: Escolher um Template */}
+                <div className="relative bg-gradient-to-br from-[#3a4046] to-[#2c3135] rounded-2xl shadow-xl overflow-hidden border border-[#4a525a] hover:border-accent-purple/50 transition-all duration-300 group">
+                  <div className="absolute inset-0 bg-gradient-to-r from-accent-purple/5 to-accent-yellow/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="relative z-10 p-6 flex flex-col items-center text-center h-full">
+                    <div className="mb-4 bg-gradient-to-r from-accent-purple to-accent-teal p-1 rounded-full">
+                      <div className="bg-[#3a4046] rounded-full p-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-accent-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <h4 className="text-xl font-semibold text-gray-200 mb-2">
+                      Escolher um Template
+                    </h4>
+                    <p className="text-gray-400 mb-6 flex-grow">
+                      Use um de nossos templates predefinidos para agilizar a criação.
+                    </p>
+                    <button
+                      onClick={handleShowTemplates}
+                      className="w-full py-3 px-6 bg-gradient-to-r from-accent-purple to-accent-teal text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:from-accent-purple/90 hover:to-accent-teal/90 transform hover:-translate-y-0.5 transition-all duration-300 ease-out"
+                    >
+                      Ver Templates
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              // Lista de templates
+              <div className="mt-6">
+                <h4 className="text-xl font-bold text-center mb-6 bg-gradient-to-r from-accent-purple to-accent-yellow bg-clip-text text-transparent">
+                  Templates Predefinidos
+                </h4>
+                
+                {loadingTemplates ? (
+                  <div className="text-center py-10">
+                    <div className="inline-block animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-accent-teal"></div>
+                    <p className="mt-4 text-gray-400">Carregando templates...</p>
+                  </div>
+                ) : templateError ? (
+                  <div className="bg-red-900/30 text-red-400 p-4 rounded-xl text-center">
+                    <p>Erro: {templateError}</p>
+                  </div>
+                ) : templates.length === 0 ? (
+                  <div className="bg-blue-900/30 text-blue-400 p-4 rounded-xl text-center">
+                    <p>Nenhum template disponível no momento.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {templates.map(template => (
+                      <div 
+                        key={template.id} 
+                        className="relative bg-gradient-to-br from-[#3a4046] to-[#2c3135] rounded-2xl shadow-xl p-6 border border-[#4a525a] hover:border-accent-teal/50 transition-all duration-300 group overflow-hidden"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-accent-purple/5 to-accent-yellow/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <div className="relative z-10 flex flex-col h-full">
+                          <div className="flex justify-center mb-4">
+                            <div className="bg-gradient-to-r from-accent-purple to-accent-yellow p-1 rounded-full">
+                              <div className="bg-[#3a4046] rounded-full p-2">
+                                <span className="text-2xl">{template.icon}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <h5 className="text-lg font-semibold text-gray-200 text-center mb-2">{template.name}</h5>
+                          <p className="text-gray-400 text-sm mb-4 flex-grow text-center">{template.description}</p>
+                          <button
+                            onClick={() => handleSelectTemplate(template.data)}
+                            className="mt-auto py-2 px-4 bg-gradient-to-r from-accent-purple to-accent-teal text-white font-medium rounded-xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300"
+                          >
+                            Usar Template
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                <div className="mt-8 text-center">
                   <button
-                    onClick={closeHelpModal}
-                    className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                    onClick={handleBackToInitialSelection}
+                    className="py-2 px-4 border border-accent-teal/30 rounded-xl shadow-sm text-sm font-medium text-gray-300 bg-[#3a4046] hover:bg-[#4a525a] focus:outline-none focus:ring-2 focus:ring-accent-teal transition duration-300"
                   >
-                    Fechar
+                    <span className="flex items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                      </svg>
+                      Voltar para Seleção Inicial
+                    </span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          // Formulário de criação de atividade
+          <>
+            {/* Barra de Progresso */}
+            <div className="w-full bg-gray-700 rounded-full h-3 mb-8 shadow-inner">
+              <div
+                className="bg-gradient-to-r from-accent-yellow to-accent-teal h-3 rounded-full shadow-md transition-all duration-500 ease-out"
+                style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+              ></div>
+            </div>
+
+            {/* Contêiner do Formulário */}
+            <div className="relative bg-gradient-to-br from-[#3a4046] to-[#2c3135] rounded-2xl shadow-2xl overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-accent-purple/10 to-accent-teal/10"></div>
+              <div className="relative z-10 p-6 sm:p-8">
+                {renderStep()}
+
+                {/* Botões de Navegação */}
+                <div className="flex justify-between mt-8">
+                  {currentStep > 1 && (
+                    <button
+                      onClick={handlePrevious}
+                      className="py-3 px-6 border border-accent-teal/30 rounded-xl shadow-sm text-sm font-medium text-gray-300 bg-[#3a4046] hover:bg-[#4a525a] focus:outline-none focus:ring-2 focus:ring-accent-teal transition duration-300 flex items-center"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                      </svg>
+                      Anterior
+                    </button>
+                  )}
+                  
+                  <button
+                    onClick={handleNext}
+                    className={`py-3 px-6 rounded-xl shadow-lg font-bold text-white ${
+                      currentStep === totalSteps 
+                        ? 'bg-gradient-to-r from-green-500 to-accent-teal hover:from-green-600 hover:to-accent-teal/90' 
+                        : 'bg-gradient-to-r from-accent-yellow to-accent-teal hover:from-accent-yellow/90 hover:to-accent-teal/90'
+                    } transform hover:-translate-y-0.5 transition-all duration-300 ease-out ml-auto flex items-center`}
+                  >
+                    {currentStep === totalSteps ? (
+                      <>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        Concluir e Salvar
+                      </>
+                    ) : (
+                      <>
+                        Próximo
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
             </div>
-          )}
-        </>
-      )}
+          </>
+        )}
+
+        {/* Modal de Ajuda */}
+        {showHelpModal && (
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="relative bg-gradient-to-br from-[#3a4046] to-[#2c3135] rounded-2xl shadow-2xl max-w-2xl w-full border border-accent-teal/20">
+              <div className="p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-xl font-bold bg-gradient-to-r from-accent-yellow to-accent-teal bg-clip-text text-transparent">
+                    {helpContent.title}
+                  </h3>
+                  <button
+                    onClick={closeHelpModal}
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="prose prose-invert max-h-[60vh] overflow-y-auto">
+                  <p className="text-gray-300">{helpContent.text}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Prompt para atribuir atividade */}
+        {showAssignmentPrompt && newlyCreatedActivityId && (
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="relative bg-gradient-to-br from-[#3a4046] to-[#2c3135] rounded-2xl shadow-2xl max-w-md w-full border border-accent-teal/20 p-6">
+              <h3 className="text-xl font-bold text-center mb-4 bg-gradient-to-r from-accent-yellow to-accent-teal bg-clip-text text-transparent">
+                Atividade Criada com Sucesso!
+              </h3>
+              <p className="text-gray-300 text-center mb-6">
+                Deseja atribuir esta atividade a uma turma agora?
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button
+                  onClick={() => navigate(`/assign-activity-to-class/${newlyCreatedActivityId}`)}
+                  className="py-3 px-4 bg-gradient-to-r from-accent-yellow to-accent-teal text-gray-900 font-bold rounded-xl shadow-lg hover:shadow-xl hover:from-accent-yellow/90 hover:to-accent-teal/90 transform hover:-translate-y-0.5 transition-all duration-300 ease-out"
+                >
+                  Sim, atribuir agora
+                </button>
+                <button
+                  onClick={() => navigate('/professor/dashboard')}
+                  className="py-3 px-4 border border-accent-teal/30 text-gray-300 bg-[#3a4046] rounded-xl shadow-md hover:bg-[#4a525a] transition duration-300"
+                >
+                  Não, deixar para depois
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
+
+// ... (renderStep permanece funcionalmente igual, mas com melhorias visuais)
 
 export default ActivityCreationPage;

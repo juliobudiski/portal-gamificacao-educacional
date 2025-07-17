@@ -132,6 +132,9 @@ class Activity(db.Model):
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
 
+    class_id = db.Column(db.Integer, db.ForeignKey('class.id'), nullable=True)
+    class_obj = db.relationship('Class', backref='assigned_activities', lazy=True)
+
     # Relacionamento com o modelo User (um professor tem muitas atividades)
     professor = db.relationship('User', backref='activities', lazy=True)
 
@@ -207,6 +210,18 @@ class Enrollment(db.Model):
             'enrollment_date': self.enrollment_date.isoformat() if self.enrollment_date else None
         }
 
+
+# Define a pasta onde as imagens de perfil serão salvas
+UPLOAD_FOLDER = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'uploads/avatars')
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Certifique-se de que a pasta de uploads existe
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # --- Funções de Callback do JWT ---
 
@@ -716,6 +731,30 @@ def get_predefined_templates():
     # Retorna a lista de templates predefinidos
     return jsonify(PREDEFINED_TEMPLATES), 200
 
+@app.route('/api/activities/<int:activity_id>', methods=['GET'])
+@cross_origin()
+@jwt_required()
+def get_activity(activity_id):
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+    activity = Activity.query.get(activity_id)
+
+    if not user:
+        return jsonify({"message": "Usuário não encontrado."}), 404
+
+    if not activity:
+        return jsonify({"message": "Atividade não encontrada."}), 404
+
+    # Lógica de autorização: quem pode ver a atividade?
+    # Apenas o professor que a criou ou os alunos da turma para a qual ela foi designada.
+    enrollment = Enrollment.query.filter_by(student_id=user.id, class_id=activity.class_id).first()
+    is_professor = user.role == 'professor' and activity.professor_id == user.id
+    
+    if not (enrollment or is_professor):
+        return jsonify({"message": "Acesso negado."}), 403
+
+    return jsonify(activity.to_dict()), 200
+
 # --- Endpoints de Administração ---
 
 # Rota para buscar dados para o dashboard do admin
@@ -1212,6 +1251,74 @@ def expired_token_response(jwt_header, jwt_payload):
     app.logger.info(f"Token expirado para identidade: {jwt_payload.get('sub')}")
     return jsonify({"message": "Token de acesso expirado."}), 401
 
+# --- Adicione esta nova rota para UPLOAD DE AVATAR ---
+@app.route('/api/user/upload-avatar', methods=['POST'])
+@cross_origin()
+@jwt_required()
+def upload_avatar():
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+
+    if not user:
+        return jsonify({"message": "Usuário não encontrado."}), 404
+    
+    if 'profile_picture' not in request.files:
+        return jsonify({"message": "Nenhum arquivo enviado."}), 400
+    
+    file = request.files['profile_picture']
+    
+    if file.filename == '':
+        return jsonify({"message": "Nenhum arquivo selecionado."}), 400
+        
+    if file and allowed_file(file.filename):
+        filename = secure_filename(f"user_{user.id}_{file.filename}")
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+        
+        # O URL para salvar no banco deve ser relativo ou absoluto, dependendo de como você serve os arquivos
+        # Exemplo de URL relativo:
+        file_url = f"/uploads/avatars/{filename}"
+        
+        user.profile_picture = file_url
+        db.session.commit()
+
+        # Retorna o usuário atualizado
+        return jsonify({"message": "Avatar atualizado com sucesso!", "user": user.to_dict()}), 200
+        
+    return jsonify({"message": "Tipo de arquivo não permitido."}), 400
+
+# --- Adicione esta nova rota para SELECIONAR AVATAR PRÉ-DEFINIDO ---
+@app.route('/api/user/select-avatar', methods=['POST'])
+@cross_origin()
+@jwt_required()
+def select_avatar():
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+
+    if not user:
+        return jsonify({"message": "Usuário não encontrado."}), 404
+
+    data = request.get_json()
+    avatar_url = data.get('avatar_url')
+
+    if not avatar_url:
+        return jsonify({"message": "Nenhum avatar selecionado."}), 400
+
+    # Aqui você pode adicionar uma lógica para verificar se o aluno realmente desbloqueou o avatar
+    # Por enquanto, vamos permitir a seleção direta
+    
+    user.profile_picture = avatar_url
+    db.session.commit()
+    
+    return jsonify({"message": "Avatar selecionado com sucesso!", "user": user.to_dict()}), 200
+
+# --- Rota para servir as imagens (opcional, mas recomendado para desenvolvimento) ---
+from flask import send_from_directory
+
+@app.route('/uploads/avatars/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
 # --- Bloco de Execução Principal ---
 if __name__ == '__main__':
     # A linha db.create_all() é geralmente removida quando se usa Flask-Migrate,
@@ -1219,3 +1326,4 @@ if __name__ == '__main__':
     # with app.app_context():
     #     db.create_all()
     app.run(debug=True, port=5000)
+

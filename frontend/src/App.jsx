@@ -26,6 +26,8 @@ import CreateClassPage from './pages/CreateClassPage'; // << NOVA PÁGINA >>
 import ClassListPage from './pages/ClassManagementPage'; // << PÁGINA ATUALIZADA/NOVA >>
 import ClassDetailsPage from './pages/ClassDetailsPage'; // << NOVA PÁGINA >>
 import ClassEditPage from './pages/ClassEditPage';
+import AssignActivityToClass from './pages/AssignActivityToClass';
+import ActivityPage from './pages/ActivityPage';
 
 // Importação dos ícones da biblioteca Lucide React para a UI
 import { Home, LogIn, UserPlus, Key, User, BookOpen, LayoutDashboard, PlusCircle, Users, BarChart2, Award, LogOut, Info, Settings, ShieldCheck } from 'lucide-react';
@@ -85,133 +87,276 @@ function App() {
   console.log("App.jsx: Renderizando componente principal.");
 
   return (
-    // Container principal da aplicação com fundo padrão para modo claro e escuro.
-    <div className="min-h-screen w-full bg-gray-100 dark:bg-dark-background p-4">
-      {/* Cabeçalho da aplicação, fixo no topo. */}
-      <header className="w-full max-w-6xl bg-gray-800 dark:bg-dark-background text-white p-4 rounded-lg shadow-xl mb-8 mx-auto border-4 border-accent-yellow">
+    <div className="min-h-screen w-full bg-gray-100 dark:bg-[#2c3135] p-4">
+      {/* Cabeçalho aprimorado visualmente */}
+      <header className="w-full max-w-6xl bg-[#343a40] text-white p-4 rounded-xl shadow-2xl mb-8 mx-auto border-t-4 border-[#ffbd30] sticky top-4 z-50">
         <nav className="flex flex-col sm:flex-row justify-between items-center">
-          {/* Logo do Portal com link para a página inicial. */}
-          <Link to="/" className="flex items-center space-x-2 mb-4 sm:mb-0" onClick={closeAllMenus}>
-            <img src="/images/logotipo.png" alt="Logo GamificaEdu" className="h-20" />
+          {/* Logo com efeito sutil */}
+          <Link 
+            to="/" 
+            className="flex items-center space-x-2 mb-4 sm:mb-0 group transition-transform duration-300"
+            onClick={closeAllMenus}
+          >
+            <img 
+              src="/images/logotipo.png" 
+              alt="Logo GamificaEdu" 
+              className="h-20 transition-transform duration-300 group-hover:scale-105" 
+            />
           </Link>
 
-          {/* Menu de Navegação Principal */}
-          <ul className="flex flex-wrap justify-center sm:justify-end items-center space-x-4">
-            {/* Links públicos, visíveis para todos os usuários. */}
+          {/* Menu de Navegação com melhorias visuais */}
+          <ul className="flex flex-wrap justify-center sm:justify-end items-center gap-2 sm:gap-3">
+            {/* Links públicos com feedback visual */}
             <li>
-              <Link to="/" className="flex items-center space-x-1 px-3 py-2 rounded-md hover:bg-gray-700 text-accent-yellow hover:text-[#FFEA00]" onClick={closeAllMenus}>
-                <Home size={18} />
+              <Link 
+                to="/" 
+                className="flex items-center space-x-1 px-3 py-2 rounded-lg hover:bg-[#2c3135] text-[#ffbd30] transition-colors duration-200"
+                onClick={closeAllMenus}
+              >
+                <Home size={20} />
                 <span>Início</span>
               </Link>
             </li>
             <li>
-              <Link to="/sobre-nos" className="flex items-center space-x-1 px-3 py-2 rounded-md hover:bg-gray-700 text-accent-yellow hover:text-[#FFEA00]" onClick={closeAllMenus}>
-                <Info size={18} />
+              <Link 
+                to="/sobre-nos" 
+                className="flex items-center space-x-1 px-3 py-2 rounded-lg hover:bg-[#2c3135] text-[#69e8cb] transition-colors duration-200"
+                onClick={closeAllMenus}
+              >
+                <Info size={20} />
                 <span>Sobre Nós</span>
               </Link>
             </li>
 
-            {/* Renderização Condicional: Links para usuários NÃO autenticados. */}
+            {/* Usuários não autenticados */}
             {!isAuthenticated && (
               <>
                 <li>
-                  <Link to="/login" className="flex items-center space-x-1 px-3 py-2 rounded-md hover:bg-gray-700 text-accent-yellow hover:text-[#FFEA00]" onClick={closeAllMenus}>
-                    <LogIn size={18} />
+                  <Link 
+                    to="/login" 
+                    className="flex items-center space-x-1 px-3 py-2 rounded-lg hover:bg-[#2c3135] text-[#69e8cb] transition-colors duration-200"
+                    onClick={closeAllMenus}
+                  >
+                    <LogIn size={20} />
                     <span>Login</span>
                   </Link>
                 </li>
                 <li>
-                  <Link to="/cadastro" className="flex items-center space-x-1 px-3 py-2 rounded-md hover:bg-gray-700 text-accent-yellow hover:text-[#FFEA00]" onClick={closeAllMenus}>
-                    <UserPlus size={18} />
+                  <Link 
+                    to="/cadastro" 
+                    className="flex items-center space-x-1 px-3 py-2 rounded-lg hover:bg-[#2c3135] text-[#b39ddb] hover:text-[#d1c4e9] transition-colors duration-200"
+                    onClick={closeAllMenus}
+                  >
+                    <UserPlus size={20} />
                     <span>Cadastro</span>
                   </Link>
                 </li>
               </>
             )}
 
-            {/* Renderização Condicional: Links e Menus para usuários AUTENTICADOS. */}
+            {/* Usuários autenticados */}
             {isAuthenticated && (
               <>
-                {/* Dropdown de Perfil */}
+                {/* Dropdown de Perfil com melhorias visuais */}
                 <li className="relative">
                   <button
                     onClick={() => {
-                      console.log("Clicou no menu Perfil. Estado anterior:", isProfileMenuOpen);
                       setIsProfileMenuOpen(!isProfileMenuOpen);
-                      setIsTeacherMenuOpen(false); // Fecha outros menus
-                      setIsStudentMenuOpen(false); // Fecha outros menus
+                      setIsTeacherMenuOpen(false);
+                      setIsStudentMenuOpen(false);
                     }}
-                    className="flex items-center space-x-1 px-3 py-2 rounded-md hover:bg-gray-700 text-accent-yellow hover:text-[#FFEA00] focus:outline-none"
+                    className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-colors duration-200 ${
+                      isProfileMenuOpen 
+                        ? 'bg-[#ffbd30]/20 text-[#ffbd30]' 
+                        : 'hover:bg-[#2c3135] text-[#ffbd30]'
+                    }`}
                   >
-                    <User size={18} />
+                    <User size={20} />
                     <span>Perfil</span>
                   </button>
                   {isProfileMenuOpen && (
-                    <ul className="absolute right-0 mt-2 w-48 bg-gray-700 rounded-md shadow-lg z-10">
-                      <li><Link to="/perfil" className="block px-4 py-2 text-gray-300 hover:bg-gray-600 rounded-t-md" onClick={closeAllMenus}><Settings size={16} className="inline-block mr-2" />Minhas Configurações</Link></li>
-                      <li><button onClick={handleLogout} className="w-full text-left px-4 py-2 text-red-400 hover:bg-gray-600 rounded-b-md"><LogOut size={16} className="inline-block mr-2" />Sair</button></li>
+                    <ul 
+                      className="absolute right-0 mt-2 w-52 bg-[#2c3135] rounded-xl shadow-2xl z-10 border border-[#3e4a52] animate-fadeIn"
+                      onMouseLeave={() => setIsProfileMenuOpen(false)}
+                    >
+                      <li>
+                        <Link 
+                          to="/perfil" 
+                          className="flex items-center px-4 py-3 text-gray-300 hover:bg-[#343a40] transition-colors rounded-t-xl"
+                          onClick={closeAllMenus}
+                        >
+                          <Settings size={18} className="mr-2 text-[#69e8cb]" />
+                          Minhas Configurações
+                        </Link>
+                      </li>
+                      <li>
+                        <button 
+                          onClick={handleLogout} 
+                          className="w-full flex items-center px-4 py-3 text-left hover:bg-[#343a40] transition-colors rounded-b-xl text-[#ff6b6b]"
+                        >
+                          <LogOut size={18} className="mr-2" />
+                          Sair
+                        </button>
+                      </li>
                     </ul>
                   )}
                 </li>
 
-                {/* Renderização Condicional: Menu para Professores. */}
+                {/* Menu Professor com aparência aprimorada */}
                 {user?.role === 'professor' && (
                   <li className="relative">
                     <button
                       onClick={() => {
-                        console.log("Clicou no menu Professor. Estado anterior:", isTeacherMenuOpen);
                         setIsTeacherMenuOpen(!isTeacherMenuOpen);
-                        setIsStudentMenuOpen(false); // Fecha outros menus
-                        setIsProfileMenuOpen(false);  // Fecha outros menus
+                        setIsStudentMenuOpen(false);
+                        setIsProfileMenuOpen(false);
                       }}
-                      className="flex items-center space-x-1 px-3 py-2 rounded-md hover:bg-gray-700 text-accent-yellow hover:text-[#FFEA00] focus:outline-none"
+                      className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-colors duration-200 ${
+                        isTeacherMenuOpen 
+                          ? 'bg-[#69e8cb]/20 text-[#69e8cb]' 
+                          : 'hover:bg-[#2c3135] text-[#69e8cb]'
+                      }`}
                     >
-                      <BookOpen size={18} />
+                      <BookOpen size={20} />
                       <span>Professor</span>
                     </button>
                     {isTeacherMenuOpen && (
-                      <ul className="absolute right-0 mt-2 w-56 bg-gray-700 rounded-md shadow-lg z-10">
-                        <li><Link to="/professor/dashboard" className="block px-4 py-2 text-gray-300 hover:bg-gray-600 rounded-t-md" onClick={closeAllMenus}><LayoutDashboard size={16} className="inline-block mr-2" />Dashboard</Link></li>
-                        <li><Link to="/professor/criar-atividade" className="block px-4 py-2 text-gray-300 hover:bg-gray-600" onClick={closeAllMenus}><PlusCircle size={16} className="inline-block mr-2" />Criar Atividade</Link></li>
-                        <li><Link to="/professor/banco-atividades" className="block px-4 py-2 text-gray-300 hover:bg-gray-600" onClick={closeAllMenus}><BookOpen size={16} className="inline-block mr-2" />Banco de Atividades</Link></li>
-                        <li><Link to="/professor/gerenciar-turmas" className="block px-4 py-2 text-gray-300 hover:bg-gray-600" onClick={closeAllMenus}><Users size={16} className="inline-block mr-2" />Gerenciar Turmas</Link></li>
-                        <li><Link to="/professor/desempenho-alunos" className="block px-4 py-2 text-gray-300 hover:bg-gray-600 rounded-b-md" onClick={closeAllMenus}><BarChart2 size={16} className="inline-block mr-2" />Desempenho Alunos</Link></li>
+                      <ul 
+                        className="absolute right-0 mt-2 w-56 bg-[#2c3135] rounded-xl shadow-2xl z-10 border border-[#3e4a52] animate-fadeIn"
+                        onMouseLeave={() => setIsTeacherMenuOpen(false)}
+                      >
+                        <li>
+                          <Link 
+                            to="/professor/dashboard" 
+                            className="flex items-center px-4 py-3 text-gray-300 hover:bg-[#343a40] transition-colors rounded-t-xl"
+                            onClick={closeAllMenus}
+                          >
+                            <LayoutDashboard size={18} className="mr-2 text-[#ffbd30]" />
+                            Dashboard
+                          </Link>
+                        </li>
+                        <li>
+                          <Link 
+                            to="/professor/criar-atividade" 
+                            className="flex items-center px-4 py-3 text-gray-300 hover:bg-[#343a40] transition-colors"
+                            onClick={closeAllMenus}
+                          >
+                            <PlusCircle size={18} className="mr-2 text-[#69e8cb]" />
+                            Criar Atividade
+                          </Link>
+                        </li>
+                        <li>
+                          <Link 
+                            to="/professor/banco-atividades" 
+                            className="flex items-center px-4 py-3 text-gray-300 hover:bg-[#343a40] transition-colors"
+                            onClick={closeAllMenus}
+                          >
+                            <BookOpen size={18} className="mr-2 text-[#9570d9]" />
+                            Banco de Atividades
+                          </Link>
+                        </li>
+                        <li>
+                          <Link 
+                            to="/professor/gerenciar-turmas" 
+                            className="flex items-center px-4 py-3 text-gray-300 hover:bg-[#343a40] transition-colors"
+                            onClick={closeAllMenus}
+                          >
+                            <Users size={18} className="mr-2 text-[#ffbd30]" />
+                            Gerenciar Turmas
+                          </Link>
+                        </li>
+                        <li>
+                          <Link 
+                            to="/professor/desempenho-alunos" 
+                            className="flex items-center px-4 py-3 text-gray-300 hover:bg-[#343a40] transition-colors rounded-b-xl"
+                            onClick={closeAllMenus}
+                          >
+                            <BarChart2 size={18} className="mr-2 text-[#69e8cb]" />
+                            Desempenho Alunos
+                          </Link>
+                        </li>
                       </ul>
                     )}
                   </li>
                 )}
 
-                {/* Renderização Condicional: Menu para Alunos. */}
+                {/* Menu Aluno com aparência consistente */}
                 {user?.role === 'aluno' && (
                   <li className="relative">
                     <button
                       onClick={() => {
-                        console.log("Clicou no menu Aluno. Estado anterior:", isStudentMenuOpen);
                         setIsStudentMenuOpen(!isStudentMenuOpen);
-                        setIsTeacherMenuOpen(false); // Fecha outros menus
-                        setIsProfileMenuOpen(false);  // Fecha outros menus
+                        setIsTeacherMenuOpen(false);
+                        setIsProfileMenuOpen(false);
                       }}
-                      className="flex items-center space-x-1 px-3 py-2 rounded-md hover:bg-gray-700 text-accent-yellow hover:text-[#FFEA00] focus:outline-none"
+                      className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-colors duration-200 ${
+                        isStudentMenuOpen 
+                          ? 'bg-[#9570d9]/20 text-[#9570d9]' 
+                          : 'hover:bg-[#2c3135] text-[#9570d9]'
+                      }`}
                     >
-                      <User size={18} />
+                      <User size={20} />
                       <span>Aluno</span>
                     </button>
                     {isStudentMenuOpen && (
-                      <ul className="absolute right-0 mt-2 w-52 bg-gray-700 rounded-md shadow-lg z-10">
-                        <li><Link to="/aluno/dashboard" className="block px-4 py-2 text-gray-300 hover:bg-gray-600 rounded-t-md" onClick={closeAllMenus}><LayoutDashboard size={16} className="inline-block mr-2" />Dashboard</Link></li>
-                        <li><Link to="/aluno/entrar-turma" className="block px-4 py-2 text-gray-300 hover:bg-gray-600" onClick={closeAllMenus}><Users size={16} className="inline-block mr-2" />Entrar em Turma</Link></li>
-                        <li><Link to="/aluno/minhas-atividades" className="block px-4 py-2 text-gray-300 hover:bg-gray-600" onClick={closeAllMenus}><Award size={16} className="inline-block mr-2" />Minhas Atividades</Link></li>
-                        <li><Link to="/aluno/desempenho" className="block px-4 py-2 text-gray-300 hover:bg-gray-600 rounded-b-md" onClick={closeAllMenus}><BarChart2 size={16} className="inline-block mr-2" />Meu Desempenho</Link></li>
+                      <ul 
+                        className="absolute right-0 mt-2 w-52 bg-[#2c3135] rounded-xl shadow-2xl z-10 border border-[#3e4a52] animate-fadeIn"
+                        onMouseLeave={() => setIsStudentMenuOpen(false)}
+                      >
+                        <li>
+                          <Link 
+                            to="/aluno/dashboard" 
+                            className="flex items-center px-4 py-3 text-gray-300 hover:bg-[#343a40] transition-colors rounded-t-xl"
+                            onClick={closeAllMenus}
+                          >
+                            <LayoutDashboard size={18} className="mr-2 text-[#ffbd30]" />
+                            Dashboard
+                          </Link>
+                        </li>
+                        <li>
+                          <Link 
+                            to="/aluno/entrar-turma" 
+                            className="flex items-center px-4 py-3 text-gray-300 hover:bg-[#343a40] transition-colors"
+                            onClick={closeAllMenus}
+                          >
+                            <Users size={18} className="mr-2 text-[#69e8cb]" />
+                            Entrar em Turma
+                          </Link>
+                        </li>
+                        <li>
+                          <Link 
+                            to="/aluno/minhas-atividades" 
+                            className="flex items-center px-4 py-3 text-gray-300 hover:bg-[#343a40] transition-colors"
+                            onClick={closeAllMenus}
+                          >
+                            <Award size={18} className="mr-2 text-[#9570d9]" />
+                            Minhas Atividades
+                          </Link>
+                        </li>
+                        <li>
+                          <Link 
+                            to="/aluno/desempenho" 
+                            className="flex items-center px-4 py-3 text-gray-300 hover:bg-[#343a40] transition-colors rounded-b-xl"
+                            onClick={closeAllMenus}
+                          >
+                            <BarChart2 size={18} className="mr-2 text-[#ffbd30]" />
+                            Meu Desempenho
+                          </Link>
+                        </li>
                       </ul>
                     )}
                   </li>
                 )}
 
-                {/* Renderização Condicional: Link para Dashboard de Admin. */}
+                {/* Admin com destaque visual */}
                 {user?.role === 'admin' && (
                   <li>
-                    <Link to="/admin/dashboard" className="flex items-center space-x-1 px-3 py-2 rounded-md hover:bg-gray-700 text-red-400 hover:text-red-300" onClick={closeAllMenus}>
-                      <ShieldCheck size={18} />
+                    <Link 
+                      to="/admin/dashboard" 
+                      className="flex items-center space-x-1 px-3 py-2 rounded-lg hover:bg-[#2c3135] text-[#ff416c] transition-colors duration-200"
+                      onClick={closeAllMenus}
+                    >
+                      <ShieldCheck size={20} />
                       <span>Admin Dashboard</span>
                     </Link>
                   </li>
@@ -222,8 +367,8 @@ function App() {
         </nav>
       </header>
 
-      {/* Conteúdo principal da aplicação, onde as páginas são renderizadas pelo roteador. */}
-      <main className="w-full max-w-6xl bg-white p-8 rounded-lg shadow-lg mx-auto dark:bg-gray-800 dark:text-gray-100">
+      {/* Conteúdo principal mantendo estrutura */}
+      <main className="w-full max-w-6xl bg-white dark:bg-[#343a40] p-6 sm:p-8 rounded-xl shadow-xl mx-auto dark:text-gray-100 border-2 border-[#69e8cb]/30">
         <Routes>
           {/* Rotas Públicas */}
           <Route path="/" element={<HomePage />} />
@@ -232,13 +377,13 @@ function App() {
           <Route path="/recuperar-senha" element={<ForgotPasswordPage />} />
           <Route path="/sobre-nos" element={<AboutUsPage />} />
 
-          {/* Rotas Protegidas Genéricas (qualquer usuário logado) */}
+          {/* Rotas Protegidas */}
           <Route element={<PrivateRoute />}>
             <Route path="/perfil" element={<UserProfilePage />} />
             <Route path="/classes/:class_id" element={<ClassDetailsPage />} />
           </Route>
 
-          {/* Rotas Protegidas para Professores */}
+          {/* Rotas Professor */}
           <Route element={<PrivateRoute allowedRoles={['professor']} />}>
             <Route path="/professor/dashboard" element={<TeacherDashboardPage />} />
             <Route path="/professor/criar-atividade" element={<ActivityCreationPage />} />
@@ -248,24 +393,26 @@ function App() {
             <Route path="/teacher/classes/new" element={<CreateClassPage />} />
             <Route path="/teacher/classes" element={<ClassListPage />} />
             <Route path="/classes/:class_id/edit" element={<ClassEditPage />} /> 
+            <Route path="/assign-activity-to-class/:activityId" element={<AssignActivityToClass />} />
+            <Route path="/activities/:activityId" element={<ActivityPage />} />
           </Route>
 
-          {/* Rotas Protegidas para Alunos */}
+          {/* Rotas Aluno */}
           <Route element={<PrivateRoute allowedRoles={['aluno']} />}>
             <Route path="/aluno/dashboard" element={<StudentDashboardPage />} />
             <Route path="/aluno/entrar-turma" element={<JoinClassPage />} />
-            <Route path="/aluno/minhas-atividades" element={<StudentActivityPage />} />
             <Route path="/aluno/desempenho" element={<StudentPerformancePage />} />
             <Route path="/aluno/atividade/:id" element={<StudentActivityPage />} />
             <Route path="/student/join-class" element={<JoinClassPage />} />
+            
           </Route>
 
-          {/* Rota Protegida para Administradores */}
+          {/* Rota Admin */}
           <Route element={<PrivateRoute allowedRoles={['admin']} />}>
             <Route path="/admin/dashboard" element={<AdminPage />} />
           </Route>
 
-          {/* Rota "Catch-all" para páginas não encontradas (404) */}
+          {/* Rota 404 */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
