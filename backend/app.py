@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import os
 # --- Importações de Bibliotecas ---
 # Flask e extensões para criar o servidor web, lidar com CORS, banco de dados e autenticação JWT
 from flask import Flask, jsonify, request
@@ -10,7 +10,6 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import Text
 
 # Módulos padrão do Python para manipulação do sistema operacional, variáveis de ambiente e tempo
-import os
 import logging
 from dotenv import load_dotenv
 from datetime import timedelta
@@ -60,6 +59,8 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 
 
+
+
 # --- Inicialização das Extensões ---
 # Inicializa o JWTManager para gerenciar a autenticação baseada em token
 jwt = JWTManager(app)
@@ -103,10 +104,11 @@ class User(db.Model):
             'email': self.email,
             'role': self.role,
             'institution_name': self.institution_name,
-            'discipline': self.discipline
+            'discipline': self.discipline,
+            'profile_picture': self.profile_picture
         }
 
-# Modelo para a tabela 'activity' (Atividade Gamificada)
+
 # Modelo para a tabela 'activity' (Atividade Gamificada)
 class Activity(db.Model):
     __tablename__ = 'activity'
@@ -1326,4 +1328,3 @@ if __name__ == '__main__':
     # with app.app_context():
     #     db.create_all()
     app.run(debug=True, port=5000)
-

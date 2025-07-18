@@ -87,9 +87,9 @@ function App() {
   console.log("App.jsx: Renderizando componente principal.");
 
   return (
-    <div className="min-h-screen w-full bg-gray-100 dark:bg-[#2c3135] p-4">
+    <div className="min-h-screen w-full bg-gray-100 dark:bg-[#2c3135] p-4 pt-28">
       {/* Cabeçalho aprimorado visualmente */}
-      <header className="w-full max-w-6xl bg-[#343a40] text-white p-4 rounded-xl shadow-2xl mb-8 mx-auto border-t-4 border-[#ffbd30] sticky top-4 z-50">
+      <header className="w-full max-w-6xl bg-[#343a40] text-white p-4 rounded-xl shadow-2xl mb-8 mx-auto border-t-4 border-[#ffbd30] fixed top-0 left-0 z-50">
         <nav className="flex flex-col sm:flex-row justify-between items-center">
           {/* Logo com efeito sutil */}
           <Link 
@@ -368,7 +368,7 @@ function App() {
       </header>
 
       {/* Conteúdo principal mantendo estrutura */}
-      <main className="w-full max-w-6xl bg-white dark:bg-[#343a40] p-6 sm:p-8 rounded-xl shadow-xl mx-auto dark:text-gray-100 border-2 border-[#69e8cb]/30">
+      <main className="w-full max-w-6xl mx-auto bg-white dark:bg-[#343a40] p-6 sm:p-8 rounded-xl shadow-xl mx-auto dark:text-gray-100 border-2 border-[#69e8cb]/30">
         <Routes>
           {/* Rotas Públicas */}
           <Route path="/" element={<HomePage />} />

@@ -2,7 +2,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext'; // Importa o hook useAuth para interagir com o contexto de autenticação
-
+import useGoogleSignIn from '../hooks/useGoogleSignIn';
+import { useAuthOperations } from '../hooks/useAuthOperations';
 /**
  * Componente RegisterPage
  * Esta página renderiza um formulário de cadastro para novos usuários.
@@ -23,10 +24,7 @@ function RegisterPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const [googleLoaded, setGoogleLoaded] = useState(false); // Novo estado para controlar o carregamento do Google
-
-  // Refs
-  const googleButtonRef = useRef(null); // Referência para o botão do Google
+  const { googleButtonRef, googleLoaded } = useGoogleSignIn('signup_with');
 
   // --- Hooks de Navegação e Contexto ---
   // Hook do React Router para navegar programaticamente para outras rotas.
@@ -76,113 +74,34 @@ function RegisterPage() {
     }
   }, [navigate, login, selectedRole]); // Dependências da função de callback
 
-  /**
-   * useEffect para inicializar o Google Sign-In.
-   * Este efeito carrega o script da API do Google, inicializa o serviço de identidade
-   * e renderiza o botão de login do Google na div especificada.
-   * Também inclui uma função de limpeza para remover o script e cancelar processos pendentes.
-   */
-    useEffect(() => {
-    // Função para inicializar o Google Sign-In
-    const initGoogleSignIn = () => {
-      if (window.google && window.google.accounts && googleButtonRef.current) {
-        console.log("Inicializando Google Sign-In");
-        
-        window.google.accounts.id.initialize({
-          client_id: "133837215411-f108mo4flmbqmtpofs2k1876kkrnl6tg.apps.googleusercontent.com",
-          callback: handleGoogleSignInCallback,
-          auto_select: false,
-          cancel_on_tap_outside: true,
-        });
+  
 
-        window.google.accounts.id.renderButton(
-          googleButtonRef.current,
-          { 
-            theme: 'outline', 
-            size: 'large', 
-            text: 'signup_with',
-            width: '360',
-            logo_alignment: 'left'
-          }
-        );
-        
-        setGoogleLoaded(true);
-      }
-    };
-
-    // Se o script do Google já estiver carregado
-    if (window.google) {
-      initGoogleSignIn();
-      return;
-    }
-
-    // Carregar o script do Google se necessário
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
-    script.async = true;
-    script.defer = true;
-    script.onload = () => {
-      console.log("Script do Google carregado");
-      setTimeout(initGoogleSignIn, 500); // Pequeno delay para garantir
-    };
-
-    document.body.appendChild(script);
-
-    return () => {
-      document.body.removeChild(script);
-      if (window.google && window.google.accounts && window.google.accounts.id) {
-        window.google.accounts.id.cancel();
-      }
-    };
-  }, [handleGoogleSignInCallback]); // A dependência garante que a função de callback esteja sempre atualizada.
-
-  /**
-   * handleRegister: Função para lidar com o envio do formulário de cadastro padrão (email/senha).
-   * @param {React.FormEvent<HTMLFormElement>} e - O evento de submissão do formulário.
-   */
+  
+  const { performAuthRequest } = useAuthOperations();
   const handleRegister = async (e) => {
-    e.preventDefault(); // Previne o recarregamento da página
-    console.log("handleRegister: Tentativa de cadastro iniciada.");
-    setError('');
-    setSuccess('');
+  e.preventDefault();
+  setError('');
+  setSuccess('');
 
-    // Validação simples: verifica se as senhas coincidem.
-    if (password !== confirmPassword) {
-      console.error("handleRegister: As senhas não coincidem.");
-      setError('As senhas não coincidem!');
-      return;
-    }
+  if (password !== confirmPassword) {
+    setError('As senhas não coincidem!');
+    return;
+  }
 
-    const registrationData = { name, email, password, role: selectedRole };
-    console.log("handleRegister: Enviando dados de cadastro para a API:", registrationData);
+  const registrationData = { name, email, password, role: selectedRole };
+  
+  const result = await performAuthRequest(
+    'http://127.0.0.1:5000/api/register',
+    'POST',
+    registrationData
+  );
 
-    try {
-      const response = await fetch('http://127.0.0.1:5000/api/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(registrationData),
-      });
-
-      const data = await response.json();
-      console.log("handleRegister: Resposta recebida da API de registro:", data);
-
-      if (response.ok) {
-        setSuccess('Cadastro realizado com sucesso! Redirecionando para o perfil...');
-        console.log("handleRegister: Cadastro bem-sucedido. Chamando a função login do contexto.");
-        login(data.access_token); // Autentica o usuário no contexto
-        setTimeout(() => navigate('/perfil'), 2000); // Redireciona após um pequeno atraso
-      } else {
-        console.error("handleRegister: Erro da API de registro:", data.message);
-        setError(data.message || 'Erro ao cadastrar. Tente novamente.');
-      }
-
-    } catch (err) {
-      console.error('handleRegister: Erro de conexão durante o cadastro:', err);
-      setError('Erro de conexão. Verifique sua rede.');
-    }
-  };
+  if (result.success) {
+    setSuccess('Cadastro realizado com sucesso! Redirecionando para o perfil...');
+  } else {
+    setError(result.message || 'Erro ao cadastrar. Tente novamente.');
+  }
+};
 
 
   // --- Renderização do Componente ---
