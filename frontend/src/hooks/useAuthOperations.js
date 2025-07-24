@@ -11,7 +11,16 @@ export function useAuthOperations() {
     
     if (response.ok) {
       login(data);
-      setTimeout(() => navigate('/perfil'), 2000);
+      const userRole = data.user?.role;
+      setTimeout(() => {
+        if (userRole === 'professor') {
+          navigate('/professor/dashboard');
+        } else if (userRole === 'aluno') {
+          navigate('/aluno/dashboard');
+        } else {
+          navigate('/perfil'); // Redirecionamento padrão
+        }
+      }, 2000);
       return { success: true, message: successMessage };
     }
     return { success: false, message: data.message || 'Erro na operação' };

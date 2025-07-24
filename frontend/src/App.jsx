@@ -87,9 +87,9 @@ function App() {
   console.log("App.jsx: Renderizando componente principal.");
 
   return (
-    <div className="min-h-screen w-full bg-gray-100 dark:bg-[#2c3135] p-4 pt-28">
+    <div className="min-h-screen w-full bg-gray-100 dark:bg-[#2c3135] p-4 pt-4">
       {/* Cabeçalho aprimorado visualmente */}
-      <header className="w-full max-w-6xl bg-[#343a40] text-white p-4 rounded-xl shadow-2xl mb-8 mx-auto border-t-4 border-[#ffbd30] fixed top-0 left-0 z-50">
+      <header className="w-full max-w-6xl mx-auto bg-[#343a40] text-white p-4 rounded-xl shadow-2xl border-t-4 border-[#ffbd30] z-50">
         <nav className="flex flex-col sm:flex-row justify-between items-center">
           {/* Logo com efeito sutil */}
           <Link 
@@ -368,7 +368,7 @@ function App() {
       </header>
 
       {/* Conteúdo principal mantendo estrutura */}
-      <main className="w-full max-w-6xl mx-auto bg-white dark:bg-[#343a40] p-6 sm:p-8 rounded-xl shadow-xl mx-auto dark:text-gray-100 border-2 border-[#69e8cb]/30">
+      <main className="mt-5 w-full max-w-6xl mx-auto bg-white dark:bg-[#343a40] p-6 sm:p-8 rounded-xl shadow-xl mx-auto dark:text-gray-100 border-2 border-[#69e8cb]/30">
         <Routes>
           {/* Rotas Públicas */}
           <Route path="/" element={<HomePage />} />
@@ -381,6 +381,7 @@ function App() {
           <Route element={<PrivateRoute />}>
             <Route path="/perfil" element={<UserProfilePage />} />
             <Route path="/classes/:class_id" element={<ClassDetailsPage />} />
+            <Route path="/activities/:activityId" element={<ActivityPage />} />
           </Route>
 
           {/* Rotas Professor */}
@@ -394,7 +395,7 @@ function App() {
             <Route path="/teacher/classes" element={<ClassListPage />} />
             <Route path="/classes/:class_id/edit" element={<ClassEditPage />} /> 
             <Route path="/assign-activity-to-class/:activityId" element={<AssignActivityToClass />} />
-            <Route path="/activities/:activityId" element={<ActivityPage />} />
+            
           </Route>
 
           {/* Rotas Aluno */}
@@ -402,8 +403,8 @@ function App() {
             <Route path="/aluno/dashboard" element={<StudentDashboardPage />} />
             <Route path="/aluno/entrar-turma" element={<JoinClassPage />} />
             <Route path="/aluno/desempenho" element={<StudentPerformancePage />} />
-            <Route path="/aluno/atividade/:id" element={<StudentActivityPage />} />
             <Route path="/student/join-class" element={<JoinClassPage />} />
+            <Route path="/aluno/minhas-atividades" element={<StudentActivityPage />} />
             
           </Route>
 

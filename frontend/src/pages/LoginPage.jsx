@@ -46,7 +46,16 @@ function LoginPage() {
           // CORREÇÃO AQUI: Passe o objeto 'data' completo, não apenas o token.
           login(data); // Agora está correto para o AuthContext
           
-          setTimeout(() => navigate('/perfil'), 2000);
+          const userRole = data.user?.role;
+          setTimeout(() => {
+            if (userRole === 'professor') {
+              navigate('/professor/dashboard');
+            } else if (userRole === 'aluno') {
+              navigate('/aluno/dashboard');
+            } else {
+              navigate('/perfil'); // Redirecionamento padrão
+            }
+          }, 2000);
         } else {
           setError(data.message || 'Erro ao fazer login com Google. Tente novamente.');
           console.error('[Google Callback] Erro do backend:', data.message);
@@ -94,8 +103,18 @@ function LoginPage() {
         // Esta chamada já estava correta, pois 'responseData' é o objeto completo
         login(responseData); 
         
-        setTimeout(() => navigate('/perfil'), 2000);
-      } else {
+          const userRole = responseData.user?.role;
+        setTimeout(() => {
+          if (userRole === 'professor') {
+            navigate('/professor/dashboard');
+          } else if (userRole === 'aluno') {
+            navigate('/aluno/dashboard');
+          } else {
+            navigate('/perfil'); // Redirecionamento padrão
+          }
+        }, 2000);
+      }   else
+      {
         // Se houver um erro, use os 'responseData' que já foram lidos.
         setError(responseData.message || 'Credenciais inválidas. Tente novamente.');
         console.error('[Login Padrão] Erro do backend:', responseData.message);

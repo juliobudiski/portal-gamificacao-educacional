@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom'; // Hook para navegação program
 import { 
   Users, BookOpen, Eye, User as UserIcon, Building, 
   GraduationCap, ChevronUp, ChevronDown, Pencil, 
-  Trash2, Save, X, Info 
+  Trash2, Save, X, Info, ArrowUpRight, Activity
 } from 'lucide-react'; // Ícones para a UI
 
 // Componente auxiliar para formatar e exibir dados JSONB
@@ -38,13 +38,16 @@ const JsonViewer = ({ data, title }) => {
   };
 
   return (
-    <div className="bg-gray-700 p-4 rounded-md mt-2 border border-gray-600">
-      <h4 className="text-lg font-semibold text-white mb-2">{title}</h4>
-      <div className="space-y-1 text-sm text-gray-300">
+    <div className="bg-gray-700 p-4 rounded-xl shadow-md mt-3 border border-gray-600 transition-all duration-300 hover:border-accent-teal/50">
+      <h4 className="text-lg font-bold text-accent-teal mb-3 flex items-center">
+        <Activity className="mr-2" size={18} />
+        {title}
+      </h4>
+      <div className="space-y-2 text-sm text-gray-300">
         {Object.entries(data).map(([key, value]) => (
-          <div key={key} className="flex flex-wrap">
-            <span className="font-medium text-accent-teal mr-2">{formatSectionTitle(key)}:</span>
-            <span>{formatValue(value)}</span>
+          <div key={key} className="flex flex-wrap p-2 hover:bg-gray-600 rounded-lg transition-colors">
+            <span className="font-semibold text-accent-yellow mr-2">{formatSectionTitle(key)}:</span>
+            <span className="text-gray-100">{formatValue(value)}</span>
           </div>
         ))}
       </div>
@@ -423,8 +426,11 @@ function AdminPage() {
   // Exibe enquanto os dados estão sendo carregados
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen text-white">
-        <p>Carregando Dashboard...</p>
+      <div className="flex justify-center items-center min-h-screen text-white bg-dark-background">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="bg-accent-teal/20 w-16 h-16 rounded-full mb-4"></div>
+          <p className="text-xl font-semibold">Carregando Dashboard...</p>
+        </div>
       </div>
     );
   }
@@ -432,8 +438,12 @@ function AdminPage() {
   // Exibe se ocorreu um erro na busca de dados
   if (error) {
     return (
-      <div className="flex justify-center items-center min-h-screen text-red-500">
-        <p>Erro: {error}</p>
+      <div className="flex justify-center items-center min-h-screen bg-dark-background">
+        <div className="bg-red-500/20 p-6 rounded-xl max-w-md text-center">
+          <Info className="mx-auto mb-3 text-red-400" size={40} />
+          <p className="text-red-300 font-bold text-xl">Erro ao carregar dados</p>
+          <p className="text-white mt-2">{error}</p>
+        </div>
       </div>
     );
   }
@@ -441,9 +451,17 @@ function AdminPage() {
   // --- Renderização Principal ---
   return (
     <div className="min-h-screen w-full bg-dark-background p-4">
-      <main className="container mx-auto mt-8 p-4 flex flex-col gap-8"> {/* Adicionado flex e gap para espaçamento */}
+      <main className="container mx-auto mt-4 p-4 flex flex-col gap-8">
         {/* Seção do Dashboard */}
-        <h1 className="text-3xl font-bold text-white mb-6">Dashboard do Administrador</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold text-white mb-2 bg-gradient-to-r from-accent-teal to-accent-purple bg-clip-text text-transparent">
+            Dashboard do Administrador
+          </h1>
+          <div className="bg-gray-800 px-4 py-2 rounded-full text-gray-300 text-sm font-medium flex items-center">
+            <span className="bg-accent-purple/20 w-2 h-2 rounded-full mr-2"></span>
+            Online
+          </div>
+        </div>
 
         {/* Seção de Cards com os dados do dashboard */}
         {dashboardData && (
@@ -451,69 +469,120 @@ function AdminPage() {
             {/* Card: Total de Usuários */}
             <button
               onClick={() => handleCardClick('all_users')}
-              className={`bg-gray-700 p-6 rounded-lg shadow-md text-white flex items-center space-x-4
-                         hover:bg-gray-600 transition-colors duration-200 cursor-pointer
-                         ${activeListFilter === 'all_users' ? 'ring-2 ring-accent-teal' : ''}`}
+              className={`relative overflow-hidden p-6 rounded-xl shadow-xl text-white flex flex-col transition-all duration-300 cursor-pointer
+                         hover:translate-y-[-5px] hover:shadow-2xl
+                         ${activeListFilter === 'all_users' 
+                           ? 'ring-2 ring-accent-teal bg-gradient-to-br from-accent-teal/10 via-gray-700 to-gray-800' 
+                           : 'bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900'}`}
             >
-              <div className="bg-gray-700 p-6 rounded-lg shadow-md text-white flex items-center space-x-4">
-                <Users size={32} className="text-accent-teal" />
+              <div className="absolute top-0 right-0 p-2">
+                <ArrowUpRight className={`transition-opacity ${activeListFilter === 'all_users' ? 'text-accent-teal opacity-100' : 'text-gray-500 opacity-30'}`} />
+              </div>
+              <div className="flex items-center mb-4">
+                <div className="bg-accent-teal/20 p-3 rounded-lg mr-4">
+                  <Users size={32} className="text-accent-teal" />
+                </div>
                 <div>
-                  <p className="text-xl font-semibold">Total de Usuários</p>
+                  <p className="text-lg font-medium text-gray-300">Total de Usuários</p>
                   <p className="text-3xl font-bold">{dashboardData.total_users}</p>
                 </div>
               </div>
+              <div className="h-1 w-full bg-gray-700 rounded-full overflow-hidden mt-2">
+                <div className="h-full bg-accent-teal w-[65%] rounded-full"></div>
+              </div>
             </button>
+            
             {/* Card: Total de Professores */}
             <button
               onClick={() => handleCardClick('professors')}
-              className={`bg-gray-700 p-6 rounded-lg shadow-md text-white flex items-center space-x-4
-                         hover:bg-gray-600 transition-colors duration-200 cursor-pointer
-                         ${activeListFilter === 'professors' ? 'ring-2 ring-accent-purple' : ''}`}
+              className={`relative overflow-hidden p-6 rounded-xl shadow-xl text-white flex flex-col transition-all duration-300 cursor-pointer
+                         hover:translate-y-[-5px] hover:shadow-2xl
+                         ${activeListFilter === 'professors' 
+                           ? 'ring-2 ring-accent-purple bg-gradient-to-br from-accent-purple/10 via-gray-700 to-gray-800' 
+                           : 'bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900'}`}
             >
-              <div className="bg-gray-700 p-6 rounded-lg shadow-md text-white flex items-center space-x-4">
-                <UserIcon size={32} className="text-accent-purple" />
+              <div className="absolute top-0 right-0 p-2">
+                <ArrowUpRight className={`transition-opacity ${activeListFilter === 'professors' ? 'text-accent-purple opacity-100' : 'text-gray-500 opacity-30'}`} />
+              </div>
+              <div className="flex items-center mb-4">
+                <div className="bg-accent-purple/20 p-3 rounded-lg mr-4">
+                  <UserIcon size={32} className="text-accent-purple" />
+                </div>
                 <div>
-                  <p className="text-xl font-semibold">Total de Professores</p>
+                  <p className="text-lg font-medium text-gray-300">Total de Professores</p>
                   <p className="text-3xl font-bold">{dashboardData.total_professors}</p>
                 </div>
               </div>
+              <div className="h-1 w-full bg-gray-700 rounded-full overflow-hidden mt-2">
+                <div className="h-full bg-accent-purple w-[45%] rounded-full"></div>
+              </div>
             </button>
-             {/* Card: Total de Alunos */}
-             <button
+            
+            {/* Card: Total de Alunos */}
+            <button
               onClick={() => handleCardClick('students')}
-              className={`bg-gray-700 p-6 rounded-lg shadow-md text-white flex items-center space-x-4
-                         hover:bg-gray-600 transition-colors duration-200 cursor-pointer
-                         ${activeListFilter === 'students' ? 'ring-2 ring-accent-yellow' : ''}`}
+              className={`relative overflow-hidden p-6 rounded-xl shadow-xl text-white flex flex-col transition-all duration-300 cursor-pointer
+                         hover:translate-y-[-5px] hover:shadow-2xl
+                         ${activeListFilter === 'students' 
+                           ? 'ring-2 ring-accent-yellow bg-gradient-to-br from-accent-yellow/10 via-gray-700 to-gray-800' 
+                           : 'bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900'}`}
             >
-              <div className="bg-gray-700 p-6 rounded-lg shadow-md text-white flex items-center space-x-4">
-                <GraduationCap size={32} className="text-accent-yellow" />
+              <div className="absolute top-0 right-0 p-2">
+                <ArrowUpRight className={`transition-opacity ${activeListFilter === 'students' ? 'text-accent-yellow opacity-100' : 'text-gray-500 opacity-30'}`} />
+              </div>
+              <div className="flex items-center mb-4">
+                <div className="bg-accent-yellow/20 p-3 rounded-lg mr-4">
+                  <GraduationCap size={32} className="text-accent-yellow" />
+                </div>
                 <div>
-                  <p className="text-xl font-semibold">Total de Alunos</p>
+                  <p className="text-lg font-medium text-gray-300">Total de Alunos</p>
                   <p className="text-3xl font-bold">{dashboardData.total_students}</p>
                 </div>
               </div>
+              <div className="h-1 w-full bg-gray-700 rounded-full overflow-hidden mt-2">
+                <div className="h-full bg-accent-yellow w-[75%] rounded-full"></div>
+              </div>
             </button>
+            
             {/* Card: Total de Atividades */}
             <button
               onClick={() => handleCardClick('all_activities')}
-              className={`bg-gray-700 p-6 rounded-lg shadow-md text-white flex items-center space-x-4
-                         hover:bg-gray-600 transition-colors duration-200 cursor-pointer
-                         ${activeListFilter === 'all_activities' ? 'ring-2 ring-blue-400' : ''}`}
+              className={`relative overflow-hidden p-6 rounded-xl shadow-xl text-white flex flex-col transition-all duration-300 cursor-pointer
+                         hover:translate-y-[-5px] hover:shadow-2xl
+                         ${activeListFilter === 'all_activities' 
+                           ? 'ring-2 ring-blue-400 bg-gradient-to-br from-blue-400/10 via-gray-700 to-gray-800' 
+                           : 'bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900'}`}
             >
-              <div className="bg-gray-700 p-6 rounded-lg shadow-md text-white flex items-center space-x-4">
-                <BookOpen size={32} className="text-blue-400" />
+              <div className="absolute top-0 right-0 p-2">
+                <ArrowUpRight className={`transition-opacity ${activeListFilter === 'all_activities' ? 'text-blue-400 opacity-100' : 'text-gray-500 opacity-30'}`} />
+              </div>
+              <div className="flex items-center mb-4">
+                <div className="bg-blue-400/20 p-3 rounded-lg mr-4">
+                  <BookOpen size={32} className="text-blue-400" />
+                </div>
                 <div>
-                  <p className="text-xl font-semibold">Total de Atividades</p>
+                  <p className="text-lg font-medium text-gray-300">Total de Atividades</p>
                   <p className="text-3xl font-bold">{dashboardData.total_activities}</p>
                 </div>
               </div>
+              <div className="h-1 w-full bg-gray-700 rounded-full overflow-hidden mt-2">
+                <div className="h-full bg-blue-400 w-[55%] rounded-full"></div>
+              </div>
             </button>
+            
             {/* Card: Visitas (Mock) */}
-            <div className="bg-gray-700 p-6 rounded-lg shadow-md text-white flex items-center space-x-4">
-              <Eye size={32} className="text-green-400" />
-              <div>
-                <p className="text-xl font-semibold">Visitas (Mock)</p>
-                <p className="text-3xl font-bold">{dashboardData.total_visits}</p>
+            <div className="relative overflow-hidden p-6 rounded-xl shadow-xl bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900 text-white flex flex-col">
+              <div className="flex items-center mb-4">
+                <div className="bg-green-400/20 p-3 rounded-lg mr-4">
+                  <Eye size={32} className="text-green-400" />
+                </div>
+                <div>
+                  <p className="text-lg font-medium text-gray-300">Visitas (Mock)</p>
+                  <p className="text-3xl font-bold">{dashboardData.total_visits}</p>
+                </div>
+              </div>
+              <div className="h-1 w-full bg-gray-700 rounded-full overflow-hidden mt-2">
+                <div className="h-full bg-green-400 w-[85%] rounded-full"></div>
               </div>
             </div>
           </div>
@@ -522,74 +591,149 @@ function AdminPage() {
     {/* Renderiza a tabela de usuários CONDICIONALMENTE */}
         {(activeListFilter === 'all_users' || activeListFilter === 'professors' || activeListFilter === 'students') && (
           <>
-            <h2 className="text-2xl font-bold text-white mb-4">
-              {activeListFilter === 'professors' ? 'Lista de Professores' :
-               activeListFilter === 'students' ? 'Lista de Alunos' :
-               'Lista de Usuários'}
-            </h2>
-            <div className="bg-gray-800 rounded-lg shadow-md overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-700">
-                {/* ... (cabeçalho e corpo da tabela de usuários) ... */}
-                <thead>
-                  <tr>
-                    {['id', 'name', 'email', 'role', 'institution_name', 'discipline'].map((key) => (
-                      <th key={key} className="py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider text-gray-400 dark:bg-gray-950 cursor-pointer hover:text-white transition-colors duration-200"
-                          onClick={() => handleSortUsers(key)}>
-                        {key.replace('_', ' ')}
-                        {sortConfigUsers.key === key && (sortConfigUsers.direction === 'asc' ? <ChevronUp size={16} className="inline ml-1" /> : <ChevronDown size={16} className="inline ml-1" />)}
-                      </th>
-                    ))}
-                    <th className="py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider text-gray-400 dark:bg-gray-950">Ações</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-700">
-                  {sortedUsers.map((userItem) => (
-                    <tr key={userItem.id} className="border-b border-gray-600 dark:border-gray-700 hover:bg-gray-600 dark:hover:bg-gray-800">
-                      {editingUserId === userItem.id ? (
-                        <>
-                          <td className="py-3 px-4 text-sm text-white">{userItem.id}</td>
-                          <td className="py-3 px-4 text-sm">
-                            <input type="text" name="name" value={editFormData.name || ''} onChange={handleEditInputChange} className="bg-gray-700 text-white border border-gray-600 rounded px-2 py-1 w-full"/>
-                          </td>
-                          <td className="py-3 px-4 text-sm">
-                            <input type="email" name="email" value={editFormData.email || ''} onChange={handleEditInputChange} className="bg-gray-700 text-white border border-gray-600 rounded px-2 py-1 w-full"/>
-                          </td>
-                          <td className="py-3 px-4 text-sm">
-                            <select name="role" value={editFormData.role || ''} onChange={handleEditInputChange} className="bg-gray-700 text-white border border-gray-600 rounded px-2 py-1 w-full">
-                              <option value="aluno">Aluno</option>
-                              <option value="professor">Professor</option>
-                              <option value="admin">Admin</option>
-                            </select>
-                          </td>
-                          <td className="py-3 px-4 text-sm">
-                            <input type="text" name="institution_name" value={editFormData.institution_name || ''} onChange={handleEditInputChange} className="bg-gray-700 text-white border border-gray-600 rounded px-2 py-1 w-full"/>
-                          </td>
-                          <td className="py-3 px-4 text-sm">
-                            <input type="text" name="discipline" value={editFormData.discipline || ''} onChange={handleEditInputChange} className="bg-gray-700 text-white border border-gray-600 rounded px-2 py-1 w-full"/>
-                          </td>
-                          <td className="py-3 px-4 text-sm flex space-x-2">
-                            <button onClick={handleSaveEdit} className="text-green-400 hover:text-green-300"><Save size={20} /></button>
-                            <button onClick={handleCancelEdit} className="text-red-400 hover:text-red-300"><X size={20} /></button>
-                          </td>
-                        </>
-                      ) : (
-                        <>
-                          <td className="py-3 px-4 text-sm text-white">{userItem.id}</td>
-                          <td className="py-3 px-4 text-sm text-white">{userItem.name}</td>
-                          <td className="py-3 px-4 text-sm text-white">{userItem.email}</td>
-                          <td className="py-3 px-4 text-sm text-white">{userItem.role}</td>
-                          <td className="py-3 px-4 text-sm text-white">{userItem.institution_name || 'N/A'}</td>
-                          <td className="py-3 px-4 text-sm text-white">{userItem.discipline || 'N/A'}</td>
-                          <td className="py-3 px-4 text-sm flex space-x-2">
-                            <button onClick={() => handleEditClick(userItem)} className="text-blue-400 hover:text-blue-300"><Pencil size={20} /></button>
-                            <button onClick={() => handleDeleteClick(userItem.id, userItem.name)} className="text-red-400 hover:text-red-300"><Trash2 size={20} /></button>
-                          </td>
-                        </>
-                      )}
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold text-white">
+                {activeListFilter === 'professors' ? 'Lista de Professores' :
+                 activeListFilter === 'students' ? 'Lista de Alunos' :
+                 'Lista de Usuários'}
+              </h2>
+              <div className="bg-gray-800 px-3 py-1 rounded-full text-gray-300 text-sm">
+                {sortedUsers.length} {sortedUsers.length === 1 ? 'registro' : 'registros'}
+              </div>
+            </div>
+            
+            <div className="bg-gray-800 rounded-xl shadow-xl overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-700">
+                  <thead className="bg-gradient-to-r from-accent-teal/20 to-accent-purple/10">
+                    <tr>
+                      {['id', 'name', 'email', 'role', 'institution_name', 'discipline'].map((key) => (
+                        <th key={key} className="py-4 px-4 text-left text-sm font-bold uppercase tracking-wider text-gray-300 cursor-pointer group hover:bg-gray-700/30 transition-colors"
+                            onClick={() => handleSortUsers(key)}>
+                          <div className="flex items-center">
+                            {key.replace('_', ' ')}
+                            <span className="ml-2">
+                              {sortConfigUsers.key === key && (sortConfigUsers.direction === 'asc' 
+                                ? <ChevronUp size={16} className="text-accent-yellow" /> 
+                                : <ChevronDown size={16} className="text-accent-yellow" />)}
+                            </span>
+                          </div>
+                        </th>
+                      ))}
+                      <th className="py-4 px-4 text-right text-sm font-bold uppercase tracking-wider text-gray-300">Ações</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-gray-700">
+                    {sortedUsers.map((userItem) => (
+                      <tr key={userItem.id} 
+                          className={`border-b border-gray-600 hover:bg-gray-700/50 transition-colors
+                                    ${editingUserId === userItem.id ? 'bg-gray-700/80' : ''}`}>
+                        {editingUserId === userItem.id ? (
+                          <>
+                            <td className="py-4 px-4 text-sm text-white">{userItem.id}</td>
+                            <td className="py-4 px-4 text-sm">
+                              <input 
+                                type="text" 
+                                name="name" 
+                                value={editFormData.name || ''} 
+                                onChange={handleEditInputChange} 
+                                className="bg-gray-700 text-white border border-gray-600 rounded-xl px-3 py-2 w-full focus:ring-2 focus:ring-accent-teal focus:outline-none transition-all"
+                              />
+                            </td>
+                            <td className="py-4 px-4 text-sm">
+                              <input 
+                                type="email" 
+                                name="email" 
+                                value={editFormData.email || ''} 
+                                onChange={handleEditInputChange} 
+                                className="bg-gray-700 text-white border border-gray-600 rounded-xl px-3 py-2 w-full focus:ring-2 focus:ring-accent-teal focus:outline-none transition-all"
+                              />
+                            </td>
+                            <td className="py-4 px-4 text-sm">
+                              <select 
+                                name="role" 
+                                value={editFormData.role || ''} 
+                                onChange={handleEditInputChange} 
+                                className="bg-gray-700 text-white border border-gray-600 rounded-xl px-3 py-2 w-full focus:ring-2 focus:ring-accent-teal focus:outline-none transition-all"
+                              >
+                                <option value="aluno">Aluno</option>
+                                <option value="professor">Professor</option>
+                                <option value="admin">Admin</option>
+                              </select>
+                            </td>
+                            <td className="py-4 px-4 text-sm">
+                              <input 
+                                type="text" 
+                                name="institution_name" 
+                                value={editFormData.institution_name || ''} 
+                                onChange={handleEditInputChange} 
+                                className="bg-gray-700 text-white border border-gray-600 rounded-xl px-3 py-2 w-full focus:ring-2 focus:ring-accent-teal focus:outline-none transition-all"
+                              />
+                            </td>
+                            <td className="py-4 px-4 text-sm">
+                              <input 
+                                type="text" 
+                                name="discipline" 
+                                value={editFormData.discipline || ''} 
+                                onChange={handleEditInputChange} 
+                                className="bg-gray-700 text-white border border-gray-600 rounded-xl px-3 py-2 w-full focus:ring-2 focus:ring-accent-teal focus:outline-none transition-all"
+                              />
+                            </td>
+                            <td className="py-4 px-4 text-sm flex justify-end space-x-2">
+                              <button 
+                                onClick={handleSaveEdit} 
+                                className="p-2 bg-accent-teal/20 hover:bg-accent-teal/40 rounded-xl transition-colors group"
+                                title="Salvar alterações"
+                              >
+                                <Save size={20} className="text-accent-teal group-hover:text-white" />
+                              </button>
+                              <button 
+                                onClick={handleCancelEdit} 
+                                className="p-2 bg-red-500/20 hover:bg-red-500/40 rounded-xl transition-colors group"
+                                title="Cancelar edição"
+                              >
+                                <X size={20} className="text-red-400 group-hover:text-white" />
+                              </button>
+                            </td>
+                          </>
+                        ) : (
+                          <>
+                            <td className="py-4 px-4 text-sm font-medium text-accent-yellow">{userItem.id}</td>
+                            <td className="py-4 px-4 text-sm text-white font-medium">{userItem.name}</td>
+                            <td className="py-4 px-4 text-sm text-gray-300">{userItem.email}</td>
+                            <td className="py-4 px-4 text-sm">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium
+                                ${userItem.role === 'admin' ? 'bg-accent-purple/20 text-accent-purple' : 
+                                  userItem.role === 'professor' ? 'bg-blue-400/20 text-blue-400' : 
+                                  'bg-accent-yellow/20 text-accent-yellow'}`}>
+                                {userItem.role}
+                              </span>
+                            </td>
+                            <td className="py-4 px-4 text-sm text-white">{userItem.institution_name || 'N/A'}</td>
+                            <td className="py-4 px-4 text-sm text-white">{userItem.discipline || 'N/A'}</td>
+                            <td className="py-4 px-4 text-sm flex justify-end space-x-2">
+                              <button 
+                                onClick={() => handleEditClick(userItem)} 
+                                className="p-2 bg-gray-700 hover:bg-accent-teal/30 rounded-xl transition-colors group"
+                                title="Editar usuário"
+                              >
+                                <Pencil size={18} className="text-gray-400 group-hover:text-accent-teal" />
+                              </button>
+                              <button 
+                                onClick={() => handleDeleteClick(userItem.id, userItem.name)} 
+                                className="p-2 bg-gray-700 hover:bg-red-500/30 rounded-xl transition-colors group"
+                                title="Excluir usuário"
+                              >
+                                <Trash2 size={18} className="text-gray-400 group-hover:text-red-400" />
+                              </button>
+                            </td>
+                          </>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </>
         )}
@@ -598,65 +742,113 @@ function AdminPage() {
         {/* Renderiza a tabela de atividades CONDICIONALMENTE */}
         {(activeListFilter === 'all_activities') && ( // Mostra por padrão ou quando 'all_activities' é clicado
           <>
-            <h2 className="text-2xl font-bold text-white mb-4">Lista de Atividades Criadas</h2>
-            <div className="bg-gray-800 rounded-lg shadow-md overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-700">
-                {/* Cabeçalho da Tabela de Atividades */}
-                <thead>
-                  <tr>
-                    {['id', 'title', 'professor_name', 'professor_email', 'areaKnowledge', 'isPublic', 'createdAt'].map((key) => (
-                      <th key={key} className="py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider text-gray-400 dark:bg-gray-950 cursor-pointer hover:text-white transition-colors duration-200"
-                          onClick={() => handleSortActivities(key)}>
-                        {key.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase()).replace('professo R_name', 'Professor Name').replace('professo R_email', 'Professor Email').replace('is Public', 'Public')}
-                        {sortConfigActivities.key === key && (sortConfigActivities.direction === 'asc' ? <ChevronUp size={16} className="inline ml-1" /> : <ChevronDown size={16} className="inline ml-1" />)}
-                      </th>
-                    ))}
-                    <th className="py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider text-gray-400 dark:bg-gray-950">Detalhes</th>
-                  </tr>
-                </thead>
-                {/* Corpo da Tabela de Atividades */}
-                <tbody className="divide-y divide-gray-700">
-                  {sortedActivities.map((activity) => (
-                    <React.Fragment key={activity.id}>
-                      <tr className="border-b border-gray-600 dark:border-gray-700 hover:bg-gray-600 dark:hover:bg-gray-800">
-                        <td className="py-3 px-4 text-sm text-white">{activity.id}</td>
-                        <td className="py-3 px-4 text-sm text-white">{activity.title}</td>
-                        <td className="py-3 px-4 text-sm text-white">{activity.professor_name || 'N/A'}</td>
-                        <td className="py-3 px-4 text-sm text-white">{activity.professor_email || 'N/A'}</td>
-                        <td className="py-3 px-4 text-sm text-white">{activity.areaKnowledge || 'N/A'}</td>
-                        <td className="py-3 px-4 text-sm text-white">{activity.isPublic ? 'Sim' : 'Não'}</td>
-                        <td className="py-3 px-4 text-sm text-white">
-                          {activity.createdAt ? new Date(activity.createdAt).toLocaleString() : 'N/A'}
-                        </td>
-                        <td className="py-3 px-4 text-sm">
-                          <button onClick={() => toggleActivityDetails(activity.id)} className="text-blue-400 hover:text-blue-300">
-                            {expandedActivityId === activity.id ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                          </button>
-                        </td>
-                      </tr>
-                      {/* Linha expandida para mostrar detalhes da atividade */}
-                      {expandedActivityId === activity.id && (
-                        <tr>
-                          <td colSpan="8" className="p-4 bg-gray-700 border-t border-gray-600">
-                            <div className="space-y-4">
-                              <p className="text-white text-sm"><strong>Descrição:</strong> {activity.description || 'N/A'}</p>
-                              <JsonViewer data={activity.currentScenario} title="Cenário Atual" />
-                              <JsonViewer data={activity.desiredScenario} title="Cenário Desejado" />
-                              <JsonViewer data={activity.activityPlanning} title="Planejamento da Atividade" />
-                              <JsonViewer data={activity.playerProfile} title="Perfil do Jogador" />
-                              <JsonViewer data={activity.gameElements} title="Elementos de Jogos" />
-                              <JsonViewer data={activity.rewardsOffered} title="Recompensas Oferecidas" />
-                              <JsonViewer data={activity.rewardedActions} title="Ações Recompensadas" />
-                              <JsonViewer data={activity.gamificationRules} title="Regras da Gamificação" />
-                              <p className="text-white text-sm"><strong>Última Atualização:</strong> {activity.updatedAt ? new Date(activity.updatedAt).toLocaleString() : 'N/A'}</p>
-                            </div>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold text-white">Lista de Atividades Criadas</h2>
+              <div className="bg-gray-800 px-3 py-1 rounded-full text-gray-300 text-sm">
+                {sortedActivities.length} {sortedActivities.length === 1 ? 'atividade' : 'atividades'}
+              </div>
+            </div>
+            
+            <div className="bg-gray-800 rounded-xl shadow-xl overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-700">
+                  {/* Cabeçalho da Tabela de Atividades */}
+                  <thead className="bg-gradient-to-r from-blue-400/20 to-accent-purple/10">
+                    <tr>
+                      {['id', 'title', 'professor_name', 'professor_email', 'areaKnowledge', 'isPublic', 'createdAt'].map((key) => (
+                        <th key={key} className="py-4 px-4 text-left text-sm font-bold uppercase tracking-wider text-gray-300 cursor-pointer group hover:bg-gray-700/30 transition-colors"
+                            onClick={() => handleSortActivities(key)}>
+                          <div className="flex items-center">
+                            {key.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase()).replace('professo R_name', 'Professor Name').replace('professo R_email', 'Professor Email').replace('is Public', 'Public')}
+                            <span className="ml-2">
+                              {sortConfigActivities.key === key && (sortConfigActivities.direction === 'asc' 
+                                ? <ChevronUp size={16} className="text-accent-yellow" /> 
+                                : <ChevronDown size={16} className="text-accent-yellow" />)}
+                            </span>
+                          </div>
+                        </th>
+                      ))}
+                      <th className="py-4 px-4 text-right text-sm font-bold uppercase tracking-wider text-gray-300">Detalhes</th>
+                    </tr>
+                  </thead>
+                  {/* Corpo da Tabela de Atividades */}
+                  <tbody className="divide-y divide-gray-700">
+                    {sortedActivities.map((activity) => (
+                      <React.Fragment key={activity.id}>
+                        <tr className={`border-b border-gray-600 hover:bg-gray-700/50 transition-colors
+                                      ${expandedActivityId === activity.id ? 'bg-gray-700/50' : ''}`}>
+                          <td className="py-4 px-4 text-sm font-medium text-accent-yellow">{activity.id}</td>
+                          <td className="py-4 px-4 text-sm font-medium text-white">{activity.title}</td>
+                          <td className="py-4 px-4 text-sm text-white">{activity.professor_name || 'N/A'}</td>
+                          <td className="py-4 px-4 text-sm text-gray-300">{activity.professor_email || 'N/A'}</td>
+                          <td className="py-4 px-4 text-sm">
+                            <span className="px-2 py-1 rounded-full bg-blue-400/20 text-blue-400 text-xs font-medium">
+                              {activity.areaKnowledge || 'N/A'}
+                            </span>
+                          </td>
+                          <td className="py-4 px-4 text-sm">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium
+                              ${activity.isPublic ? 'bg-green-500/20 text-green-400' : 'bg-gray-600 text-gray-400'}`}>
+                              {activity.isPublic ? 'Pública' : 'Privada'}
+                            </span>
+                          </td>
+                          <td className="py-4 px-4 text-sm text-gray-400">
+                            {activity.createdAt ? new Date(activity.createdAt).toLocaleDateString() : 'N/A'}
+                          </td>
+                          <td className="py-4 px-4 text-sm text-right">
+                            <button 
+                              onClick={() => toggleActivityDetails(activity.id)} 
+                              className="p-2 bg-gray-700 hover:bg-blue-400/30 rounded-xl transition-colors group"
+                              title={expandedActivityId === activity.id ? "Recolher detalhes" : "Expandir detalhes"}
+                            >
+                              {expandedActivityId === activity.id 
+                                ? <ChevronUp size={20} className="text-blue-400 group-hover:text-white" /> 
+                                : <ChevronDown size={20} className="text-blue-400 group-hover:text-white" />}
+                            </button>
                           </td>
                         </tr>
-                      )}
-                    </React.Fragment>
-                  ))}
-                </tbody>
-              </table>
+                        {/* Linha expandida para mostrar detalhes da atividade */}
+                        {expandedActivityId === activity.id && (
+                          <tr>
+                            <td colSpan="8" className="p-4 bg-gray-700/50">
+                              <div className="space-y-4 p-4 bg-gray-800 rounded-xl shadow-inner">
+                                <div className="mb-4">
+                                  <h3 className="text-lg font-bold text-white mb-2">Descrição:</h3>
+                                  <p className="text-gray-300 bg-gray-700 p-4 rounded-xl">{activity.description || 'N/A'}</p>
+                                </div>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <JsonViewer data={activity.currentScenario} title="Cenário Atual" />
+                                  <JsonViewer data={activity.desiredScenario} title="Cenário Desejado" />
+                                  <JsonViewer data={activity.activityPlanning} title="Planejamento" />
+                                  <JsonViewer data={activity.playerProfile} title="Perfil do Jogador" />
+                                  <JsonViewer data={activity.gameElements} title="Elementos de Jogos" />
+                                  <JsonViewer data={activity.rewardsOffered} title="Recompensas" />
+                                  <JsonViewer data={activity.rewardedActions} title="Ações Recompensadas" />
+                                  <JsonViewer data={activity.gamificationRules} title="Regras de Gamificação" />
+                                </div>
+                                
+                                <div className="flex justify-between items-center pt-4 border-t border-gray-700">
+                                  <div>
+                                    <p className="text-gray-400 text-sm">
+                                      <strong>Criado em:</strong> {activity.createdAt ? new Date(activity.createdAt).toLocaleString() : 'N/A'}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <p className="text-gray-400 text-sm">
+                                      <strong>Última atualização:</strong> {activity.updatedAt ? new Date(activity.updatedAt).toLocaleString() : 'N/A'}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </>
         )}

@@ -59,8 +59,17 @@ function RegisterPage() {
           setSuccess('Login com Google bem-sucedido! Redirecionando...');
           console.log("handleGoogleSignInCallback: Login bem-sucedido. Chamando a função login do contexto.");
           login(data.access_token); // Salva o token no contexto e localStorage
-          setTimeout(() => navigate('/perfil'), 2000); // Redireciona para a página de perfil
-        } else {
+          const userRole = data.user?.role;
+          setTimeout(() => {
+            if (userRole === 'professor') {
+              navigate('/professor/dashboard');
+            } else if (userRole === 'aluno') {
+              navigate('/aluno/dashboard');
+            } else {
+              navigate('/perfil'); // Redirecionamento padrão
+            }
+          }, 2000); 
+          } else {
           console.error("handleGoogleSignInCallback: Erro na resposta do backend:", data.message);
           setError(data.message || 'Erro ao fazer login com Google. Tente novamente.');
         }

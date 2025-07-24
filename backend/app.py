@@ -7,7 +7,7 @@ from flask_cors import CORS, cross_origin
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy import Text
+from sqlalchemy import func
 
 # Módulos padrão do Python para manipulação do sistema operacional, variáveis de ambiente e tempo
 import logging
@@ -191,26 +191,32 @@ class Class(db.Model):
 # Modelo para a tabela 'enrollment' (inscrições de alunos em turmas)
 class Enrollment(db.Model):
     __tablename__ = 'enrollment'
-
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     class_id = db.Column(db.Integer, db.ForeignKey('class.id'), nullable=False)
     enrollment_date = db.Column(db.DateTime, default=db.func.current_timestamp())
 
-    # Relationships
-    student = db.relationship('User', backref='enrollments', lazy=True, primaryjoin="User.id == Enrollment.student_id")
-    # Using 'Class.id' directly to avoid circular dependency in backref if Class also backrefs Enrollment
+    student = db.relationship('User', backref='enrollments', lazy=True)
     class_obj = db.relationship('Class', backref='enrollments', lazy=True)
-
     __table_args__ = (db.UniqueConstraint('student_id', 'class_id', name='_student_class_uc'),)
 
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'student_id': self.student_id,
-            'class_id': self.class_id,
-            'enrollment_date': self.enrollment_date.isoformat() if self.enrollment_date else None
-        }
+# NOVO MODELO: Tabela dedicada para rastrear o progresso em cada atividade.
+class ActivityProgress(db.Model):
+    __tablename__ = 'activity_progress'
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=False)
+    class_id = db.Column(db.Integer, db.ForeignKey('class.id'), nullable=False)
+    
+    points_earned = db.Column(db.Integer, default=0)
+    status = db.Column(db.String(50), default='not_started') # Ex: not_started, in_progress, completed
+    completed_at = db.Column(db.DateTime, nullable=True)
+    attempts = db.Column(db.Integer, default=0)
+
+    student = db.relationship('User', backref='activity_progresses', lazy=True)
+    activity = db.relationship('Activity', backref='progresses', lazy=True)
+    class_obj = db.relationship('Class', backref='activity_progresses', lazy=True)
+    __table_args__ = (db.UniqueConstraint('student_id', 'activity_id', name='_student_activity_uc'),)
 
 
 # Define a pasta onde as imagens de perfil serão salvas
@@ -758,6 +764,9 @@ def get_activity(activity_id):
     return jsonify(activity.to_dict()), 200
 
 # --- Endpoints de Administração ---
+# ===================================================================
+# Endpoints de Administração
+# ===================================================================
 
 # Rota para buscar dados para o dashboard do admin
 @app.route('/api/admin/dashboard_data', methods=['GET'])
@@ -1320,6 +1329,195 @@ from flask import send_from_directory
 @app.route('/uploads/avatars/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+
+@app.route('/api/student/dashboard', methods=['GET'])
+@cross_origin()
+@jwt_required()
+def get_student_dashboard():
+    current_user_id = get_jwt_identity()
+    app.logger.info(f"Usuário ID {current_user_id} solicitando dados do dashboard de aluno.")
+    
+    user = User.query.get(current_user_id)
+    if not user or user.role != 'aluno':
+        app.logger.warning(f"Acesso negado ao dashboard de aluno para o ID {current_user_id}. Role: {user.role if user else 'N/A'}")
+        return jsonify({"message": "Acesso negado. Apenas alunos podem acessar este dashboard."}), 403
+
+    try:
+        # 1. Buscar as turmas em que o aluno está matriculado
+        enrollments = Enrollment.query.filter_by(student_id=current_user_id).all()
+        enrolled_classes_data = []
+        class_ids = []
+        for enrollment in enrollments:
+            class_info = Class.query.get(enrollment.class_id)
+            if class_info:
+                class_ids.append(class_info.id)
+                class_dict = class_info.to_dict()
+                
+                # Adiciona o nome do professor e a contagem de atividades
+                professor_name = User.query.get(class_info.professor_id).name if User.query.get(class_info.professor_id) else 'Desconhecido'
+                activities_count = Activity.query.filter_by(class_id=class_info.id).count()
+                
+                class_dict['professor_name'] = professor_name
+                class_dict['activities_count'] = activities_count
+                enrolled_classes_data.append(class_dict)
+
+        # 2. Buscar atividades pendentes (por enquanto, vamos pegar todas as atividades das turmas)
+        pending_activities_data = []
+        if class_ids:
+            activities = Activity.query.filter(Activity.class_id.in_(class_ids)).all()
+            for activity in activities:
+                # Adiciona o nome da turma à atividade
+                class_name = next((cls['name'] for cls in enrolled_classes_data if cls['id'] == activity.class_id), 'Turma Desconhecida')
+                activity_dict = activity.to_dict()
+                activity_dict['class_name'] = class_name
+                # Adicionamos uma data de entrega de exemplo, pois o modelo ainda não tem
+                activity_dict['due_date'] = '2025-08-15' 
+                pending_activities_data.append(activity_dict)
+
+        # 3. Buscar dados de desempenho (usando dados de exemplo por enquanto, pois a lógica de pontos não foi implementada)
+        # TODO: Substituir por dados reais quando a lógica de gamificação estiver implementada
+        performance_data = {
+            'totalPoints': 1500,  # Exemplo
+            'level': 7,         # Exemplo
+            'achievements': 5   # Exemplo
+        }
+
+        # 4. Montar o objeto de resposta final
+        dashboard_data = {
+            "classes": enrolled_classes_data,
+            "pendingActivities": pending_activities_data,
+            "performance": performance_data
+        }
+
+        app.logger.info(f"Dados do dashboard para o aluno ID {current_user_id} recuperados com sucesso.")
+        return jsonify(dashboard_data), 200
+
+    except Exception as e:
+        app.logger.error(f"Erro ao buscar dados do dashboard para o aluno ID {current_user_id}: {str(e)}", exc_info=True)
+        return jsonify({"message": f"Erro interno do servidor ao buscar dados do dashboard: {str(e)}"}), 500
+
+
+# ===================================================================
+# ROTAS DA ACTIVITY PAGE (COM A CORREÇÃO DO CORS)
+# ===================================================================
+
+@app.route('/api/activities/<int:activity_id>/progress', methods=['GET'])
+@jwt_required()
+@cross_origin()
+def get_student_progress(activity_id):
+    """ Retorna o progresso de um aluno (pontos totais na turma e progresso na atividade). """
+    user_id = get_jwt_identity()
+    activity = Activity.query.get_or_404(activity_id)
+    class_id = activity.class_id
+    
+    # Busca o progresso específico desta atividade
+    activity_progress = ActivityProgress.query.filter_by(student_id=user_id, activity_id=activity_id).first()
+    
+    # Calcula o total de pontos, xp e level do aluno NAQUELA TURMA
+    total_progress_in_class = db.session.query(
+        func.sum(ActivityProgress.points_earned).label('total_points')
+    ).filter_by(student_id=user_id, class_id=class_id).first()
+    
+    total_points = total_progress_in_class.total_points or 0
+    
+    # Lógica simples de nível: a cada 1000 pontos, sobe de nível
+    level = 1 + (total_points // 1000)
+    xp_for_next_level = 1000 * level
+    xp_current = total_points % 1000
+
+    return jsonify({
+        "points": total_points,
+        "level": level,
+        "xp": xp_current,
+        "xpForNextLevel": xp_for_next_level,
+        "activity_specific_points": activity_progress.points_earned if activity_progress else 0,
+        "achievements": [], # A ser implementado
+        "stats": {} # A ser implementado
+    }), 200
+
+
+@app.route('/api/activities/<int:activity_id>/analytics', methods=['GET'])
+@jwt_required()
+@cross_origin()
+def get_professor_analytics(activity_id):
+    """ Retorna os dados de analytics REAIS para o professor. """
+    activity = Activity.query.get_or_404(activity_id)
+    if activity.professor_id != current_user.id:
+        return jsonify({"message": "Acesso negado."}), 403
+
+    enrollments = Enrollment.query.filter_by(class_id=activity.class_id).all()
+    if not enrollments:
+        return jsonify({ "completionRate": 0, "averageScore": 0, "students": [] }), 200
+
+    # Subquery para calcular o total de pontos de cada aluno na turma
+    points_subquery = db.session.query(
+        ActivityProgress.student_id,
+        func.sum(ActivityProgress.points_earned).label('total_points')
+    ).filter(
+        ActivityProgress.class_id == activity.class_id
+    ).group_by(ActivityProgress.student_id).subquery()
+
+    # Junta a matrícula com os pontos calculados
+    students_with_points = db.session.query(
+        User, points_subquery.c.total_points
+    ).join(
+        enrollments, User.id == Enrollment.student_id
+    ).outerjoin(
+        points_subquery, User.id == points_subquery.c.student_id
+    ).all()
+
+    students_data = []
+    total_score = 0
+    for user, points in students_with_points:
+        score = points or 0
+        total_score += score
+        students_data.append({
+            "id": user.id, "name": user.name, "status": 'Em Andamento', "score": score
+        })
+
+    total_students = len(enrollments)
+    analytics_data = {
+        "completionRate": 0, # A ser implementado
+        "averageScore": total_score / total_students if total_students > 0 else 0,
+        "students": students_data
+    }
+    return jsonify(analytics_data), 200
+
+@app.route('/api/activities/<int:activity_id>/leaderboard', methods=['GET'])
+@jwt_required()
+@cross_origin()
+def get_leaderboard(activity_id):
+    """ Retorna o ranking REAL de uma atividade, baseado nos pontos totais da turma. """
+    activity = Activity.query.get_or_404(activity_id)
+    
+    # Subquery para somar os pontos de cada aluno na turma
+    points_subquery = db.session.query(
+        ActivityProgress.student_id,
+        func.sum(ActivityProgress.points_earned).label('total_points')
+    ).filter(ActivityProgress.class_id == activity.class_id).group_by(ActivityProgress.student_id).subquery()
+
+    # Junta User com os pontos, ordenando pelo total de pontos
+    leaderboard_query = db.session.query(
+        User,
+        points_subquery.c.total_points
+    ).join(
+        points_subquery, User.id == points_subquery.c.student_id
+    ).order_by(
+        points_subquery.c.total_points.desc()
+    ).all()
+
+    leaderboard_data = []
+    for i, (user, points) in enumerate(leaderboard_query):
+        leaderboard_data.append({
+            "rank": i + 1,
+            "name": user.name,
+            "points": points or 0,
+            "avatar": user.profile_picture or f"/avatars/avatar-default.png"
+        })
+    return jsonify(leaderboard_data), 200
+
+
 
 # --- Bloco de Execução Principal ---
 if __name__ == '__main__':
