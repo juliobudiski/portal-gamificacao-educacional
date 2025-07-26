@@ -1,0 +1,298 @@
+# backend/app/routes/auth.py
+
+from flask import Blueprint, request, jsonify, current_app
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from werkzeug.security import generate_password_hash, check_password_hash
+from ..models import db, User
+from ..config import Config
+from flask_cors import cross_origin
+from google.oauth2 import id_token
+from google.auth.transport import requests
+
+auth_bp = Blueprint('auth', __name__)
+
+# Rota para registrar um novo usuário
+@auth_bp.route('/register', methods=['POST'])
+def register_user():
+    current_app.logger.info("Tentativa de registro de usuário iniciada.")
+    data = request.get_json()
+    current_app.logger.debug(f"Dados recebidos para registro: {data}")
+
+    email = data.get('email')
+    password = data.get('password')
+    name = data.get('name')
+    role = data.get('role', 'aluno')
+
+    if not email or not password or not name:
+        current_app.logger.warning("Falha no registro: campos obrigatórios ausentes.")
+        return jsonify({"message": "Nome, e-mail e senha são obrigatórios."}), 400
+
+    existing_user = User.query.filter_by(email=email).first()
+    if existing_user:
+        current_app.logger.warning(f"Falha no registro: e-mail '{email}' já cadastrado.")
+        return jsonify({"message": "E-mail já cadastrado."}), 409
+
+    hashed_password = generate_password_hash(password)
+    new_user = User(email=email, password_hash=hashed_password, name=name, role=role)
+
+    try:
+        db.session.add(new_user)
+        db.session.commit()
+        current_app.logger.info(f"Usuário '{email}' registrado com sucesso com ID: {new_user.id}")
+
+        additional_claims = {
+            "email": new_user.email, "name": new_user.name, "role": new_user.role,
+            "profile_picture": new_user.profile_picture,
+            "institutionName": new_user.institution_name,
+            "discipline": new_user.discipline
+        }
+        access_token = create_access_token(identity=str(new_user.id), additional_claims=additional_claims)
+
+        user_data = {
+            "id": new_user.id, "email": new_user.email, "name": new_user.name, "role": new_user.role,
+            "profile_picture": new_user.profile_picture,
+            "institutionName": new_user.institution_name,
+            "discipline": new_user.discipline,
+            "token": access_token
+        }
+        return jsonify(access_token=access_token, user=user_data), 201
+
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Erro ao registrar usuário '{email}': {str(e)}", exc_info=True)
+        return jsonify({"message": f"Erro interno ao cadastrar usuário: {str(e)}"}), 500
+
+# Rota para login de usuário com e-mail e senha
+@auth_bp.route('/login', methods=['POST'])
+def login_user():
+    current_app.logger.info("Tentativa de login iniciada.")
+    data = request.get_json()
+    current_app.logger.debug(f"Dados recebidos para login: {data.get('email')}")
+
+    email = data.get('email')
+    password = data.get('password')
+
+    user = User.query.filter_by(email=email).first()
+
+    if user and check_password_hash(user.password_hash, password):
+        current_app.logger.info(f"Login bem-sucedido para o usuário: {email}")
+        additional_claims = {
+            "email": user.email, "name": user.name, "role": user.role,
+            "profile_picture": user.profile_picture,
+            "institutionName": user.institution_name,
+            "discipline": user.discipline
+        }
+        access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
+        
+        user_data = {
+            "id": user.id, "email": user.email, "name": user.name, "role": user.role,
+            "profile_picture": user.profile_picture, "google_id": user.google_id,
+            "institutionName": user.institution_name, "discipline": user.discipline,
+            "token": access_token
+        }
+        return jsonify(access_token=access_token, user=user_data), 200
+    else:
+        current_app.logger.warning(f"Falha no login para o e-mail: {email}. Credenciais inválidas.")
+        return jsonify({"message": "Credenciais inválidas."}), 401
+
+# Rota para autenticação via Google Sign-In
+@auth_bp.route('/google', methods=['POST'])
+@cross_origin()
+def google_auth():
+    current_app.logger.info("Tentativa de autenticação com Google iniciada.")
+    data = request.get_json()
+    token = data.get('id_token')
+    selected_role = data.get('role', 'aluno')
+    current_app.logger.debug(f"Token do Google recebido. Role selecionada: {selected_role}")
+
+    if not token:
+        current_app.logger.warning("Token do Google não fornecido na requisição.")
+        return jsonify({"message": "Token do Google não fornecido."}), 400
+
+    try:
+        # Verifica o token com o backend do Google
+        idinfo = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID_BACKEND)
+        current_app.logger.debug(f"Informações do token Google verificado: {idinfo.get('email')}")
+
+        google_id = idinfo['sub']
+        email = idinfo['email']
+        name = idinfo.get('name', '')
+        picture = idinfo.get('picture', '')
+
+        user = User.query.filter_by(google_id=google_id).first()
+        status_code = 200
+
+        if user:
+            current_app.logger.info(f"Usuário encontrado pelo google_id: {email}")
+            if user.role != selected_role:
+                current_app.logger.info(f"Atualizando role do usuário {email} de '{user.role}' para '{selected_role}'.")
+                user.role = selected_role
+                db.session.commit()
+        else:
+            current_app.logger.info(f"Usuário não encontrado pelo google_id. Buscando por e-mail: {email}")
+            existing_email_user = User.query.filter_by(email=email).first()
+            if existing_email_user:
+                current_app.logger.info(f"Usuário existente encontrado por e-mail. Vinculando conta Google para {email}.")
+                existing_email_user.google_id = google_id
+                existing_email_user.name = name
+                existing_email_user.profile_picture = picture
+                if existing_email_user.role != selected_role:
+                    current_app.logger.info(f"Atualizando role do usuário {email} de '{existing_email_user.role}' para '{selected_role}'.")
+                    existing_email_user.role = selected_role
+                db.session.commit()
+                user = existing_email_user
+            else:
+                current_app.logger.info(f"Nenhum usuário encontrado. Criando novo usuário Google para {email}.")
+                user = User(
+                    email=email, password_hash='google_auth_only', google_id=google_id,
+                    name=name, profile_picture=picture, role=selected_role
+                )
+                db.session.add(user)
+                db.session.commit()
+                status_code = 201
+
+        current_app.logger.info(f"Gerando token de acesso para o usuário {user.email}")
+        additional_claims = {
+            "email": user.email, "name": user.name, "role": user.role,
+            "profile_picture": user.profile_picture,
+            "institutionName": user.institution_name,
+            "discipline": user.discipline
+        }
+        access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
+
+        user_data = {
+            "id": user.id, "email": user.email, "name": user.name, "role": user.role,
+            "profile_picture": user.profile_picture, "google_id": user.google_id,
+            "institutionName": user.institution_name, "discipline": user.discipline,
+        }
+        return jsonify(access_token=access_token, user=user_data), status_code
+
+    except ValueError as e:
+        current_app.logger.error(f"Erro de validação do token Google: {str(e)}", exc_info=True)
+        return jsonify({"message": f"Token do Google inválido ou expirado. {str(e)}"}), 401
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Erro inesperado na autenticação Google: {str(e)}", exc_info=True)
+        return jsonify({"message": f"Erro interno no servidor durante autenticação Google: {str(e)}"}), 500
+
+# Rota para professores atualizarem informações de instituição e disciplina
+@auth_bp.route('/user/update-profile', methods=['POST'])
+@cross_origin()
+@jwt_required()
+def update_profile():
+    current_user_id = get_jwt_identity()
+    current_app.logger.info(f"Usuário ID {current_user_id} tentando atualizar o perfil.")
+    
+    user = User.query.get(current_user_id)
+
+    if not user:
+        current_app.logger.error(f"Tentativa de atualizar perfil para usuário inexistente: ID {current_user_id}")
+        return jsonify({"message": "Usuário não encontrado."}), 404
+
+    if user.role != 'professor':
+        current_app.logger.warning(f"Acesso negado para ID {current_user_id} na rota update-profile. Role: {user.role}")
+        return jsonify({"message": "Acesso negado. Apenas professores podem atualizar essas informações."}), 403
+
+    data = request.get_json()
+    current_app.logger.debug(f"Dados recebidos para atualização do perfil do ID {current_user_id}: {data}")
+
+    try:
+        if 'institution_name' in data:
+            user.institution_name = data['institution_name']
+        if 'discipline' in data:
+            user.discipline = data['discipline']
+        
+        db.session.commit()
+        current_app.logger.info(f"Perfil do usuário ID {current_user_id} atualizado com sucesso.")
+
+        # Recrie as claims adicionais com os dados MAIS RECENTES do objeto 'user'
+        # após o commit no banco de dados.
+        additional_claims = {
+            "email": user.email,
+            "name": user.name,
+            "role": user.role,
+            "profile_picture": user.profile_picture,
+            "institutionName": user.institution_name, # <-- AGORA PEGA O VALOR ATUALIZADO
+            "discipline": user.discipline # <-- AGORA PEGA O VALOR ATUALIZADO
+        }
+        new_access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
+
+        # Opcional: Inclua também o objeto user completo na resposta para o frontend
+        # Isso pode simplificar a lógica do frontend, embora o token já contenha os dados.
+        user_data = {
+            "id": user.id,
+            "email": user.email,
+            "name": user.name,
+            "role": user.role,
+            "profile_picture": user.profile_picture,
+            "google_id": user.google_id, # Inclua se aplicável
+            "institutionName": user.institution_name,
+            "discipline": user.discipline,
+        }
+
+        return jsonify({
+            "message": "Informações do perfil atualizadas com sucesso!",
+            "access_token": new_access_token,
+            "user": user_data # <--- ADICIONADO
+        }), 200
+
+
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"ERRO CRÍTICO em update_profile para ID {current_user_id}: {str(e)}", exc_info=True)
+        return jsonify({"message": f"Erro interno ao atualizar o perfil: {str(e)}"}), 500
+
+
+@auth_bp.route('/user/select-avatar', methods=['POST'])
+@cross_origin()
+@jwt_required()
+def select_avatar():
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+
+    if not user:
+        return jsonify({"message": "Usuário não encontrado."}), 404
+
+    data = request.get_json()
+    avatar_url = data.get('avatar_url')
+
+    if not avatar_url:
+        return jsonify({"message": "Nenhum avatar selecionado."}), 400
+
+    # Aqui você pode adicionar uma lógica para verificar se o aluno realmente desbloqueou o avatar
+    # Por enquanto, vamos permitir a seleção direta
+    
+    user.profile_picture = avatar_url
+    db.session.commit()
+    
+    return jsonify({"message": "Avatar selecionado com sucesso!", "user": user.to_dict()}), 200
+
+@auth_bp.route('/user/change-password', methods=['POST'])
+@cross_origin()
+@jwt_required()
+def change_password():
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+
+    if not user:
+        return jsonify({"message": "Usuário não encontrado."}), 404
+
+    # Não permite alterar senha de contas Google
+    if user.password_hash == 'google_auth_only':
+        return jsonify({"message": "Não é possível alterar a senha de uma conta vinculada ao Google."}), 400
+
+    data = request.get_json()
+    current_password = data.get('currentPassword')
+    new_password = data.get('newPassword')
+
+    if not check_password_hash(user.password_hash, current_password):
+        return jsonify({"message": "Senha atual incorreta."}), 401
+
+    try:
+        user.password_hash = generate_password_hash(new_password)
+        db.session.commit()
+        return jsonify({"message": "Senha alterada com sucesso!"}), 200
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Erro ao alterar senha para o usuário ID {current_user_id}: {str(e)}")
+        return jsonify({"message": "Erro interno ao alterar a senha."}), 500

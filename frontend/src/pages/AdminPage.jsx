@@ -115,7 +115,7 @@ function AdminPage() {
 
       // Requisição para os dados do dashboard
       console.log("Buscando dados do dashboard...");
-      const dashboardResponse = await fetch('http://127.0.0.1:5000/api/admin/dashboard_data', {
+      const dashboardResponse = await fetch('http://127.0.0.1:5000/api/admin/dashboard', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',

@@ -116,7 +116,7 @@ function ActivityCreationPage() {
       try {
         setLoadingTemplates(true);
         setTemplateError(null);
-        const response = await fetch('http://127.0.0.1:5000/api/templates', {
+        const response = await fetch('http://127.0.0.1:5000/api/activities/templates', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

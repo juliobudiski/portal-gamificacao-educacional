@@ -29,7 +29,7 @@ export function usePasswordManagement() {
     if (!validatePassword()) return false;
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/change-password`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/user/change-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

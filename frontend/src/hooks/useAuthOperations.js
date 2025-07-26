@@ -28,6 +28,7 @@ export function useAuthOperations() {
 
   const performAuthRequest = useCallback(async (url, method, body) => {
     try {
+      console.log(`[useAuthOperations] Tentando fazer uma requisição ${method} para: ${url}`);
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },

@@ -44,7 +44,7 @@ function RegisterPage() {
     if (response.credential) {
       console.log("handleGoogleSignInCallback: Credencial recebida. Enviando para o backend com o perfil:", selectedRole);
       try {
-        const backendResponse = await fetch('http://127.0.0.1:5000/api/auth/google', {
+        const backendResponse = await fetch('http://127.0.0.1:5000/auth/google', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -100,7 +100,7 @@ function RegisterPage() {
   const registrationData = { name, email, password, role: selectedRole };
   
   const result = await performAuthRequest(
-    'http://127.0.0.1:5000/api/register',
+    'http://127.0.0.1:5000/auth/register',
     'POST',
     registrationData
   );
@@ -109,6 +109,7 @@ function RegisterPage() {
     setSuccess('Cadastro realizado com sucesso! Redirecionando para o perfil...');
   } else {
     setError(result.message || 'Erro ao cadastrar. Tente novamente.');
+    console.error("[RegisterPage] Falha na requisição. Objeto de resultado:", result);
   }
 };
 

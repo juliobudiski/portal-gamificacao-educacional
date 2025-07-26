@@ -1,0 +1,239 @@
+# backend/app/routes/activities.py
+from flask import Blueprint, request, jsonify, current_app
+from flask_jwt_extended import jwt_required, current_user, get_jwt_identity
+from flask_cors import cross_origin
+
+import logging
+from ..models import db, Activity, Tag, activity_tag, ActivityRevision, User, Class
+from ..services import activity_service
+
+activity_bp = Blueprint('activities', __name__)
+logger = logging.getLogger(__name__)
+
+PREDEFINED_TEMPLATES = [
+    {
+        "id": "quiz-requisitos",
+        "name": "Quiz de Requisitos Funcionais e Não Funcionais",
+        "description": "Um template para criar um quiz rápido sobre requisitos de software, ideal para revisão de conceitos.",
+        "icon": "🧠",
+        "data": {
+            "title": "Quiz: Requisitos de Software",
+            "description": "Avalie seu conhecimento sobre requisitos funcionais e não funcionais com este quiz interativo.",
+            "areaKnowledge": "Engenharia de Software",
+            "currentScenario": {
+                "problems": ["Dificuldades na compreensão de conceitos complexos de programação.", "Dificuldades em aplicar as teorias aprendidas na prática."],
+                "otherProblem": ""
+            },
+            "desiredScenario": {
+                "objectives": ["Aumentar a retenção de conhecimentos e habilidades adquiridos ao longo do curso", "Promover a participação ativa dos alunos nas atividades de aprendizagem"],
+                "otherObjective": ""
+            },
+            "activityPlanning": {
+                "characteristics": ["Online", "Individual", "Formativa (atividade de prática ou revisão)"],
+                "participantsQuantity": "Turma toda",
+                "expectedDuration": "30 minutos",
+                "location": "Online",
+                "otherInfo": "Pode ser usado como atividade pré-aula ou pós-aula."
+            },
+            "playerProfile": {
+                "selectedProfiles": ["Jogador de realização", "Jogador competitivo"]
+            },
+            "gameElements": {
+                "selectedElements": ["Níveis", "Sistema de pontuação", "Feedback claro sobre o desempenho", "Sistema de classificação e ranking", "Narrativas envolventes"],
+                "otherElement": "",
+                "narrativeTitle": "Desafio do Conhecimento",
+                "narrativeContent": "Embarque em uma jornada para provar seu domínio sobre os requisitos de software, superando cada nível de dificuldade."
+            },
+            "rewardsOffered": {
+                "selectedRewards": ["Pontos de bônus para a participação na aula.", "Conquistas digitais para metas alcançadas."],
+                "otherReward": ""
+            },
+            "rewardedActions": {
+                "selectedActions": ["Responder corretamente a perguntas de revisão de material", "Atingir uma pontuação elevada em um jogo educacional"],
+                "otherAction": ""
+            },
+            "gamificationRules": {
+                "generalRules": ["Respeite as regras do jogo e as decisões do professor em todas as atividades.", "Busque sempre aprender e se esforçar para alcançar seus objetivos em cada atividade."],
+                "specificRules": "Cada questão tem um tempo limite de 30 segundos. Respostas corretas concedem pontos, incorretas não."
+            }
+        }
+    },
+    {
+        "id": "desafio-teste-software",
+        "name": "Desafio de Teste de Software",
+        "description": "Um cenário prático para identificar e propor soluções para defeitos em software.",
+        "icon": "🐛",
+        "data": {
+            "title": "Desafio: Identificação de Bugs",
+            "description": "Participe de um desafio prático para encontrar e documentar bugs em um sistema simulado.",
+            "areaKnowledge": "Engenharia de Software",
+            "currentScenario": {
+                "problems": ["Dificuldades em aplicar as teorias aprendidas na prática.", "Dificuldades em lidar com ferramentas de desenvolvimento complexas."],
+                "otherProblem": ""
+            },
+            "desiredScenario": {
+                "objectives": ["Incentivar a aplicação prática dos conhecimentos teóricos em projetos reais", "Desenvolver habilidades cognitivas, sociais e de aprendizagem"],
+                "otherObjective": ""
+            },
+            "activityPlanning": {
+                "characteristics": ["Presencial", "Em grupos", "Somativa (avaliação)", "Foco em projetos ou desenvolvimento de software real"],
+                "participantsQuantity": "Grupos de 3-4 alunos",
+                "expectedDuration": "4 horas",
+                "location": "Laboratório de Informática",
+                "otherInfo": "Requer computadores com ambiente de desenvolvimento configurado."
+            },
+            "playerProfile": {
+                "selectedProfiles": ["Jogador cooperativo", "Jogador de realização"]
+            },
+            "gameElements": {
+                "selectedElements": ["Níveis", "Reconhecimento", "Progressão baseada em habilidade", "Cooperação", "Objetivo (missão, meta do jogo)", "Narrativas envolventes"],
+                "otherElement": "",
+                "narrativeTitle": "Caça aos Bugs",
+                "narrativeContent": "A cidade digital está sob ataque de bugs traiçoeiros! Sua equipe de elite de testadores é a única esperança para restaurar a ordem."
+            },
+            "rewardsOffered": {
+                "selectedRewards": ["Vantagens para jogos e desafios.", "Certificados digitais.", "Destaque na apresentação de trabalhos."],
+                "otherReward": ""
+            },
+            "rewardedActions": {
+                "selectedActions": ["Colaboração com outros alunos em projetos de grupo", "Demonstrar pensamento crítico em tarefas desafiadoras", "Apresentar um trabalho com excelência"],
+                "otherAction": ""
+            },
+            "gamificationRules": {
+                "generalRules": ["Seja respeitoso e colaborativo com outros jogadores em todas as atividades.", "Comunique-se com outros jogadores de forma clara e objetiva em todas as atividades."],
+                "specificRules": "Cada bug identificado e documentado corretamente concede pontos. A equipe com mais pontos vence."
+            }
+        }
+    },
+    {
+        "id": "estudo-caso-padroes-projeto",
+        "name": "Estudo de Caso de Padrões de Projeto",
+        "description": "Analise um problema de design de software e aplique padrões de projeto para uma solução elegante.",
+        "icon": "📐",
+        "data": {
+            "title": "Estudo de Caso: Padrões de Projeto",
+            "description": "Resolva um problema de design de software aplicando padrões de projeto GoF.",
+            "areaKnowledge": "Engenharia de Software",
+            "currentScenario": {
+                "problems": ["Dificuldades em aplicar as teorias aprendidas na prática.", "Dificuldades na compreensão de conceitos complexos de programação."],
+                "otherProblem": ""
+            },
+            "desiredScenario": {
+                "objectives": ["Incentivar a aplicação prática dos conhecimentos teóricos em projetos reais", "Estimular a criatividade e a inovação"],
+                "otherObjective": ""
+            },
+            "activityPlanning": {
+                "characteristics": ["Individual", "Online", "Somativa (avaliação)"],
+                "participantsQuantity": "Individual",
+                "expectedDuration": "2 horas",
+                "location": "Online ou Presencial",
+                "otherInfo": "Pode ser adaptado para trabalho em grupo."
+            },
+            "playerProfile": {
+                "selectedProfiles": ["Jogador de realização", "Jogador imersivo"]
+            },
+            "gameElements": {
+                "selectedElements": ["Sistema de pontuação", "Feedback claro sobre o desempenho", "Narrativas envolventes"],
+                "otherElement": "",
+                "narrativeTitle": "O Arquiteto de Software",
+                "narrativeContent": "Você é um arquiteto de software renomado, e um novo cliente apresenta um desafio de design. Sua missão é criar a solução mais robusta e elegante usando os padrões de projeto corretos."
+            },
+            "rewardsOffered": {
+                "selectedRewards": ["Pontos de bônus para a participação na aula.", "Reconhecimento público (por exemplo, menção em redes sociais ou na frente da turma)."],
+                "otherReward": ""
+            },
+            "rewardedActions": {
+                "selectedActions": ["Apresentar um trabalho com excelência", "Demonstrar pensamento crítico em tarefas desafiadoras"],
+                "otherAction": ""
+            },
+            "gamificationRules": {
+                "generalRules": ["Respeite as regras e políticas da instituição em todas as atividades.", "Busque sempre a supervisão do professor em todas as atividades."],
+                "specificRules": "A solução será avaliada pela correção da aplicação do padrão, clareza do código e justificativa das escolhas."
+            }
+        }
+    }
+]
+
+@activity_bp.route('', methods=['POST'])
+@jwt_required()
+def create_activity():
+    return activity_service.create_activity(current_user, request.json)
+
+@activity_bp.route('/<int:activity_id>', methods=['GET'])
+@jwt_required()
+def get_activity_route(activity_id):
+    return activity_service.get_activity(current_user, activity_id)
+
+@activity_bp.route('/templates', methods=['GET'])
+@jwt_required()
+def get_predefined_templates():
+    if current_user.role != 'professor':
+        return jsonify({"message": "Acesso negado"}), 403
+    return jsonify(PREDEFINED_TEMPLATES)
+
+@activity_bp.route('/search', methods=['GET'])
+@jwt_required()
+def search_activities():
+    # Nova funcionalidade: busca com tags
+    search_term = request.args.get('q')
+    tags = request.args.getlist('tags')
+    return activity_service.search_activities(search_term, tags)
+
+@activity_bp.route('/<int:activity_id>/revisions', methods=['POST'])
+@jwt_required()
+def create_revision(activity_id):
+    # Nova funcionalidade: criar revisão
+    return activity_service.create_revision(
+        current_user, 
+        activity_id, 
+        request.json
+    )
+
+@activity_bp.route('/api/activities/<int:activity_id>/assign', methods=['POST'])
+@cross_origin()
+@jwt_required()
+def assign_activity_to_class(activity_id):
+    current_user_id = get_jwt_identity()
+    current_app.logger.info(f"Usuário ID {current_user_id} tentando atribuir atividade ID {activity_id} a uma turma.")
+
+    user = User.query.get(current_user_id)
+    activity = Activity.query.get(activity_id)
+
+    if not user or user.role != 'professor':
+        current_app.logger.warning(f"Acesso negado para ID {current_user_id} na atribuição de atividade. Role: {user.role if user else 'N/A'}")
+        return jsonify({"message": "Acesso negado. Apenas professores podem atribuir atividades."}), 403
+
+    if not activity:
+        current_app.logger.error(f"Atividade ID {activity_id} não encontrada para atribuição pelo professor ID {current_user_id}.")
+        return jsonify({"message": "Atividade não encontrada."}), 404
+
+    if activity.professor_id != user.id:
+        current_app.logger.warning(f"Acesso negado para professor ID {current_user_id} ao tentar atribuir atividade ID {activity_id}. Não é o criador.")
+        return jsonify({"message": "Acesso negado. Você não é o professor responsável por esta atividade."}), 403
+
+    data = request.get_json()
+    class_id = data.get('class_id')
+    current_app.logger.debug(f"Atribuindo atividade ID {activity_id} à turma ID {class_id}.")
+
+    if not class_id:
+        current_app.logger.warning(f"Tentativa de atribuição de atividade pelo ID {current_user_id} falhou: class_id ausente.")
+        return jsonify({"message": "O ID da turma é obrigatório para atribuir a atividade."}), 400
+
+    target_class = Class.query.get(class_id)
+    if not target_class:
+        current_app.logger.warning(f"Tentativa de atribuição de atividade pelo ID {current_user_id} falhou: turma ID {class_id} não encontrada.")
+        return jsonify({"message": "Turma não encontrada."}), 404
+
+    if target_class.professor_id != user.id:
+        current_app.logger.warning(f"Acesso negado para professor ID {current_user_id} ao tentar atribuir atividade a turma ID {class_id}. Não é o professor da turma.")
+        return jsonify({"message": "Acesso negado. Você não é o professor responsável por esta turma."}), 403
+
+    try:
+        activity.class_id = class_id
+        db.session.commit()
+        current_app.logger.info(f"Atividade '{activity.title}' (ID: {activity_id}) atribuída com sucesso à turma '{target_class.name}' (ID: {class_id}).")
+        return jsonify({"message": "Atividade atribuída à turma com sucesso!", "activity": activity.to_dict()}), 200
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Erro ao atribuir atividade ID {activity_id} à turma ID {class_id}: {str(e)}", exc_info=True)
+        return jsonify({"message": f"Erro interno do servidor ao atribuir atividade à turma: {str(e)}"}), 500

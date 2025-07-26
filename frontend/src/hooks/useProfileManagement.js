@@ -9,7 +9,7 @@ export function useProfileManagement() {
   const updateProfile = useCallback(async (data) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/update-profile`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/user/update-profile`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -39,7 +39,7 @@ export function useProfileManagement() {
   const updateAvatar = useCallback(async (avatarUrl) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/select-avatar`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/user/select-avatar`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
