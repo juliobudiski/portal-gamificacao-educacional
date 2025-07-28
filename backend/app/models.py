@@ -52,7 +52,7 @@ class Activity(db.Model):
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
     class_id = db.Column(db.Integer, db.ForeignKey('class.id'), nullable=True)
-    
+    copy_count = db.Column(db.Integer, nullable=False, default=0, server_default='0')
     professor = db.relationship('User', backref='activities', lazy=True)
     class_obj = db.relationship('Class', backref='assigned_activities', lazy=True)
 
@@ -78,6 +78,7 @@ class Activity(db.Model):
             'professor_email': self.professor.email,
             'class_id': self.class_id,
             'class_name': self.class_obj.name if self.class_obj else None,
+            'copy_count': self.copy_count
         }
 
 class Class(db.Model):

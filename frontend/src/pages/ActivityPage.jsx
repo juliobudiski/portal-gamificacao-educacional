@@ -127,11 +127,8 @@ function ActivityPage() {
                 );
             case 'quiz':
                 // Exemplo de dados de quiz, você precisará buscar isso do backend
-                const quizQuestions = [
-                    { id: 1, text: "Qual a capital da França?", options: ["Paris", "Londres", "Berlim"], correct_option: "Paris", points: 100, timeLimit: 20 },
-                    { id: 2, text: "2 + 2 = ?", options: ["3", "4", "5"], correct_option: "4", points: 50, timeLimit: 15 },
-                ];
-                return <QuizTab questions={quizQuestions} onAnswerCorrect={handlePointsEarned} />;
+                const realQuizQuestions = activity.gameElements?.questions || [];
+                return <QuizTab questions={realQuizQuestions} onAnswerCorrect={handlePointsEarned} />;
             case 'leaderboard':
                 return <LeaderboardTab leaderboardData={leaderboard} />;
             case 'chat':

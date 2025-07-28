@@ -1,16 +1,18 @@
-from flask import Blueprint, jsonify
-from flask_jwt_extended import jwt_required, current_user
+from flask import Blueprint, jsonify, current_app, request
+from flask_jwt_extended import jwt_required, current_user, get_jwt_identity
 from .. import db
-from ..models import User, Activity
+import logging 
+from ..models import db, Activity, Tag, activity_tag, ActivityRevision, User, Class
 
 admin_bp = Blueprint('admin', __name__)
+#logger = logging.getLogger(__name__)
 
 @admin_bp.route('/dashboard_data', methods=['GET'])
 @jwt_required()
 def get_admin_dashboard_data():
-    app.logger.info(f"Usuário ID {current_user.id} (Role: {current_user.role}) acessando dashboard de admin.")
+    current_app.logger.info(f"Usuário ID {current_user.id} (Role: {current_user.role}) acessando dashboard de admin.")
     if current_user.role != 'admin':
-        app.logger.warning(f"Acesso negado ao dashboard de admin para o usuário ID {current_user.id}.")
+        current_app.logger.warning(f"Acesso negado ao dashboard de admin para o usuário ID {current_user.id}.")
         return jsonify({"msg": "Acesso não autorizado: Apenas administradores podem acessar estes dados."}), 403
 
     total_users = User.query.count()
@@ -26,31 +28,31 @@ def get_admin_dashboard_data():
         "total_activities": total_activities,
         "total_visits": total_visits
     }
-    app.logger.debug(f"Dados do dashboard de admin: {dashboard_data}")
+    current_app.logger.debug(f"Dados do dashboard de admin: {dashboard_data}")
     return jsonify(dashboard_data), 200
 
 # Rota para deletar um usuário
 @admin_bp.route('/users/<int:user_id>', methods=['DELETE'])
 @jwt_required()
 def delete_user(user_id):
-    app.logger.info(f"Admin ID {current_user.id} tentando deletar o usuário ID {user_id}.")
+    current_app.logger.info(f"Admin ID {current_user.id} tentando deletar o usuário ID {user_id}.")
     if current_user.role != 'admin':
-        app.logger.warning(f"Acesso negado para admin ID {current_user.id} ao tentar deletar usuário ID {user_id}.")
+        current_app.logger.warning(f"Acesso negado para admin ID {current_user.id} ao tentar deletar usuário ID {user_id}.")
         return jsonify({"msg": "Acesso não autorizado: Apenas administradores podem deletar contas de usuário."}), 403
 
     user_to_delete = User.query.get(user_id)
     if not user_to_delete:
-        app.logger.error(f"Admin ID {current_user.id} tentou deletar um usuário inexistente: ID {user_id}")
+        current_app.logger.error(f"Admin ID {current_user.id} tentou deletar um usuário inexistente: ID {user_id}")
         return jsonify({"msg": "User not found"}), 404
 
     try:
         db.session.delete(user_to_delete)
         db.session.commit()
-        app.logger.info(f"Usuário ID {user_id} deletado com sucesso pelo admin ID {current_user.id}.")
+        current_app.logger.info(f"Usuário ID {user_id} deletado com sucesso pelo admin ID {current_user.id}.")
         return jsonify({"msg": "Usuário deletado com sucesso"}), 200
     except Exception as e:
         db.session.rollback()
-        app.logger.error(f"Erro ao deletar usuário ID {user_id}: {e}", exc_info=True)
+        current_app.logger.error(f"Erro ao deletar usuário ID {user_id}: {e}", exc_info=True)
         return jsonify({"msg": "Erro interno do servidor durante a deleção do usuário"}), 500
 
 # Rota para listar todas as atividades
@@ -70,18 +72,18 @@ def get_all_activities():
 @admin_bp.route('/users/<int:user_id>', methods=['PUT'])
 @jwt_required()
 def update_user(user_id):
-    app.logger.info(f"Admin ID {current_user.id} tentando atualizar o usuário ID {user_id}.")
+    current_app.logger.info(f"Admin ID {current_user.id} tentando atualizar o usuário ID {user_id}.")
     if current_user.role != 'admin':
-        app.logger.warning(f"Acesso negado para admin ID {current_user.id} ao tentar atualizar usuário ID {user_id}.")
+        current_app.logger.warning(f"Acesso negado para admin ID {current_user.id} ao tentar atualizar usuário ID {user_id}.")
         return jsonify({"msg": "Acesso não autorizado: Apenas administradores podem atualizar dados de usuários."}), 403
 
     user_to_update = User.query.get(user_id)
     if not user_to_update:
-        app.logger.error(f"Admin ID {current_user.id} tentou atualizar um usuário inexistente: ID {user_id}")
+        current_app.logger.error(f"Admin ID {current_user.id} tentou atualizar um usuário inexistente: ID {user_id}")
         return jsonify({"msg": "Usuário não encontrado"}), 404
 
     data = request.get_json()
-    app.logger.debug(f"Dados recebidos para atualização do usuário ID {user_id}: {data}")
+    current_app.logger.debug(f"Dados recebidos para atualização do usuário ID {user_id}: {data}")
 
     try:
         user_to_update.name = data.get('name', user_to_update.name)
@@ -91,11 +93,11 @@ def update_user(user_id):
         user_to_update.discipline = data.get('discipline', user_to_update.discipline)
         
         db.session.commit()
-        app.logger.info(f"Usuário ID {user_id} atualizado com sucesso pelo admin ID {current_user.id}.")
+        current_app.logger.info(f"Usuário ID {user_id} atualizado com sucesso pelo admin ID {current_user.id}.")
         return jsonify({"msg": "Usuário atualizado com sucesso", "user": user_to_update.to_dict()}), 200
     except Exception as e:
         db.session.rollback()
-        app.logger.error(f"Erro ao atualizar usuário ID {user_id}: {e}", exc_info=True)
+        current_app.logger.error(f"Erro ao atualizar usuário ID {user_id}: {e}", exc_info=True)
         return jsonify({"msg": "Erro interno do servidor durante a atualização do usuário"}), 500
 
 # Rota para listar todos os usuários

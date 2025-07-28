@@ -189,7 +189,7 @@ def create_revision(activity_id):
         request.json
     )
 
-@activity_bp.route('/api/activities/<int:activity_id>/assign', methods=['POST'])
+@activity_bp.route('/<int:activity_id>/assign', methods=['POST'])
 @cross_origin()
 @jwt_required()
 def assign_activity_to_class(activity_id):
@@ -237,3 +237,56 @@ def assign_activity_to_class(activity_id):
         db.session.rollback()
         current_app.logger.error(f"Erro ao atribuir atividade ID {activity_id} à turma ID {class_id}: {str(e)}", exc_info=True)
         return jsonify({"message": f"Erro interno do servidor ao atribuir atividade à turma: {str(e)}"}), 500
+
+@activity_bp.route('/my_activities', methods=['GET'])
+@jwt_required()
+def get_my_activities():
+    """Rota para buscar as atividades do professor logado."""
+    if current_user.role != 'professor':
+        return jsonify({"message": "Acesso negado"}), 403
+    activities = activity_service.get_activities_by_professor(current_user.id)
+    return jsonify(activities), 200
+
+@activity_bp.route('/public', methods=['GET'])
+@jwt_required()
+def get_public_activities():
+    """Rota para buscar todas as atividades públicas de outros professores."""
+    if current_user.role != 'professor':
+        return jsonify({"message": "Acesso negado"}), 403
+    activities = activity_service.get_public_activities(current_user.id)
+    return jsonify(activities), 200
+
+@activity_bp.route('/<int:activity_id>', methods=['PUT'])
+@jwt_required()
+def update_activity_route(activity_id):
+    """Rota para atualizar uma atividade."""
+    if current_user.role != 'professor':
+        return jsonify({"message": "Acesso negado"}), 403
+    data = request.get_json()
+    return activity_service.update_activity(current_user, activity_id, data)
+
+@activity_bp.route('/<int:activity_id>/copy', methods=['POST'])
+@jwt_required()
+def copy_activity_route(activity_id):
+    """Rota para copiar uma atividade pública."""
+    if current_user.role != 'professor':
+        return jsonify({"message": "Acesso negado"}), 403
+    return activity_service.copy_activity(current_user, activity_id)
+
+@activity_bp.route('/<int:activity_id>', methods=['DELETE'])
+@jwt_required()
+def delete_activity(activity_id):
+    """Rota para deletar uma atividade."""
+    activity = Activity.query.get(activity_id)
+    if not activity:
+        return jsonify({"message": "Atividade não encontrada"}), 404
+    if activity.professor_id != current_user.id:
+        return jsonify({"message": "Acesso negado"}), 403
+    
+    try:
+        db.session.delete(activity)
+        db.session.commit()
+        return jsonify({"message": "Atividade deletada com sucesso"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": str(e)}), 500

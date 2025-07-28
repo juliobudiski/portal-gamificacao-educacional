@@ -5,11 +5,11 @@ const QuizTab = ({ questions = [], onAnswerCorrect }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
     const [feedback, setFeedback] = useState({ type: '', message: '' });
-    const [timeLeft, setTimeLeft] = useState(questions[0]?.timeLimit || 30);
+    const [timeLeft, setTimeLeft] = useState(30);
 
     useEffect(() => {
-        if (questions.length > 0 && questions[currentIndex]?.timeLimit) {
-            setTimeLeft(questions[currentIndex].timeLimit);
+        if (questions.length > 0 && questions[currentIndex]) {
+            setTimeLeft(questions[currentIndex].timeLimit || 30);
             const timer = setInterval(() => {
                 setTimeLeft(prev => {
                     if (prev <= 1) {

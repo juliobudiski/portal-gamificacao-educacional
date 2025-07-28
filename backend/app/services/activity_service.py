@@ -4,11 +4,13 @@ from flask import jsonify
 import logging
 from flask_jwt_extended import jwt_required, current_user, get_jwt_identity
 from ..models import db, Activity, Tag, activity_tag, ActivityRevision, User, Class, Enrollment
+from sqlalchemy.orm import noload
+from copy import deepcopy
 
 logger = logging.getLogger(__name__)
 
 def create_activity(user, data):
-    logger.info(f"Usuário ID {current_user_id} tentando criar uma nova atividade.")
+    logger.info(f"Usuário ID {user.id} tentando criar uma nova atividade.") # Trocado para user.id
 
     if user.role != 'professor':
         return {"message": "Acesso negado"}, 403
@@ -119,11 +121,103 @@ def get_activity(user, activity_id):
         return jsonify({"message": "Atividade não encontrada."}), 404
 
     # Lógica de autorização: quem pode ver a atividade?
-    # Apenas o professor que a criou ou os alunos da turma para a qual ela foi designada.
-    enrollment = Enrollment.query.filter_by(student_id=user.id, class_id=activity.class_id).first()
-    is_professor = user.role == 'professor' and activity.professor_id == user.id
-    
-    if not (enrollment or is_professor):
+    is_owner = activity.professor_id == user.id
+    is_public = activity.is_public
+    is_enrolled_student = user.role == 'aluno' and activity.class_id and Enrollment.query.filter_by(student_id=user.id, class_id=activity.class_id).first()
+
+    # Permite o acesso se o usuário for o dono, a atividade for pública, ou se for um aluno matriculado
+    if not (is_owner or is_public or is_enrolled_student):
         return jsonify({"message": "Acesso negado."}), 403
 
     return jsonify(activity.to_dict()), 200
+
+
+def get_activities_by_professor(professor_id):
+    """Busca todas as atividades criadas por um professor específico."""
+    logger.info(f"Buscando atividades para o professor ID {professor_id}")
+    activities = Activity.query.filter_by(professor_id=professor_id).all()
+    return [a.to_dict() for a in activities]
+
+def get_public_activities(current_user_id):
+    """Busca todas as atividades públicas, excluindo as do próprio usuário."""
+    logger.info(f"Buscando atividades públicas para o usuário ID {current_user_id}")
+    # Exclui as atividades do próprio professor da lista pública para evitar redundância
+    activities = Activity.query.filter(Activity.is_public == True, Activity.professor_id != current_user_id).all()
+    return [a.to_dict() for a in activities]
+
+def update_activity(user, activity_id, data):
+    """Atualiza uma atividade existente."""
+    activity = Activity.query.get(activity_id)
+
+    if not activity:
+        return {"message": "Atividade não encontrada"}, 404
+    
+    # Apenas o professor que criou a atividade pode editá-la
+    if activity.professor_id != user.id:
+        return {"message": "Acesso negado. Você não é o dono desta atividade."}, 403
+
+    try:
+        # Atualiza os campos
+        activity.title = data.get('title', activity.title)
+        activity.description = data.get('description', activity.description)
+        activity.area_knowledge = data.get('areaKnowledge', activity.area_knowledge)
+        activity.is_public = data.get('isPublic', activity.is_public)
+        activity.current_scenario = data.get('currentScenario', activity.current_scenario)
+        activity.desired_scenario = data.get('desiredScenario', activity.desired_scenario)
+        activity.activity_planning = data.get('activityPlanning', activity.activity_planning)
+        activity.player_profile = data.get('playerProfile', activity.player_profile)
+        activity.game_elements = data.get('gameElements', activity.game_elements)
+        activity.rewards_offered = data.get('rewardsOffered', activity.rewards_offered)
+        activity.rewarded_actions = data.get('rewardedActions', activity.rewarded_actions)
+        activity.gamification_rules = data.get('gamificationRules', activity.gamification_rules)
+        
+        db.session.commit()
+        logger.info(f"Atividade ID {activity_id} atualizada com sucesso pelo usuário ID {user.id}")
+        return {"message": "Atividade atualizada com sucesso", "activity": activity.to_dict()}, 200
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Erro ao atualizar atividade ID {activity_id}: {str(e)}")
+        return {"message": str(e)}, 500
+
+def copy_activity(user, activity_id):
+    """Copia uma atividade pública para o professor logado."""
+    original_activity = Activity.query.get(activity_id)
+
+    if not original_activity:
+        return {"message": "Atividade original não encontrada"}, 404
+    
+    if not original_activity.is_public:
+        return {"message": "Só é possível copiar atividades públicas."}, 403
+
+    try:
+        # Clona os dados da atividade original
+        new_activity_data = original_activity.to_dict()
+        original_activity.copy_count += 1
+
+        copied_activity = Activity(
+            professor_id=user.id, # Novo dono
+            title=f"Cópia de: {new_activity_data['title']}", # Adiciona "Cópia de:" ao título
+            description=new_activity_data['description'],
+            current_scenario=new_activity_data['currentScenario'],
+            desired_scenario=new_activity_data['desiredScenario'],
+            activity_planning=new_activity_data['activityPlanning'],
+            player_profile=new_activity_data['playerProfile'],
+            game_elements=new_activity_data['gameElements'],
+            rewards_offered=new_activity_data['rewardsOffered'],
+            rewarded_actions=new_activity_data['rewardedActions'],
+            gamification_rules=new_activity_data['gamificationRules'],
+            area_knowledge=new_activity_data['areaKnowledge'],
+            is_public=False,  # A cópia começa como privada
+            class_id=None # A cópia não é atribuída a nenhuma turma
+        )
+
+        db.session.add(copied_activity)
+        db.session.commit()
+        
+        logger.info(f"Atividade ID {activity_id} copiada para o usuário ID {user.id}. Nova atividade ID: {copied_activity.id}")
+        return {"message": "Atividade copiada com sucesso!", "activity": copied_activity.to_dict()}, 201
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Erro ao copiar atividade ID {activity_id} para usuário ID {user.id}: {str(e)}")
+        return {"message": str(e)}, 500
