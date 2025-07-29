@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
+import { useParams, Link, useNavigate } from 'react-router-dom'; 
+import { useAuth } from '../context/AuthContext'; 
 
 // Importando os componentes modulares
 import StudentSidebar from '../components/activity/StudentSidebar';
@@ -14,8 +14,8 @@ import StoreTab from '../components/activity/StoreTab';
 
 function ActivityPage() {
     const { activityId } = useParams();
-    const { user } = useContext(AuthContext); 
-    
+    const { user } = useAuth(); // Corrigido para useAuth
+    const navigate = useNavigate();
     const [activity, setActivity] = useState(null);
     const [userProgress, setUserProgress] = useState(null);
     const [analytics, setAnalytics] = useState(null);
@@ -27,13 +27,12 @@ function ActivityPage() {
     const [showStatsModal, setShowStatsModal] = useState(false);
 
     const fetchData = useCallback(async (url, setter) => {
-        const token = localStorage.getItem('token');
-        if (!token) {
+        if (!user?.token) {
             setError(prev => `${prev}\nUsuário não autenticado.`);
             return;
         }
         try {
-            const response = await fetch(`http://127.0.0.1:5000${url}`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const response = await fetch(`http://127.0.0.1:5000${url}`, { headers: { 'Authorization': `Bearer ${user.token}` } });
             const data = await response.json();
             if (!response.ok) throw new Error(data.message || `Erro ao buscar dados de ${url}`);
             setter(data);
@@ -41,7 +40,7 @@ function ActivityPage() {
             console.error(`Falha ao buscar de ${url}:`, err);
             setError(prev => `${prev}\n${err.message}`);
         }
-    }, []);
+    }, [user?.token]); // Dependência no token
 
     useEffect(() => {
         if (!activityId || !user) return;
@@ -50,15 +49,12 @@ function ActivityPage() {
             setLoading(true);
             setError('');
             
-            // Busca os dados principais da atividade PRIMEIRO
-            const token = localStorage.getItem('token');
             try {
-                const response = await fetch(`http://127.0.0.1:5000/api/activities/${activityId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const response = await fetch(`http://127.0.0.1:5000/api/activities/${activityId}`, { headers: { 'Authorization': `Bearer ${user.token}` } });
                 const activityData = await response.json();
                 if (!response.ok) throw new Error(activityData.message || "Não foi possível carregar a atividade.");
                 setActivity(activityData);
 
-                // AGORA, com os dados da atividade, busca o resto em paralelo
                 const elements = activityData.gameElements?.selectedElements || [];
                 const dataPromises = [];
 
@@ -71,6 +67,7 @@ function ActivityPage() {
                         dataPromises.push(fetchData(`/api/progress/${activityId}/store-items`, setStoreItems));
                     }
                 } else if (user.role === 'professor') {
+                    // Para professores, buscamos a análise da atividade
                     dataPromises.push(fetchData(`/api/progress/${activityId}/analytics`, setAnalytics));
                 }
                 await Promise.all(dataPromises);
@@ -91,21 +88,54 @@ function ActivityPage() {
             const tabOrder = [
                 { key: 'narrative', condition: elements.includes("Narrativas envolventes") },
                 { key: 'quiz', condition: elements.includes("Quebra-cabeça") },
-                { key: 'leaderboard', condition: elements.includes("Sistema de classificação e ranking") },
+                { key: 'leaderboard', condition: user.role === 'aluno' && elements.includes("Sistema de classificação e ranking") },
                 { key: 'chat', condition: elements.includes("Chat ou sistema de mensagens") },
-                { key: 'store', condition: elements.includes("Economia (sistema monetário)") }
+                { key: 'store', condition: user.role === 'aluno' && elements.includes("Economia (sistema monetário)") }
             ];
             const firstAvailableTab = tabOrder.find(tab => tab.condition);
             setActiveTab(firstAvailableTab ? firstAvailableTab.key : null);
         }
-    }, [activity]);
-
-    // --- Handlers para interações ---
+    }, [activity, user.role]); // Adicionado user.role como dependência
 
     const handlePointsEarned = useCallback(async (points) => {
-        setUserProgress(prev => ({ ...prev, points: prev.points + points, xp: prev.xp + points }));
-        // TODO: Enviar POST para o backend para salvar os pontos
-    }, []);
+        const numericPoints = parseInt(points, 10) || 0; // <<< CORREÇÃO AQUI
+
+        // Atualiza o estado local imediatamente
+        setUserProgress(prev => {
+            const currentProgress = prev || { points_earned: 0, xp: 0 };
+            return {
+                ...currentProgress,
+                points_earned: currentProgress.points_earned + numericPoints,
+                xp: (currentProgress.xp || 0) + numericPoints
+            };
+        });
+        
+        // Envia os pontos para o backend
+        try {
+            console.log(`Enviando ${numericPoints} pontos para o backend...`);
+            const response = await fetch(`http://127.0.0.1:5000/api/progress/${activityId}/update`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.token}`
+                },
+                body: JSON.stringify({ points: numericPoints }) // Envia como número
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error("Falha ao salvar o progresso no backend:", data.message);
+                setError("Não foi possível salvar seu progresso. Tente novamente.");
+            } else {
+                console.log("Progresso salvo com sucesso:", data);
+            }
+        } catch (err) {
+            console.error("Erro de rede ao salvar o progresso:", err);
+            setError("Erro de conexão. Não foi possível salvar seu progresso.");
+        }
+    }, [activityId, user.token]);
+
 
     const handlePurchase = useCallback(async (item) => {
         // TODO: Enviar POST para o backend para registrar a compra
@@ -113,50 +143,43 @@ function ActivityPage() {
     }, []);
 
     const renderContent = () => {
-        if (!activity) return null; // Garante que activity não é nulo antes de acessar gameElements
-        const elements = activity.gameElements?.selectedElements || [];
+        if (!activity) return null;
+        
         switch (activeTab) {
             case 'narrative':
                 return (
                     <NarrativeTab
                         title={activity.gameElements?.narrativeTitle}
                         content={activity.gameElements?.narrativeContent}
-                        objective="Complete os desafios para avançar na história!" // Exemplo
-                        onStart={() => console.log('Narrative started')}
+                        objective="Complete os desafios para avançar na história!"
+                        onStart={() => setActiveTab('quiz')} // Exemplo: A narrativa leva ao quiz
                     />
                 );
             case 'quiz':
-                // Exemplo de dados de quiz, você precisará buscar isso do backend
-                const realQuizQuestions = activity.gameElements?.questions || [];
-                return <QuizTab questions={realQuizQuestions} onAnswerCorrect={handlePointsEarned} />;
+                // Passa as perguntas reais do objeto activity para o QuizTab
+                const quizQuestions = activity.gameElements?.questions || [];
+                return <QuizTab questions={quizQuestions} onAnswerCorrect={handlePointsEarned} />;
             case 'leaderboard':
                 return <LeaderboardTab leaderboardData={leaderboard} />;
             case 'chat':
                 return <ChatTab />;
             case 'store':
-                // Exemplo de itens da loja, você precisará buscar isso do backend
-                const dummyStoreItems = [
-                    { id: 1, name: "Poção de XP", price: 100, icon: () => <span role="img" aria-label="potion">🧪</span> },
-                    { id: 2, name: "Escudo Mágico", price: 250, icon: () => <span role="img" aria-label="shield">🛡️</span> },
-                ];
-                return <StoreTab items={dummyStoreItems} userPoints={userProgress?.points || 0} onPurchase={handlePurchase} />;
+                return <StoreTab items={storeItems} userPoints={userProgress?.points_earned || 0} onPurchase={handlePurchase} />;
             default:
-                return <div className="text-gray-400">Selecione uma aba para começar.</div>;
+                return <div className="text-center text-gray-400 p-8">Esta atividade não possui elementos interativos ou nenhum foi selecionado.</div>;
         }
     };
 
+    if (loading) return <div className="text-center p-10 text-white">Carregando dados da atividade...</div>;
+    if (error) return <div className="text-center p-10 text-red-500">Erro: {error}</div>;
+    if (!activity) return <div className="text-center p-10 text-white">Atividade não encontrada.</div>;
 
-    if (loading) return <div>Carregando...</div>;
-    if (error) return <div>{error}</div>;
-    if (!activity) return <div>Atividade não encontrada.</div>;
-
-    // Lógica de renderização dinâmica CORRIGIDA
     const elements = activity.gameElements?.selectedElements || [];
     const hasNarrative = elements.includes("Narrativas envolventes");
-    const hasQuiz = elements.includes("Quebra-cabeça"); // Mapeado de "Quebra-cabeça"
-    const hasLeaderboard = elements.includes("Sistema de classificação e ranking");
+    const hasQuiz = elements.includes("Quebra-cabeça");
+    const hasLeaderboard = user.role === 'aluno' && elements.includes("Sistema de classificação e ranking");
     const hasChat = elements.includes("Chat ou sistema de mensagens");
-    const hasStore = elements.includes("Economia (sistema monetário)");
+    const hasStore = user.role === 'aluno' && elements.includes("Economia (sistema monetário)");
     
     return (
         <div className="flex min-h-screen bg-gray-900 text-white">
@@ -168,7 +191,7 @@ function ActivityPage() {
                     <ProfessorSidebar 
                         analytics={analytics} 
                         onStudentClick={(student) => console.log('Clicked student:', student)} 
-                        onOpenQuizEditor={() => console.log('Open Quiz Editor')}
+                        onOpenQuizEditor={() => navigate(`/professor/activity/${activityId}/quiz/edit`)}
                     />
                 )}
             </aside>

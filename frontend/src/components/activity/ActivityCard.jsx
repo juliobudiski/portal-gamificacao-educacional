@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaEdit, FaTrash, FaCopy, FaShareAlt, FaEye } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaCopy, FaEye } from 'react-icons/fa'; // FaShareAlt foi removido
 import { useNavigate } from 'react-router-dom';
 
 function ActivityCard({ activity, isOwner, onCopy, onDelete }) {
@@ -29,6 +29,7 @@ function ActivityCard({ activity, isOwner, onCopy, onDelete }) {
             <div className="mt-4 pt-4 border-t border-gray-600 flex justify-end items-center gap-2">
                 {isOwner ? (
                     <>
+                        {/* Botões para o dono da atividade */}
                         <button onClick={() => navigate(`/professor/atividades/${activity.id}/edit`)} className="p-2 bg-gray-700 hover:bg-accent-yellow/30 rounded-full group" title="Editar">
                             <FaEdit className="text-gray-400 group-hover:text-accent-yellow" />
                         </button>
@@ -38,9 +39,7 @@ function ActivityCard({ activity, isOwner, onCopy, onDelete }) {
                     </>
                 ) : (
                     <>
-                        <button onClick={() => navigate(`/assign-activity-to-class/${activity.id}`)} className="p-2 bg-gray-700 hover:bg-accent-teal/30 rounded-full group" title="Usar / Atribuir à Turma">
-                            <FaShareAlt className="text-gray-400 group-hover:text-accent-teal" />
-                        </button>
+                        {/* Botão de atribuir foi REMOVIDO daqui */}
                          <button onClick={() => onCopy(activity.id)} className="p-2 bg-gray-700 hover:bg-accent-purple/30 rounded-full group" title="Copiar e Editar">
                             <FaCopy className="text-gray-400 group-hover:text-accent-purple" />
                         </button>
@@ -50,9 +49,9 @@ function ActivityCard({ activity, isOwner, onCopy, onDelete }) {
                     <FaEye className="text-gray-400 group-hover:text-blue-400" />
                 </button>
             </div>
-            <div className="flex items-center text-xs text-gray-400">
+            <div className="flex items-center text-xs text-gray-400 mt-2">
                 <FaCopy className="mr-1" />
-                <span>Usada {activity.copy_count} vezes</span>
+                <span>Copiada {activity.copy_count} vezes</span>
             </div>
         </div>
     );

@@ -3,6 +3,7 @@ import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import AvatarSelectionModal from '../components/AvatarSelectionModal';
+import DeleteAccountModal from '../components/DeleteAccountModal';
 import { useProfileManagement } from '../hooks/useProfileManagement';
 import { usePasswordManagement } from '../hooks/usePasswordManagement';
 import { 
@@ -15,7 +16,8 @@ import {
   FaBook, 
   FaKey, 
   FaEdit, 
-  FaCheck 
+  FaCheck,
+  FaTrashAlt 
 } from "react-icons/fa";
 
 function UserProfilePage() {
@@ -26,6 +28,9 @@ function UserProfilePage() {
   const [showPasswordChangeForm, setShowPasswordChangeForm] = useState(false);
   const [showProfileCompletionForm, setShowProfileCompletionForm] = useState(false);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false); // Novo estado
+  const [deletePassword, setDeletePassword] = useState(''); // Novo estado para a senha de exclusão
+  const [deleteMessage, setDeleteMessage] = useState(''); // Novo estado para mensagens de erro/sucesso na exclusão
 
   // Estados locais para formulário de perfil (Professor)
   const [profileInstitutionName, setProfileInstitutionName] = useState(user?.institutionName || '');
@@ -36,7 +41,8 @@ function UserProfilePage() {
     messages: profileMessages, // { error: string, success: string }
     isLoading: profileLoading,
     updateProfile,
-    updateAvatar
+    updateAvatar,
+    deleteAccount
   } = useProfileManagement();
 
   const {
@@ -79,6 +85,24 @@ function UserProfilePage() {
     navigate('/login');
   };
 
+  const handleDeleteConfirm = async () => {
+    // 1. Limpa mensagens de erro antigas
+    setDeleteMessage(''); 
+
+    // 2. Validação inicial: Se a senha estiver vazia...
+    if (!deletePassword) {
+      // 3. ...define uma mensagem de erro e para a execução.
+      setDeleteMessage('A senha é obrigatória para confirmar a exclusão.');
+      return; 
+    }
+
+    // 4. Se a senha foi digitada, chama a função do hook para fazer a exclusão
+    await deleteAccount(deletePassword);
+    // A partir daqui, o hook gerencia as mensagens de sucesso ou falha da API
+  };
+
+
+
   // Define a URL base do servidor
   const serverUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   const displayAvatar = user.profile_picture 
@@ -93,6 +117,20 @@ function UserProfilePage() {
           onClose={handleCloseModal}
         />
       )}
+
+      {showDeleteModal && (
+        <DeleteAccountModal
+          onConfirm={handleDeleteConfirm}
+          onCancel={() => {
+            setShowDeleteModal(false);
+            setDeletePassword('');
+          }}
+          password={deletePassword}
+          setPassword={setDeletePassword}
+          message={profileMessages.error} // Usa a mensagem de erro do hook
+        />
+      )}
+
 
       <div className="min-h-screen bg-gradient-to-br from-[#2c3135] to-[#1a1e22] flex justify-center py-12 px-4">
         <div className="max-w-xl w-full space-y-8 bg-[#3a4046] p-8 rounded-2xl shadow-2xl border border-[#4a525a]">
@@ -359,6 +397,14 @@ function UserProfilePage() {
               )}
             </div>
           )}
+
+          <button
+                onClick={() => setShowDeleteModal(true)}
+                className="mt-4 w-full py-3 px-4 rounded-xl text-sm font-medium text-red-300 bg-red-500/20 border border-red-500/50 hover:bg-red-500/30 transition-all duration-300 flex items-center justify-center"
+                disabled={profileLoading}
+              >
+                {profileLoading ? 'Processando...' : <><FaTrashAlt className="mr-2" /> Excluir Conta</>}
+          </button>
         
           {/* Botão Sair */}
           <div className="border-t border-[#4a525a] pt-8">

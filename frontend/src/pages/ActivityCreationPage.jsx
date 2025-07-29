@@ -1,6 +1,6 @@
 // frontend/src/pages/ActivityCreationPage.jsx
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext'; // Importar o hook useAuth para acessar o contexto de autenticação
 
 /**
@@ -10,7 +10,7 @@ import { useAuth } from '../context/AuthContext'; // Importar o hook useAuth par
  * coletando informações sobre o cenário, objetivos, planejamento, perfil do jogador,
  * elementos de jogo, recompensas, ações e regras.
  */
-function ActivityCreationPage() {
+function ActivityCreationPage({ existingActivity }) {
   // --- Hooks de Navegação e Estado ---
 
   // Hook do React Router para navegar programaticamente entre as rotas.
@@ -21,6 +21,9 @@ function ActivityCreationPage() {
   const totalSteps = 8;
   // Hook para acessar o contexto de autenticação (dados do usuário, token, etc.).
   const { user } = useAuth();
+  
+  const { activityId } = useParams();
+  const isEditMode = !!existingActivity;
 
   // Estado para controlar se a tela de seleção de template inicial deve ser exibida (com as duas opções).
   const [showInitialSelection, setShowInitialSelection] = useState(true);
@@ -104,6 +107,31 @@ function ActivityCreationPage() {
       navigate('/login');
     }
   }, [user, navigate]);
+
+
+  // Novo useEffect para preencher o formulário no modo de edição
+  useEffect(() => {
+    if (isEditMode) {
+      console.log("Modo de edição ativado. Preenchendo formulário com dados existentes:", existingActivity);
+      setActivityData({
+          title: existingActivity.title || '',
+          description: existingActivity.description || '',
+          areaKnowledge: existingActivity.areaKnowledge || '',
+          isPublic: existingActivity.isPublic || false,
+          currentScenario: existingActivity.currentScenario || { problems: [], otherProblem: '' },
+          desiredScenario: existingActivity.desiredScenario || { objectives: [], otherObjective: '' },
+          activityPlanning: existingActivity.activityPlanning || { characteristics: [], participantsQuantity: '', expectedDuration: '', location: '', otherInfo: '' },
+          playerProfile: existingActivity.playerProfile || { selectedProfiles: [] },
+          gameElements: existingActivity.gameElements || { selectedElements: [], otherElement: '', narrativeTitle: '', narrativeContent: '' },
+          rewardsOffered: existingActivity.rewardsOffered || { selectedRewards: [], otherReward: '' },
+          rewardedActions: existingActivity.rewardedActions || { selectedActions: [], otherAction: '' },
+          gamificationRules: existingActivity.gamificationRules || { generalRules: [], specificRules: '' },
+      });
+      setShowInitialSelection(false); // Garante que o formulário seja exibido diretamente
+    }
+  }, [isEditMode, existingActivity]);
+
+  
 
   // --- Carregamento de Templates do Backend ---
   useEffect(() => {
@@ -219,10 +247,15 @@ function ActivityCreationPage() {
     if (currentStep < totalSteps) {
       setCurrentStep(prevStep => prevStep + 1);
     } else {
-      // Lógica de submissão para a última etapa
-      console.log('handleNext: Etapa final atingida. Enviando dados da atividade para o backend...');
-      console.log('Dados a serem salvos:', JSON.stringify(activityData, null, 2)); // Log detalhado dos dados
+      const url = isEditMode
+        ? `http://127.0.0.1:5000/api/activities/${activityId}`
+        : 'http://127.0.0.1:5000/api/activities';
+      
+      const method = isEditMode ? 'PUT' : 'POST';
 
+      console.log(`Submetendo formulário em modo de ${isEditMode ? 'EDIÇÃO' : 'CRIAÇÃO'}`);
+      console.log(`URL: ${method} ${url}`);
+      
       try {
         const response = await fetch('http://127.0.0.1:5000/api/activities', {
           method: 'POST',
@@ -236,19 +269,13 @@ function ActivityCreationPage() {
         const result = await response.json();
 
         if (response.ok) {
-          console.log("handleNext: Atividade criada com sucesso! Resposta do servidor:", result);
-          setNewlyCreatedActivityId(result.activity.id);
-          setShowAssignmentPrompt(true);
-          //navigate('/professor/dashboard'); // Redireciona para o dashboard após o sucesso
+          alert(isEditMode ? 'Atividade atualizada com sucesso!' : 'Atividade criada com sucesso!');
+          navigate('/professor/banco-atividades'); // Redireciona para o banco de atividades após sucesso
         } else {
-          console.error('handleNext: Erro ao criar atividade. Resposta do servidor:', result);
-          // Substituir alert por um modal ou toast de erro
-          // alert('Erro ao criar atividade: ' + (result.message || 'Erro desconhecido do servidor.'));
+          alert('Erro: ' + (result.message || 'Erro desconhecido do servidor.'));
         }
       } catch (error) {
-        console.error('handleNext: Erro de conexão ou ao processar a requisição:', error);
-        // Substituir alert por um modal ou toast de erro
-        // alert('Ocorreu um erro de rede ao tentar salvar a atividade. Verifique sua conexão e se o backend está rodando.');
+        alert('Ocorreu um erro de rede. Verifique sua conexão.');
       }
     }
   };

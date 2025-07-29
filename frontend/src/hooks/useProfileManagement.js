@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 export function useProfileManagement() {
-  const { user, updateUserData } = useAuth();
+  const { user, updateUserData, logout } = useAuth();
   const [messages, setMessages] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
@@ -66,11 +66,45 @@ export function useProfileManagement() {
     }
   }, [updateUserData]);
 
+  const deleteAccount = useCallback(async (password) => {
+    setIsLoading(true);
+    setMessages({}); // Limpa mensagens anteriores
+    try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/user/delete_account`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({ password })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            setMessages({ success: 'Conta excluída com sucesso! Você será deslogado.' });
+            setTimeout(() => {
+                logout(); // Desloga o usuário
+            }, 2000);
+            return { success: true, message: result.message };
+        } else {
+            setMessages({ error: result.message || 'Erro ao excluir a conta.' });
+            return { success: false, message: result.message };
+        }
+    } catch (error) {
+        setMessages({ error: 'Erro de conexão ao tentar excluir a conta.' });
+        return { success: false, message: 'Erro de conexão' };
+    } finally {
+        setIsLoading(false);
+    }
+  }, [logout]);
+
   return {
     user,
     messages,
     isLoading,
     updateProfile,
-    updateAvatar
+    updateAvatar,
+    deleteAccount
   };
 }

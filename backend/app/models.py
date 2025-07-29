@@ -122,7 +122,7 @@ class ActivityProgress(db.Model):
     status = db.Column(db.String(50), default='not_started')
     completed_at = db.Column(db.DateTime, nullable=True)
     attempts = db.Column(db.Integer, default=0)
-
+    
     student = db.relationship('User', backref='activity_progresses', lazy=True)
     activity = db.relationship('Activity', backref='progresses', lazy=True)
     class_obj = db.relationship('Class', backref='activity_progresses', lazy=True)

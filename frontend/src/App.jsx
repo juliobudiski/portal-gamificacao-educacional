@@ -21,14 +21,15 @@ import JoinClassPage from './pages/JoinClassPage';
 import NotFoundPage from './pages/NotFoundPage';
 import AboutUsPage from './pages/AboutUsPage';
 import AdminPage from './pages/AdminPage';
+import QuizEditorPage from './pages/QuizEditorPage'; 
 // Importar as novas páginas e componentes
-import CreateClassPage from './pages/CreateClassPage'; // << NOVA PÁGINA >>
-import ClassListPage from './pages/ClassManagementPage'; // << PÁGINA ATUALIZADA/NOVA >>
-import ClassDetailsPage from './pages/ClassDetailsPage'; // << NOVA PÁGINA >>
+import CreateClassPage from './pages/CreateClassPage'; 
+import ClassListPage from './pages/ClassManagementPage';
+import ClassDetailsPage from './pages/ClassDetailsPage';
 import ClassEditPage from './pages/ClassEditPage';
 import AssignActivityToClass from './pages/AssignActivityToClass';
 import ActivityPage from './pages/ActivityPage';
-
+import ActivityEditPage from './pages/ActivityEditPage';
 // Importação dos ícones da biblioteca Lucide React para a UI
 import { Home, LogIn, UserPlus, Key, User, BookOpen, LayoutDashboard, PlusCircle, Users, BarChart2, Award, LogOut, Info, Settings, ShieldCheck } from 'lucide-react';
 
@@ -395,7 +396,8 @@ function App() {
             <Route path="/teacher/classes" element={<ClassListPage />} />
             <Route path="/classes/:class_id/edit" element={<ClassEditPage />} /> 
             <Route path="/assign-activity-to-class/:activityId" element={<AssignActivityToClass />} />
-            
+            <Route path="/professor/atividades/:activityId/edit" element={<ActivityEditPage />} />
+            <Route path="/professor/activity/:activityId/quiz/edit" element={<QuizEditorPage />} />
           </Route>
 
           {/* Rotas Aluno */}

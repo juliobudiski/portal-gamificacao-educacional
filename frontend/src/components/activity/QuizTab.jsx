@@ -1,38 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { FaClock } from 'react-icons/fa';
+import { FaClock, FaCheckCircle } from 'react-icons/fa';
 
 const QuizTab = ({ questions = [], onAnswerCorrect }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
     const [feedback, setFeedback] = useState({ type: '', message: '' });
     const [timeLeft, setTimeLeft] = useState(30);
+    const [isFinished, setIsFinished] = useState(false); // NOVO: Estado para controlar o fim do quiz
 
     useEffect(() => {
-        if (questions.length > 0 && questions[currentIndex]) {
-            setTimeLeft(questions[currentIndex].timeLimit || 30);
-            const timer = setInterval(() => {
-                setTimeLeft(prev => {
-                    if (prev <= 1) {
-                        clearInterval(timer);
-                        handleSubmit(null);
-                        return 0;
-                    }
-                    return prev - 1;
-                });
-            }, 1000);
-            return () => clearInterval(timer);
+        // Adiciona uma "guarda" para não iniciar o timer se o quiz acabou ou a pergunta não existe
+        if (isFinished || !questions || !questions[currentIndex]) {
+            return;
         }
-    }, [currentIndex, questions]);
 
-    if (!questions || questions.length === 0) {
-        return <div className="text-center text-gray-400 p-8">Nenhum quiz disponível para esta atividade.</div>;
-    }
-
-    const currentQuestion = questions[currentIndex];
+        setTimeLeft(questions[currentIndex].timeLimit || 30);
+        const timer = setInterval(() => {
+            setTimeLeft(prev => {
+                if (prev <= 1) {
+                    clearInterval(timer);
+                    handleSubmit(null); // Considera resposta errada se o tempo acabar
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [currentIndex, questions, isFinished]); // Adiciona isFinished como dependência
 
     const handleSubmit = (answer) => {
-        const isCorrect = answer === currentQuestion.correct_option;
-        const points = isCorrect ? currentQuestion.points : 0;
+        const isCorrect = answer === questions[currentIndex].correct_option;
+        const points = isCorrect ? questions[currentIndex].points : 0;
         setFeedback({
             type: isCorrect ? 'success' : 'error',
             message: isCorrect ? `+${points} Pontos!` : 'Resposta Incorreta!'
@@ -43,13 +41,40 @@ const QuizTab = ({ questions = [], onAnswerCorrect }) => {
         setTimeout(() => {
             setFeedback({ type: '', message: '' });
             setSelectedAnswer(null);
+            // Lógica de transição corrigida
             if (currentIndex < questions.length - 1) {
                 setCurrentIndex(prev => prev + 1);
             } else {
-                alert("Quiz finalizado!");
+                setIsFinished(true); // NOVO: Em vez de um alert, atualiza o estado
             }
         }, 2000);
     };
+
+    // NOVO: Renderiza uma tela de finalização
+    if (isFinished) {
+        return (
+            <div className="bg-gray-800 p-8 rounded-lg text-white text-center flex flex-col items-center justify-center animate-fade-in">
+                <FaCheckCircle className="text-green-400 text-6xl mb-4" />
+                <h2 className="text-3xl font-bold text-green-400 mb-4">Quiz Finalizado!</h2>
+                <p className="text-lg text-gray-300">Parabéns por completar o desafio.</p>
+                {/* Futuramente, você pode adicionar botões para "Ver resultados" ou "Voltar" */}
+            </div>
+        );
+    }
+    
+    // Proteção adicional para caso as perguntas não carreguem corretamente
+    if (!questions || questions.length === 0) {
+        return <div className="text-center text-gray-400 p-8">Nenhum quiz disponível para esta atividade.</div>;
+    }
+
+    const currentQuestion = questions[currentIndex];
+    
+    // Adiciona uma verificação final para evitar o erro caso algo dê muito errado
+    if (!currentQuestion) {
+        console.error("Tentativa de renderizar uma pergunta indefinida. Finalizando o quiz.");
+        setIsFinished(true);
+        return null;
+    }
 
     return (
         <div className="bg-gray-800 p-8 rounded-lg text-white relative">

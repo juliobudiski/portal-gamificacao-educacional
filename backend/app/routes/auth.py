@@ -296,3 +296,38 @@ def change_password():
         db.session.rollback()
         current_app.logger.error(f"Erro ao alterar senha para o usuário ID {current_user_id}: {str(e)}")
         return jsonify({"message": "Erro interno ao alterar a senha."}), 500
+
+@auth_bp.route('/user/delete_account', methods=['DELETE'])
+@cross_origin()
+@jwt_required()
+def delete_account():
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+
+    if not user:
+        return jsonify({"message": "Usuário não encontrado."}), 404
+
+    data = request.get_json()
+    password = data.get('password')
+
+    if not password:
+        return jsonify({"message": "A senha é necessária para excluir a conta."}), 400
+
+    if user.google_id and not user.password_hash:
+         return jsonify({"message": "A exclusão de contas Google precisa de um método de verificação diferente."}), 400
+
+    if not check_password_hash(user.password_hash, password):
+        return jsonify({"message": "Senha atual incorreta."}), 401
+
+    try:
+        # Futuramente, adicione aqui a lógica para deletar dados relacionados
+        # (atividades, matrículas, etc.) antes de deletar o usuário.
+        
+        db.session.delete(user)
+        db.session.commit()
+        return jsonify({"message": "Conta excluída com sucesso."}), 200
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Erro ao excluir a conta do usuário ID {current_user_id}: {str(e)}")
+        return jsonify({"message": "Erro interno ao excluir a conta."}), 500
+

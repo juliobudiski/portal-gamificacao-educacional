@@ -290,3 +290,48 @@ def delete_activity(activity_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": str(e)}), 500
+
+@activity_bp.route('/<int:activity_id>/quiz', methods=['PUT'])
+@jwt_required()
+@cross_origin() 
+def update_activity_quiz(activity_id):
+    """
+    Rota para adicionar ou atualizar as perguntas de um quiz de uma atividade.
+    """
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+    
+    if not user or user.role != 'professor':
+        return jsonify({"message": "Acesso negado"}), 403
+
+    activity = Activity.query.get(activity_id)
+
+    if not activity:
+        return jsonify({"message": "Atividade não encontrada"}), 404
+    
+    if activity.professor_id != user.id:
+        return jsonify({"message": "Você não tem permissão para editar esta atividade."}), 403
+
+    data = request.get_json()
+    questions = data.get('questions')
+
+    if questions is None or not isinstance(questions, list):
+        return jsonify({"message": "Dados de perguntas inválidos."}), 400
+
+    try:
+        # Se game_elements for nulo, inicializa como um dicionário
+        if activity.game_elements is None:
+            activity.game_elements = {}
+
+        # Cria uma cópia para garantir que o SQLAlchemy detecte a mudança no JSONB
+        game_elements_copy = dict(activity.game_elements)
+        game_elements_copy['questions'] = questions
+        activity.game_elements = game_elements_copy
+        
+        db.session.commit()
+        return jsonify({"message": "Quiz atualizado com sucesso!", "activity": activity.to_dict()}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Erro ao atualizar quiz para atividade ID {activity_id}: {str(e)}")
+        return jsonify({"message": "Erro interno ao salvar o quiz."}), 500
