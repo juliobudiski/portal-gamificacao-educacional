@@ -22,6 +22,7 @@ import NotFoundPage from './pages/NotFoundPage';
 import AboutUsPage from './pages/AboutUsPage';
 import AdminPage from './pages/AdminPage';
 import QuizEditorPage from './pages/QuizEditorPage'; 
+import NarrativeEditorPage from './pages/NarrativeEditorPage'; 
 // Importar as novas páginas e componentes
 import CreateClassPage from './pages/CreateClassPage'; 
 import ClassListPage from './pages/ClassManagementPage';
@@ -398,6 +399,7 @@ function App() {
             <Route path="/assign-activity-to-class/:activityId" element={<AssignActivityToClass />} />
             <Route path="/professor/atividades/:activityId/edit" element={<ActivityEditPage />} />
             <Route path="/professor/activity/:activityId/quiz/edit" element={<QuizEditorPage />} />
+            <Route path="/professor/activity/:activityId/narrative/edit" element={<NarrativeEditorPage />} />
           </Route>
 
           {/* Rotas Aluno */}

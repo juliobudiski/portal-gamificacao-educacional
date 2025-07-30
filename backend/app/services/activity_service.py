@@ -10,12 +10,13 @@ from copy import deepcopy
 logger = logging.getLogger(__name__)
 
 def create_activity(user, data):
-    logger.info(f"Usuário ID {user.id} tentando criar uma nova atividade.") # Trocado para user.id
+    logger.info(f"Usuário ID {user.id} tentando criar uma nova atividade.")
 
     if user.role != 'professor':
         return {"message": "Acesso negado"}, 403
     
     try:
+        # A lógica para narrative_image_url é removida daqui
         new_activity = Activity(
             professor_id=user.id,
             title=data.get('title'),
@@ -24,7 +25,7 @@ def create_activity(user, data):
             desired_scenario=data.get('desiredScenario', {}),
             activity_planning=data.get('activityPlanning', {}),
             player_profile=data.get('playerProfile', {}),
-            game_elements=data.get('gameElements', {}),
+            game_elements=data.get('gameElements', {}), # A nova estrutura da narrativa virá aqui dentro
             rewards_offered=data.get('rewardsOffered', {}),
             rewarded_actions=data.get('rewardedActions', {}),
             gamification_rules=data.get('gamificationRules', {}),
@@ -32,7 +33,6 @@ def create_activity(user, data):
             is_public=data.get('isPublic', False)
         )
         
-        # Processar tags se existirem
         if 'tags' in data:
             for tag_name in data['tags']:
                 tag = Tag.query.filter_by(name=tag_name).first()
@@ -44,7 +44,6 @@ def create_activity(user, data):
         db.session.add(new_activity)
         db.session.commit()
         
-        # Registrar evento de criação
         log_event(user.id, 'activity_created', {
             'activity_id': new_activity.id,
             'title': new_activity.title
@@ -56,6 +55,39 @@ def create_activity(user, data):
         db.session.rollback()
         return {"message": str(e)}, 500
 
+def update_activity(user, activity_id, data):
+    activity = Activity.query.get(activity_id)
+
+    if not activity:
+        return {"message": "Atividade não encontrada"}, 404
+    
+    if activity.professor_id != user.id:
+        return {"message": "Acesso negado. Você não é o dono desta atividade."}, 403
+
+    try:
+        activity.title = data.get('title', activity.title)
+        activity.description = data.get('description', activity.description)
+        activity.area_knowledge = data.get('areaKnowledge', activity.area_knowledge)
+        activity.is_public = data.get('isPublic', activity.is_public)
+        activity.current_scenario = data.get('currentScenario', activity.current_scenario)
+        activity.desired_scenario = data.get('desiredScenario', activity.desired_scenario)
+        activity.activity_planning = data.get('activityPlanning', activity.activity_planning)
+        activity.player_profile = data.get('playerProfile', activity.player_profile)
+        # O campo game_elements agora carrega toda a estrutura da narrativa
+        activity.game_elements = data.get('gameElements', activity.game_elements)
+        activity.rewards_offered = data.get('rewardsOffered', activity.rewards_offered)
+        activity.rewarded_actions = data.get('rewardedActions', activity.rewarded_actions)
+        activity.gamification_rules = data.get('gamificationRules', activity.gamification_rules)
+        
+        db.session.commit()
+        logger.info(f"Atividade ID {activity_id} atualizada com sucesso pelo usuário ID {user.id}")
+        return {"message": "Atividade atualizada com sucesso", "activity": activity.to_dict()}, 200
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Erro ao atualizar atividade ID {activity_id}: {str(e)}")
+        return {"message": str(e)}, 500
+
+        
 def search_activities(search_term, tags):
     query = Activity.query.filter(Activity.is_public == True)
     

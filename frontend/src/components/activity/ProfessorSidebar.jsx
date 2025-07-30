@@ -1,7 +1,8 @@
 import React from 'react';
-import { FaChartBar, FaUsers, FaPlusCircle } from 'react-icons/fa';
+// Ícones adicionados para o novo botão
+import { FaChartBar, FaUsers, FaPlusCircle, FaBookOpen } from 'react-icons/fa';
 
-const ProfessorSidebar = ({ analytics, onStudentClick, onOpenQuizEditor }) => (
+const ProfessorSidebar = ({ analytics, onStudentClick, onOpenQuizEditor, onOpenNarrativeEditor }) => (
     <div className="p-4 bg-gray-900 rounded-lg space-y-6 sticky top-4">
         <div>
             <h4 className="text-lg font-bold text-blue-400 flex items-center"><FaChartBar className="mr-2" /> Analytics da Turma</h4>
@@ -21,9 +22,22 @@ const ProfessorSidebar = ({ analytics, onStudentClick, onOpenQuizEditor }) => (
                 ))}
             </ul>
         </div>
-        <button onClick={onOpenQuizEditor} className="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 rounded-lg flex items-center justify-center">
-            <FaPlusCircle className="mr-2" /> Gerenciar Quiz
-        </button>
+        {/* Container para os botões de gerenciamento */}
+        <div className="space-y-3 pt-3 border-t border-gray-700">
+            <button 
+                onClick={onOpenQuizEditor} 
+                className="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 rounded-lg flex items-center justify-center transition-colors"
+            >
+                <FaPlusCircle className="mr-2" /> Gerenciar Quiz
+            </button>
+            {/* NOVO BOTÃO ADICIONADO AQUI */}
+            <button 
+                onClick={onOpenNarrativeEditor} 
+                className="w-full py-2 px-4 bg-yellow-600 hover:bg-yellow-700 rounded-lg flex items-center justify-center transition-colors"
+            >
+                <FaBookOpen className="mr-2" /> Gerenciar Narrativa
+            </button>
+        </div>
     </div>
 );
 

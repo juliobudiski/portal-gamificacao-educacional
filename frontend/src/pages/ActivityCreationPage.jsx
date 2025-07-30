@@ -37,7 +37,7 @@ function ActivityCreationPage({ existingActivity }) {
   const [templateError, setTemplateError] = useState(null);
   const [newlyCreatedActivityId, setNewlyCreatedActivityId] = useState(null);
   const [showAssignmentPrompt, setShowAssignmentPrompt] = useState(false);
-
+  const [isNarrativeModalOpen, setIsNarrativeModalOpen] = useState(false);
   // --- Estrutura de Dados da Atividade ---
 
   // Estado principal que armazena todos os dados coletados no formulário.
@@ -355,6 +355,17 @@ function ActivityCreationPage({ existingActivity }) {
     setShowHelpModal(false);
     setHelpContent({ title: '', text: '' });
   };
+
+  const handleSaveNarrative = (newNarrativeConfig) => {
+        setActivityData(prevData => ({
+            ...prevData,
+            gameElements: {
+                ...prevData.gameElements,
+                narrativeConfig: newNarrativeConfig
+            }
+        }));
+        setIsNarrativeModalOpen(false); // Fecha o modal após salvar
+    };
 
   // --- Funções de Renderização ---
 

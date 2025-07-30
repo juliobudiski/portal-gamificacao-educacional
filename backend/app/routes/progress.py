@@ -6,6 +6,31 @@ from sqlalchemy.orm import joinedload
 from flask_cors import cross_origin 
 progress_bp = Blueprint('progress', __name__)
 
+
+def xp_for_next_level(level):
+    """Calcula o XP necessário para o próximo nível com base no nível atual."""
+    # Nível 1 -> 100, Nível 2 -> 150, Nível 3 -> 200, etc.
+    return 100 + (level - 1) * 50
+
+def calculate_level(total_points):
+    """Calcula o nível atual, o XP para o próximo nível e o XP acumulado até o nível atual."""
+    level = 1
+    xp_required_for_current_level = 0
+    xp_needed = xp_for_next_level(level)
+
+    while total_points >= xp_needed:
+        total_points -= xp_needed
+        xp_required_for_current_level += xp_needed
+        level += 1
+        xp_needed = xp_for_next_level(level)
+    
+    return {
+        "level": level,
+        "xpForNextLevel": xp_needed,
+        "xpEarnedForCurrentLevel": total_points,
+        "xpAccumulatedUntilCurrentLevel": xp_required_for_current_level
+    }
+
 @progress_bp.route('/<int:activity_id>', methods=['GET'])
 @jwt_required()
 @cross_origin()
@@ -20,30 +45,37 @@ def get_activity_progress(activity_id):
         student_id=user.id,
         activity_id=activity_id
     ).first()
-    
-    if not progress:
-        # Se o aluno ainda não interagiu, criamos um registro de progresso inicial.
-        # Isso garante que a página sempre tenha dados para exibir.
-        try:
-            progress = ActivityProgress(student_id=user.id, activity_id=activity_id, status='not_started')
-            db.session.add(progress)
-            db.session.commit()
-        except Exception: # Se houver erro (ex: activity_id inválido), retorna o padrão
-            default_progress = {
-                "points_earned": 0, "status": "not_started", "attempts": 0,
-                "level": 1, "xp": 0, "xpForNextLevel": 100 
-            }
-            return jsonify(default_progress), 200
 
-    # Retorna o progresso real do banco de dados
+    activity = Activity.query.get(activity_id)
+
+    total_points = progress.points_earned if progress else 0
+    level_info = calculate_level(total_points)
+    
+    # --- LÓGICA DE ESTATÍSTICAS ATUALIZADA ---
+    total_possible_points = 0
+    total_questions = 0
+    if activity and activity.game_elements and isinstance(activity.game_elements.get('questions'), list):
+        questions = activity.game_elements['questions']
+        total_questions = len(questions)
+        # Soma os pontos de cada questão para obter o total possível
+        total_possible_points = sum(int(q.get('points', 0)) for q in questions)
+
+    stats = {
+        "scoreAchieved": total_points,
+        "totalPossibleScore": total_possible_points,
+        "totalQuestions": total_questions,
+        "averageTime": 35,
+        "achievements": 3
+    }
+    
     return jsonify({
-        "points_earned": progress.points_earned,
-        "status": progress.status,
-        "attempts": progress.attempts,
-        # Adicione aqui a lógica real de level/xp se for implementada no futuro
-        "level": 1, 
-        "xp": progress.points_earned, # Exemplo: XP é igual aos pontos
-        "xpForNextLevel": 100 
+        "points_earned": total_points,
+        "status": progress.status if progress else 'not_started',
+        "attempts": progress.attempts if progress else 0,
+        "level": level_info["level"],
+        "xp": level_info["xpEarnedForCurrentLevel"],
+        "xpForNextLevel": level_info["xpForNextLevel"],
+        "stats": stats
     }), 200
 
 
@@ -193,6 +225,6 @@ def update_activity_progress(activity_id):
 
     except Exception as e:
         db.session.rollback()
-        current_app.logger.error(f"Erro ao atualizar progresso para user {current_user_id} na atividade {activity_id}: {str(e)}")
+        # current_app.logger.error(f"Erro ao atualizar progresso para user {current_user_id} na atividade {activity_id}: {str(e)}")
         return jsonify({"message": "Erro interno ao salvar o progresso."}), 500
     # --- FIM DA CORREÇÃO ---

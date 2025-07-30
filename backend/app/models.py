@@ -44,6 +44,8 @@ class Activity(db.Model):
     activity_planning = db.Column(JSONB, nullable=True)
     player_profile = db.Column(JSONB, nullable=True)
     game_elements = db.Column(JSONB, nullable=True)
+    # NOVO CAMPO ADICIONADO AQUI
+    narrative_image_url = db.Column(db.String(512), nullable=True)
     rewards_offered = db.Column(JSONB, nullable=True)
     rewarded_actions = db.Column(JSONB, nullable=True)
     gamification_rules = db.Column(JSONB, nullable=True)
@@ -67,6 +69,8 @@ class Activity(db.Model):
             'activityPlanning': self.activity_planning,
             'playerProfile': self.player_profile,
             'gameElements': self.game_elements,
+            # NOVO CAMPO ADICIONADO À RESPOSTA DA API
+            'narrativeImageUrl': self.narrative_image_url,
             'rewardsOffered': self.rewards_offered,
             'rewardedActions': self.rewarded_actions,
             'gamificationRules': self.gamification_rules,
