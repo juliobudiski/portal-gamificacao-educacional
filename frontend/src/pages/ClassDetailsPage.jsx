@@ -29,61 +29,48 @@ function ClassDetailsPage() {
     useEffect(() => {
         const fetchClassData = async () => {
             console.log('[ClassDetailsPage] Iniciando busca de dados da turma ID:', class_id);
-            const token = user?.token; // Acessa o token via user.token
+            const token = user?.token;
             if (!token || !class_id) {
                 setMessage('Acesso negado ou token/ID da turma ausente.');
                 setIsLoading(false);
-                console.warn('[ClassDetailsPage] Token ou ID da turma não disponível, não buscando dados.');
                 return;
             }
             setMessage('');
             setIsLoading(true);
 
             try {
-                // Fetch class details
+                // --- ETAPA 1: BUSCAR DETALHES DA TURMA ---
                 console.log('[ClassDetailsPage] Buscando detalhes da turma...');
                 const classResponse = await fetch(`http://127.0.0.1:5000/api/classes/${class_id}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`, // Usando user.token
-                    },
+                    headers: { 'Authorization': `Bearer ${token}` },
                 });
                 const classData = await classResponse.json();
-                console.log('[ClassDetailsPage] Resposta bruta API (detalhes turma):', classResponse);
-                console.log('[ClassDetailsPage] Dados API (detalhes turma):', classData);
 
-                if (classResponse.ok) {
-                    setClassDetails(classData);
-                    console.log('[ClassDetailsPage] Detalhes da turma carregados:', classData);
-
-                    // Fetch activities for this class
-                    console.log('[ClassDetailsPage] Buscando atividades para esta turma...');
-                    const activitiesResponse = await fetch(`http://127.0.0.1:5000/api/classes/${class_id}/activities`, {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`, // Usando user.token
-                        },
-                    });
-                    const activitiesData = await activitiesResponse.json();
-                    console.log('[ClassDetailsPage] Resposta bruta API (atividades turma):', activitiesResponse);
-                    console.log('[ClassDetailsPage] Dados API (atividades turma):', activitiesData);
-
-                    if (activitiesResponse.ok) {
-                        setActivities(activitiesData);
-                        console.log('[ClassDetailsPage] Atividades da turma carregadas:', activitiesData);
-                    } else {
-                        setMessage(activitiesData.message || 'Erro ao carregar atividades.');
-                        console.error('[ClassDetailsPage] Erro ao carregar atividades:', activitiesData.message);
-                    }
-                } else {
-                    setMessage(classData.message || 'Erro ao carregar detalhes da turma.');
-                    console.error('[ClassDetailsPage] Erro ao carregar detalhes da turma:', classData.message);
+                if (!classResponse.ok) {
+                    throw new Error(classData.message || 'Erro ao carregar detalhes da turma.');
                 }
+                
+                setClassDetails(classData);
+                console.log('[ClassDetailsPage] Detalhes da turma carregados:', classData);
+
+                // --- ETAPA 2: BUSCAR ATIVIDADES DA TURMA (CORREÇÃO APLICADA AQUI) ---
+                console.log('[ClassDetailsPage] Buscando atividades para esta turma...');
+                // A URL foi corrigida para o endpoint correto de atividades
+                const activitiesResponse = await fetch(`http://127.0.0.1:5000/api/classes/${class_id}/activities`, {
+                    headers: { 'Authorization': `Bearer ${token}` },
+                });
+                const activitiesData = await activitiesResponse.json();
+                
+                if (!activitiesResponse.ok) {
+                    throw new Error(activitiesData.message || 'Erro ao carregar atividades.');
+                }
+
+                setActivities(activitiesData);
+                console.log('[ClassDetailsPage] Atividades da turma carregadas:', activitiesData);
+
             } catch (error) {
                 console.error('[ClassDetailsPage] Erro na requisição de dados da turma:', error);
-                setMessage('Erro na comunicação com o servidor.');
+                setMessage(error.message);
             } finally {
                 setIsLoading(false);
             }

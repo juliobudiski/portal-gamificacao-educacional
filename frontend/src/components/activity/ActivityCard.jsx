@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaEdit, FaTrash, FaCopy, FaEye } from 'react-icons/fa'; // FaShareAlt foi removido
+import { FaEdit, FaTrash, FaCopy, FaEye, FaChalkboardTeacher } from 'react-icons/fa'; // FaShareAlt foi removido
 import { useNavigate } from 'react-router-dom';
 
 function ActivityCard({ activity, isOwner, onCopy, onDelete }) {
@@ -9,6 +9,13 @@ function ActivityCard({ activity, isOwner, onCopy, onDelete }) {
         <div className="bg-[#3a4046] p-5 rounded-xl shadow-lg border border-[#4a525a] flex flex-col justify-between h-full transform hover:-translate-y-1 transition-transform duration-300">
             <div>
                 <h3 className="text-lg font-bold text-white mb-2">{activity.title}</h3>
+                {/* --- INFORMAÇÃO DA TURMA ADICIONADA AQUI --- */}
+                {activity.class_name && (
+                    <div className="flex items-center text-xs text-yellow-300 bg-yellow-400/10 px-2 py-1 rounded-md mb-3">
+                        <FaChalkboardTeacher className="mr-2" />
+                        <span>Turma: {activity.class_name}</span>
+                    </div>
+                )}
                 <p className="text-sm text-gray-300 mb-3 line-clamp-3">{activity.description}</p>
                 <div className="flex items-center text-xs text-gray-400 mb-4">
                     <span className="font-semibold mr-2">Criado por:</span>
@@ -29,7 +36,16 @@ function ActivityCard({ activity, isOwner, onCopy, onDelete }) {
             <div className="mt-4 pt-4 border-t border-gray-600 flex justify-end items-center gap-2">
                 {isOwner ? (
                     <>
-                        {/* Botões para o dono da atividade */}
+                        {/* 2. Botão "Atribuir Turma" adicionado aqui */}
+                        <button 
+                            onClick={() => navigate(`/assign-activity-to-class/${activity.id}`)} 
+                            className="p-2 bg-gray-700 hover:bg-accent-teal/30 rounded-full group" 
+                            title="Atribuir à Turma"
+                        >
+                            <FaChalkboardTeacher className="text-gray-400 group-hover:text-accent-teal" />
+                        </button>
+                        
+                        {/* Botões existentes para o dono da atividade */}
                         <button onClick={() => navigate(`/professor/atividades/${activity.id}/edit`)} className="p-2 bg-gray-700 hover:bg-accent-yellow/30 rounded-full group" title="Editar">
                             <FaEdit className="text-gray-400 group-hover:text-accent-yellow" />
                         </button>
@@ -39,7 +55,6 @@ function ActivityCard({ activity, isOwner, onCopy, onDelete }) {
                     </>
                 ) : (
                     <>
-                        {/* Botão de atribuir foi REMOVIDO daqui */}
                          <button onClick={() => onCopy(activity.id)} className="p-2 bg-gray-700 hover:bg-accent-purple/30 rounded-full group" title="Copiar e Editar">
                             <FaCopy className="text-gray-400 group-hover:text-accent-purple" />
                         </button>

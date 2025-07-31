@@ -1,52 +1,68 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback, useMemo } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import ActivityCard from '../components/activity/ActivityCard'; // Importa o novo componente
-import { FaUserEdit, FaGlobeAmericas, FaPlusCircle } from 'react-icons/fa';
+import ActivityCard from '../components/activity/ActivityCard';
+import { FaUserEdit, FaGlobeAmericas, FaPlusCircle, FaSearch } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
 function ActivityBankPage() {
     const { user } = useContext(AuthContext);
     const [myActivities, setMyActivities] = useState([]);
     const [publicActivities, setPublicActivities] = useState([]);
-    const [activeTab, setActiveTab] = useState('my'); // 'my' ou 'public'
+    const [activeTab, setActiveTab] = useState('my');
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState('');
+    
+    // --- ESTADOS PARA A BUSCA ---
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isSearching, setIsSearching] = useState(false);
 
+    // --- FUNÇÃO PARA BUSCAR ATIVIDADES (AGORA REUTILIZÁVEL) ---
+    const fetchActivities = useCallback(async (currentSearchTerm) => {
+        if (!user?.token) return;
+        
+        // Define o estado de carregamento apropriado
+        if (currentSearchTerm) setIsSearching(true);
+        else setLoading(true);
+        
+        setMessage('');
+        try {
+            const headers = { 'Authorization': `Bearer ${user.token}` };
+            // Adiciona o termo de busca na URL se ele existir
+            const query = currentSearchTerm ? `?search=${encodeURIComponent(currentSearchTerm)}` : '';
+
+            // Busca ambas as listas com o mesmo termo de busca
+            const [myRes, publicRes] = await Promise.all([
+                fetch(`http://127.0.0.1:5000/api/activities/my_activities${query}`, { headers }),
+                fetch(`http://127.0.0.1:5000/api/activities/public${query}`, { headers })
+            ]);
+
+            const myData = await myRes.json();
+            const publicData = await publicRes.json();
+
+            if (myRes.ok) setMyActivities(myData);
+            else throw new Error(myData.message || 'Erro ao buscar minhas atividades');
+
+            if (publicRes.ok) setPublicActivities(publicData);
+            else throw new Error(publicData.message || 'Erro ao buscar atividades públicas');
+
+        } catch (error) {
+            setMessage(error.message);
+        } finally {
+            setLoading(false);
+            setIsSearching(false);
+        }
+    }, [user?.token]); // Depende apenas do token do usuário
+
+    // --- EFEITO PARA BUSCA "DEBOUNCED" ---
+    // Este efeito é acionado sempre que o usuário para de digitar por 500ms
     useEffect(() => {
-        const fetchActivities = async () => {
-            if (!user?.token) return;
-            setLoading(true);
-            setMessage('');
-            try {
-                const headers = { 'Authorization': `Bearer ${user.token}` };
+        const delayDebounceFn = setTimeout(() => {
+            console.log("Iniciando busca com o termo:", searchTerm);
+            fetchActivities(searchTerm);
+        }, 500); // A busca só acontece 500ms após o usuário parar de digitar
 
-                // Busca as atividades do professor
-                const myActivitiesRes = await fetch('http://127.0.0.1:5000/api/activities/my_activities', { headers });
-                const myActivitiesData = await myActivitiesRes.json();
-                if (myActivitiesRes.ok) {
-                    setMyActivities(myActivitiesData);
-                } else {
-                    throw new Error(myActivitiesData.message || 'Erro ao buscar minhas atividades');
-                }
-
-                // Busca as atividades públicas
-                const publicActivitiesRes = await fetch('http://127.0.0.1:5000/api/activities/public', { headers });
-                const publicActivitiesData = await publicActivitiesRes.json();
-                if (publicActivitiesRes.ok) {
-                    setPublicActivities(publicActivitiesData);
-                } else {
-                    throw new Error(publicActivitiesData.message || 'Erro ao buscar atividades públicas');
-                }
-
-            } catch (error) {
-                setMessage(error.message);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchActivities();
-    }, [user]);
+        return () => clearTimeout(delayDebounceFn);
+    }, [searchTerm, fetchActivities]); // Roda quando o termo de busca ou a função de fetch mudam
     
     const handleCopyActivity = async (activityId) => {
         if (!window.confirm("Tem certeza que deseja criar uma cópia editável desta atividade?")) return;
@@ -89,6 +105,14 @@ function ActivityBankPage() {
         }
     };
 
+    // --- LÓGICA DE FILTRO (CLIENT-SIDE) ---
+    const filteredMyActivities = useMemo(() => {
+        if (!searchTerm) return myActivities;
+        return myActivities.filter(activity => 
+            activity.title.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [myActivities, searchTerm]);
+
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#1e2226] to-[#2c3135] p-4 md:p-8 text-white">
@@ -102,6 +126,20 @@ function ActivityBankPage() {
                         <FaPlusCircle />
                         Criar Nova Atividade
                     </Link>
+                </div>
+
+                {/* --- BARRA DE PESQUISA ADICIONADA AQUI --- */}
+                <div className="relative mb-6">
+                    <input 
+                        type="text"
+                        placeholder="Pesquisar por título..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full bg-[#3a4046] border-2 border-[#4a525a] rounded-xl py-3 px-4 pl-10 text-gray-200 focus:outline-none focus:ring-2 focus:ring-accent-yellow"
+                    />
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <FaSearch className="text-gray-400" />
+                    </div>
                 </div>
 
                 {/* Abas de Navegação */}

@@ -6,6 +6,7 @@ from flask_jwt_extended import jwt_required, current_user, get_jwt_identity
 from ..models import db, Activity, Tag, activity_tag, ActivityRevision, User, Class, Enrollment
 from sqlalchemy.orm import noload
 from copy import deepcopy
+from sqlalchemy import or_
 
 logger = logging.getLogger(__name__)
 
@@ -164,17 +165,44 @@ def get_activity(user, activity_id):
     return jsonify(activity.to_dict()), 200
 
 
-def get_activities_by_professor(professor_id):
-    """Busca todas as atividades criadas por um professor específico."""
-    logger.info(f"Buscando atividades para o professor ID {professor_id}")
-    activities = Activity.query.filter_by(professor_id=professor_id).all()
+def get_activities_by_professor(professor_id, search_term=None):
+    """Busca todas as atividades criadas por um professor, com filtro opcional."""
+    logger.info(f"Buscando atividades para o professor ID {professor_id} com termo de busca: '{search_term}'")
+    query = Activity.query.filter_by(professor_id=professor_id)
+
+    # --- 2. LÓGICA DE BUSCA ATUALIZADA ---
+    if search_term:
+        # Faz um "join" com a tabela de Turmas para conseguir pesquisar pelo nome da turma
+        query = query.outerjoin(Class, Activity.class_id == Class.id)
+        # Filtra usando OR para buscar em qualquer um dos três campos
+        query = query.filter(
+            or_(
+                Activity.title.ilike(f'%{search_term}%'),
+                Activity.description.ilike(f'%{search_term}%'),
+                Class.name.ilike(f'%{search_term}%')
+            )
+        )
+    
+    activities = query.all()
     return [a.to_dict() for a in activities]
 
-def get_public_activities(current_user_id):
-    """Busca todas as atividades públicas, excluindo as do próprio usuário."""
-    logger.info(f"Buscando atividades públicas para o usuário ID {current_user_id}")
-    # Exclui as atividades do próprio professor da lista pública para evitar redundância
-    activities = Activity.query.filter(Activity.is_public == True, Activity.professor_id != current_user_id).all()
+def get_public_activities(current_user_id, search_term=None):
+    """Busca todas as atividades públicas, com filtro opcional."""
+    logger.info(f"Buscando atividades públicas para o usuário ID {current_user_id} com termo de busca: '{search_term}'")
+    query = Activity.query.filter(Activity.is_public == True, Activity.professor_id != current_user_id)
+    
+    # --- 3. LÓGICA DE BUSCA ATUALIZADA (IDÊNTICA À DE CIMA) ---
+    if search_term:
+        query = query.outerjoin(Class, Activity.class_id == Class.id)
+        query = query.filter(
+            or_(
+                Activity.title.ilike(f'%{search_term}%'),
+                Activity.description.ilike(f'%{search_term}%'),
+                Class.name.ilike(f'%{search_term}%')
+            )
+        )
+
+    activities = query.all()
     return [a.to_dict() for a in activities]
 
 def update_activity(user, activity_id, data):

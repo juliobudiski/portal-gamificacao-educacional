@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { FaClock, FaCheckCircle } from 'react-icons/fa';
 
-const QuizTab = ({ questions = [], onAnswerCorrect }) => {
+// 1. Adicionamos a prop 'gameElements' para receber a lista de elementos
+const QuizTab = ({ questions = [], onAnswerCorrect, gameElements = [] }) => { 
     const [currentIndex, setCurrentIndex] = useState(0);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
     const [feedback, setFeedback] = useState({ type: '', message: '' });
     const [timeLeft, setTimeLeft] = useState(30);
-    const [isFinished, setIsFinished] = useState(false); // NOVO: Estado para controlar o fim do quiz
+    const [isFinished, setIsFinished] = useState(false);
+
+    // 2. Verificamos se "Pressão de tempo" está habilitado
+    const isTimed = gameElements.includes("Pressão de tempo");
 
     useEffect(() => {
-        // Adiciona uma "guarda" para não iniciar o timer se o quiz acabou ou a pergunta não existe
-        if (isFinished || !questions || !questions[currentIndex]) {
+        // O timer só será ativado se 'isTimed' for verdadeiro
+        if (isFinished || !questions || !questions[currentIndex] || !isTimed) {
             return;
         }
 
@@ -19,14 +23,14 @@ const QuizTab = ({ questions = [], onAnswerCorrect }) => {
             setTimeLeft(prev => {
                 if (prev <= 1) {
                     clearInterval(timer);
-                    handleSubmit(null); // Considera resposta errada se o tempo acabar
+                    handleSubmit(null);
                     return 0;
                 }
                 return prev - 1;
             });
         }, 1000);
         return () => clearInterval(timer);
-    }, [currentIndex, questions, isFinished]); // Adiciona isFinished como dependência
+    }, [currentIndex, questions, isFinished, isTimed]); // Adicionamos isTimed às dependências
 
     const handleSubmit = (answer) => {
         const isCorrect = answer === questions[currentIndex].correct_option;
@@ -85,7 +89,7 @@ const QuizTab = ({ questions = [], onAnswerCorrect }) => {
                 </div>
             )}
             {/* Timer */}
-            {currentQuestion.timeLimit && (
+            {isTimed && currentQuestion.timeLimit && (
                 <div className="absolute top-4 right-4 text-2xl font-bold flex items-center">
                     <FaClock className="mr-2" /> {timeLeft}s
                 </div>

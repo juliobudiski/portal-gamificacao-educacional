@@ -1,7 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FaImage, FaUserCircle, FaSave, FaPlus, FaTrash, FaBookOpen } from 'react-icons/fa';
+
+// Debug mode control
+const isDebugMode = import.meta.env.VITE_DEBUG_MODE === 'true';
 
 // --- Listas de recursos visuais disponíveis ---
 const SCENARIOS = [
@@ -18,6 +21,11 @@ const CHARACTERS = [
     '/narrativa/personagens/aluno2.png',
 ];
 
+/**
+ * @component
+ * @desc Página de edição de narrativa para atividades gamificadas
+ * Permite configurar cenários, personagens e diálogos para atividades
+ */
 function NarrativeEditorPage() {
     const { activityId } = useParams();
     const navigate = useNavigate();
@@ -27,58 +35,97 @@ function NarrativeEditorPage() {
     const [activityTitle, setActivityTitle] = useState('');
     const [narrativeConfig, setNarrativeConfig] = useState({
         scenario: '',
-        characters: [], // Ex: [{ role: 'Instrutor 1', image: '/path/to/img.png' }]
-        dialogue: [],   // Ex: [{ characterRole: 'Instrutor 1', text: 'Olá!' }]
+        characters: [],
+        dialogue: [],
     });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [message, setMessage] = useState('');
 
     // --- Busca os dados da atividade ---
-    const fetchActivity = useCallback(async () => {
-        try {
-            const response = await fetch(`http://127.0.0.1:5000/api/activities/${activityId}`, {
-                headers: { 'Authorization': `Bearer ${user.token}` },
-            });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message);
-
-            setActivityTitle(data.title);
-            // Preenche o estado com a configuração de narrativa existente ou valores padrão
-            if (data.gameElements?.narrativeConfig) {
-                setNarrativeConfig(data.gameElements.narrativeConfig);
-            }
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
-    }, [activityId, user.token]);
-
     useEffect(() => {
+        const fetchActivity = async () => {
+            if (isDebugMode) {
+                console.log('[NarrativeEditorPage] Buscando atividade ID:', activityId);
+            }
+            setLoading(true);
+            setError('');
+            
+            try {
+                const response = await fetch(`http://127.0.0.1:5000/api/activities/${activityId}`, {
+                    headers: { 'Authorization': `Bearer ${user.token}` },
+                });
+                
+                if (isDebugMode) {
+                    console.log('[NarrativeEditorPage] Resposta da API recebida. Status:', response.status);
+                }
+                
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.message || 'Erro ao buscar atividade');
+                }
+
+                setActivityTitle(data.title);
+                
+                if (data.gameElements?.narrativeConfig) {
+                    if (isDebugMode) {
+                        console.log('[NarrativeEditorPage] Configuração narrativa encontrada:',
+                            `Cenário: ${Boolean(data.gameElements.narrativeConfig.scenario)},`,
+                            `Personagens: ${data.gameElements.narrativeConfig.characters.length},`,
+                            `Diálogos: ${data.gameElements.narrativeConfig.dialogue.length}`
+                        );
+                    }
+                    setNarrativeConfig(data.gameElements.narrativeConfig);
+                } else if (isDebugMode) {
+                    console.log('[NarrativeEditorPage] Nenhuma configuração narrativa encontrada');
+                }
+            } catch (err) {
+                if (isDebugMode) {
+                    console.error('[NarrativeEditorPage] Erro na requisição:',
+                        err.message,
+                        '\nStack trace:', err.stack
+                    );
+                }
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+        
         fetchActivity();
-    }, [fetchActivity]);
+    }, [activityId, user.token]);
 
     // --- Handlers para as mudanças no formulário ---
 
     const handleSelectScenario = (scenarioUrl) => {
+        if (isDebugMode) {
+            console.log('[NarrativeEditorPage] Cenário selecionado:', scenarioUrl);
+        }
         setNarrativeConfig(prev => ({ ...prev, scenario: scenarioUrl }));
     };
 
     const handleToggleCharacter = (charUrl) => {
+        if (isDebugMode) {
+            console.log('[NarrativeEditorPage] Alternando personagem:', charUrl);
+        }
         setNarrativeConfig(prev => {
             const isSelected = prev.characters.some(c => c.image === charUrl);
             if (isSelected) {
                 return { ...prev, characters: prev.characters.filter(c => c.image !== charUrl) };
             } else {
-                // Adiciona o personagem com um papel padrão
-                const newCharacter = { role: `Personagem ${prev.characters.length + 1}`, image: charUrl };
+                const newCharacter = { 
+                    role: `Personagem ${prev.characters.length + 1}`, 
+                    image: charUrl 
+                };
                 return { ...prev, characters: [...prev.characters, newCharacter] };
             }
         });
     };
     
     const handleRoleChange = (index, newRole) => {
+        if (isDebugMode) {
+            console.log(`[NarrativeEditorPage] Alterando papel do personagem ${index} para: ${newRole}`);
+        }
         setNarrativeConfig(prev => {
             const updatedCharacters = [...prev.characters];
             updatedCharacters[index].role = newRole;
@@ -87,6 +134,9 @@ function NarrativeEditorPage() {
     };
 
     const handleDialogueChange = (index, field, value) => {
+        if (isDebugMode) {
+            console.log(`[NarrativeEditorPage] Alterando diálogo ${index}.${field}: ${value.substring(0, 20)}...`);
+        }
         setNarrativeConfig(prev => {
             const updatedDialogue = [...prev.dialogue];
             updatedDialogue[index][field] = value;
@@ -95,6 +145,9 @@ function NarrativeEditorPage() {
     };
 
     const handleAddDialogueLine = () => {
+        if (isDebugMode) {
+            console.log('[NarrativeEditorPage] Adicionando linha de diálogo');
+        }
         setNarrativeConfig(prev => ({
             ...prev,
             dialogue: [...prev.dialogue, { characterRole: '', text: '' }]
@@ -102,6 +155,9 @@ function NarrativeEditorPage() {
     };
 
     const handleRemoveDialogueLine = (index) => {
+        if (isDebugMode) {
+            console.log(`[NarrativeEditorPage] Removendo linha de diálogo ${index}`);
+        }
         setNarrativeConfig(prev => ({
             ...prev,
             dialogue: prev.dialogue.filter((_, i) => i !== index)
@@ -110,18 +166,23 @@ function NarrativeEditorPage() {
 
     // --- Handler para Salvar ---
     const handleSaveChanges = async () => {
+        if (isDebugMode) {
+            console.log('[NarrativeEditorPage] Iniciando salvamento da narrativa');
+        }
         setLoading(true);
         setMessage('');
         setError('');
+        
         try {
-            // Primeiro, busca a atividade completa para não sobrescrever outros gameElements
             const activityRes = await fetch(`http://127.0.0.1:5000/api/activities/${activityId}`, {
                 headers: { 'Authorization': `Bearer ${user.token}` },
             });
-            if (!activityRes.ok) throw new Error('Falha ao buscar dados atuais da atividade.');
+            
+            if (!activityRes.ok) {
+                throw new Error('Falha ao buscar dados atuais da atividade');
+            }
             const activityData = await activityRes.json();
 
-            // Atualiza apenas a parte da configuração da narrativa
             const updatedGameElements = {
                 ...activityData.gameElements,
                 narrativeConfig: narrativeConfig
@@ -133,38 +194,52 @@ function NarrativeEditorPage() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${user.token}`
                 },
-                body: JSON.stringify({ ...activityData, gameElements: updatedGameElements })
+                body: JSON.stringify({ 
+                    ...activityData, 
+                    gameElements: updatedGameElements 
+                })
             });
 
+            if (isDebugMode) {
+                console.log('[NarrativeEditorPage] Resposta de salvamento recebida. Status:', response.status);
+            }
+            
             const data = await response.json();
-            if (!response.ok) throw new Error(data.message);
+            if (!response.ok) {
+                throw new Error(data.message || 'Erro ao salvar narrativa');
+            }
             
             setMessage('Narrativa salva com sucesso!');
+            if (isDebugMode) {
+                console.log('[NarrativeEditorPage] Narrativa salva com sucesso');
+            }
             setTimeout(() => navigate(`/activities/${activityId}`), 2000);
 
         } catch (err) {
+            if (isDebugMode) {
+                console.error('[NarrativeEditorPage] Erro no salvamento:',
+                    err.message,
+                    '\nStack trace:', err.stack
+                );
+            }
             setError(err.message);
         } finally {
             setLoading(false);
         }
     };
-    
-    if (loading) return <div className="text-center text-white p-10">Carregando editor de narrativa...</div>;
-    if (error) return <div className="text-center text-red-500 p-10">Erro: {error}</div>;
 
-    return (
-        <div className="min-h-screen bg-[#2c3135] text-white p-4 md:p-8">
-            <div className="max-w-6xl mx-auto">
-                <div className="flex items-center gap-3 mb-8">
-                    <div className="bg-gradient-to-r from-[#ffbd30] to-[#ff9d00] p-3 rounded-xl">
-                        <FaBookOpen className="text-xl text-gray-900" />
-                    </div>
-                    <div>
-                        <h1 className="text-2xl md:text-3xl font-bold">Editor de Narrativa</h1>
-                        <h2 className="text-lg md:text-xl text-[#ffbd30]">{activityTitle}</h2>
-                    </div>
-                </div>
-
+    // Renderização condicional para estados de UI
+    const renderContent = () => {
+        if (loading) {
+            return <div className="text-center text-white p-10">Carregando editor de narrativa...</div>;
+        }
+        
+        if (error) {
+            return <div className="text-center text-red-500 p-10">Erro: {error}</div>;
+        }
+        
+        return (
+            <>
                 {/* Seção de Cenário */}
                 <div className="bg-gray-800 p-6 rounded-2xl shadow-xl mb-8">
                     <h3 className="text-xl font-bold mb-4 flex items-center gap-2"><FaImage /> Selecionar Cenário</h3>
@@ -219,7 +294,9 @@ function NarrativeEditorPage() {
                                     className="p-2 bg-gray-600 rounded-xl border border-gray-500 w-1/4"
                                 >
                                     <option value="">Selecione...</option>
-                                    {narrativeConfig.characters.map(c => <option key={c.role} value={c.role}>{c.role}</option>)}
+                                    {narrativeConfig.characters.map(c => 
+                                        <option key={c.role} value={c.role}>{c.role}</option>
+                                    )}
                                 </select>
                                 <input
                                     type="text"
@@ -228,13 +305,15 @@ function NarrativeEditorPage() {
                                     placeholder="Escreva a fala do personagem aqui..."
                                     className="w-full p-2 bg-gray-600 rounded-xl border border-gray-500"
                                 />
-                                <button onClick={() => handleRemoveDialogueLine(index)} className="p-2 bg-red-600 hover:bg-red-700 rounded-full">
+                                <button onClick={() => handleRemoveDialogueLine(index)} 
+                                    className="p-2 bg-red-600 hover:bg-red-700 rounded-full">
                                     <FaTrash />
                                 </button>
                             </div>
                         ))}
                     </div>
-                    <button onClick={handleAddDialogueLine} className="mt-4 flex items-center gap-2 py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded-lg">
+                    <button onClick={handleAddDialogueLine} 
+                        className="mt-4 flex items-center gap-2 py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded-lg">
                         <FaPlus /> Adicionar Fala
                     </button>
                 </div>
@@ -248,6 +327,24 @@ function NarrativeEditorPage() {
                     {message && <div className="mt-4 p-3 bg-green-900/30 text-green-400 rounded-xl">{message}</div>}
                     {error && <div className="mt-4 p-3 bg-red-900/30 text-red-400 rounded-xl">{error}</div>}
                 </div>
+            </>
+        );
+    };
+
+    return (
+        <div className="min-h-screen bg-[#2c3135] text-white p-4 md:p-8">
+            <div className="max-w-6xl mx-auto">
+                <div className="flex items-center gap-3 mb-8">
+                    <div className="bg-gradient-to-r from-[#ffbd30] to-[#ff9d00] p-3 rounded-xl">
+                        <FaBookOpen className="text-xl text-gray-900" />
+                    </div>
+                    <div>
+                        <h1 className="text-2xl md:text-3xl font-bold">Editor de Narrativa</h1>
+                        <h2 className="text-lg md:text-xl text-[#ffbd30]">{activityTitle}</h2>
+                    </div>
+                </div>
+
+                {renderContent()}
             </div>
         </div>
     );

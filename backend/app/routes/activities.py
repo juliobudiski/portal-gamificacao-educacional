@@ -2,9 +2,9 @@
 from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import jwt_required, current_user, get_jwt_identity
 from flask_cors import cross_origin
-
+from copy import deepcopy
 import logging
-from ..models import db, Activity, Tag, activity_tag, ActivityRevision, User, Class
+from ..models import db, Activity, Tag, activity_tag, ActivityRevision, User, Class, ActivityProgress
 from ..services import activity_service
 
 activity_bp = Blueprint('activities', __name__)
@@ -194,57 +194,73 @@ def create_revision(activity_id):
 @jwt_required()
 def assign_activity_to_class(activity_id):
     current_user_id = get_jwt_identity()
-    current_app.logger.info(f"Usuário ID {current_user_id} tentando atribuir atividade ID {activity_id} a uma turma.")
-
     user = User.query.get(current_user_id)
-    activity = Activity.query.get(activity_id)
+    original_activity = Activity.query.get(activity_id)
 
     if not user or user.role != 'professor':
-        current_app.logger.warning(f"Acesso negado para ID {current_user_id} na atribuição de atividade. Role: {user.role if user else 'N/A'}")
         return jsonify({"message": "Acesso negado. Apenas professores podem atribuir atividades."}), 403
 
-    if not activity:
-        current_app.logger.error(f"Atividade ID {activity_id} não encontrada para atribuição pelo professor ID {current_user_id}.")
+    if not original_activity:
         return jsonify({"message": "Atividade não encontrada."}), 404
 
-    if activity.professor_id != user.id:
-        current_app.logger.warning(f"Acesso negado para professor ID {current_user_id} ao tentar atribuir atividade ID {activity_id}. Não é o criador.")
+    if original_activity.professor_id != user.id:
         return jsonify({"message": "Acesso negado. Você não é o professor responsável por esta atividade."}), 403
 
     data = request.get_json()
     class_id = data.get('class_id')
-    current_app.logger.debug(f"Atribuindo atividade ID {activity_id} à turma ID {class_id}.")
 
     if not class_id:
-        current_app.logger.warning(f"Tentativa de atribuição de atividade pelo ID {current_user_id} falhou: class_id ausente.")
         return jsonify({"message": "O ID da turma é obrigatório para atribuir a atividade."}), 400
 
     target_class = Class.query.get(class_id)
-    if not target_class:
-        current_app.logger.warning(f"Tentativa de atribuição de atividade pelo ID {current_user_id} falhou: turma ID {class_id} não encontrada.")
-        return jsonify({"message": "Turma não encontrada."}), 404
-
-    if target_class.professor_id != user.id:
-        current_app.logger.warning(f"Acesso negado para professor ID {current_user_id} ao tentar atribuir atividade a turma ID {class_id}. Não é o professor da turma.")
-        return jsonify({"message": "Acesso negado. Você não é o professor responsável por esta turma."}), 403
+    if not target_class or target_class.professor_id != user.id:
+        return jsonify({"message": "Turma não encontrada ou você não tem permissão sobre ela."}), 404
 
     try:
-        activity.class_id = class_id
+        # --- INÍCIO DA CORREÇÃO ---
+        # 1. Cria uma cópia da atividade original
+        new_activity = Activity(
+            professor_id=user.id,
+            title=original_activity.title,
+            description=original_activity.description,
+            current_scenario=deepcopy(original_activity.current_scenario),
+            desired_scenario=deepcopy(original_activity.desired_scenario),
+            activity_planning=deepcopy(original_activity.activity_planning),
+            player_profile=deepcopy(original_activity.player_profile),
+            game_elements=deepcopy(original_activity.game_elements),
+            rewards_offered=deepcopy(original_activity.rewards_offered),
+            rewarded_actions=deepcopy(original_activity.rewarded_actions),
+            gamification_rules=deepcopy(original_activity.gamification_rules),
+            area_knowledge=original_activity.area_knowledge,
+            is_public=False,  # A cópia atribuída é privada para a turma
+            class_id=class_id # 2. Atribui a cópia à turma alvo
+        )
+
+        db.session.add(new_activity)
         db.session.commit()
-        current_app.logger.info(f"Atividade '{activity.title}' (ID: {activity_id}) atribuída com sucesso à turma '{target_class.name}' (ID: {class_id}).")
-        return jsonify({"message": "Atividade atribuída à turma com sucesso!", "activity": activity.to_dict()}), 200
+        
+        current_app.logger.info(f"Cópia da atividade '{new_activity.title}' (ID: {new_activity.id}) atribuída com sucesso à turma '{target_class.name}' (ID: {class_id}).")
+        return jsonify({"message": "Atividade atribuída à turma com sucesso!", "activity": new_activity.to_dict()}), 200
+        # --- FIM DA CORREÇÃO ---
+        
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Erro ao atribuir atividade ID {activity_id} à turma ID {class_id}: {str(e)}", exc_info=True)
         return jsonify({"message": f"Erro interno do servidor ao atribuir atividade à turma: {str(e)}"}), 500
 
+
 @activity_bp.route('/my_activities', methods=['GET'])
 @jwt_required()
 def get_my_activities():
-    """Rota para buscar as atividades do professor logado."""
+    """Rota para buscar as atividades do professor logado, com filtro de busca opcional."""
     if current_user.role != 'professor':
         return jsonify({"message": "Acesso negado"}), 403
-    activities = activity_service.get_activities_by_professor(current_user.id)
+    
+    
+    search_term = request.args.get('search', None) # Pega o parâmetro 'search' da URL
+    activities = activity_service.get_activities_by_professor(current_user.id, search_term)
+    
+    
     return jsonify(activities), 200
 
 @activity_bp.route('/public', methods=['GET'])
@@ -253,7 +269,9 @@ def get_public_activities():
     """Rota para buscar todas as atividades públicas de outros professores."""
     if current_user.role != 'professor':
         return jsonify({"message": "Acesso negado"}), 403
-    activities = activity_service.get_public_activities(current_user.id)
+    search_term = request.args.get('search', None) # Pega o parâmetro 'search' da URL
+    activities = activity_service.get_public_activities(current_user.id, search_term)
+
     return jsonify(activities), 200
 
 @activity_bp.route('/<int:activity_id>', methods=['PUT'])
@@ -284,12 +302,19 @@ def delete_activity(activity_id):
         return jsonify({"message": "Acesso negado"}), 403
     
     try:
+        # 1. Deleta todos os registros de progresso associados a esta atividade primeiro.
+        ActivityProgress.query.filter_by(activity_id=activity_id).delete()
+        
+        # 2. Agora, deleta a atividade com segurança.
         db.session.delete(activity)
+
         db.session.commit()
         return jsonify({"message": "Atividade deletada com sucesso"}), 200
     except Exception as e:
         db.session.rollback()
-        return jsonify({"message": str(e)}), 500
+        # Adiciona um log do erro para facilitar a depuração futura
+        current_app.logger.error(f"Erro ao deletar atividade ID {activity_id}: {str(e)}")
+        return jsonify({"message": f"Erro ao deletar: {str(e)}"}), 500
 
 @activity_bp.route('/<int:activity_id>/quiz', methods=['PUT'])
 @jwt_required()

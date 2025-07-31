@@ -1,104 +1,189 @@
 // src/pages/StudentDashboardPage.jsx
-
 import React, { useState, useEffect, useContext } from 'react';
+import PropTypes from 'prop-types';
 import { AuthContext } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-import { FaBook, FaChalkboardTeacher, FaChevronRight, FaStar, FaTrophy, FaTasks, FaUserGraduate } from 'react-icons/fa';
-
-
+import { 
+  FaBook, FaChalkboardTeacher, FaChevronRight, 
+  FaStar, FaTrophy, FaTasks, FaUserGraduate 
+} from 'react-icons/fa';
 
 /**
- * Cartão que representa uma turma no dashboard.
+ * Cartão que representa uma turma no dashboard
+ * @component
+ * @param {Object} props
+ * @param {Object} props.classInfo - Dados da turma
  */
-const ClassCard = ({ classInfo }) => (
+const ClassCard = ({ classInfo }) => {
+  if (import.meta.env.VITE_DEBUG_MODE) {
+    console.debug('[ClassCard] Renderizando turma:', classInfo.id);
+  }
+  
+  return (
     <div className="bg-[#3a4046] rounded-2xl shadow-xl border-l-4 border-[#ffbd30] p-6 flex flex-col justify-between transform hover:-translate-y-1 transition-all duration-300">
-        <div>
-            <h3 className="text-xl font-bold text-white mb-2">{classInfo.name}</h3>
-            <div className="flex items-center text-sm text-gray-400 mb-4">
-                <FaChalkboardTeacher className="mr-2 text-[#69e8cb]" />
-                <span>{classInfo.professor_name}</span>
-            </div>
-            <p className="text-gray-300 text-sm mb-4">{classInfo.description}</p>
+      <div>
+        <h3 className="text-xl font-bold text-white mb-2">{classInfo.name}</h3>
+        <div className="flex items-center text-sm text-gray-400 mb-4">
+          <FaChalkboardTeacher className="mr-2 text-[#69e8cb]" />
+          <span>{classInfo.professor_name}</span>
         </div>
-        <div className="flex justify-between items-center mt-4">
-            <span className="text-sm font-semibold text-white px-3 py-1 bg-[#69e8cb]/20 text-[#69e8cb] rounded-full">
-                {classInfo.activities_count} atividades
-            </span>
-            <Link to={`/classes/${classInfo.id}`} className="font-bold text-[#ffbd30] hover:text-yellow-300 flex items-center">
-                Acessar <FaChevronRight className="ml-1" />
-            </Link>
-        </div>
-    </div>
-);
-
-/**
- * Cartão que representa uma atividade pendente.
- */
-const ActivityCard = ({ activity }) => (
-    <div className="bg-[#3a4046] p-4 rounded-xl flex items-center justify-between hover:bg-[#4a525a] transition-colors">
-        <div>
-            <p className="font-bold text-white">{activity.title}</p>
-            <p className="text-sm text-gray-400">{activity.class_name}</p>
-        </div>
-        <Link to={`/activities/${activity.id}`} className="py-2 px-4 bg-gradient-to-r from-[#69e8cb] to-[#4dd1b3] text-[#2c3135] font-bold rounded-lg text-sm">
-            Ver Atividade
+        <p className="text-gray-300 text-sm mb-4">{classInfo.description}</p>
+      </div>
+      <div className="flex justify-between items-center mt-4">
+        <span className="text-sm font-semibold text-white px-3 py-1 bg-[#69e8cb]/20 text-[#69e8cb] rounded-full">
+          {classInfo.activities_count} atividades
+        </span>
+        <Link 
+          to={`/classes/${classInfo.id}`} 
+          className="font-bold text-[#ffbd30] hover:text-yellow-300 flex items-center"
+        >
+          Acessar <FaChevronRight className="ml-1" />
         </Link>
+      </div>
     </div>
-);
+  );
+};
+
+ClassCard.propTypes = {
+  classInfo: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    name: PropTypes.string.isRequired,
+    professor_name: PropTypes.string.isRequired,
+    description: PropTypes.string.isRequired,
+    activities_count: PropTypes.number.isRequired
+  }).isRequired
+};
 
 /**
- * O componente principal da página do Dashboard do Aluno.
+ * Cartão que representa uma atividade pendente
+ * @component
+ * @param {Object} props
+ * @param {Object} props.activity - Dados da atividade
+ */
+const ActivityCard = ({ activity }) => {
+  if (import.meta.env.VITE_DEBUG_MODE) {
+    console.debug('[ActivityCard] Renderizando atividade:', activity.id);
+  }
+  
+  return (
+    <div className="bg-[#3a4046] p-4 rounded-xl flex items-center justify-between hover:bg-[#4a525a] transition-colors">
+      <div>
+        <p className="font-bold text-white">{activity.title}</p>
+        <p className="text-sm text-gray-400">{activity.class_name}</p>
+      </div>
+      <Link 
+        to={`/activities/${activity.id}`} 
+        className="py-2 px-4 bg-gradient-to-r from-[#69e8cb] to-[#4dd1b3] text-[#2c3135] font-bold rounded-lg text-sm"
+      >
+        Ver Atividade
+      </Link>
+    </div>
+  );
+};
+
+ActivityCard.propTypes = {
+  activity: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    title: PropTypes.string.isRequired,
+    class_name: PropTypes.string.isRequired
+  }).isRequired
+};
+
+/**
+ * Componente principal da página do Dashboard do Aluno
+ * @component
+ * @returns {JSX.Element}
  */
 function StudentDashboardPage() {
-    const { user } = useContext(AuthContext);
-    const [dashboardData, setDashboardData] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+  const { user } = useContext(AuthContext);
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-    useEffect(() => {
-        const fetchDashboardData = async () => {
-            console.log("Iniciando busca de dados para o dashboard do aluno...");
-            setLoading(true);
-            setError('');
-            try {
-                // ------ MODO REAL (API) ------
-                 const token = localStorage.getItem('token');
-                 if (!token) {
-                     setError("Usuário não autenticado.");
-                     setLoading(false);
-                     return;
-                 }
-                 const response = await fetch('http://127.0.0.1:5000/api/student/dashboard', {
-                     headers: { 'Authorization': `Bearer ${token}` }
-                 });
-                 const data = await response.json();
-                 if (!response.ok) {
-                     throw new Error(data.message || "Erro ao carregar dados do dashboard.");
-                 }
-                 setDashboardData(data);
-
-            } catch (err) {
-                console.error("Erro ao buscar dados do dashboard:", err);
-                setError(err.message);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchDashboardData();
-    }, []);
-
-    if (loading) {
-        return <div className="text-center p-10 text-white">Carregando seu dashboard...</div>;
+  useEffect(() => {
+    if (import.meta.env.VITE_DEBUG_MODE) {
+      console.debug('[StudentDashboardPage] Iniciando carregamento');
     }
 
-    if (error) {
-        return <div className="text-center p-10 text-red-500">Erro: {error}</div>;
-    }
-    
-    if (!dashboardData) {
-        return <div className="text-center p-10 text-white">Nenhum dado encontrado para o dashboard.</div>
-    }
+    const fetchDashboardData = async () => {
+      setLoading(true);
+      setError('');
+      
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          const errMsg = "Token não encontrado";
+          if (import.meta.env.VITE_DEBUG_MODE) {
+            console.warn('[StudentDashboardPage] Erro de autenticação:', errMsg);
+          }
+          throw new Error(errMsg);
+        }
+
+        if (import.meta.env.VITE_DEBUG_MODE) {
+          console.debug('[StudentDashboardPage] Buscando dados da API...');
+        }
+
+        const response = await fetch('http://127.0.0.1:5000/api/student/dashboard', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          const errMsg = errorData.message || `Erro HTTP: ${response.status}`;
+          if (import.meta.env.VITE_DEBUG_MODE) {
+            console.error('[StudentDashboardPage] Erro na resposta:', {
+              status: response.status,
+              message: errMsg
+            });
+          }
+          throw new Error(errMsg);
+        }
+
+        const data = await response.json();
+        
+        if (import.meta.env.VITE_DEBUG_MODE) {
+          console.debug('[StudentDashboardPage] Dados recebidos:', {
+            classes: data.classes?.length || 0,
+            activities: data.pendingActivities?.length || 0
+          });
+        }
+
+        setDashboardData(data);
+      } catch (err) {
+        console.error('[StudentDashboardPage] Erro crítico:', err);
+        setError(err.message);
+        
+        if (import.meta.env.VITE_DEBUG_MODE) {
+          console.trace('[StudentDashboardPage] Stack trace do erro');
+        }
+      } finally {
+        setLoading(false);
+        if (import.meta.env.VITE_DEBUG_MODE) {
+          console.debug('[StudentDashboardPage] Carregamento finalizado');
+        }
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  // Renderização condicional
+  if (loading) {
+    return <div className="text-center p-10 text-white">Carregando seu dashboard...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center p-10 text-red-500">Erro: {error}</div>;
+  }
+  
+  if (!dashboardData) {
+    return <div className="text-center p-10 text-white">Nenhum dado encontrado</div>;
+  }
+
+  if (import.meta.env.VITE_DEBUG_MODE) {
+    console.debug('[StudentDashboardPage] Renderizando dashboard');
+  }
+
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#1e2226] to-[#2c3135] p-4 md:p-8 text-white">
@@ -198,5 +283,18 @@ function StudentDashboardPage() {
         </div>
     );
 }
+
+// Componentes auxiliares
+const LoadingView = () => (
+  <div className="text-center p-10 text-white">Carregando seu dashboard...</div>
+);
+
+const ErrorView = ({ error }) => (
+  <div className="text-center p-10 text-red-500">Erro: {error}</div>
+);
+
+const EmptyDataView = () => (
+  <div className="text-center p-10 text-white">Nenhum dado encontrado para o dashboard.</div>
+);
 
 export default StudentDashboardPage;
