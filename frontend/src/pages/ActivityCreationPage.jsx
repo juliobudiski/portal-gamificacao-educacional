@@ -97,6 +97,35 @@ function ActivityCreationPage({ existingActivity }) {
 
   // --- Verificação de Autenticação e Autorização ---
 
+  useEffect(() => {
+    // Executa apenas quando o usuário chega na etapa 5
+    if (currentStep === 5) {
+      console.log("ActivityCreationPage: Etapa 5 alcançada. Calculando e mesclando elementos de jogo recomendados.");
+      
+      const recommendedElements = new Set();
+      if (activityData.playerProfile.selectedProfiles.includes("Jogador competitivo")) { ["Níveis", "Sistema de pontuação", "Estatísticas (métricas de progresso)", "Reconhecimento", "Competição", "Progressão baseada em habilidade", "Sistema de classificação e ranking"].forEach(el => recommendedElements.add(el)); }
+      if (activityData.playerProfile.selectedProfiles.includes("Jogador cooperativo")) { ["Cooperação", "Chat ou sistema de mensagens", "Interação social com outros jogadores"].forEach(el => recommendedElements.add(el)); }
+      if (activityData.playerProfile.selectedProfiles.includes("Jogador imersivo")) { ["Narrativas envolventes", "Storytelling", "Sensação (imersão, experiência sensorial)", "Customização de personagem", "Customização de equipamento"].forEach(el => recommendedElements.add(el)); }
+      if (activityData.playerProfile.selectedProfiles.includes("Jogador de realização")) { ["Níveis", "Sistema de pontuação", "Conquistas digitais para metas alcançadas", "Recompensas atraentes", "Progressão baseada em habilidade", "Feedback claro sobre o desempenho"].forEach(el => recommendedElements.add(el)); }
+      if (activityData.playerProfile.selectedProfiles.includes("Jogador social")) { ["Interação social com outros jogadores", "Chat ou sistema de mensagens", "Reputação (prestígio, renome, status)", "Cooperação", "Feedback claro sobre o desempenho"].forEach(el => recommendedElements.add(el)); }
+
+      setActivityData(prevData => {
+        // Combina os elementos já selecionados com os novos recomendados, evitando duplicatas.
+        const mergedElements = new Set([...prevData.gameElements.selectedElements, ...recommendedElements]);
+        
+        console.log("ActivityCreationPage: Elementos mesclados para salvar no estado:", Array.from(mergedElements));
+
+        return {
+          ...prevData,
+          gameElements: {
+            ...prevData.gameElements,
+            selectedElements: Array.from(mergedElements)
+          }
+        };
+      });
+    }
+  }, [currentStep, activityData.playerProfile.selectedProfiles]);
+
   // Efeito que roda uma vez para verificar se o usuário está logado e tem a permissão correta.
   useEffect(() => {
     console.log("ActivityCreationPage: Verificando autenticação do usuário...", user);
@@ -257,8 +286,8 @@ function ActivityCreationPage({ existingActivity }) {
       console.log(`URL: ${method} ${url}`);
       
       try {
-        const response = await fetch('http://127.0.0.1:5000/api/activities', {
-          method: 'POST',
+        const response = await fetch(url, {
+          method: method,
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${user.token}` // Adiciona o token de autenticação
@@ -522,7 +551,7 @@ function ActivityCreationPage({ existingActivity }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {allGameElements.map(element => (
                 <div key={element} className="flex items-center">
-                  <input type="checkbox" id={`element-${element}`} name="gameElements.selectedElements" value={element} checked={activityData.gameElements.selectedElements.includes(element) || recommendedElements.has(element)} onChange={handleInputChange} className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
+                  <input type="checkbox" id={`element-${element}`} name="gameElements.selectedElements" value={element} checked={activityData.gameElements.selectedElements.includes(element)} onChange={handleInputChange} className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
                   <label htmlFor={`element-${element}`} className="ml-2 text-sm text-gray-700 dark:text-gray-300">{element}{recommendedElements.has(element) && <span className="text-xs text-blue-500 ml-1">(Sugerido)</span>}</label>
                 </div>
               ))}
