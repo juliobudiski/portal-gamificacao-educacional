@@ -3,7 +3,7 @@ import React, { useContext, useState, useEffect } from 'react';
 import { Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from './context/AuthContext'; // Importa o contexto de autenticação
 import PrivateRoute from './components/PrivateRoute'; // Importa o componente de rota protegida
-
+import ScrollToTop from './components/ScrollToTop';
 // Importação de todos os componentes de página da aplicação
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
@@ -90,6 +90,7 @@ function App() {
 
   return (
     <div className="min-h-screen w-full bg-gray-100 dark:bg-[#2c3135] p-4 pt-4">
+      <ScrollToTop />
       {/* Cabeçalho aprimorado visualmente */}
       <header className="w-full max-w-6xl mx-auto bg-[#343a40] text-white p-4 rounded-xl shadow-2xl border-t-4 border-[#ffbd30] z-50">
         <nav className="flex flex-col sm:flex-row justify-between items-center">

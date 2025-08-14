@@ -1,7 +1,7 @@
 # backend/app/routes/progress.py
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from ..models import db, User, ActivityProgress, Activity
+from ..models import db, User, ActivityProgress, Activity, StudentResponse, EventLog
 from sqlalchemy.orm import joinedload
 from flask_cors import cross_origin 
 progress_bp = Blueprint('progress', __name__)
@@ -121,33 +121,72 @@ def get_analytics(activity_id):
     if not user or user.role != 'professor':
         return jsonify({"message": "Acesso negado."}), 403
     
-    # Busca a atividade para garantir que o professor é o dono
     activity = Activity.query.get(activity_id)
     if not activity or activity.professor_id != user.id:
         return jsonify({"message": "Você não tem permissão para ver a análise desta atividade."}), 403
 
-    # Busca os dados de progresso dos alunos para esta atividade
+    # Buscamos os dados de progresso e também o User para pegar o total de pontos globais
     progress_data = db.session.query(
-        User.id,
-        User.name,
-        ActivityProgress.status,
-        ActivityProgress.points_earned
+        User,
+        ActivityProgress
     ).join(
         ActivityProgress, User.id == ActivityProgress.student_id
     ).filter(
         ActivityProgress.activity_id == activity_id
     ).all()
     
+    # --- LÓGICA DE ANÁLISE ATUALIZADA E EXPANDIDA ---
+    students_analytics = []
+    total_score_sum = 0
+
+    for student_user, progress in progress_data:
+        # Contagem de respostas corretas e incorretas
+        correct_answers = StudentResponse.query.filter_by(student_id=student_user.id, activity_id=activity_id, is_correct=True).count()
+        wrong_answers = StudentResponse.query.filter_by(student_id=student_user.id, activity_id=activity_id, is_correct=False).count()
+        total_answers = correct_answers + wrong_answers
+        
+        # NOVO: Cálculo da taxa de acerto
+        accuracy = (correct_answers / total_answers * 100) if total_answers > 0 else 0
+
+        # NOVO: Contagem de mensagens no chat (a ser implementado com a tabela de chat)
+        chat_messages = 0 # Placeholder, pois a tabela ChatMessages ainda não existe
+
+        # NOVO: Cálculo do nível do aluno (usando a mesma função que já temos)
+        # Supondo que o nível geral do aluno é baseado em todos os pontos que ele já ganhou.
+        # Precisaríamos de uma coluna `total_points` na tabela User para isso.
+        # Por enquanto, vamos calcular o nível baseado nos pontos desta atividade.
+        level_info = calculate_level(progress.points_earned)
+
+        # Contagem de visualizações da narrativa
+        narrative_views = EventLog.query.filter(
+            EventLog.user_id == student_user.id,
+            EventLog.event_type == 'narrative_viewed',
+            EventLog.event_data['activity_id'].astext == str(activity_id)
+        ).count()
+        
+        total_score_sum += progress.points_earned
+
+        students_analytics.append({
+            "id": student_user.id,
+            "name": student_user.name,
+            "status": progress.status,
+            "points": progress.points_earned,
+            "level": level_info['level'], # NOVO
+            "accuracy": accuracy, # NOVO
+            "chat_messages": chat_messages, # NOVO (Placeholder)
+            "total_answers": total_answers,
+            "correct_answers": correct_answers,
+            "wrong_answers": wrong_answers,
+            "narrative_views": narrative_views
+        })
+
     total_students = len(progress_data)
-    completed_students = sum(1 for p in progress_data if p.status == 'completed')
+    completed_students = sum(1 for _, progress in progress_data if progress.status == 'completed')
     
     analytics = {
         "completionRate": (completed_students / total_students * 100) if total_students > 0 else 0,
-        "averageScore": sum(p.points_earned for p in progress_data) / total_students if total_students > 0 else 0,
-        "students": [
-            { "id": p.id, "name": p.name, "status": p.status }
-            for p in progress_data
-        ]
+        "averageScore": (total_score_sum / total_students) if total_students > 0 else 0,
+        "students": students_analytics
     }
     
     return jsonify(analytics), 200

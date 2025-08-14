@@ -10,13 +10,15 @@ function QuizEditorPage() {
 
     const [activityTitle, setActivityTitle] = useState('');
     const [questions, setQuestions] = useState([]);
+    // NOVO ESTADO: para armazenar os elementos de jogo da atividade
+    const [gameElements, setGameElements] = useState([]); 
     const [currentQuestion, setCurrentQuestion] = useState({ text: '', options: ['', '', '', ''], correct_option: '', points: 10, timeLimit: 30 });
     const [editingIndex, setEditingIndex] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [message, setMessage] = useState('');
 
-    // Busca os dados da atividade e as perguntas existentes
+    // Busca os dados da atividade, incluindo os elementos de jogo
     const fetchActivity = useCallback(async () => {
         try {
             const response = await fetch(`http://127.0.0.1:5000/api/activities/${activityId}`, {
@@ -27,6 +29,8 @@ function QuizEditorPage() {
 
             setActivityTitle(data.title);
             setQuestions(data.gameElements?.questions || []);
+            // ATUALIZADO: Salva os elementos de jogo no novo estado
+            setGameElements(data.gameElements?.selectedElements || []); 
         } catch (err) {
             setError(err.message);
         } finally {
@@ -37,6 +41,9 @@ function QuizEditorPage() {
     useEffect(() => {
         fetchActivity();
     }, [fetchActivity]);
+    
+    // NOVO: Variável para verificar se o modo de tempo está ativo
+    const isTimed = gameElements.includes("Pressão de tempo");
 
     const handleInputChange = (e, index) => {
         const { name, value } = e.target;
@@ -63,7 +70,6 @@ function QuizEditorPage() {
         } else {
             setQuestions([...questions, currentQuestion]);
         }
-        // Limpa o formulário
         setCurrentQuestion({ text: '', options: ['', '', '', ''], correct_option: '', points: 10, timeLimit: 30 });
     };
 
@@ -120,7 +126,6 @@ function QuizEditorPage() {
                     </div>
                 </div>
 
-                {/* Formulário de Pergunta */}
                 <div className="bg-gray-800 p-6 rounded-2xl shadow-xl shadow-gray-900/50 mb-8 border border-gray-700">
                     <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
                         <FaEdit />
@@ -188,18 +193,21 @@ function QuizEditorPage() {
                                 />
                             </div>
                             
-                            <div>
-                                <label className="block text-sm text-gray-400 mb-1 flex items-center gap-1">
-                                    <FaClock className="text-[#69e8cb]" /> Tempo Limite (s)
-                                </label>
-                                <input 
-                                    type="number" 
-                                    name="timeLimit" 
-                                    value={currentQuestion.timeLimit} 
-                                    onChange={handleInputChange} 
-                                    className="w-full p-3 bg-gray-700 rounded-xl border border-gray-600 focus:border-[#ffbd30] focus:ring-2 focus:ring-[#ffbd30]/30 transition-all duration-300" 
-                                />
-                            </div>
+                            {/* ATUALIZADO: Renderização condicional do campo de tempo */}
+                            {isTimed && (
+                                <div>
+                                    <label className="block text-sm text-gray-400 mb-1 flex items-center gap-1">
+                                        <FaClock className="text-[#69e8cb]" /> Tempo Limite (s)
+                                    </label>
+                                    <input 
+                                        type="number" 
+                                        name="timeLimit" 
+                                        value={currentQuestion.timeLimit} 
+                                        onChange={handleInputChange} 
+                                        className="w-full p-3 bg-gray-700 rounded-xl border border-gray-600 focus:border-[#ffbd30] focus:ring-2 focus:ring-[#ffbd30]/30 transition-all duration-300" 
+                                    />
+                                </div>
+                            )}
                         </div>
                         
                         <div className="pt-2">
@@ -216,7 +224,7 @@ function QuizEditorPage() {
 
                 {/* Lista de Perguntas */}
                 {questions.length > 0 && (
-                    <div className="mb-8">
+                     <div className="mb-8">
                         <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
                             <FaList className="text-[#69e8cb]" />
                             Perguntas do Quiz ({questions.length})
@@ -244,10 +252,13 @@ function QuizEditorPage() {
                                                         <FaStar className="mr-1 text-[#69e8cb]" /> 
                                                         {q.points} pontos
                                                     </span>
-                                                    <span className="bg-gray-700 px-2 py-1 rounded-lg text-xs flex items-center">
-                                                        <FaClock className="mr-1 text-[#69e8cb]" /> 
-                                                        {q.timeLimit}s
-                                                    </span>
+                                                    {/* ATUALIZADO: Mostra o tempo limite apenas se for relevante */}
+                                                    {isTimed && (
+                                                        <span className="bg-gray-700 px-2 py-1 rounded-lg text-xs flex items-center">
+                                                            <FaClock className="mr-1 text-[#69e8cb]" /> 
+                                                            {q.timeLimit}s
+                                                        </span>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>

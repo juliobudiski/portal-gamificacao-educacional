@@ -105,7 +105,7 @@ function Homepage() {
           
           <div className="mt-10 text-center">
             <Link 
-              to="/sobre" 
+              to="/sobre-nos" 
               className="inline-flex items-center text-[#69e8cb] hover:text-[#ffbd30] transition-colors font-semibold"
             >
               Saiba mais sobre gamificação

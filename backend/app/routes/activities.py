@@ -4,7 +4,7 @@ from flask_jwt_extended import jwt_required, current_user, get_jwt_identity
 from flask_cors import cross_origin
 from copy import deepcopy
 import logging
-from ..models import db, Activity, Tag, activity_tag, ActivityRevision, User, Class, ActivityProgress
+from ..models import db, Activity, Tag, activity_tag, ActivityRevision, User, Class, ActivityProgress, StudentResponse, EventLog
 from ..services import activity_service
 
 activity_bp = Blueprint('activities', __name__)
@@ -153,6 +153,91 @@ PREDEFINED_TEMPLATES = [
         }
     }
 ]
+
+# --- ROTA PARA SUBMETER RESPOSTAS DO QUIZ (COM CORREÇÃO DE TIPO) ---
+@activity_bp.route('/<int:activity_id>/submit_answer', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def submit_answer(activity_id):
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+    
+    if user.role != 'aluno':
+        return jsonify({"message": "Apenas alunos podem submeter respostas."}), 403
+
+    data = request.get_json()
+    
+    try:
+        # --- INÍCIO DA CORREÇÃO ---
+        # Converte o valor recebido para um inteiro. Se não vier nada, assume 0.
+        points_earned = int(data.get('points_earned', 0))
+        # --- FIM DA CORREÇÃO ---
+
+        # Busca ou cria o registro de progresso
+        progress = ActivityProgress.query.filter_by(student_id=user.id, activity_id=activity_id).first()
+        activity = Activity.query.get(activity_id)
+
+        if not progress:
+            progress = ActivityProgress(
+                student_id=user.id,
+                activity_id=activity_id,
+                class_id=activity.class_id,
+                points_earned=0,
+                attempts=0,
+                status='in_progress'
+            )
+            db.session.add(progress)
+            db.session.flush()
+
+        # Registra a resposta detalhada
+        new_response = StudentResponse(
+            student_id=user.id,
+            activity_id=activity_id,
+            response_data={'question': data.get('question_text'), 'answer': data.get('selected_option')},
+            is_correct=data.get('is_correct', False),
+            score=points_earned
+        )
+        db.session.add(new_response)
+
+        # Atualiza os contadores de progresso
+        progress.points_earned += points_earned
+        progress.attempts += 1
+        
+        db.session.commit()
+        return jsonify({"message": "Resposta registrada e progresso atualizado.", "new_total_points": progress.points_earned}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Erro ao submeter resposta para user {current_user_id} na atividade {activity_id}: {str(e)}")
+        return jsonify({"message": "Erro interno ao salvar a resposta."}), 500
+
+# --- ROTA PARA REGISTRAR EVENTOS GENÉRICOS ---
+@activity_bp.route('/<int:activity_id>/log_event', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def log_activity_event(activity_id):
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+    data = request.get_json()
+    event_type = data.get('event_type') # Ex: 'narrative_viewed'
+
+    if not event_type:
+        return jsonify({"message": "O tipo do evento é obrigatório."}), 400
+
+    try:
+        event = EventLog(
+            user_id=user.id,
+            event_type=event_type,
+            event_data={'activity_id': activity_id}
+        )
+        db.session.add(event)
+        db.session.commit()
+        return jsonify({"message": "Evento registrado com sucesso."}), 200
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Erro ao registrar evento '{event_type}' para user {current_user_id} na atividade {activity_id}: {str(e)}")
+        return jsonify({"message": "Erro interno ao registrar evento."}), 500
+
 
 @activity_bp.route('', methods=['POST'])
 @jwt_required()

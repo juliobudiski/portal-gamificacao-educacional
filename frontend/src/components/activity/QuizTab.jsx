@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FaClock, FaCheckCircle } from 'react-icons/fa';
 import PropTypes from 'prop-types'; // Import adicionado para validação de props
-
+import { useAuth } from '../../context/AuthContext';
+import { useParams } from 'react-router-dom';
 // Verifica se o modo debug está ativado
 const isDebugMode = import.meta.env.VITE_DEBUG_MODE === 'true';
 
@@ -22,6 +23,9 @@ const QuizTab = ({ questions = [], onAnswerCorrect, gameElements = [] }) => {
       timedMode: gameElements.includes("Pressão de tempo")
     });
   }
+
+  const { user } = useAuth();
+  const { activityId } = useParams();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -92,7 +96,9 @@ const QuizTab = ({ questions = [], onAnswerCorrect, gameElements = [] }) => {
    * @param {string|null} answer - Resposta selecionada (null para tempo esgotado)
    * @returns {void}
    */
-  const handleSubmit = (answer) => {
+  const handleSubmit = async (answer) => {
+    const currentQuestion = questions[currentIndex];
+    
     if (isDebugMode) {
       console.log(`[QuizTab] Resposta submetida para pergunta ${currentIndex + 1}:`, {
         selected: answer,
@@ -107,7 +113,31 @@ const QuizTab = ({ questions = [], onAnswerCorrect, gameElements = [] }) => {
       message: isCorrect ? `+${points} Pontos!` : 'Resposta Incorreta!'
     });
     
-    if (isCorrect) onAnswerCorrect(points);
+    if (user?.role === 'aluno') {
+      try {
+        const response = await fetch(`http://127.0.0.1:5000/api/activities/${activityId}/submit_answer`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${user.token}`
+          },
+          body: JSON.stringify({
+            question_text: currentQuestion.text,
+            selected_option: answer,
+            is_correct: isCorrect,
+            points_earned: points
+          })
+        });
+        if (!response.ok) {
+          console.error("Falha ao salvar a resposta no backend.");
+        } else {
+           // Chama a função onAnswerCorrect para atualizar a UI imediatamente
+           if (isCorrect) onAnswerCorrect(points);
+        }
+      } catch (error) {
+        console.error("Erro de rede ao salvar resposta:", error);
+      }
+    }
 
     // Log de feedback
     if (isDebugMode) {

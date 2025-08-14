@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { FaPlay, FaArrowRight, FaArrowLeft } from 'react-icons/fa';
 import PropTypes from 'prop-types'; // Import adicionado para validação de props
-
+import { useAuth } from '../../context/AuthContext'; // Importe o useAuth
+import { useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 // Verifica se o modo debug está ativado
 const isDebugMode = import.meta.env.VITE_DEBUG_MODE === 'true';
 
@@ -27,6 +29,8 @@ const NarrativeTab = ({ narrativeConfig, onStart }) => {
   }
 
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
+  const { user } = useAuth(); // Obtenha o usuário do contexto
+  const { activityId } = useParams();
 
   // Se não houver configuração de narrativa, exibe uma mensagem padrão.
   if (!narrativeConfig || !narrativeConfig.scenario || narrativeConfig.characters.length === 0) {
@@ -49,9 +53,33 @@ const NarrativeTab = ({ narrativeConfig, onStart }) => {
     );
   }
 
+  useEffect(() => {
+    const logView = async () => {
+      // Só registra se for um aluno
+      if (user?.role === 'aluno') {
+        try {
+          await fetch(`http://127.0.0.1:5000/api/activities/${activityId}/log_event`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${user.token}`
+            },
+            body: JSON.stringify({ event_type: 'narrative_viewed' })
+          });
+          console.log('[NarrativeTab] Visualização da narrativa registrada.');
+        } catch (error) {
+          console.error('[NarrativeTab] Erro ao registrar visualização:', error);
+        }
+      }
+    };
+
+    logView();
+  }, [activityId, user]);
+
   const { scenario, characters, dialogue } = narrativeConfig;
   const currentLine = dialogue[currentLineIndex];
   const currentCharacter = characters.find(c => c.role === currentLine?.characterRole);
+  
 
   /**
    * @function goToNextLine
