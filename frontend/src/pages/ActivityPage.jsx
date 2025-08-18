@@ -1,6 +1,6 @@
 // ==== [HEADER] ====  
 // Arquivo: ActivityPage.jsx  
-// Última revisão: 2024-06-12  
+// Última revisão: 2024-08-18
 // Debug: DEBUG_MODE=true para logs detalhados  
 // ==================  
 
@@ -21,7 +21,7 @@ import MissionTab from '../components/activity/MissionTab';
 import AchievementsTab from '../components/activity/AchievementsTab';
 import RouletteTab from '../components/activity/RouletteTab';
 // Ícones para os cards do dashboard
-import { FaQuestionCircle, FaTrophy, FaComments, FaStore, FaArrowLeft, FaBookOpen, FaBullseye } from 'react-icons/fa';
+import { FaArrowLeft } from 'react-icons/fa';
 import { cardsConfig } from '../components/activity/gameElementsConfig';
 // Configuração de debug - ativar no .env.local
 const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === 'true';
@@ -96,20 +96,15 @@ function ActivityPage() {
   useEffect(() => {
     debugLog('Iniciando carregamento da atividade', { activityId });
     
-    // Validação de parâmetros críticos
     if (!activityId || !/^\d+$/.test(activityId)) {
-      const errorMsg = 'ID de atividade inválido';
-      setError(errorMsg);
+      setError('ID de atividade inválido');
       setLoading(false);
-      debugLog(errorMsg, activityId);
       return;
     }
 
     if (!user) {
-      const errorMsg = 'Usuário não autenticado';
-      setError(errorMsg);
+      setError('Usuário não autenticado');
       setLoading(false);
-      debugLog(errorMsg);
       return;
     }
 
@@ -119,7 +114,6 @@ function ActivityPage() {
       debugLog('Iniciando fetchAllData');
       
       try {
-        // Busca dados da atividade
         const response = await fetch(
           `${import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000'}/api/activities/${activityId}`, 
           { headers: { 'Authorization': `Bearer ${user.token}` } }
@@ -134,27 +128,25 @@ function ActivityPage() {
         setActivity(activityData);
         debugLog('Atividade carregada:', activityData);
 
-        // Busca dados adicionais baseados nos elementos do jogo
         const elements = activityData.gameElements?.selectedElements || [];
         const dataPromises = [];
         debugLog('Elementos de jogo detectados:', elements);
 
+        // Lógica de busca de dados específica para cada perfil
         if (user.role === 'aluno') {
           dataPromises.push(fetchData(`/api/progress/${activityId}`, setUserProgress));
-          
-          if (elements.includes("Sistema de classificação e ranking")) {
+        } else if (user.role === 'professor') {
+          dataPromises.push(fetchData(`/api/progress/${activityId}/analytics`, setAnalytics));
+        }
+
+        // Lógica de busca de dados compartilhada
+        if (elements.includes("Sistema de classificação e ranking")) {
             debugLog('Carregando leaderboard...');
             dataPromises.push(fetchData(`/api/progress/${activityId}/leaderboard`, setLeaderboard));
-          }
-          
-          if (elements.includes("Economia (sistema monetário)")) {
+        }
+        if (elements.includes("Economia (sistema monetário)") && user.role === 'aluno') {
             debugLog('Carregando itens da loja...');
             dataPromises.push(fetchData(`/api/progress/${activityId}/store-items`, setStoreItems));
-          }
-        } 
-        else if (user.role === 'professor') {
-          debugLog('Carregando analytics...');
-          dataPromises.push(fetchData(`/api/progress/${activityId}/analytics`, setAnalytics));
         }
 
         await Promise.all(dataPromises);
@@ -173,96 +165,89 @@ function ActivityPage() {
     fetchAllData();
   }, [activityId, user, fetchData, debugLog]);
 
-  /**
-   * @desc Atualiza os pontos do usuário localmente e na API
-   * @param {number} points - Pontos a serem adicionados
-   * @throws {Error} Quando falha a atualização do servidor
-   */
+  // --- LÓGICA DE NÍVEL E XP (CLIENT-SIDE PARA FEEDBACK IMEDIATO) ---
+  const xpForNextLevel = useCallback((level) => 100 + (level - 1) * 50, []);
+
   const handlePointsEarned = useCallback(async (points) => {
-    debugLog('handlePointsEarned chamado com pontos:', points);
-    const numericPoints = parseInt(points, 10) || 0;
+    const numericPoints = parseInt(points, 10);
+    if (isNaN(numericPoints) || numericPoints === 0) return;
 
-    if (isNaN(numericPoints)) {
-      debugLog('Pontos inválidos, abortando atualização');
-      return;
-    }
+    debugLog(`handlePointsEarned: Adicionando ${numericPoints} pontos.`);
 
-    // Atualização otimista do estado local
+    // 1. Atualiza o estado local de forma otimista com a nova lógica de nível
     setUserProgress(prev => {
-      const currentProgress = prev || { points_earned: 0, xp: 0 };
-      const newProgress = {
-        ...currentProgress,
-        points_earned: currentProgress.points_earned + numericPoints,
-        xp: (currentProgress.xp || 0) + numericPoints
-      };
-      debugLog('Novo progresso local:', newProgress);
-      return newProgress;
+        if (!prev) return null; // Guarda de segurança
+        let { level, xp, xpForNextLevel: currentXpForNext, points_earned } = prev;
+        let newXp = xp + numericPoints;
+
+        // 2. Loop para tratar múltiplos level-ups
+        while (newXp >= currentXpForNext) {
+            level += 1; // Sobe de nível
+            newXp -= currentXpForNext; // Subtrai o XP necessário e mantém o excedente
+            currentXpForNext = xpForNextLevel(level); // Calcula o novo XP necessário para o próximo nível
+            debugLog(`LEVEL UP! Novo nível: ${level}, XP restante: ${newXp}, Próximo nível em: ${currentXpForNext}`);
+        }
+
+        const updatedProgress = {
+            ...prev,
+            level: level,
+            xp: newXp,
+            xpForNextLevel: currentXpForNext,
+            points_earned: points_earned + numericPoints,
+        };
+        
+        debugLog('Progresso local atualizado:', updatedProgress);
+        return updatedProgress;
     });
 
+    // 3. Envia a atualização para o backend (sem se preocupar com a resposta imediata)
     try {
       const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
-      await fetch(`${API_BASE}/api/progress/${activityId}/update`, {
+      const response = await fetch(`${API_BASE}/api/progress/${activityId}/update`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json', 
-          'Authorization': `Bearer ${user.token}` 
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` },
         body: JSON.stringify({ points: numericPoints })
       });
-      debugLog('Pontos atualizados no servidor com sucesso');
+      if (!response.ok) throw new Error("Falha ao salvar progresso no servidor.");
+      debugLog('Pontos salvos no servidor com sucesso.');
     } catch (err) {
-      const errorMsg = "Falha ao salvar progresso: " + err.message;
-      debugLog(errorMsg, err);
-      
-      // Reverte a atualização otimista
-      setUserProgress(prev => {
-        const revertedProgress = prev 
-          ? { 
-              ...prev, 
-              points_earned: prev.points_earned - numericPoints,
-              xp: prev.xp - numericPoints
-            } 
-          : null;
-        debugLog('Revertendo progresso:', revertedProgress);
-        return revertedProgress;
-      });
-      
-      setError(errorMsg);
+      debugLog("Erro ao salvar progresso no servidor:", err);
+      setError("Erro de conexão ao salvar seu progresso. Seus pontos podem não ter sido salvos.");
+      // Opcional: Implementar lógica para reverter o estado em caso de falha grave
     }
-  }, [activityId, user.token, debugLog]);
+  }, [activityId, user.token, debugLog, xpForNextLevel]);
 
-  /**
-   * @desc Manipula compras na loja (esqueleto para implementação futura)
-   * @param {object} item - Item a ser comprado
-   */
   const handlePurchase = useCallback(async (item) => {
     debugLog('handlePurchase chamado para item:', item);
     alert(`Compra de ${item.name} a ser implementada!`);
   }, [debugLog]);
 
+  // --- NOVA FUNÇÃO PARA SELEÇÃO DE VIEW COM ATUALIZAÇÃO DE DADOS ---
+  const handleSelectView = useCallback(async (view) => {
+    // Se o usuário clicar para ver o ranking, atualizamos os dados primeiro
+    if (view === 'leaderboard') {
+        debugLog('Atualizando leaderboard antes de exibir...');
+        await fetchData(`/api/progress/${activityId}/leaderboard`, setLeaderboard);
+    }
+    setCurrentView(view);
+  }, [activityId, fetchData, debugLog]);
+
+
   // ---------- [COMPONENTE INTERNO: DASHBOARD] ----------
-  /**
-   * @desc Componente de dashboard para seleção de elementos de atividade
-   * @param {object} props - Propriedades do componente
-   * @param {object} props.activity - Dados da atividade
-   * @param {function} props.onSelectView - Callback para seleção de view
-   * @param {string} props.userRole - Perfil do usuário (aluno/professor)
-   */
   const ActivityDashboard = ({ activity, onSelectView, userRole }) => {
-    debugLog('Renderizando ActivityDashboard');
     const elements = activity.gameElements?.selectedElements || [];
     
-    // --- 2. A LÓGICA DE FILTRO AGORA É MUITO MAIS LIMPA E ROBUSTA ---
-    const availableCards = cardsConfig.filter(card => card.isEnabled(elements, userRole));
+    const availableCards = cardsConfig.filter(card => {
+        if (userRole === 'professor') {
+            return card.isEnabled(elements, 'aluno') || card.isEnabled(elements, 'professor');
+        }
+        return card.isEnabled(elements, userRole);
+    });
     
-    debugLog('Cards disponíveis:', availableCards);
+    debugLog(`Cards disponíveis para ${userRole}:`, availableCards.map(c => c.key));
 
     if (availableCards.length === 0) {
-      return (
-        <div className="text-center text-gray-400 p-8">
-          Esta atividade não possui elementos interativos para seu perfil.
-        </div>
-      );
+      return <div className="text-center text-gray-400 p-8">Esta atividade não possui elementos interativos.</div>;
     }
 
     return (
@@ -270,7 +255,7 @@ function ActivityPage() {
         {availableCards.map(card => (
           <button
             key={card.key}
-            onClick={() => onSelectView(card.key)}
+            onClick={() => onSelectView(card.key)} // Usa o novo handler
             className={`bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700 text-left transition-all
                         transform hover:-translate-y-2 hover:border-${card.color}-400 group`}
             aria-label={`Acessar ${card.title}`}
@@ -291,26 +276,13 @@ function ActivityPage() {
   };
 
   // ---------- [RENDERIZAÇÃO DE CONTEÚDO] ----------
-  /**
-   * @desc Seleciona o conteúdo principal baseado na view atual
-   * @returns {JSX.Element} Componente da view ativa
-   */
   const renderContent = () => {
-    debugLog(`Renderizando view: ${currentView}`);
     if (!activity) return null;
 
-    // O Dashboard é a tela padrão
     if (currentView === 'dashboard') {
-      return (
-        <ActivityDashboard 
-          activity={activity} 
-          onSelectView={setCurrentView} 
-          userRole={user.role} 
-        />
-      );
+      return <ActivityDashboard activity={activity} onSelectView={handleSelectView} userRole={user.role} />;
     }
     
-    // As outras telas são carregadas sob demanda
     return (
       <div>
         <button
@@ -334,19 +306,18 @@ function ActivityPage() {
     );
   };
 
-
-  // ---------- [STATES DE CARREGAMENTO] ----------
+  // ---------- [STATES DE CARREGAMENTO E ERRO] ----------
   if (loading) {
     return <div className="text-center p-10 text-white">Carregando dados da atividade...</div>;
   }
   
   if (error) {
-    debugLog('Erro detectado na renderização:', error);
     return (
       <div className="text-center p-10 text-red-500">
-        Erro: {error}
+        <p className="font-bold">Ocorreu um erro:</p>
+        <p>{error}</p>
         <button 
-          className="mt-4 px-4 py-2 bg-red-700 rounded hover:bg-red-600"
+          className="mt-4 px-4 py-2 bg-red-700 rounded hover:bg-red-600 text-white"
           onClick={() => window.location.reload()}
         >
           Tentar novamente
@@ -366,28 +337,16 @@ function ActivityPage() {
         {user.role === 'aluno' && userProgress && (
           <StudentSidebar 
             progress={userProgress} 
-            onShowStats={() => {
-              debugLog('Abrindo modal de estatísticas');
-              setShowStatsModal(true);
-            }} 
+            onShowStats={() => setShowStatsModal(true)} 
           />
         )}
         
         {user.role === 'professor' && analytics && (
           <ProfessorSidebar
             analytics={analytics}
-            onStudentClick={(student) => {
-              debugLog('Clique em estudante:', student);
-              console.log('Clicked student:', student);
-            }}
-            onOpenQuizEditor={() => {
-              debugLog('Navegando para editor de quiz');
-              navigate(`/professor/activity/${activityId}/quiz/edit`);
-            }}
-            onOpenNarrativeEditor={() => {
-              debugLog('Navegando para editor de narrativa');
-              navigate(`/professor/activity/${activityId}/narrative/edit`);
-            }}
+            onStudentClick={(student) => console.log('Clicked student:', student)}
+            onOpenQuizEditor={() => navigate(`/professor/activity/${activityId}/quiz/edit`)}
+            onOpenNarrativeEditor={() => navigate(`/professor/activity/${activityId}/narrative/edit`)}
           />
         )}
       </aside>
@@ -404,10 +363,7 @@ function ActivityPage() {
       {showStatsModal && userProgress && (
         <StatsModal 
           stats={userProgress.stats || {}} 
-          onClose={() => {
-            debugLog('Fechando modal de estatísticas');
-            setShowStatsModal(false);
-          }} 
+          onClose={() => setShowStatsModal(false)} 
         />
       )}
     </div>
@@ -415,34 +371,3 @@ function ActivityPage() {
 }
 
 export default ActivityPage;
-
-// ==== [TESTES UNITÁRIOS SUGERIDOS] ====  
-/* 
-describe('ActivityPage', () => {
-  test('deve validar activityId corretamente', () => {
-    expect(isValidActivityId('123')).toBe(true);
-    expect(isValidActivityId('abc')).toBe(false);
-  });
-
-  test('handlePointsEarned deve atualizar estado corretamente', () => {
-    const initialProgress = { points_earned: 100, xp: 100 };
-    const newProgress = addPoints(initialProgress, 50);
-    expect(newProgress.points_earned).toBe(150);
-    expect(newProgress.xp).toBe(150);
-  });
-
-  test('deve filtrar cards corretamente', () => {
-    const elements = ['Narrativas envolventes', 'Quebra-cabeça'];
-    const cards = filterCards(cardsConfig, 'aluno', elements);
-    expect(cards.length).toBe(2);
-    expect(cards.some(c => c.key === 'narrative')).toBe(true);
-  });
-});
-*/
-
-// ==== [RECOMENDAÇÕES] ====  
-// TODO: Separar lógica de API em serviço dedicado (apiService.js)
-// TODO: Implementar OpenTelemetry para observabilidade
-// TODO: Adicionar TypeScript para tipagem estática
-// TODO: Implementar sistema de retry para chamadas de API
-// TODO: Adicionar tratamento offline com cache local

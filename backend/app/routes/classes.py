@@ -304,3 +304,166 @@ def get_class_activities(class_id):
     activities_data = [activity.to_dict() for activity in activities]
     current_app.logger.info(f"Retornando {len(activities_data)} atividades para a turma ID {class_id} para o usuário ID {current_user_id}.")
     return jsonify(activities_data), 200
+
+# ROTA OTIMIZADA PARA A PÁGINA DE EDIÇÃO
+@class_bp.route('/<int:class_id>/management-details', methods=['GET'])
+@cross_origin()
+@jwt_required()
+def get_class_management_details(class_id):
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+
+    if not user or user.role != 'professor':
+        return jsonify({"message": "Acesso negado."}), 403
+
+    class_obj = Class.query.get(class_id)
+    if not class_obj or class_obj.professor_id != user.id:
+        return jsonify({"message": "Turma não encontrada ou acesso negado."}), 404
+
+    # 1. Alunos matriculados
+    enrolled_students = User.query.join(Enrollment).filter(Enrollment.class_id == class_id).all()
+    students_data = [{"id": s.id, "name": s.name, "email": s.email} for s in enrolled_students]
+
+    # 2. Atividades já associadas a esta turma
+    assigned_activities_query = Activity.query.filter_by(class_id=class_id).all()
+    assigned_activities_data = [{"id": a.id, "title": a.title} for a in assigned_activities_query]
+
+    # 3. Atividades do professor que NÃO estão associadas a esta turma
+    unassigned_activities_query = Activity.query.filter(
+        Activity.professor_id == user.id,
+        Activity.class_id.is_(None)
+    ).all()
+    unassigned_activities_data = [{"id": a.id, "title": a.title} for a in unassigned_activities_query]
+    
+    response_data = {
+        "details": class_obj.to_dict(),
+        "students": students_data,
+        "assigned_activities": assigned_activities_data,
+        "available_activities": unassigned_activities_data
+    }
+    
+    return jsonify(response_data), 200
+
+# ADICIONAR ALUNO PELO E-MAIL
+@class_bp.route('/<int:class_id>/students', methods=['POST'])
+@cross_origin()
+@jwt_required()
+def add_student_to_class(class_id):
+    current_user_id = get_jwt_identity()
+    professor = User.query.get(current_user_id)
+    class_obj = Class.query.get(class_id)
+
+    if not professor or professor.role != 'professor' or class_obj.professor_id != professor.id:
+        return jsonify({"message": "Acesso negado."}), 403
+
+    data = request.get_json()
+    student_email = data.get('email')
+    if not student_email:
+        return jsonify({"message": "E-mail do aluno é obrigatório."}), 400
+
+    student_to_add = User.query.filter_by(email=student_email).first()
+    if not student_to_add:
+        return jsonify({"message": f"Nenhum usuário encontrado com o e-mail '{student_email}'."}), 404
+    
+    if student_to_add.role != 'aluno':
+        return jsonify({"message": "O e-mail fornecido não pertence a um aluno."}), 400
+
+    # Verifica se o aluno já está matriculado
+    existing_enrollment = Enrollment.query.filter_by(student_id=student_to_add.id, class_id=class_id).first()
+    if existing_enrollment:
+        return jsonify({"message": "Este aluno já está na turma."}), 409
+
+    try:
+        new_enrollment = Enrollment(student_id=student_to_add.id, class_id=class_id)
+        db.session.add(new_enrollment)
+        db.session.commit()
+        return jsonify({
+            "message": f"Aluno '{student_to_add.name}' adicionado com sucesso!",
+            "student": {"id": student_to_add.id, "name": student_to_add.name, "email": student_to_add.email}
+        }), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": str(e)}), 500
+
+# REMOVER ALUNO DA TURMA
+@class_bp.route('/<int:class_id>/students/<int:student_id>', methods=['DELETE'])
+@cross_origin()
+@jwt_required()
+def remove_student_from_class(class_id, student_id):
+    current_user_id = get_jwt_identity()
+    professor = User.query.get(current_user_id)
+    class_obj = Class.query.get(class_id)
+
+    if not professor or professor.role != 'professor' or class_obj.professor_id != professor.id:
+        return jsonify({"message": "Acesso negado."}), 403
+    
+    enrollment = Enrollment.query.filter_by(student_id=student_id, class_id=class_id).first()
+    if not enrollment:
+        return jsonify({"message": "Matrícula não encontrada."}), 404
+
+    try:
+        db.session.delete(enrollment)
+        db.session.commit()
+        return jsonify({"message": "Aluno removido da turma com sucesso."}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": str(e)}), 500
+
+# ASSOCIAR ATIVIDADE EXISTENTE À TURMA
+@class_bp.route('/<int:class_id>/activities', methods=['POST'])
+@cross_origin()
+@jwt_required()
+def add_activity_to_class(class_id):
+    current_user_id = get_jwt_identity()
+    professor = User.query.get(current_user_id)
+    class_obj = Class.query.get(class_id)
+
+    if not professor or professor.role != 'professor' or class_obj.professor_id != professor.id:
+        return jsonify({"message": "Acesso negado."}), 403
+
+    data = request.get_json()
+    activity_id = data.get('activity_id')
+    if not activity_id:
+        return jsonify({"message": "ID da atividade é obrigatório."}), 400
+
+    activity = Activity.query.get(activity_id)
+    if not activity or activity.professor_id != professor.id:
+        return jsonify({"message": "Atividade não encontrada ou não pertence a você."}), 404
+
+    if activity.class_id:
+        return jsonify({"message": "Esta atividade já está associada a outra turma."}), 409
+
+    try:
+        activity.class_id = class_id
+        db.session.commit()
+        return jsonify({
+            "message": "Atividade associada com sucesso!",
+            "activity": {"id": activity.id, "title": activity.title}
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": str(e)}), 500
+
+# DESASSOCIAR ATIVIDADE DA TURMA
+@class_bp.route('/<int:class_id>/activities/<int:activity_id>', methods=['DELETE'])
+@cross_origin()
+@jwt_required()
+def remove_activity_from_class(class_id, activity_id):
+    current_user_id = get_jwt_identity()
+    professor = User.query.get(current_user_id)
+    class_obj = Class.query.get(class_id)
+
+    if not professor or professor.role != 'professor' or class_obj.professor_id != professor.id:
+        return jsonify({"message": "Acesso negado."}), 403
+
+    activity = Activity.query.get(activity_id)
+    if not activity or activity.class_id != class_obj.id:
+        return jsonify({"message": "Atividade não encontrada nesta turma."}), 404
+
+    try:
+        activity.class_id = None
+        db.session.commit()
+        return jsonify({"message": "Atividade desassociada com sucesso."}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": str(e)}), 500

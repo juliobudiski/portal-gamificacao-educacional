@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
@@ -8,83 +8,191 @@ import {
   FaMedal, 
   FaTrophy, 
   FaInfoCircle, 
-  FaUserGraduate
+  FaUserGraduate,
+  FaChevronDown,
+  FaChevronUp
 } from "react-icons/fa";
+
+// --- COMPONENTE INTERNO PARA O CARD DA ATIVIDADE ---
+// Este componente agora gerencia seu próprio estado de expansão
+function ActivityCard({ activity }) {
+    const [isExpanded, setIsExpanded] = useState({
+        description: false,
+        gameElements: false,
+        rewards: false,
+    });
+
+    const toggleSection = (section) => {
+        setIsExpanded(prev => ({ ...prev, [section]: !prev[section] }));
+    };
+
+    const hasGameElements = activity.gameElements && activity.gameElements.selectedElements?.length > 0;
+    const hasRewards = activity.rewardsOffered && activity.rewardsOffered.selectedRewards?.length > 0;
+
+    return (
+        <div 
+            key={activity.id} 
+            className="bg-[#3a4046] p-6 rounded-2xl shadow-2xl border border-[#4a525a] transition-all duration-300 hover:shadow-[0_10px_30px_rgba(105,232,203,0.15)] hover:border-[#69e8cb]/50 relative overflow-hidden flex flex-col"
+        >
+            {/* Decoração no topo do card */}
+            <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#ffbd30] to-[#9570d9]"></div>
+            
+            <div className="flex-grow">
+                <h3 className="text-xl font-bold text-white mb-3 flex items-center">
+                    <span className="w-6 h-6 rounded-full bg-[#ffbd30] flex items-center justify-center mr-2 flex-shrink-0">
+                        <FaBook className="text-xs text-[#2c3135]" />
+                    </span>
+                    {activity.title}
+                </h3>
+                
+                {activity.areaKnowledge && (
+                    <div className="flex items-center mb-3">
+                        <span className="text-xs font-semibold px-2 py-1 bg-[#69e8cb]/20 text-[#69e8cb] rounded-full">
+                            Área: {activity.areaKnowledge}
+                        </span>
+                    </div>
+                )}
+
+                {/* Seção de Descrição Expansível */}
+                <div 
+                    className="text-gray-300 text-sm mb-4 pl-2 border-l-2 border-[#69e8cb] cursor-pointer"
+                    onClick={() => toggleSection('description')}
+                >
+                    <div className="flex justify-between items-center">
+                        <strong className="text-gray-200">Descrição</strong>
+                        {isExpanded.description ? <FaChevronUp /> : <FaChevronDown />}
+                    </div>
+                    {isExpanded.description && (
+                        <p className="mt-2 transition-all duration-500 ease-in-out">
+                            {activity.description}
+                        </p>
+                    )}
+                </div>
+
+                {/* Seção de Elementos de Jogo Expansível */}
+                {hasGameElements && (
+                    <div className="mt-4 mb-4">
+                        <div 
+                            className="flex items-center justify-between mb-2 cursor-pointer"
+                            onClick={() => toggleSection('gameElements')}
+                        >
+                            <div className="flex items-center">
+                                <FaTrophy className="text-[#ffbd30] mr-2" />
+                                <h4 className="font-semibold text-[#ffbd30]">Elementos de Jogo</h4>
+                            </div>
+                            {isExpanded.gameElements ? <FaChevronUp /> : <FaChevronDown />}
+                        </div>
+                        {isExpanded.gameElements && (
+                            <div className="flex flex-wrap gap-2 mt-2 transition-all duration-500 ease-in-out">
+                                {activity.gameElements.selectedElements.map((element, i) => (
+                                    <span key={i} className="text-xs px-2 py-1 bg-[#9570d9]/20 text-[#9570d9] rounded-full">
+                                        {element}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+                
+                {/* Seção de Recompensas Expansível */}
+                {hasRewards && (
+                    <div className="mt-4 mb-4">
+                        <div 
+                            className="flex items-center justify-between mb-2 cursor-pointer"
+                            onClick={() => toggleSection('rewards')}
+                        >
+                            <div className="flex items-center">
+                                <FaMedal className="text-[#69e8cb] mr-2" />
+                                <h4 className="font-semibold text-[#69e8cb]">Recompensas</h4>
+                            </div>
+                            {isExpanded.rewards ? <FaChevronUp /> : <FaChevronDown />}
+                        </div>
+                        {isExpanded.rewards && (
+                            <div className="flex flex-wrap gap-2 mt-2 transition-all duration-500 ease-in-out">
+                                {activity.rewardsOffered.selectedRewards.map((reward, i) => (
+                                    <span key={i} className="text-xs px-2 py-1 bg-gradient-to-r from-[#ffbd30]/20 to-[#ff9d00]/20 text-[#ffbd30] rounded-full">
+                                        {reward}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+            
+            <div className="mt-6 text-right border-t border-gray-700 pt-4">
+                <Link 
+                    to={`/activities/${activity.id}`} 
+                    className="inline-block bg-gradient-to-r from-[#69e8cb] to-[#4dd1b3] hover:from-[#4dd1b3] hover:to-[#69e8cb] text-[#2c3135] font-bold py-2 px-4 rounded-xl text-sm transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg"
+                >
+                    Ver Atividade
+                </Link>
+            </div>
+        </div>
+    );
+}
+
 
 function ClassDetailsPage() {
     const { class_id } = useParams();
-    const { user } = useContext(AuthContext); // Removido 'authToken'
+    const { user } = useContext(AuthContext);
     const [classDetails, setClassDetails] = useState(null);
     const [activities, setActivities] = useState([]);
     const [message, setMessage] = useState('');
+    const [error, setError] = useState(''); // Estado para o erro
     const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        console.log('[ClassDetailsPage] Componente montado para turma ID:', class_id);
-        return () => {
-            console.log('[ClassDetailsPage] Componente desmontado.');
-        };
-    }, []);
-
+    
     useEffect(() => {
         const fetchClassData = async () => {
-            console.log('[ClassDetailsPage] Iniciando busca de dados da turma ID:', class_id);
             const token = user?.token;
             if (!token || !class_id) {
-                setMessage('Acesso negado ou token/ID da turma ausente.');
+                setError('Acesso negado ou token/ID da turma ausente.');
                 setIsLoading(false);
                 return;
             }
             setMessage('');
+            setError(''); // Limpa o erro anterior
             setIsLoading(true);
 
             try {
-                // --- ETAPA 1: BUSCAR DETALHES DA TURMA ---
-                console.log('[ClassDetailsPage] Buscando detalhes da turma...');
-                const classResponse = await fetch(`http://127.0.0.1:5000/api/classes/${class_id}`, {
-                    headers: { 'Authorization': `Bearer ${token}` },
-                });
+                // Busca detalhes da turma e atividades em paralelo para otimizar
+                const [classResponse, activitiesResponse] = await Promise.all([
+                    fetch(`http://127.0.0.1:5000/api/classes/${class_id}`, {
+                        headers: { 'Authorization': `Bearer ${token}` },
+                    }),
+                    fetch(`http://127.0.0.1:5000/api/classes/${class_id}/activities`, {
+                        headers: { 'Authorization': `Bearer ${token}` },
+                    })
+                ]);
+
                 const classData = await classResponse.json();
-
-                if (!classResponse.ok) {
-                    throw new Error(classData.message || 'Erro ao carregar detalhes da turma.');
-                }
+                if (!classResponse.ok) throw new Error(classData.message || 'Erro ao carregar detalhes da turma.');
                 
-                setClassDetails(classData);
-                console.log('[ClassDetailsPage] Detalhes da turma carregados:', classData);
-
-                // --- ETAPA 2: BUSCAR ATIVIDADES DA TURMA (CORREÇÃO APLICADA AQUI) ---
-                console.log('[ClassDetailsPage] Buscando atividades para esta turma...');
-                // A URL foi corrigida para o endpoint correto de atividades
-                const activitiesResponse = await fetch(`http://127.0.0.1:5000/api/classes/${class_id}/activities`, {
-                    headers: { 'Authorization': `Bearer ${token}` },
-                });
                 const activitiesData = await activitiesResponse.json();
-                
-                if (!activitiesResponse.ok) {
-                    throw new Error(activitiesData.message || 'Erro ao carregar atividades.');
-                }
+                if (!activitiesResponse.ok) throw new Error(activitiesData.message || 'Erro ao carregar atividades.');
 
+                setClassDetails(classData);
                 setActivities(activitiesData);
-                console.log('[ClassDetailsPage] Atividades da turma carregadas:', activitiesData);
 
-            } catch (error) {
-                console.error('[ClassDetailsPage] Erro na requisição de dados da turma:', error);
-                setMessage(error.message);
+            } catch (err) {
+                console.error('[ClassDetailsPage] Erro na requisição de dados da turma:', err);
+                setError(err.message); // Define o estado de erro
             } finally {
                 setIsLoading(false);
             }
         };
 
-        fetchClassData();
+        if (user?.token) {
+            fetchClassData();
+        }
     }, [class_id, user?.token]);
 
     if (isLoading) {
-        return <div className="container mx-auto p-4 text-center text-gray-600"><p>Carregando detalhes da turma...</p></div>;
+        return <div className="container mx-auto p-4 text-center text-gray-400"><p>Carregando detalhes da turma...</p></div>;
     }
 
-    if (message && !classDetails) {
-        return <div className="container mx-auto p-4 text-center text-red-600"><p>{message}</p></div>;
+    if (error && !classDetails) {
+        return <div className="container mx-auto p-4 text-center text-red-400"><p>{error}</p></div>;
     }
 
     if (!classDetails) {
@@ -177,88 +285,7 @@ function ClassDetailsPage() {
                     {activities.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {activities.map((activity) => (
-                                <div 
-                                    key={activity.id} 
-                                    className="bg-[#3a4046] p-6 rounded-2xl shadow-2xl border border-[#4a525a] transition-all duration-300 hover:shadow-[0_10px_30px_rgba(105,232,203,0.15)] hover:border-[#69e8cb]/50 relative overflow-hidden"
-                                >
-                                    {/* Decoração no topo do card */}
-                                    <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#ffbd30] to-[#9570d9]"></div>
-                                    
-                                    <h3 className="text-xl font-bold text-white mb-3 flex items-center">
-                                        <span className="w-6 h-6 rounded-full bg-[#ffbd30] flex items-center justify-center mr-2">
-                                            <FaBook className="text-xs text-[#2c3135]" />
-                                        </span>
-                                        {activity.title}
-                                    </h3>
-                                    
-                                    <p className="text-gray-300 text-sm mb-4 pl-2 border-l-2 border-[#69e8cb]">
-                                        {activity.description}
-                                    </p>
-                                    
-                                    {activity.areaKnowledge && (
-                                        <div className="flex items-center mb-3">
-                                            <span className="text-xs font-semibold px-2 py-1 bg-[#69e8cb]/20 text-[#69e8cb] rounded-full">
-                                                Área: {activity.areaKnowledge}
-                                            </span>
-                                        </div>
-                                    )}
-                                    
-                                    {/* Elementos de Jogo */}
-                                    {activity.gameElements && Object.keys(activity.gameElements).length > 0 && (
-                                        <div className="mt-4 mb-4">
-                                            <div className="flex items-center mb-2">
-                                                <FaTrophy className="text-[#ffbd30] mr-2" />
-                                                <h4 className="font-semibold text-[#ffbd30]">Elementos de Jogo</h4>
-                                            </div>
-                                            {activity.gameElements.selectedElements?.length > 0 && (
-                                                <div className="flex flex-wrap gap-2">
-                                                    {activity.gameElements.selectedElements.map((element, i) => (
-                                                        <span 
-                                                            key={i} 
-                                                            className="text-xs px-2 py-1 bg-[#9570d9]/20 text-[#9570d9] rounded-full"
-                                                        >
-                                                            {element}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            )}
-                                            {activity.gameElements.narrativeTitle && (
-                                                <p className="mt-2 text-sm text-gray-300 italic">
-                                                    "{activity.gameElements.narrativeContent}"
-                                                </p>
-                                            )}
-                                        </div>
-                                    )}
-                                    
-                                    {/* Recompensas */}
-                                    {activity.rewardsOffered && activity.rewardsOffered.selectedRewards?.length > 0 && (
-                                        <div className="mt-4 mb-4">
-                                            <div className="flex items-center mb-2">
-                                                <FaMedal className="text-[#69e8cb] mr-2" />
-                                                <h4 className="font-semibold text-[#69e8cb]">Recompensas</h4>
-                                            </div>
-                                            <div className="flex flex-wrap gap-2">
-                                                {activity.rewardsOffered.selectedRewards.map((reward, i) => (
-                                                    <span 
-                                                        key={i} 
-                                                        className="text-xs px-2 py-1 bg-gradient-to-r from-[#ffbd30]/20 to-[#ff9d00]/20 text-[#ffbd30] rounded-full"
-                                                    >
-                                                        {reward}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                    
-                                    <div className="mt-6 text-right">
-                                        <Link 
-                                            to={`/activities/${activity.id}`} 
-                                            className="inline-block bg-gradient-to-r from-[#69e8cb] to-[#4dd1b3] hover:from-[#4dd1b3] hover:to-[#69e8cb] text-[#2c3135] font-bold py-2 px-4 rounded-xl text-sm transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg"
-                                        >
-                                            Ver Atividade
-                                        </Link>
-                                    </div>
-                                </div>
+                                <ActivityCard key={activity.id} activity={activity} />
                             ))}
                         </div>
                     ) : (

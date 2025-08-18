@@ -1,99 +1,153 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { FaUserPlus, FaBook, FaTrash, FaSave, FaUsers, FaTasks, FaPlusCircle } from 'react-icons/fa';
 
 function ClassEditPage() {
     const { class_id } = useParams();
     const { user } = useContext(AuthContext);
     const navigate = useNavigate();
-    const [name, setName] = useState('');
-    const [description, setDescription] = useState('');
+
+    // --- ESTADOS CONSOLIDADOS ---
+    // Detalhes da turma para o formulário de edição
+    const [classDetails, setClassDetails] = useState({ name: '', description: '' });
+    // Listas para gerenciamento
+    const [students, setStudents] = useState([]);
+    const [assignedActivities, setAssignedActivities] = useState([]);
+    const [availableActivities, setAvailableActivities] = useState([]);
+    
+    // Estados para os campos de adição
+    const [studentEmail, setStudentEmail] = useState('');
+    const [activityToAdd, setActivityToAdd] = useState('');
+
+    // Estados de UI (feedback e carregamento)
     const [message, setMessage] = useState('');
+    const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        console.log('[ClassEditPage] Componente montado para edição da turma ID:', class_id);
-        const fetchClassData = async () => {
-            if (!user?.token || user?.role !== 'professor' || !class_id) {
-                setMessage('Acesso negado ou token/ID da turma ausente.');
-                setIsLoading(false);
-                console.warn('[ClassEditPage] Acesso negado ou dados ausentes.');
-                return;
-            }
-
-            try {
-                const response = await fetch(`http://127.0.0.1:5000/api/classes/${class_id}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${user.token}`,
-                    },
-                });
-                const data = await response.json();
-                console.log('[ClassEditPage] Resposta API (detalhes para edição):', data);
-
-                if (response.ok) {
-                    setName(data.name);
-                    setDescription(data.description);
-                    setMessage('');
-                } else {
-                    setMessage(data.message || 'Erro ao carregar detalhes da turma.');
-                }
-            } catch (error) {
-                console.error('[ClassEditPage] Erro ao carregar detalhes da turma:', error);
-                setMessage('Erro na comunicação com o servidor ao carregar detalhes.');
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchClassData();
-        return () => {
-            console.log('[ClassEditPage] Componente desmontado.');
-        };
-    }, [class_id, user]);
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        console.log('[ClassEditPage] Tentando atualizar turma...');
-        setMessage('');
+    // --- BUSCA DE DADOS ---
+    // Função memoizada para buscar todos os dados de gerenciamento da turma de uma só vez.
+    const fetchManagementData = useCallback(async () => {
+        if (!user?.token) return;
         setIsLoading(true);
-
-        const token = user?.token;
-        if (!token || user?.role !== 'professor' || !class_id) {
-            setMessage('Erro: Acesso negado, token ou ID da turma ausente.');
-            setIsLoading(false);
-            return;
-        }
-
+        // Limpa mensagens antigas ao recarregar
+        setMessage('');
+        setError('');
         try {
-            const response = await fetch(`http://127.0.0.1:5000/api/classes/${class_id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify({ name, description }),
+            // Usa a nova rota otimizada do backend
+            const response = await fetch(`http://127.0.0.1:5000/api/classes/${class_id}/management-details`, {
+                headers: { 'Authorization': `Bearer ${user.token}` },
             });
-
             const data = await response.json();
-            console.log('[ClassEditPage] Resposta API (atualizar turma):', data);
+            if (!response.ok) throw new Error(data.message || 'Erro ao carregar dados da turma.');
+            
+            // Preenche todos os estados com os dados recebidos
+            setClassDetails(data.details);
+            setStudents(data.students);
+            setAssignedActivities(data.assigned_activities);
+            setAvailableActivities(data.available_activities);
 
-            if (response.ok) {
-                setMessage('Turma atualizada com sucesso!');
-                console.log('[ClassEditPage] Turma atualizada, navegando de volta.');
-                setTimeout(() => navigate('/teacher/classes'), 2000);
-            } else {
-                setMessage(data.message || 'Erro ao atualizar turma.');
-                console.error('[ClassEditPage] Erro ao atualizar turma:', data.message);
+            // Pré-seleciona a primeira atividade disponível no dropdown, se houver
+            if (data.available_activities.length > 0) {
+                setActivityToAdd(data.available_activities[0].id);
             }
-        } catch (error) {
-            console.error('[ClassEditPage] Erro na requisição de atualização:', error);
-            setMessage('Erro na comunicação com o servidor.');
+
+        } catch (err) {
+            setError(err.message);
         } finally {
             setIsLoading(false);
         }
+    }, [class_id, user?.token]);
+
+    // Efeito para carregar os dados quando o componente monta
+    useEffect(() => {
+        fetchManagementData();
+    }, [fetchManagementData]);
+
+    // --- FUNÇÕES DE MANIPULAÇÃO (HANDLERS) ---
+
+    // Função genérica para chamadas à API, tratando erros e recarregando os dados
+    const handleApiCall = async (url, method, body, successMessage) => {
+        setMessage('');
+        setError('');
+        try {
+            const response = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` },
+                body: body ? JSON.stringify(body) : null,
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || 'Ocorreu um erro na operação.');
+            
+            setMessage(successMessage);
+            fetchManagementData(); // Recarrega todos os dados da página para refletir a mudança
+            return true;
+        } catch (err) {
+            setError(err.message);
+            return false;
+        }
     };
+
+    // Handler para atualizar o nome e a descrição da turma
+    const handleUpdateDetails = (e) => {
+        e.preventDefault();
+        handleApiCall(
+            `http://127.0.0.1:5000/api/classes/${class_id}`, 
+            'PUT', 
+            { name: classDetails.name, description: classDetails.description }, 
+            'Detalhes da turma atualizados com sucesso!'
+        );
+    };
+    
+    // Handler para adicionar um novo aluno via e-mail
+    const handleAddStudent = () => {
+        if (!studentEmail.trim()) return setError("Por favor, insira um e-mail válido.");
+        handleApiCall(
+            `http://127.0.0.1:5000/api/classes/${class_id}/students`, 
+            'POST', 
+            { email: studentEmail }, 
+            'Aluno adicionado com sucesso!'
+        ).then(success => {
+            if (success) setStudentEmail(''); // Limpa o campo apenas se a operação for bem-sucedida
+        });
+    };
+
+    // Handler para remover um aluno da turma
+    const handleRemoveStudent = (studentId) => {
+        if (window.confirm("Tem certeza que deseja remover este aluno da turma?")) {
+            handleApiCall(
+                `http://127.0.0.1:5000/api/classes/${class_id}/students/${studentId}`, 
+                'DELETE', 
+                null, 
+                'Aluno removido com sucesso!'
+            );
+        }
+    };
+    
+    // Handler para associar uma atividade existente à turma
+    const handleAddActivity = () => {
+        if (!activityToAdd) return setError("Por favor, selecione uma atividade para associar.");
+        handleApiCall(
+            `http://127.0.0.1:5000/api/classes/${class_id}/activities`, 
+            'POST', 
+            { activity_id: parseInt(activityToAdd) }, // Garante que o ID é um número
+            'Atividade associada com sucesso!'
+        );
+    };
+    
+    // Handler para desassociar uma atividade da turma
+    const handleRemoveActivity = (activityId) => {
+        if (window.confirm("Tem certeza que deseja desassociar esta atividade? Ela não será excluída, apenas removida desta turma.")) {
+            handleApiCall(
+                `http://127.0.0.1:5000/api/classes/${class_id}/activities/${activityId}`, 
+                'DELETE', 
+                null, 
+                'Atividade desassociada com sucesso!'
+            );
+        }
+    };
+
+    // --- RENDERIZAÇÃO ---
 
     if (isLoading) {
         return (
@@ -105,155 +159,91 @@ function ClassEditPage() {
             </div>
         );
     }
-
-    if (message && !name) {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-[#2c3135] to-[#1e2226] flex items-center justify-center p-4">
-                <div className="bg-[#343a40] p-8 rounded-2xl shadow-xl border-l-4 border-red-600 max-w-md text-center">
-                    <svg className="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                    <h3 className="text-2xl font-bold text-white mb-4">Erro ao carregar turma</h3>
-                    <p className="text-gray-300">{message}</p>
-                    <button 
-                        onClick={() => navigate('/teacher/classes')}
-                        className="mt-6 bg-gradient-to-r from-[#ffbd30] to-[#ffa000] text-[#2c3135] font-bold py-2 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-[1.02]"
-                    >
-                        Voltar para turmas
-                    </button>
-                </div>
-            </div>
-        );
-    }
     
-    if (user?.role !== 'professor') {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-[#2c3135] to-[#1e2226] flex items-center justify-center p-4">
-                <div className="bg-[#343a40] p-8 rounded-2xl shadow-xl border-l-4 border-red-600 max-w-md text-center">
-                    <svg className="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                    <h3 className="text-2xl font-bold text-white mb-4">Acesso Negado</h3>
-                    <p className="text-gray-300">Você não tem permissão para editar esta turma.</p>
-                    <button 
-                        onClick={() => navigate('/')}
-                        className="mt-6 bg-gradient-to-r from-[#ffbd30] to-[#ffa000] text-[#2c3135] font-bold py-2 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-[1.02]"
-                    >
-                        Voltar ao início
-                    </button>
-                </div>
-            </div>
-        );
-    }
-
     return (
-        <div className="min-h-screen bg-gradient-to-br from-[#2c3135] to-[#1e2226] p-4">
-            <div className="max-w-2xl mx-auto">
-                {/* Cabeçalho com gradiente */}
+        <div className="min-h-screen bg-gradient-to-br from-[#2c3135] to-[#1e2226] p-4 text-white">
+            <div className="max-w-4xl mx-auto">
                 <header className="mb-8 text-center bg-gradient-to-r from-[#ffbd30] to-[#ffa000] p-6 rounded-2xl shadow-2xl border-b-4 border-[#ffcc5c]">
                     <h1 className="text-2xl md:text-3xl font-extrabold text-[#2c3135]">
-                        Editar Turma
+                        Gerenciar Turma
                     </h1>
                     <p className="mt-2 text-[#2c3135] font-medium">
-                        Atualize os detalhes da turma: <span className="bg-white/30 px-2 py-1 rounded-md">{name}</span>
+                        {classDetails.name}
                     </p>
                 </header>
 
-                {/* Formulário de edição */}
-                <form onSubmit={handleSubmit} className="bg-[#343a40] p-6 md:p-8 rounded-2xl shadow-xl border border-[#3e4a52]">
-                    {/* Campo Nome */}
+                {error && <div className="bg-red-900/50 border border-red-600 text-red-100 p-3 mb-4 rounded-xl text-center" role="alert">{error}</div>}
+                {message && <div className="bg-green-900/50 border border-green-600 text-green-100 p-3 mb-4 rounded-xl text-center" role="alert">{message}</div>}
+
+                {/* --- SEÇÃO 1: DETALHES DA TURMA --- */}
+                <form onSubmit={handleUpdateDetails} className="bg-[#343a40] p-6 md:p-8 rounded-2xl shadow-xl border border-[#3e4a52] mb-8">
+                    <h2 className="text-xl font-bold mb-4">Detalhes da Turma</h2>
                     <div className="mb-6">
-                        <label htmlFor="editName" className="block text-sm font-medium text-gray-300 mb-3 flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-[#ffbd30]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                            </svg>
-                            Nome da Turma
-                        </label>
-                        <div className="relative">
-                            <input
-                                type="text"
-                                id="editName"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                className="w-full px-4 py-3 bg-[#2c3135] border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30] text-white placeholder-gray-500 transition-all duration-200"
-                                required
-                                disabled={isLoading}
-                                placeholder="Digite o nome da turma"
-                            />
-                        </div>
+                        <label htmlFor="editName" className="block text-sm font-medium text-gray-300 mb-2">Nome da Turma</label>
+                        <input
+                            type="text" id="editName"
+                            value={classDetails.name}
+                            onChange={(e) => setClassDetails({...classDetails, name: e.target.value})}
+                            className="w-full px-4 py-3 bg-[#2c3135] border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30] text-white"
+                            required
+                        />
                     </div>
-                    
-                    {/* Campo Descrição */}
-                    <div className="mb-8">
-                        <label htmlFor="editDescription" className="block text-sm font-medium text-gray-300 mb-3 flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-[#69e8cb]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                            </svg>
-                            Descrição
-                        </label>
-                        <div className="relative">
-                            <textarea
-                                id="editDescription"
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                                className="w-full px-4 py-3 bg-[#2c3135] border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30] text-white placeholder-gray-500 transition-all duration-200 h-40"
-                                disabled={isLoading}
-                                placeholder="Descreva a finalidade desta turma"
-                            ></textarea>
-                        </div>
+                    <div className="mb-6">
+                        <label htmlFor="editDescription" className="block text-sm font-medium text-gray-300 mb-2">Descrição</label>
+                        <textarea
+                            id="editDescription"
+                            value={classDetails.description}
+                            onChange={(e) => setClassDetails({...classDetails, description: e.target.value})}
+                            className="w-full px-4 py-3 bg-[#2c3135] border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30] text-white h-32"
+                        ></textarea>
                     </div>
-                    
-                    {/* Botões e Mensagem */}
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <button
-                            type="submit"
-                            className={`w-full sm:w-auto flex-1 flex justify-center items-center py-3 px-6 rounded-xl shadow-lg text-lg font-bold text-[#2c3135] bg-gradient-to-r from-[#ffbd30] to-[#ffa000] hover:from-[#ffcc5c] hover:to-[#ffb140] transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#ffbd30] ${isLoading ? 'opacity-75 cursor-not-allowed' : ''}`}
-                            disabled={isLoading}
-                        >
-                            {isLoading ? (
-                                <>
-                                    <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-[#2c3135]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    Atualizando...
-                                </>
-                            ) : (
-                                <>
-                                    Atualizar Turma
-                                    <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                </>
-                            )}
-                        </button>
-                        
-                        <button
-                            type="button"
-                            onClick={() => navigate('/teacher/classes')}
-                            className="w-full sm:w-auto flex justify-center items-center py-3 px-6 rounded-xl border border-[#3e4a52] text-gray-300 hover:text-white hover:bg-[#3e4a52] transition-all duration-300"
-                            disabled={isLoading}
-                        >
-                            Cancelar
-                        </button>
+                    <div className="flex justify-between items-center">
+                         <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg flex items-center"><FaSave className="mr-2" /> Salvar Detalhes</button>
+                         <button type="button" onClick={() => navigate('/professor/gerenciar-turmas')} className="text-gray-300 hover:text-white">Cancelar</button>
                     </div>
-                    
-                    {message && (
-                        <div className={`mt-6 p-4 rounded-xl text-center font-medium ${
-                            message.includes('sucesso') 
-                                ? 'bg-green-900/50 border border-green-600 text-green-100' 
-                                : 'bg-red-900/50 border border-red-600 text-red-100'
-                        }`}>
-                            {message}
-                        </div>
-                    )}
                 </form>
-                
-                {/* Rodapé com informações */}
-                <footer className="mt-8 text-center text-gray-500 text-sm border-t border-[#3e4a52] pt-6">
-                    <p>Portal de Gamificação Educacional • Edição de Turma</p>
-                    <p className="mt-1">ID da Turma: {class_id}</p>
-                </footer>
+
+                {/* --- SEÇÃO 2: GERENCIAR ALUNOS --- */}
+                <div className="bg-[#343a40] p-6 md:p-8 rounded-2xl shadow-xl border border-[#3e4a52] mb-8">
+                    <h2 className="text-xl font-bold mb-4 flex items-center"><FaUsers className="mr-3 text-[#69e8cb]" /> Gerenciar Alunos ({students.length})</h2>
+                    <div className="mb-4 flex flex-col sm:flex-row gap-2">
+                        <input type="email" value={studentEmail} onChange={(e) => setStudentEmail(e.target.value)} placeholder="E-mail do aluno para adicionar" className="flex-grow px-4 py-3 bg-[#2c3135] border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30]" />
+                        <button onClick={handleAddStudent} className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center"><FaUserPlus className="mr-2" /> Adicionar Aluno</button>
+                    </div>
+                    <ul className="space-y-2 max-h-60 overflow-y-auto pr-2">
+                        {students.map(s => (
+                            <li key={s.id} className="flex justify-between items-center bg-[#2c3135] p-3 rounded-lg">
+                                <div>
+                                    <p className="font-medium">{s.name}</p>
+                                    <p className="text-sm text-gray-400">{s.email}</p>
+                                </div>
+                                <button onClick={() => handleRemoveStudent(s.id)} className="text-red-400 hover:text-red-600 p-2 rounded-full hover:bg-red-500/10"><FaTrash /></button>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+
+                {/* --- SEÇÃO 3: GERENCIAR ATIVIDADES --- */}
+                <div className="bg-[#343a40] p-6 md:p-8 rounded-2xl shadow-xl border border-[#3e4a52]">
+                    <h2 className="text-xl font-bold mb-4 flex items-center"><FaTasks className="mr-3 text-[#9570d9]" /> Gerenciar Atividades ({assignedActivities.length})</h2>
+                    <div className="mb-4 flex flex-col sm:flex-row gap-2">
+                        <select value={activityToAdd} onChange={(e) => setActivityToAdd(e.target.value)} className="flex-grow px-4 py-3 bg-[#2c3135] border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30]">
+                            <option value="" disabled>-- Selecione uma atividade para associar --</option>
+                            {availableActivities.map(a => (
+                                <option key={a.id} value={a.id}>{a.title}</option>
+                            ))}
+                        </select>
+                        <button onClick={handleAddActivity} className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center"><FaPlusCircle className="mr-2" /> Associar Atividade</button>
+                    </div>
+                    <ul className="space-y-2 max-h-60 overflow-y-auto pr-2">
+                        {assignedActivities.map(a => (
+                            <li key={a.id} className="flex justify-between items-center bg-[#2c3135] p-3 rounded-lg">
+                                <p className="font-medium">{a.title}</p>
+                                <button onClick={() => handleRemoveActivity(a.id)} className="text-red-400 hover:text-red-600 p-2 rounded-full hover:bg-red-500/10"><FaTrash /></button>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
             </div>
         </div>
     );
