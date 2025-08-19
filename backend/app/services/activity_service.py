@@ -271,6 +271,7 @@ def copy_activity(user, activity_id):
             class_id=None # A cópia não é atribuída a nenhuma turma
         )
 
+        db.session.add(original_activity)
         db.session.add(copied_activity)
         db.session.commit()
         

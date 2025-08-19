@@ -55,6 +55,7 @@ class Activity(db.Model):
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
     class_id = db.Column(db.Integer, db.ForeignKey('class.id'), nullable=True)
     copy_count = db.Column(db.Integer, nullable=False, default=0, server_default='0')
+    assignment_count = db.Column(db.Integer, nullable=False, default=0, server_default='0')
     professor = db.relationship('User', backref='activities', lazy=True)
     class_obj = db.relationship('Class', backref='assigned_activities', lazy=True)
 
@@ -82,7 +83,9 @@ class Activity(db.Model):
             'professor_email': self.professor.email,
             'class_id': self.class_id,
             'class_name': self.class_obj.name if self.class_obj else None,
-            'copy_count': self.copy_count
+            'copy_count': self.copy_count,
+            'assignment_count': self.assignment_count
+            
         }
 
 class Class(db.Model):
@@ -93,7 +96,7 @@ class Class(db.Model):
     description = db.Column(db.Text, nullable=True)
     professor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     enrollment_code = db.Column(db.String(50), unique=True, nullable=False)
-    
+    assignment_count = db.Column(db.Integer, nullable=False, default=0, server_default='0')
     professor = db.relationship('User', backref='created_classes', lazy=True)
 
     def to_dict(self):

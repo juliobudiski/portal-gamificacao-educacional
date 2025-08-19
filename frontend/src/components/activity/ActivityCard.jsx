@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 
 function ActivityCard({ activity, isOwner, onCopy, onDelete }) {
     const navigate = useNavigate();
+    const copyCount = activity.copy_count ?? 0;
+    const assignmentCount = activity.assignment_count ?? 0;
 
     return (
         <div className="bg-[#3a4046] p-5 rounded-xl shadow-lg border border-[#4a525a] flex flex-col justify-between h-full transform hover:-translate-y-1 transition-transform duration-300">
@@ -64,9 +66,15 @@ function ActivityCard({ activity, isOwner, onCopy, onDelete }) {
                     <FaEye className="text-gray-400 group-hover:text-blue-400" />
                 </button>
             </div>
-            <div className="flex items-center text-xs text-gray-400 mt-2">
-                <FaCopy className="mr-1" />
-                <span>Copiada {activity.copy_count} vezes</span>
+            <div className="flex items-center text-xs text-gray-400 mt-3 space-x-4">
+                <div className="flex items-center" title={`${copyCount} professores copiaram esta atividade`}>
+                    <FaCopy className="mr-1.5" />
+                    <span>Copiada {copyCount} vezes</span>
+                </div>
+                <div className="flex items-center" title={`Atribuída a ${assignmentCount} turmas`}>
+                    <FaChalkboardTeacher className="mr-1.5" />
+                    <span>Atribuída {assignmentCount} vezes</span>
+                </div>
             </div>
         </div>
     );

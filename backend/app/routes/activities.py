@@ -321,6 +321,9 @@ def assign_activity_to_class(activity_id):
             class_id=class_id # 2. Atribui a cópia à turma alvo
         )
 
+        original_activity.assignment_count += 1
+
+        db.session.add(original_activity)
         db.session.add(new_activity)
         db.session.commit()
         
