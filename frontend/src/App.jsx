@@ -33,7 +33,7 @@ import ActivityPage from './pages/ActivityPage';
 import ActivityEditPage from './pages/ActivityEditPage';
 // Importação dos ícones da biblioteca Lucide React para a UI
 import { Home, LogIn, UserPlus, Key, User, BookOpen, LayoutDashboard, PlusCircle, Users, BarChart2, Award, LogOut, Info, Settings, ShieldCheck } from 'lucide-react';
-
+import Footer from './components/Footer'; 
 /**
  * Componente App
  * Este é o componente raiz da aplicação. Ele é responsável por:
@@ -89,7 +89,7 @@ function App() {
   console.log("App.jsx: Renderizando componente principal.");
 
   return (
-    <div className="min-h-screen w-full bg-gray-100 dark:bg-[#2c3135] p-4 pt-4">
+    <div className="min-h-screen w-full bg-gray-100 dark:bg-[#2c3135] p-4 pt-4 flex flex-col">
       <ScrollToTop />
       {/* Cabeçalho aprimorado visualmente */}
       <header className="w-full max-w-6xl mx-auto bg-[#343a40] text-white p-4 rounded-xl shadow-2xl border-t-4 border-[#ffbd30] z-50">
@@ -371,7 +371,7 @@ function App() {
       </header>
 
       {/* Conteúdo principal mantendo estrutura */}
-      <main className="mt-5 w-full max-w-6xl mx-auto bg-white dark:bg-[#343a40] p-6 sm:p-8 rounded-xl shadow-xl mx-auto dark:text-gray-100 border-2 border-[#69e8cb]/30">
+      <main className="mt-5 w-full max-w-6xl mx-auto bg-white dark:bg-[#343a40] p-6 sm:p-8 rounded-xl shadow-xl mx-auto dark:text-gray-100 border-2 border-[#69e8cb]/30 flex-grow">
         <Routes>
           {/* Rotas Públicas */}
           <Route path="/" element={<HomePage />} />
@@ -422,6 +422,7 @@ function App() {
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
+      <Footer />
     </div>
   );
 }

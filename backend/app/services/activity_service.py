@@ -1,5 +1,5 @@
 from .. import db
-from ..models import Activity, ActivityRevision, Tag, EventLog
+from ..models import Activity, ActivityRevision, Tag, EventLog, ActivityProgress 
 from flask import jsonify
 import logging
 from flask_jwt_extended import jwt_required, current_user, get_jwt_identity
@@ -282,3 +282,41 @@ def copy_activity(user, activity_id):
         db.session.rollback()
         logger.error(f"Erro ao copiar atividade ID {activity_id} para usuário ID {user.id}: {str(e)}")
         return {"message": str(e)}, 500
+
+def bulk_delete_activities(user, activity_ids):
+    """
+    Deleta uma lista de atividades em massa, verificando a propriedade de cada uma.
+    """
+    if not isinstance(activity_ids, list) or not all(isinstance(i, int) for i in activity_ids):
+        return {"message": "Entrada inválida. Esperava-se uma lista de IDs numéricos."}, 400
+
+    # Busca todas as atividades que correspondem aos IDs fornecidos E que pertencem ao usuário logado.
+    # Esta é a verificação de segurança crucial.
+    activities_to_delete = Activity.query.filter(
+        Activity.id.in_(activity_ids),
+        Activity.professor_id == user.id
+    ).all()
+
+    if not activities_to_delete:
+        return {"message": "Nenhuma atividade válida para exclusão foi encontrada ou você não tem permissão."}, 404
+
+    deleted_count = len(activities_to_delete)
+    ids_to_delete = [act.id for act in activities_to_delete]
+
+    try:
+        # Passo 1: Deletar registros dependentes primeiro para evitar erros de chave estrangeira.
+        # Esta operação é mais eficiente do que deletar em um loop.
+        ActivityProgress.query.filter(ActivityProgress.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
+
+        # Passo 2: Deletar as atividades em si.
+        for activity in activities_to_delete:
+            db.session.delete(activity)
+
+        db.session.commit()
+        logger.info(f"Usuário ID {user.id} deletou {deleted_count} atividades em massa.")
+        return {"message": f"{deleted_count} atividades foram deletadas com sucesso!"}, 200
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Erro ao deletar atividades em massa para o usuário ID {user.id}: {str(e)}")
+        return {"message": "Erro interno ao deletar atividades."}, 500

@@ -2,16 +2,31 @@ import React from 'react';
 import { FaEdit, FaTrash, FaCopy, FaEye, FaChalkboardTeacher } from 'react-icons/fa'; // FaShareAlt foi removido
 import { useNavigate } from 'react-router-dom';
 
-function ActivityCard({ activity, isOwner, onCopy, onDelete }) {
+function ActivityCard({ activity, isOwner, onCopy, onDelete, onSelect, isSelected }) {
     const navigate = useNavigate();
     const copyCount = activity.copy_count ?? 0;
     const assignmentCount = activity.assignment_count ?? 0;
+    const handleCheckboxClick = (e) => {
+        e.stopPropagation();
+        onSelect(activity.id);
+    };
 
     return (
         <div className="bg-[#3a4046] p-5 rounded-xl shadow-lg border border-[#4a525a] flex flex-col justify-between h-full transform hover:-translate-y-1 transition-transform duration-300">
+            {isOwner && (
+                <div className="absolute top-3 right-3 z-10">
+                    <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={handleCheckboxClick}
+                        onClick={(e) => e.stopPropagation()} // Garante que o clique não propague
+                        className="h-5 w-5 rounded bg-gray-700 border-gray-500 text-accent-yellow focus:ring-accent-yellow cursor-pointer"
+                    />
+                </div>
+            )}
             <div>
                 <h3 className="text-lg font-bold text-white mb-2">{activity.title}</h3>
-                {/* --- INFORMAÇÃO DA TURMA ADICIONADA AQUI --- */}
+                
                 {activity.class_name && (
                     <div className="flex items-center text-xs text-yellow-300 bg-yellow-400/10 px-2 py-1 rounded-md mb-3">
                         <FaChalkboardTeacher className="mr-2" />

@@ -302,34 +302,55 @@ def assign_activity_to_class(activity_id):
         return jsonify({"message": "Turma não encontrada ou você não tem permissão sobre ela."}), 404
 
     try:
-        # --- INÍCIO DA CORREÇÃO ---
-        # 1. Cria uma cópia da atividade original
-        new_activity = Activity(
-            professor_id=user.id,
-            title=original_activity.title,
-            description=original_activity.description,
-            current_scenario=deepcopy(original_activity.current_scenario),
-            desired_scenario=deepcopy(original_activity.desired_scenario),
-            activity_planning=deepcopy(original_activity.activity_planning),
-            player_profile=deepcopy(original_activity.player_profile),
-            game_elements=deepcopy(original_activity.game_elements),
-            rewards_offered=deepcopy(original_activity.rewards_offered),
-            rewarded_actions=deepcopy(original_activity.rewarded_actions),
-            gamification_rules=deepcopy(original_activity.gamification_rules),
-            area_knowledge=original_activity.area_knowledge,
-            is_public=False,  # A cópia atribuída é privada para a turma
-            class_id=class_id # 2. Atribui a cópia à turma alvo
-        )
+        # CASO 1: A atividade é um "modelo mestre" e nunca foi atribuída.
+        if original_activity.class_id is None:
+            current_app.logger.info(f"Atividade ID {activity_id} é um modelo. Atribuindo diretamente à turma ID {class_id}.")
+            
+            # Apenas atualiza a atividade original com o ID da turma
+            original_activity.class_id = class_id
+            original_activity.assignment_count += 1 # Incrementa o contador
+            
+            db.session.add(original_activity)
+            db.session.commit()
+            
+            return jsonify({
+                "message": "Atividade atribuída à turma com sucesso!", 
+                "activity": original_activity.to_dict()
+            }), 200
 
-        original_activity.assignment_count += 1
+        # CASO 2: A atividade já está em uso. Cria uma cópia.
+        else:
+            current_app.logger.info(f"Atividade ID {activity_id} já está em uso. Criando uma cópia para a turma ID {class_id}.")
+            
+            # Cria uma cópia da atividade original
+            new_activity = Activity(
+                professor_id=user.id,
+                title=original_activity.title,
+                description=original_activity.description,
+                current_scenario=deepcopy(original_activity.current_scenario),
+                desired_scenario=deepcopy(original_activity.desired_scenario),
+                activity_planning=deepcopy(original_activity.activity_planning),
+                player_profile=deepcopy(original_activity.player_profile),
+                game_elements=deepcopy(original_activity.game_elements),
+                rewards_offered=deepcopy(original_activity.rewards_offered),
+                rewarded_actions=deepcopy(original_activity.rewarded_actions),
+                gamification_rules=deepcopy(original_activity.gamification_rules),
+                area_knowledge=original_activity.area_knowledge,
+                is_public=False,
+                class_id=class_id # Atribui a cópia à nova turma
+            )
 
-        db.session.add(original_activity)
-        db.session.add(new_activity)
-        db.session.commit()
-        
-        current_app.logger.info(f"Cópia da atividade '{new_activity.title}' (ID: {new_activity.id}) atribuída com sucesso à turma '{target_class.name}' (ID: {class_id}).")
-        return jsonify({"message": "Atividade atribuída à turma com sucesso!", "activity": new_activity.to_dict()}), 200
-        # --- FIM DA CORREÇÃO ---
+            # Incrementa o contador da atividade original
+            original_activity.assignment_count += 1
+
+            db.session.add(original_activity)
+            db.session.add(new_activity)
+            db.session.commit()
+            
+            return jsonify({
+                "message": "Atividade copiada e atribuída à turma com sucesso!", 
+                "activity": new_activity.to_dict()
+            }), 200
         
     except Exception as e:
         db.session.rollback()
@@ -448,3 +469,25 @@ def update_activity_quiz(activity_id):
         db.session.rollback()
         current_app.logger.error(f"Erro ao atualizar quiz para atividade ID {activity_id}: {str(e)}")
         return jsonify({"message": "Erro interno ao salvar o quiz."}), 500
+
+@activity_bp.route('/bulk-delete', methods=['DELETE'])
+@jwt_required()
+def bulk_delete_activities_route():
+    """
+    Rota para deletar múltiplas atividades de uma vez.
+    Espera um JSON no corpo da requisição com uma chave "activity_ids".
+    Ex: { "activity_ids": [1, 5, 12] }
+    """
+    if current_user.role != 'professor':
+        return jsonify({"message": "Acesso negado"}), 403
+    
+    data = request.get_json()
+    activity_ids = data.get('activity_ids')
+
+    if not activity_ids or not isinstance(activity_ids, list):
+        return jsonify({"message": "A lista de IDs de atividades ('activity_ids') é obrigatória."}), 400
+
+    # Chama a função do serviço para executar a lógica de negócio
+    result, status_code = activity_service.bulk_delete_activities(current_user, activity_ids)
+    
+    return jsonify(result), status_code

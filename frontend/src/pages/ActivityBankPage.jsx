@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, useCallback, useMemo } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import ActivityCard from '../components/activity/ActivityCard';
-import { FaUserEdit, FaGlobeAmericas, FaPlusCircle, FaSearch } from 'react-icons/fa';
+import { FaUserEdit, FaGlobeAmericas, FaPlusCircle, FaSearch, FaFilter, FaTrash } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
 function ActivityBankPage() {
@@ -11,10 +11,11 @@ function ActivityBankPage() {
     const [activeTab, setActiveTab] = useState('my');
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState('');
-    
+    const [selectedActivities, setSelectedActivities] = useState([]);
     // --- ESTADOS PARA A BUSCA ---
     const [searchTerm, setSearchTerm] = useState('');
     const [isSearching, setIsSearching] = useState(false);
+    const [assignmentFilter, setAssignmentFilter] = useState('all'); // Opções: 'all', 'assigned', 'unassigned'
 
     // --- FUNÇÃO PARA BUSCAR ATIVIDADES (AGORA REUTILIZÁVEL) ---
     const fetchActivities = useCallback(async (currentSearchTerm) => {
@@ -105,13 +106,76 @@ function ActivityBankPage() {
         }
     };
 
+    const handleSelectActivity = (activityId) => {
+        setSelectedActivities(prevSelected => {
+            if (prevSelected.includes(activityId)) {
+                return prevSelected.filter(id => id !== activityId); // Desmarcar
+            } else {
+                return [...prevSelected, activityId]; // Marcar
+            }
+        });
+    };
+
     // --- LÓGICA DE FILTRO (CLIENT-SIDE) ---
     const filteredMyActivities = useMemo(() => {
-        if (!searchTerm) return myActivities;
-        return myActivities.filter(activity => 
-            activity.title.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-    }, [myActivities, searchTerm]);
+        if (assignmentFilter === 'all') {
+            return myActivities;
+        }
+        if (assignmentFilter === 'assigned') {
+            // Mostra apenas atividades que têm um class_id (ou seja, estão em uso)
+            return myActivities.filter(activity => activity.class_id !== null);
+        }
+        if (assignmentFilter === 'unassigned') {
+            // Mostra apenas atividades que NÃO têm um class_id (ou seja, são "modelos")
+            return myActivities.filter(activity => activity.class_id === null);
+        }
+        return myActivities;
+    }, [myActivities, assignmentFilter]);
+
+    const handleSelectAll = () => {
+        // Seleciona ou deseleciona todos os IDs das atividades *visíveis*
+        const visibleIds = filteredMyActivities.map(a => a.id);
+        if (selectedActivities.length === visibleIds.length) {
+            setSelectedActivities([]); // Desmarcar todos
+        } else {
+            setSelectedActivities(visibleIds); // Marcar todos
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        const count = selectedActivities.length;
+        if (count === 0) return;
+
+        if (!window.confirm(`Tem certeza que deseja deletar ${count} atividades? Esta ação é irreversível.`)) return;
+        
+        setMessage('Deletando atividades selecionadas...');
+        try {
+            const response = await fetch(`http://127.0.0.1:5000/api/activities/bulk-delete`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${user.token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ activity_ids: selectedActivities })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                setMessage(data.message);
+                // Remove as atividades deletadas do estado local
+                setMyActivities(prev => prev.filter(act => !selectedActivities.includes(act.id)));
+                setSelectedActivities([]); // Limpa a seleção
+            } else {
+                throw new Error(data.message);
+            }
+        } catch (error) {
+            setMessage(`Erro ao deletar: ${error.message}`);
+        }
+    };
+
+    const isAllSelected = useMemo(() => {
+        const visibleIds = filteredMyActivities.map(a => a.id);
+        return visibleIds.length > 0 && visibleIds.every(id => selectedActivities.includes(id));
+    }, [selectedActivities, filteredMyActivities]);
 
 
     return (
@@ -152,24 +216,71 @@ function ActivityBankPage() {
                     </button>
                 </div>
 
-                {/* Mensagem de Feedback */}
                 {message && <div className="bg-gray-700 p-3 rounded-lg mb-4 text-center">{message}</div>}
 
-                {/* Conteúdo das Abas */}
                 {loading ? (
                     <p className="text-center py-10">Carregando atividades...</p>
                 ) : (
                     <div>
                         {activeTab === 'my' && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {myActivities.length > 0 ? (
-                                    myActivities.map(activity => (
-                                        <ActivityCard key={activity.id} activity={activity} isOwner={true} onDelete={handleDeleteActivity} />
-                                    ))
-                                ) : (
-                                    <p className="col-span-full text-center py-10 text-gray-400">Você ainda não criou nenhuma atividade.</p>
+                            <>
+                                {/* ===== 3. BOTÕES DE FILTRO ADICIONADOS AQUI ===== */}
+                                <div className="flex flex-wrap justify-center items-center gap-4 mb-8 bg-[#3a4046] p-3 rounded-xl">
+                                    <span className="font-semibold text-gray-300 mr-2 flex items-center"><FaFilter className="mr-2"/>Filtrar por:</span>
+                                    <button onClick={() => setAssignmentFilter('all')} className={`py-2 px-4 rounded-lg text-sm font-bold transition-all ${assignmentFilter === 'all' ? 'bg-accent-yellow text-gray-900 shadow-lg' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'}`}>
+                                        Todas
+                                    </button>
+                                    <button onClick={() => setAssignmentFilter('assigned')} className={`py-2 px-4 rounded-lg text-sm font-bold transition-all ${assignmentFilter === 'assigned' ? 'bg-accent-yellow text-gray-900 shadow-lg' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'}`}>
+                                        Atribuídas
+                                    </button>
+                                    <button onClick={() => setAssignmentFilter('unassigned')} className={`py-2 px-4 rounded-lg text-sm font-bold transition-all ${assignmentFilter === 'unassigned' ? 'bg-accent-yellow text-gray-900 shadow-lg' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'}`}>
+                                        Não Atribuídas (Modelos)
+                                    </button>
+                                    {/* ===== 4. CHECKBOX "SELECIONAR TODOS" E BARRA DE AÇÕES ===== */}
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                id="selectAll"
+                                                checked={isAllSelected}
+                                                onChange={handleSelectAll}
+                                                className="h-5 w-5 rounded bg-gray-700 border-gray-500 text-accent-yellow focus:ring-accent-yellow cursor-pointer"
+                                            />
+                                            <label htmlFor="selectAll" className="ml-2 text-sm font-medium text-gray-300">Selecionar Todos</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                
+                                {/* BARRA DE AÇÕES FLUTUANTE */}
+                                {selectedActivities.length > 0 && (
+                                    <div className="sticky top-4 z-20 bg-blue-900/80 backdrop-blur-sm border border-blue-500 text-white rounded-xl shadow-lg p-4 mb-6 flex justify-between items-center animate-fadeIn">
+                                        <span className="font-bold">{selectedActivities.length} atividade(s) selecionada(s)</span>
+                                        <button onClick={handleBulkDelete} className="flex items-center gap-2 py-2 px-4 bg-red-600 hover:bg-red-700 rounded-lg font-bold transition-transform transform hover:scale-105">
+                                            <FaTrash />
+                                            Apagar Selecionadas
+                                        </button>
+                                    </div>
                                 )}
-                            </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {filteredMyActivities.length > 0 ? (
+                                        filteredMyActivities.map(activity => (
+                                            <ActivityCard 
+                                                key={activity.id} 
+                                                activity={activity} 
+                                                isOwner={true} 
+                                                onDelete={handleDeleteActivity}
+                                                // ===== 5. PASSANDO PROPS DE SELEÇÃO =====
+                                                isSelected={selectedActivities.includes(activity.id)}
+                                                onSelect={handleSelectActivity}
+                                            />
+                                        ))
+                                    ) : (
+                                        <p className="col-span-full text-center py-10 text-gray-400">Nenhuma atividade encontrada.</p>
+                                    )}
+                                </div>
+                            </>
                         )}
                         {activeTab === 'public' && (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
