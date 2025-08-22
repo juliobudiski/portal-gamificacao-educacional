@@ -1,0 +1,143 @@
+/* frontend/src/styles/roulette.css */
+
+/* Container que força aspecto 1:1 sem depender de utilitários Tailwind */
+.roulette-container {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  margin: 1rem auto;
+  padding-top: 100%; /* cria espaço quadrado */
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Inner que ocupará todo o quadrado */
+.roulette-inner {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+}
+
+/* Força canvas / svg / elementos internos do pacote a ocupar todo o espaço */
+.roulette-inner canvas,
+.roulette-inner svg,
+.roulette-inner .roulette-canvas,
+.roulette-inner .react-roulette-pro-canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+}
+
+/* Evita transformações indesejadas vindas de CSS global */
+.roulette-inner * {
+  max-width: none !important;
+  max-height: none !important;
+}
+
+/* Feedbacks */
+.feedback {
+  width: 100%;
+  max-width: 540px;
+  margin-bottom: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.75rem;
+  font-size: 0.9rem;
+}
+.feedback.error {
+  background: rgba(239, 68, 68, 0.08);
+  color: #fca5a5;
+  border: 1px solid rgba(239,68,68,0.25);
+}
+.feedback.success {
+  background: rgba(16, 185, 129, 0.06);
+  color: #bbf7d0;
+  border: 1px solid rgba(16,185,129,0.16);
+}
+
+/* Pequeno estilo do ícone */
+.gradient-dice {
+  background: linear-gradient(90deg, #ffbd30, #69e8cb, #9570d9);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ====== OVERRIDE FOR DEBUGGING: force full-size circular wheel ====== */
+
+/* garante que o wrapper do pacote ocupe todo o espaço do container quadrado */
+.roulette-container { position: relative !important; padding-top: 100% !important; max-width: 480px !important; }
+.roulette-pro-wrapper.roulette-inner,
+.roulette-inner,
+.roulette-pro-wrapper {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  transform: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+/* força o elemento que representa a roda a ser um círculo e ocupar o espaço */
+.roulette-pro-wrapper .wheel,
+.roulette-pro-wrapper .roulette-wheel,
+.roulette-pro-wrapper .roulette,
+.roulette-pro-wrapper .react-roulette-pro,
+.roulette-pro-wrapper .roulette-canvas,
+.roulette-pro-wrapper canvas,
+.roulette-pro-wrapper svg {
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  max-width: none !important;
+  max-height: none !important;
+  transform: none !important;
+  border-radius: 50% !important;
+  box-sizing: border-box !important;
+}
+
+/* se o pacote usar uma lista de prêmios horizontal (strip), forçamos posicionamento absoluto */
+.roulette-pro-wrapper .prizes,
+.roulette-pro-wrapper .prize-items,
+.roulette-pro-wrapper .items {
+  display: block !important;
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  transform: none !important;
+}
+
+/* neutraliza transform/scale em descendentes */
+.roulette-pro-wrapper * {
+  transform: none !important;
+  -webkit-transform: none !important;
+  display: block !important;
+}
+
+/* prioridade extra para canvas/svg internos do componente */
+.roulette-pro-wrapper canvas,
+.roulette-pro-wrapper svg {
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  transform: none !important;
+}
+
+/* Mantém ícones pequenos apenas onde explicitamente setado (evita colidir com <svg> de ícones) */
+.roulette-pro-wrapper .mb-1,
+.roulette-pro-wrapper .icon-small {
+  width: auto !important;
+  height: auto !important;
+  display: inline-block !important;
+}
+
+/* fim do bloco de override */

@@ -301,7 +301,7 @@ function ActivityPage() {
         {currentView === 'chat' && <ChatTab />}
         {currentView === 'store' && <StoreTab items={storeItems} userPoints={userProgress?.points_earned || 0} onPurchase={handlePurchase} />}
         {currentView === 'achievements' && <AchievementsTab />}
-        {currentView === 'roulette' && <RouletteTab />}
+        {currentView === 'roulette' && <RouletteTab onPrizeWon={handlePointsEarned} />}
       </div>
     );
   };

@@ -38,7 +38,7 @@ const StudentSidebar = ({ progress, onShowStats }) => {
   // Log de dados de progresso
   if (isDebugMode) {
     console.log('[StudentSidebar] Dados de progresso:', {
-      points: progress.points,
+      points: progress.points_earned,
       level: progress.level,
       xp: progress.xp,
       xpForNextLevel: progress.xpForNextLevel,
@@ -53,7 +53,7 @@ const StudentSidebar = ({ progress, onShowStats }) => {
         <h4 className="text-lg font-bold text-yellow-400 flex items-center">
           <FaGem className="mr-2" /> Pontuação
         </h4>
-        <p className="text-4xl font-bold text-white">{progress.points} Pontos</p>
+        <p className="text-4xl font-bold text-white">{progress.points_earned} Pontos</p>
       </div>
 
       {/* Seção de Nível e Progresso */}
@@ -98,7 +98,7 @@ const StudentSidebar = ({ progress, onShowStats }) => {
 // Validação de props
 StudentSidebar.propTypes = {
   progress: PropTypes.shape({
-    points: PropTypes.number.isRequired,
+    points_earned: PropTypes.number.isRequired,
     level: PropTypes.number.isRequired,
     xp: PropTypes.number.isRequired,
     xpForNextLevel: PropTypes.number.isRequired

@@ -1,11 +1,12 @@
 # backend/app/routes/progress.py
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from ..models import db, User, ActivityProgress, Activity, StudentResponse, EventLog
+from ..models import db, User, ActivityProgress, Activity, StudentResponse, EventLog, RouletteWin
 from sqlalchemy.orm import joinedload
 from flask_cors import cross_origin 
 progress_bp = Blueprint('progress', __name__)
-
+from datetime import datetime, timedelta # Adicione timedelta
+import random # Adicione random
 
 def xp_for_next_level(level):
     """Calcula o XP necessário para o próximo nível com base no nível atual."""
@@ -17,6 +18,9 @@ def calculate_level(total_points):
     level = 1
     xp_required_for_current_level = 0
     xp_needed = xp_for_next_level(level)
+
+    if total_points is None:
+        total_points = 0
 
     while total_points >= xp_needed:
         total_points -= xp_needed
@@ -164,7 +168,7 @@ def get_analytics(activity_id):
             EventLog.event_data['activity_id'].astext == str(activity_id)
         ).count()
         
-        total_score_sum += progress.points_earned
+        total_score_sum += progress.points_earned or 0
 
         students_analytics.append({
             "id": student_user.id,
@@ -266,4 +270,89 @@ def update_activity_progress(activity_id):
         db.session.rollback()
         # current_app.logger.error(f"Erro ao atualizar progresso para user {current_user_id} na atividade {activity_id}: {str(e)}")
         return jsonify({"message": "Erro interno ao salvar o progresso."}), 500
-    # --- FIM DA CORREÇÃO ---
+
+# --- ROTA DA ROLETA (VERSÃO CORRIGIDA) ---
+@progress_bp.route('/<int:activity_id>/spin', methods=['POST'])
+@jwt_required()
+def spin_roulette_for_activity(activity_id):
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if user.role != 'aluno':
+        return jsonify({"message": "Apenas alunos podem girar a roleta."}), 403
+
+    progress = ActivityProgress.query.filter_by(student_id=user.id, activity_id=activity_id).first()
+
+    if not progress:
+        activity = Activity.query.get(activity_id)
+        if not activity:
+            return jsonify({"message": "Atividade não encontrada."}), 404
+        progress = ActivityProgress(student_id=user.id, activity_id=activity_id, class_id=activity.class_id)
+        db.session.add(progress)
+
+    #if progress.last_spin_date:
+    #    if datetime.utcnow() < progress.last_spin_date + timedelta(days=1):
+    #        return jsonify({"message": "Você já girou a roleta hoje para esta atividade. Volte amanhã!"}), 403
+
+    prizes = [
+        {"type": "xp", "value": 50, "label": "50 XP"},
+        {"type": "xp", "value": 100, "label": "100 XP"},
+        {"type": "xp", "value": 200, "label": "200 XP"},
+        {"type": "title", "value": "Sortudo", "label": "Título: Sortudo"},
+        {"type": "avatar", "value": "/avatars/avatar_special.png", "label": "Avatar Raro!"},
+    ]
+    prize = random.choice(prizes)
+
+    if prize['type'] == 'xp':
+        # --- INÍCIO DA CORREÇÃO ---
+        # Garante que, se os pontos forem None, usamos 0 como base
+        current_points = progress.points_earned or 0
+        progress.points_earned = current_points + prize['value']
+        # --- FIM DA CORREÇÃO ---
+
+    progress.last_spin_date = datetime.utcnow()
+    
+    # --- NOVO: Salvar o registro do prêmio ---
+    new_win = RouletteWin(
+        user_id=user.id,
+        activity_id=activity_id,
+        prize_label=prize['label']
+    )
+    db.session.add(new_win)
+    # ------------------------------------
+
+    db.session.commit()
+
+    return jsonify({
+        "message": f"Você ganhou {prize['label']}!", 
+        "prize": prize,
+        "new_total_points": progress.points_earned
+    }), 200
+
+# --- NOVA ROTA PARA BUSCAR OS VENCEDORES ---
+@progress_bp.route('/<int:activity_id>/roulette-winners', methods=['GET'])
+@jwt_required()
+@cross_origin()
+def get_roulette_winners(activity_id):
+    """Retorna os últimos 5 vencedores da roleta para uma atividade específica."""
+    
+    winners = db.session.query(
+        User.name,
+        RouletteWin.prize_label
+    ).join(
+        User, User.id == RouletteWin.user_id
+    ).filter(
+        RouletteWin.activity_id == activity_id
+    ).order_by(
+        RouletteWin.timestamp.desc()
+    ).limit(5).all()
+
+    # Formata os dados para o frontend
+    winners_data = [
+        {
+            "userName": row.name,
+            "prize": row.prize_label
+        }
+        for row in winners
+    ]
+    
+    return jsonify(winners_data), 200

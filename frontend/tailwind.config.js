@@ -4,6 +4,7 @@ export default {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
+    "./node_modules/react-roulette-pro/dist/index.css",
   ],
   theme: {
     extend: {

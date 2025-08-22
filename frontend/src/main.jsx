@@ -5,7 +5,7 @@ import { BrowserRouter as Router } from 'react-router-dom'; // Importe BrowserRo
 import './index.css'; // Mantenha a importação do seu CSS principal
 import App from './App.jsx'; // Importe seu componente App
 import { AuthProvider } from './context/AuthContext.jsx'; // Importe o AuthProvider
-
+import 'react-roulette-pro/dist/index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

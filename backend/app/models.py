@@ -129,7 +129,7 @@ class ActivityProgress(db.Model):
     status = db.Column(db.String(50), default='not_started')
     completed_at = db.Column(db.DateTime, nullable=True)
     attempts = db.Column(db.Integer, default=0)
-    
+    last_spin_date = db.Column(db.DateTime, nullable=True)
     student = db.relationship('User', backref='activity_progresses', lazy=True)
     activity = db.relationship('Activity', backref='progresses', lazy=True)
     class_obj = db.relationship('Class', backref='activity_progresses', lazy=True)
@@ -197,3 +197,17 @@ class ManualFeedback(db.Model):
     
     response = db.relationship('StudentResponse', backref='feedbacks')
     given_by = db.relationship('User')
+
+
+class RouletteWin(db.Model):
+    __tablename__ = 'roulette_win'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=False)
+    prize_label = db.Column(db.String(255), nullable=False)
+    timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    # Relações para facilitar as consultas
+    user = db.relationship('User', backref='roulette_wins')
+    activity = db.relationship('Activity', backref='roulette_wins')
