@@ -1,10 +1,9 @@
-// src/components/activity/RouletteTab.jsx
 import React, { useState, useEffect, useCallback } from "react";
-import { Roulette } from 'react-roulette-pro';
+import CustomWheel from './CustomWheel'; // <-- Importando nosso novo componente
 import { FaDice, FaTrophy, FaGift, FaSyncAlt, FaExclamationTriangle, FaCheckCircle, FaSpinner } from "react-icons/fa";
 import { useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-
+import backgroundImage from '../../assets/roulette-wallpaper.png';
 const style = `
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
@@ -28,35 +27,25 @@ const RouletteTab = ({ onPrizeWon }) => {
   const { user } = useAuth();
   const { activityId } = useParams();
 
-  // Estados da roleta
-  const [mustSpin, setMustSpin] = useState(false);
-  const [prizeNumber, setPrizeNumber] = useState(0);
-
-  // Estados de UI
+  const [isSpinning, setIsSpinning] = useState(false);
+  const [winningPrizeIndex, setWinningPrizeIndex] = useState(null); // Índice do prêmio
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-
-  // --- NOVO: Estados para a lista de vencedores ---
   const [winners, setWinners] = useState([]);
   const [loadingWinners, setLoadingWinners] = useState(true);
 
-  const wheelData = basePrizes.map((p) => ({ option: p.text }));
+  // Os segmentos agora são apenas um array de strings
+  const segments = basePrizes.map((p) => p.text);
 
-  // --- NOVO: Função para buscar os vencedores ---
   const fetchWinners = useCallback(async () => {
     setLoadingWinners(true);
     try {
       const response = await fetch(
         `http://127.0.0.1:5000/api/progress/${activityId}/roulette-winners`,
-        {
-          headers: { Authorization: `Bearer ${user.token}` },
-        }
+        { headers: { Authorization: `Bearer ${user.token}` } }
       );
-      const data = await response.json();
-      if (response.ok) {
-        setWinners(data);
-      }
+      if (response.ok) setWinners(await response.json());
     } catch (err) {
       console.error("Erro ao buscar vencedores:", err);
     } finally {
@@ -64,42 +53,32 @@ const RouletteTab = ({ onPrizeWon }) => {
     }
   }, [activityId, user.token]);
 
-  // --- NOVO: Efeito para buscar os vencedores na montagem do componente ---
   useEffect(() => {
     fetchWinners();
   }, [fetchWinners]);
 
-
   const handleSpinClick = async () => {
-    if (mustSpin || loading) return;
+    if (isSpinning || loading) return;
     setMessage("");
     setError("");
     setLoading(true);
+    setWinningPrizeIndex(null);
 
     try {
       const response = await fetch(
         `http://127.0.0.1:5000/api/progress/${activityId}/spin`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${user.token}` },
-        }
+        { method: "POST", headers: { Authorization: `Bearer ${user.token}` } }
       );
       const result = await response.json();
-
-      console.log("Resposta do servidor (spin):", result);
 
       if (response.ok) {
         const normalizeText = (text) => text.replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
         const prizeText = normalizeText(result.prize.label);
-        
-        const prizeIndex = basePrizes.findIndex(
-          (p) => normalizeText(p.text) === prizeText
-        );
+        const prizeIndex = basePrizes.findIndex(p => normalizeText(p.text) === prizeText);
 
         if (prizeIndex !== -1) {
-          setPrizeNumber(prizeIndex);
-          setMustSpin(true);
-          
+          setIsSpinning(true);
+          setWinningPrizeIndex(prizeIndex); // Apenas definimos o índice do prêmio
         } else {
           setError("Prêmio inesperado recebido do servidor.");
         }
@@ -107,32 +86,38 @@ const RouletteTab = ({ onPrizeWon }) => {
         setError(result.message || "Não foi possível girar a roleta.");
       }
     } catch (err) {
-      console.error("Erro no fetch da roleta:", err);
       setError("Erro de conexão ao tentar girar a roleta.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleStop = () => {
-    setMustSpin(false);
-    const won = basePrizes[prizeNumber];
-    const msg = `Parabéns! Você ganhou: ${won?.text ?? "um prêmio"}`;
+  const handleStop = (winnerText) => {
+    setIsSpinning(false);
+    setWinningPrizeIndex(null); // Reseta para permitir novo giro
+    
+    const won = basePrizes.find(p => p.text === winnerText);
+    const msg = `Parabéns! Você ganhou: ${winnerText}`;
     setMessage(msg);
-    console.log("Prêmio definido pelo Wheel (onStop):", won);
     
     if (won && won.type === "xp") {
-        onPrizeWon && onPrizeWon(won.value);
+      onPrizeWon?.(won.value);
     }
-
-    // --- NOVO: Atualiza a lista de vencedores após o giro ---
     fetchWinners();
   };
 
-return (
-    <div className="bg-gray-800 p-6 rounded-2xl shadow-2xl text-white flex flex-col items-center relative overflow-hidden">
+  return (
+    // 2. ADICIONE O ESTILO DE FUNDO AO DIV PRINCIPAL
+    <div 
+      className="bg-gray-800 p-6 rounded-2xl shadow-2xl text-white flex flex-col items-center relative overflow-hidden"
+      style={{
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
       <style>{style}</style>
-      
       <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#ffbd30] opacity-10 rounded-full blur-xl"></div>
       <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-[#69e8cb] opacity-10 rounded-full blur-xl"></div>
       
@@ -141,9 +126,7 @@ return (
           <div className="absolute inset-0 bg-gradient-to-br from-[#ffbd30] to-[#ff8c30] rounded-full blur-md opacity-70"></div>
           <FaDice className="text-4xl text-[#ffbd30] relative z-10" />
         </div>
-        <h2 className="text-3xl font-bold text-yellow-400">
-          Roleta da Sorte
-        </h2>
+        <h2 className="text-3xl font-bold text-yellow-400">Roleta da Sorte</h2>
       </div>
       
       <p className="text-sm text-gray-400 mb-6 text-center max-w-md relative z-10">
@@ -164,50 +147,27 @@ return (
         </div>
       )}
 
-      {/* --- Container Principal com Layout Flexível --- */}
       <div className="flex flex-col items-center justify-center w-full max-w-6xl">
-
-        {/* Seção da Roleta */}
         <div className="w-full max-w-[480px] aspect-square mb-6 relative z-10">
           <div className="w-full h-full flex items-center justify-center relative">
             <div className="absolute -inset-4 bg-gradient-to-br from-[#ffbd30]/10 via-[#69e8cb]/5 to-[#9570d9]/10 rounded-full blur-lg"></div>
-            
-            <Wheel
-                mustStartSpinning={mustSpin}
-                prizeNumber={prizeNumber}
-                data={wheelData}
-                backgroundColors={["#374151", "#4B5563", "#374151", "#4B5563", "#374151", "#4B5563"]}
-                textColors={["#ffffff"]}
-                outerBorderWidth={8}
-                outerBorderColor={"#111827"}
-                innerBorderWidth={8}
-                innerBorderColor={"rgba(255,189,48,0.15)"}
-                radiusLineColor={"rgba(255,189,48,0.1)"}
-                radiusLineWidth={2}
-                textDistance={60}
-                spinDuration={0.5}
-                onStopSpinning={handleStop}
-                fontSize={14}
-                fontWeight={700}
-                perpendicularText={false}
+            {/* Usando nosso componente CustomWheel */}
+            <CustomWheel
+              segments={segments}
+              winningSegmentIndex={winningPrizeIndex}
+              onFinished={handleStop}
             />
-            
-            <div className="absolute w-12 h-12 rounded-full bg-gradient-to-br from-[#ffbd30] to-[#ff8c30] shadow-lg border-2 border-amber-200 z-20 flex items-center justify-center">
-                <div className="w-2 h-2 bg-amber-100 rounded-full"></div>
-            </div>
-            
-            
           </div>
         </div>
 
         <button
             onClick={handleSpinClick}
-            disabled={loading || mustSpin}
+            disabled={loading || isSpinning}
             className="mt-2 py-3 px-8 rounded-xl text-lg font-semibold text-gray-900 bg-gradient-to-r from-[#ffbd30] to-[#69e8cb] hover:from-[#ffc540] hover:to-[#79f8db] transition-all duration-300 ease-out disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden group shadow-lg hover:shadow-xl"
         >
             <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
             <div className="flex items-center justify-center gap-2 relative z-10">
-            {loading || mustSpin ? (
+            {loading || isSpinning ? (
                 <><FaSyncAlt className="animate-spin" /><span>{loading ? "Processando..." : "Girando..."}</span></>
             ) : (
                 <><FaDice /><span>Girar a Roleta!</span></>
@@ -215,11 +175,8 @@ return (
             </div>
         </button>
         
-        {/* Seção dos Vencedores (Agora abaixo da roleta) */}
         <div className="w-full max-w-lg mt-12 bg-gray-900/50 p-4 rounded-2xl border border-gray-700 flex flex-col">
-          <h3 className="text-xl font-bold text-center mb-4 text-[#69e8cb]">
-            Últimos Ganhadores
-          </h3>
+          <h3 className="text-xl font-bold text-center mb-4 text-[#69e8cb]">Últimos Ganhadores</h3>
           {loadingWinners ? (
             <div className="flex-grow flex items-center justify-center py-8">
                 <FaSpinner className="animate-spin text-2xl text-gray-400" />

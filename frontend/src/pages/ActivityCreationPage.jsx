@@ -2,6 +2,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext'; // Importar o hook useAuth para acessar o contexto de autenticação
+import { 
+  FaLayerGroup, FaChartBar, FaGem, FaCoins, FaDice, FaClock, FaIdBadge, FaHandshake, FaVrCardboard, FaPuzzlePiece, FaSyncAlt, FaBook, FaUserEdit, FaShieldAlt, FaShareAlt, FaCheckCircle, FaChartLine, FaListOl, FaGift, FaBookOpen, FaAward, FaChalkboardTeacher, FaLaptop, FaUser, FaClipboardCheck, FaFileSignature, FaCodeBranch, FaCloud, FaTrophy, FaGamepad, FaBullseye, FaBrain, FaLightbulb, FaGraduationCap, FaStar, FaProjectDiagram, FaCode, FaTools, FaUsers, FaFrown, FaTasks, FaHeadSideVirus, FaRocket, FaComments, FaBalanceScale, FaHeartbeat, FaCogs, FaBriefcase, FaCalendarTimes, 
+  FaPlusCircle, FaHourglassHalf, FaMicrophoneAlt, FaKey, FaCertificate, FaUserTie, FaFilm, FaDoorOpen, FaPlane, FaBullhorn, FaHandsHelping, FaMoneyBillWave, 
+  FaCalendarCheck, FaPaintBrush, FaQuestionCircle, FaBell, FaBookReader, FaBoxOpen,
+  FaGavel, FaUserShield, FaMobileAlt, FaUniversity
+} from 'react-icons/fa';
+
+
+
 
 /**
  * Componente ActivityCreationPage
@@ -414,241 +423,919 @@ function ActivityCreationPage({ existingActivity }) {
     switch (currentStep) {
       // ETAPA 1: CENÁRIO ATUAL
       case 1:
-        return (
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Cenário Atual</h3>
-            {/* Campos para Título e Descrição da Atividade como um todo */}
-            <div className="mb-4">
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                Título da Atividade: <span className="text-red-500">*</span>
-              </label>
-              <input type="text" id="title" name="title" value={activityData.title} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Ex: Gamificação em Engenharia de Software" required />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                Descrição da Atividade:
-              </label>
-              <textarea id="description" name="description" value={activityData.description} onChange={handleInputChange} rows="3" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Descreva brevemente sua atividade gamificada."></textarea>
-            </div>
-            <p className="text-gray-700 dark:text-gray-200 text-sm mb-4">Nesta seção, identifique os problemas dos alunos e escolha as sugestões adequadas ao cenário. Leia atentamente e selecione as melhores opções para entender e solucionar a situação de forma efetiva.</p>
-            {/* Problemas dos Alunos */}
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Selecione os problemas dos alunos:</label>
-            {[
-              "Dificuldades na compreensão de conceitos complexos de programação.", "Dificuldades em aplicar as teorias aprendidas na prática.", "Dificuldades em trabalhar em equipe e colaborar com colegas.", "Falta de motivação e interesse no assunto.", "Dificuldades em gerenciar o tempo e priorizar tarefas.", "Dificuldades em lidar com a pressão e o estresse da grade de estudos intensa.", "Dificuldades em aprender novas ferramentas e tecnologias rapidamente.", "Falta de habilidades de comunicação e apresentação.", "Dificuldades em equilibrar o estudo com outras responsabilidades e obrigações.", "Dificuldades em gerenciar a ansiedade e a sobrecarga de trabalho.", "Dificuldades em lidar com ferramentas de desenvolvimento complexas.", "Dificuldades em encontrar oportunidades de estágio ou experiência profissional.", "Dificuldades em trabalhar com prazos apertados em projetos acadêmicos.",
-            ].map(problem => (
-              <div key={problem} className="flex items-center">
-                <input type="checkbox" id={`problem-${problem}`} name="currentScenario.problems" value={problem} checked={activityData.currentScenario.problems.includes(problem)} onChange={handleInputChange} className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
-                <label htmlFor={`problem-${problem}`} className="ml-2 text-sm text-gray-700 dark:text-gray-300">{problem}</label>
-              </div>
-            ))}
-            <div className="mt-2">
-              <label htmlFor="currentScenario.otherProblem" className="block text-sm font-medium text-gray-700 dark:text-gray-200">Outra:</label>
-              <input type="text" id="currentScenario.otherProblem" name="currentScenario.otherProblem" value={activityData.currentScenario.otherProblem} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Descreva outro problema" />
-            </div>
-            <button onClick={() => openHelpModal("Ajuda - Cenário Atual", `Avalie as habilidades e competências requeridas...`)} className="mt-4 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Ajuda - Cenário Atual</button>
+      // Array de objetos para facilitar a renderização dos cards com seus ícones correspondentes
+      const studentProblems = [
+        { text: "Dificuldades na compreensão de conceitos complexos de programação.", icon: <FaCode /> },
+        { text: "Dificuldades em aplicar as teorias aprendidas na prática.", icon: <FaTools /> },
+        { text: "Dificuldades em trabalhar em equipe e colaborar com colegas.", icon: <FaUsers /> },
+        { text: "Falta de motivação e interesse no assunto.", icon: <FaFrown /> },
+        { text: "Dificuldades em gerenciar o tempo e priorizar tarefas.", icon: <FaTasks /> },
+        { text: "Dificuldades em lidar com a pressão e o estresse da grade de estudos intensa.", icon: <FaHeadSideVirus /> },
+        { text: "Dificuldades em aprender novas ferramentas e tecnologias rapidamente.", icon: <FaRocket /> },
+        { text: "Falta de habilidades de comunicação e apresentação.", icon: <FaComments /> },
+        { text: "Dificuldades em equilibrar o estudo com outras responsabilidades e obrigações.", icon: <FaBalanceScale /> },
+        { text: "Dificuldades em gerenciar a ansiedade e a sobrecarga de trabalho.", icon: <FaHeartbeat /> },
+        { text: "Dificuldades em lidar com ferramentas de desenvolvimento complexas.", icon: <FaCogs /> },
+        { text: "Dificuldades em encontrar oportunidades de estágio ou experiência profissional.", icon: <FaBriefcase /> },
+        { text: "Dificuldades em trabalhar com prazos apertados em projetos acadêmicos.", icon: <FaCalendarTimes /> },
+      ];
+
+      /**
+       * Função para manipular a seleção de problemas.
+       * Você pode adaptar esta lógica para o seu handler `handleInputChange` existente.
+       * A ideia é adicionar o problema ao array se ele não existir, ou removê-lo se já existir.
+       */
+      const handleProblemSelection = (problemText) => {
+        const currentProblems = activityData.currentScenario.problems;
+        const newProblems = currentProblems.includes(problemText)
+          ? currentProblems.filter(p => p !== problemText)
+          : [...currentProblems, problemText];
+        
+        // Simula o evento de mudança para o seu handler genérico
+        handleInputChange({
+          target: {
+            name: 'currentScenario.problems',
+            value: newProblems,
+          },
+        });
+      };
+
+      return (
+        <div className="space-y-8 animate-fade-in">
+          {/* SEÇÃO 1: Título e Descrição da Atividade */}
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+              Definindo o Cenário da Atividade
+            </h2>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">
+              Para começar, dê um nome e descreva o propósito geral da sua atividade gamificada.
+            </p>
           </div>
-        );
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div>
+              <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Título da Atividade <span className="text-red-500">*</span>
+              </label>
+              <input 
+                type="text" 
+                id="title" 
+                name="title" 
+                value={activityData.title} 
+                onChange={handleInputChange} 
+                className="mt-1 block w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                placeholder="Ex: A Jornada do Herói em Java" 
+                required 
+              />
+            </div>
+            <div>
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Descrição da Atividade
+              </label>
+              <textarea 
+                id="description" 
+                name="description" 
+                value={activityData.description} 
+                onChange={handleInputChange} 
+                rows="1"
+                className="mt-1 block w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm" 
+                placeholder="Um resumo sobre o que é a atividade."
+              ></textarea>
+            </div>
+          </div>
+
+          {/* SEÇÃO 2: Seleção de Problemas com Cards */}
+          <div className="pt-4">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+              Quais desafios seus alunos enfrentam?
+            </h3>
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+              Selecione os principais problemas que você observa. Isso ajudará a personalizar a gamificação.
+            </p>
+            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {studentProblems.map((problem) => {
+                const isSelected = activityData.currentScenario.problems.includes(problem.text);
+                return (
+                  <div
+                    key={problem.text}
+                    onClick={() => handleProblemSelection(problem.text)}
+                    className={`
+                      group relative flex cursor-pointer flex-col items-center justify-start space-y-3 rounded-xl border p-4 text-center transition-all duration-200
+                      ${isSelected
+                        ? 'border-2 border-teal-500 bg-teal-50 dark:bg-teal-900/40 ring-2 ring-teal-500/20'
+                        : 'border-gray-300 bg-white hover:border-teal-400 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:hover:border-teal-500'
+                      }
+                    `}
+                  >
+                    <div className={`text-4xl ${isSelected ? 'text-teal-500' : 'text-gray-400 group-hover:text-teal-500 dark:text-gray-500 dark:group-hover:text-teal-400'}`}>
+                      {problem.icon}
+                    </div>
+                    <p className={`text-sm font-medium ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-gray-700 dark:text-gray-300'}`}>
+                      {problem.text}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* SEÇÃO 3: Campo Aberto e Botão de Ajuda */}
+          <div className="pt-4">
+            <label htmlFor="currentScenario.otherProblem" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Outro desafio não listado? (Opcional)
+            </label>
+            <input 
+              type="text" 
+              id="currentScenario.otherProblem" 
+              name="currentScenario.otherProblem" 
+              value={activityData.currentScenario.otherProblem} 
+              onChange={handleInputChange} 
+              className="mt-1 block w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+              placeholder="Descreva outro problema específico" 
+            />
+          </div>
+
+          
+          <button 
+            onClick={() => openHelpModal("Ajuda - Cenário Atual", `Avalie as habilidades e competências requeridas...`)} 
+            className="mt-4 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            Ajuda
+          </button> 
+          
+        </div>
+      );
 
       // ETAPA 2: CENÁRIO DESEJADO
       case 2:
-        return (
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Cenário Desejado</h3>
-            <p className="text-gray-700 dark:text-gray-200 text-sm mb-4">Nesta seção, selecione seus objetivos para a gamificação. Escolha metas claras e específicas para medição e acompanhamento.</p>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Objetivos:</label>
-            {[
-              "Criar um ambiente de aprendizagem motivador e envolvente", "Aumentar a motivação e a concentração dos alunos", "Desenvolver habilidades cognitivas, sociais e de aprendizagem", "Estimular a criatividade e a inovação", "Aumentar a retenção de conhecimentos e habilidades adquiridos ao longo do curso", "Promover a participação ativa dos alunos nas atividades de aprendizagem", "Melhorar a colaboração e o trabalho em equipe entre os alunos", "Incentivar a aplicação prática dos conhecimentos teóricos em projetos reais",
-            ].map(objective => (
-              <div key={objective} className="flex items-center">
-                <input type="checkbox" id={`obj-${objective}`} name="desiredScenario.objectives" value={objective} checked={activityData.desiredScenario.objectives.includes(objective)} onChange={handleInputChange} className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
-                <label htmlFor={`obj-${objective}`} className="ml-2 text-sm text-gray-700 dark:text-gray-300">{objective}</label>
-              </div>
-            ))}
-            <div className="mt-2">
-              <label htmlFor="desiredScenario.otherObjective" className="block text-sm font-medium text-gray-700 dark:text-gray-200">Outra:</label>
-              <input type="text" id="desiredScenario.otherObjective" name="desiredScenario.otherObjective" value={activityData.desiredScenario.otherObjective} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Descreva outro objetivo" />
-            </div>
-            <button onClick={() => openHelpModal("Ajuda - Cenário Desejado", `Definir objetivos claros e específicos requer algumas etapas...`)} className="mt-4 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Ajuda - Cenário Desejado</button>
+      // Array de objetos para os objetivos, facilitando a renderização dos cards com ícones
+      const objectives = [
+        { text: "Criar um ambiente de aprendizagem motivador e envolvente", icon: <FaGamepad /> },
+        { text: "Aumentar a motivação e a concentração dos alunos", icon: <FaBullseye /> },
+        { text: "Desenvolver habilidades cognitivas, sociais e de aprendizagem", icon: <FaBrain /> },
+        { text: "Estimular a criatividade e a inovação", icon: <FaLightbulb /> },
+        { text: "Aumentar a retenção de conhecimentos e habilidades", icon: <FaGraduationCap /> },
+        { text: "Promover a participação ativa dos alunos nas atividades", icon: <FaStar /> },
+        { text: "Melhorar a colaboração e o trabalho em equipe", icon: <FaUsers /> },
+        { text: "Incentivar a aplicação prática dos conhecimentos teóricos", icon: <FaProjectDiagram /> },
+      ];
+
+      /**
+       * Função para manipular a seleção de objetivos.
+       * Adiciona o objetivo ao array se não existir, ou o remove se já existir.
+       */
+      const handleObjectiveSelection = (objectiveText) => {
+        const currentObjectives = activityData.desiredScenario.objectives;
+        const newObjectives = currentObjectives.includes(objectiveText)
+          ? currentObjectives.filter(o => o !== objectiveText)
+          : [...currentObjectives, objectiveText];
+        
+        // Simula o evento de mudança para o seu handler genérico
+        handleInputChange({
+          target: {
+            name: 'desiredScenario.objectives',
+            value: newObjectives,
+          },
+        });
+      };
+
+      return (
+        <div className="space-y-8 animate-fade-in">
+          {/* SEÇÃO 1: Título e Descrição */}
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+              Qual é o seu Cenário Desejado?
+            </h2>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">
+              Selecione os principais objetivos que você deseja alcançar com esta atividade. Metas claras são o primeiro passo para o sucesso.
+            </p>
           </div>
-        );
+
+          {/* SEÇÃO 2: Seleção de Objetivos com Cards */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {objectives.map((objective) => {
+              const isSelected = activityData.desiredScenario.objectives.includes(objective.text);
+              return (
+                <div
+                  key={objective.text}
+                  onClick={() => handleObjectiveSelection(objective.text)}
+                  className={`
+                    group relative flex h-full cursor-pointer flex-col items-center justify-start space-y-3 rounded-xl border p-5 text-center transition-all duration-200
+                    ${isSelected
+                      ? 'border-2 border-teal-500 bg-teal-50 dark:bg-teal-900/40 ring-2 ring-teal-500/20'
+                      : 'border-gray-300 bg-white hover:border-teal-400 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:hover:border-teal-500'
+                    }
+                  `}
+                >
+                  <div className={`text-5xl ${isSelected ? 'text-teal-500' : 'text-gray-400 group-hover:text-teal-500 dark:text-gray-500 dark:group-hover:text-teal-400'}`}>
+                    {objective.icon}
+                  </div>
+                  <p className={`text-sm font-medium ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-gray-700 dark:text-gray-300'}`}>
+                    {objective.text}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* SEÇÃO 3: Campo Aberto */}
+          <div className="pt-4">
+            <label htmlFor="desiredScenario.otherObjective" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Outro objetivo em mente? (Opcional)
+            </label>
+            <input 
+              type="text" 
+              id="desiredScenario.otherObjective" 
+              name="desiredScenario.otherObjective" 
+              value={activityData.desiredScenario.otherObjective} 
+              onChange={handleInputChange} 
+              className="mt-1 block w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+              placeholder="Descreva um objetivo personalizado" 
+            />
+          </div>
+          
+           <button 
+            onClick={() => openHelpModal("Ajuda - Cenário Desejado", `Definir objetivos claros e específicos requer algumas etapas...`)} 
+            className="mt-4 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            Ajuda
+          </button> 
+        </div>
+      );
 
       // ETAPA 3: PLANEJAMENTO DA ATIVIDADE
       case 3:
-        return (
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Planejamento da Atividade</h3>
-            <p className="text-gray-700 dark:text-gray-200 text-sm mb-4">Nesta página, você pode descrever as características da atividade que planeja realizar. Essas informações são importantes para a preparação dos materiais, alocação de espaço físico e identificação de restrições logísticas. Verifique os exemplos fornecidos para obter inspiração na gamificação da atividade.</p>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Selecione as características da atividade:</label>
-            {[
-              "Presencial", "Online", "Individual", "Em grupos", "Requer equipamentos específicos", "Formativa (atividade de prática ou revisão)", "Somativa (avaliação)", "Foco em projetos ou desenvolvimento de software real", "Uso de plataformas de aprendizado online específicas para recursos e interações adicionais", "Níveis de dificuldade ou desafios progressivos para adaptação ao nível de habilidades dos alunos",
-            ].map(char => (
-              <div key={char} className="flex items-center">
-                <input type="checkbox" id={`char-${char}`} name="activityPlanning.characteristics" value={char} checked={activityData.activityPlanning.characteristics.includes(char)} onChange={handleInputChange} className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
-                <label htmlFor={`char-${char}`} className="ml-2 text-sm text-gray-700 dark:text-gray-300">{char}</label>
-              </div>
-            ))}
-            <div className="mt-4">
-              <label htmlFor="activityPlanning.participantsQuantity" className="block text-sm font-medium text-gray-700 dark:text-gray-200">Quantidade de participantes:</label>
-              <input type="text" id="activityPlanning.participantsQuantity" name="activityPlanning.participantsQuantity" value={activityData.activityPlanning.participantsQuantity} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Ex: 20 alunos" />
-            </div>
-            <div className="mt-2">
-              <label htmlFor="activityPlanning.expectedDuration" className="block text-sm font-medium text-gray-700 dark:text-gray-200">Duração prevista:</label>
-              <input type="text" id="activityPlanning.expectedDuration" name="activityPlanning.expectedDuration" value={activityData.activityPlanning.expectedDuration} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Ex: 2 horas" />
-            </div>
-            <div className="mt-2">
-              <label htmlFor="activityPlanning.location" className="block text-sm font-medium text-gray-700 dark:text-gray-200">Localização da atividade:</label>
-              <input type="text" id="activityPlanning.location" name="activityPlanning.location" value={activityData.activityPlanning.location} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Ex: Sala de aula, Online" />
-            </div>
-            <div className="mt-2">
-              <label htmlFor="activityPlanning.otherInfo" className="block text-sm font-medium text-gray-700 dark:text-gray-200">Outra informação:</label>
-              <textarea id="activityPlanning.otherInfo" name="activityPlanning.otherInfo" value={activityData.activityPlanning.otherInfo} onChange={handleInputChange} rows="3" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Detalhes adicionais sobre a atividade"></textarea>
-            </div>
-            <div className="mt-4">
-              <label htmlFor="areaKnowledge" className="block text-sm font-medium text-gray-700 dark:text-gray-200">Área de Conhecimento:</label>
-              <input type="text" id="areaKnowledge" name="areaKnowledge" value={activityData.areaKnowledge} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Ex: Engenharia de Software, Matemática" />
-            </div>
-            <button onClick={() => openHelpModal("Sugestões e exemplos de atividades que podem ser gamificadas", `Desafios de programação...`)} className="mt-4 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Ajuda - Planejamento da Atividade</button>
+      // Array de objetos para as características da atividade
+      const activityCharacteristics = [
+        { text: "Presencial", icon: <FaChalkboardTeacher /> },
+        { text: "Online", icon: <FaLaptop /> },
+        { text: "Individual", icon: <FaUser /> },
+        { text: "Em grupos", icon: <FaUsers /> },
+        { text: "Requer equipamentos específicos", icon: <FaTools /> },
+        { text: "Formativa (prática ou revisão)", icon: <FaClipboardCheck /> },
+        { text: "Somativa (avaliação)", icon: <FaFileSignature /> },
+        { text: "Foco em projetos de software", icon: <FaCodeBranch /> },
+        { text: "Uso de plataformas de aprendizado", icon: <FaCloud /> },
+        { text: "Níveis de dificuldade progressivos", icon: <FaTrophy /> },
+      ];
+
+      /**
+       * Função para manipular a seleção de características.
+       * Adiciona ou remove a característica do array no estado.
+       */
+      const handleCharacteristicSelection = (charText) => {
+        const currentChars = activityData.activityPlanning.characteristics;
+        const newChars = currentChars.includes(charText)
+          ? currentChars.filter(c => c !== charText)
+          : [...currentChars, charText];
+        
+        // Simula o evento de mudança para o seu handler genérico
+        handleInputChange({
+          target: {
+            name: 'activityPlanning.characteristics',
+            value: newChars,
+          },
+        });
+      };
+
+      return (
+        <div className="space-y-8 animate-fade-in">
+          {/* SEÇÃO 1: Título e Descrição */}
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+              Planejamento da Atividade
+            </h2>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">
+              Descreva as características e a logística da atividade. Essas informações são cruciais para um bom planejamento.
+            </p>
           </div>
-        );
+
+          {/* SEÇÃO 2: Seleção de Características com Cards */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+              Características da Atividade
+            </h3>
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {activityCharacteristics.map((char) => {
+                const isSelected = activityData.activityPlanning.characteristics.includes(char.text);
+                return (
+                  <div
+                    key={char.text}
+                    onClick={() => handleCharacteristicSelection(char.text)}
+                    className={`
+                      group relative flex h-full cursor-pointer flex-col items-center justify-start space-y-3 rounded-xl border p-5 text-center transition-all duration-200
+                      ${isSelected
+                        ? 'border-2 border-teal-500 bg-teal-50 dark:bg-teal-900/40 ring-2 ring-teal-500/20'
+                        : 'border-gray-300 bg-white hover:border-teal-400 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:hover:border-teal-500'
+                      }
+                    `}
+                  >
+                    <div className={`text-4xl ${isSelected ? 'text-teal-500' : 'text-gray-400 group-hover:text-teal-500 dark:text-gray-500 dark:group-hover:text-teal-400'}`}>
+                      {char.icon}
+                    </div>
+                    <p className={`text-sm font-medium ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-gray-700 dark:text-gray-300'}`}>
+                      {char.text}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* SEÇÃO 3: Detalhes Logísticos */}
+          <div className="pt-4">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+              Detalhes Logísticos
+            </h3>
+            <div className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div>
+                <label htmlFor="activityPlanning.participantsQuantity" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Quantidade de participantes
+                </label>
+                <input type="text" id="activityPlanning.participantsQuantity" name="activityPlanning.participantsQuantity" value={activityData.activityPlanning.participantsQuantity} onChange={handleInputChange} className="mt-1 block w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm" placeholder="Ex: 25 alunos" />
+              </div>
+              <div>
+                <label htmlFor="activityPlanning.expectedDuration" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Duração prevista
+                </label>
+                <input type="text" id="activityPlanning.expectedDuration" name="activityPlanning.expectedDuration" value={activityData.activityPlanning.expectedDuration} onChange={handleInputChange} className="mt-1 block w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm" placeholder="Ex: 90 minutos" />
+              </div>
+              <div>
+                <label htmlFor="activityPlanning.location" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Localização
+                </label>
+                <input type="text" id="activityPlanning.location" name="activityPlanning.location" value={activityData.activityPlanning.location} onChange={handleInputChange} className="mt-1 block w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm" placeholder="Ex: Laboratório 5, Online (Discord)" />
+              </div>
+              <div>
+                <label htmlFor="areaKnowledge" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Área de Conhecimento
+                </label>
+                <input type="text" id="areaKnowledge" name="areaKnowledge" value={activityData.areaKnowledge} onChange={handleInputChange} className="mt-1 block w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm" placeholder="Ex: Engenharia de Software" />
+              </div>
+              <div className="md:col-span-2">
+                <label htmlFor="activityPlanning.otherInfo" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Outras informações relevantes (Opcional)
+                </label>
+                <textarea id="activityPlanning.otherInfo" name="activityPlanning.otherInfo" value={activityData.activityPlanning.otherInfo} onChange={handleInputChange} rows="3" className="mt-1 block w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm" placeholder="Ex: Os alunos precisam trazer notebook. Acesso à internet é essencial."></textarea>
+              </div>
+            </div>
+          </div>
+          
+          {/* Exemplo do botão de ajuda mantido, caso necessário */}
+          {/* <button 
+            onClick={() => openHelpModal("Sugestões e exemplos...", `Desafios de programação...`)} 
+            className="mt-4 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            Ajuda
+          </button> 
+          */}
+        </div>
+      );
 
       // ETAPA 4: PERFIL DO JOGADOR
       case 4:
-        return (
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Selecione os perfis de jogadores que deseja motivar:</h3>
-            {[
-              "Jogador competitivo", "Jogador cooperativo", "Jogador imersivo", "Jogador de realização", "Jogador social",
-            ].map(profile => (
-              <div key={profile} className="flex items-center">
-                <input type="checkbox" id={`profile-${profile}`} name="playerProfile.selectedProfiles" value={profile} checked={activityData.playerProfile.selectedProfiles.includes(profile)} onChange={handleInputChange} className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
-                <label htmlFor={`profile-${profile}`} className="ml-2 text-sm text-gray-700 dark:text-gray-300">{profile}</label>
-              </div>
-            ))}
-            <button onClick={() => openHelpModal("Ajuda - Perfil do Jogador", `A seguir, listo alguns dos elementos de jogos ideais para motivar cada tipo de jogador...`)} className="mt-4 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Ajuda - Perfil do Jogador</button>
+      // Array de objetos para os perfis de jogadores com descrições
+      const playerProfiles = [
+        { 
+          name: "Competitivo", 
+          description: "Motivado por desafios, rankings e por ser o melhor.", 
+          icon: <FaTrophy /> 
+        },
+        { 
+          name: "Cooperativo", 
+          description: "Gosta de trabalhar em equipe para alcançar objetivos comuns.", 
+          icon: <FaUsers /> 
+        },
+        { 
+          name: "Imersivo", 
+          description: "Busca se aprofundar na história e no universo da atividade.", 
+          icon: <FaBookOpen /> 
+        },
+        { 
+          name: "Realizador", 
+          description: "Focado em completar tarefas, coletar itens e alcançar metas.", 
+          icon: <FaAward /> 
+        },
+        { 
+          name: "Social", 
+          description: "Valoriza a interação, a comunicação e a conexão com outros.", 
+          icon: <FaComments /> 
+        },
+      ];
+
+      /**
+       * Função para manipular a seleção de perfis.
+       * Adiciona ou remove o perfil do array no estado.
+       */
+      const handleProfileSelection = (profileName) => {
+        const currentProfiles = activityData.playerProfile.selectedProfiles;
+        const newProfiles = currentProfiles.includes(profileName)
+          ? currentProfiles.filter(p => p !== profileName)
+          : [...currentProfiles, profileName];
+        
+        // Simula o evento de mudança para o seu handler genérico
+        handleInputChange({
+          target: {
+            name: 'playerProfile.selectedProfiles',
+            value: newProfiles,
+          },
+        });
+      };
+
+      return (
+        <div className="space-y-8 animate-fade-in">
+          {/* SEÇÃO 1: Título e Descrição */}
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+              Qual perfil de jogador você quer engajar?
+            </h2>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">
+              Selecionar os perfis corretos ajuda a definir os elementos de gamificação mais eficazes para a sua atividade.
+            </p>
           </div>
-        );
+
+          {/* SEÇÃO 2: Seleção de Perfis com Cards */}
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {playerProfiles.map((profile) => {
+              const isSelected = activityData.playerProfile.selectedProfiles.includes(profile.name);
+              return (
+                <div
+                  key={profile.name}
+                  onClick={() => handleProfileSelection(profile.name)}
+                  className={`
+                    group relative flex h-full cursor-pointer flex-col items-center justify-start space-y-3 rounded-xl border p-6 text-center transition-all duration-200
+                    ${isSelected
+                      ? 'border-2 border-teal-500 bg-teal-50 dark:bg-teal-900/40 ring-2 ring-teal-500/20'
+                      : 'border-gray-300 bg-white hover:border-teal-400 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:hover:border-teal-500'
+                    }
+                  `}
+                >
+                  <div className={`text-5xl mb-2 ${isSelected ? 'text-teal-500' : 'text-gray-400 group-hover:text-teal-500 dark:text-gray-500 dark:group-hover:text-teal-400'}`}>
+                    {profile.icon}
+                  </div>
+                  <h4 className={`text-base font-semibold ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-gray-800 dark:text-gray-200'}`}>
+                    {profile.name}
+                  </h4>
+                  <p className={`text-xs ${isSelected ? 'text-teal-700 dark:text-teal-200' : 'text-gray-500 dark:text-gray-400'}`}>
+                    {profile.description}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+          
+          <div className="pt-4 text-center">
+            <button 
+              onClick={() => openHelpModal("Ajuda - Perfil do Jogador", `A seguir, listo alguns dos elementos de jogos ideais...`)} 
+              className="py-2 px-5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+              Precisa de ajuda para escolher?
+            </button> 
+          </div>
+        </div>
+      );
 
       // ETAPA 5: ELEMENTOS DE JOGOS
-      case 5:
-        // Lógica para sugerir elementos com base nos perfis de jogador selecionados na etapa anterior.
+      case 5: {
+        // A lógica para sugerir elementos é mantida
         const recommendedElements = new Set();
-        if (activityData.playerProfile.selectedProfiles.includes("Jogador competitivo")) { ["Níveis", "Sistema de pontuação", "Estatísticas (métricas de progresso)", "Reconhecimento", "Competição", "Progressão baseada em habilidade", "Sistema de classificação e ranking"].forEach(el => recommendedElements.add(el)); }
-        if (activityData.playerProfile.selectedProfiles.includes("Jogador cooperativo")) { ["Cooperação", "Chat ou sistema de mensagens", "Interação social com outros jogadores"].forEach(el => recommendedElements.add(el)); }
-        if (activityData.playerProfile.selectedProfiles.includes("Jogador imersivo")) { ["Narrativas envolventes", "Storytelling", "Sensação (imersão, experiência sensorial)", "Customização de personagem", "Customização de equipamento"].forEach(el => recommendedElements.add(el)); }
-        if (activityData.playerProfile.selectedProfiles.includes("Jogador de realização")) { ["Níveis", "Sistema de pontuação", "Conquistas digitais para metas alcançadas", "Recompensas atraentes", "Progressão baseada em habilidade", "Feedback claro sobre o desempenho"].forEach(el => recommendedElements.add(el)); }
-        if (activityData.playerProfile.selectedProfiles.includes("Jogador social")) { ["Interação social com outros jogadores", "Chat ou sistema de mensagens", "Reputação (prestígio, renome, status)", "Cooperação", "Feedback claro sobre o desempenho"].forEach(el => recommendedElements.add(el)); }
+        if (activityData.playerProfile.selectedProfiles.includes("Competitivo")) { ["Níveis", "Sistema de pontuação", "Estatísticas", "Reconhecimento", "Competição", "Progressão baseada em habilidade", "Sistema de classificação e ranking"].forEach(el => recommendedElements.add(el)); }
+        if (activityData.playerProfile.selectedProfiles.includes("Cooperativo")) { ["Cooperação", "Chat ou sistema de mensagens", "Interação social"].forEach(el => recommendedElements.add(el)); }
+        if (activityData.playerProfile.selectedProfiles.includes("Imersivo")) { ["Narrativas envolventes", "Storytelling", "Sensação (imersão)", "Customização de personagem", "Customização de equipamento"].forEach(el => recommendedElements.add(el)); }
+        if (activityData.playerProfile.selectedProfiles.includes("Realizador")) { ["Níveis", "Sistema de pontuação", "Conquistas", "Recompensas atraentes", "Progressão baseada em habilidade", "Feedback claro sobre o desempenho"].forEach(el => recommendedElements.add(el)); }
+        if (activityData.playerProfile.selectedProfiles.includes("Social")) { ["Interação social", "Chat ou sistema de mensagens", "Reputação", "Cooperação", "Feedback claro sobre o desempenho"].forEach(el => recommendedElements.add(el)); }
 
-        console.log("renderStep 5: Elementos recomendados com base nos perfis:", Array.from(recommendedElements));
-
+        // Mapeamento de todos os elementos de jogo para seus ícones correspondentes
         const allGameElements = [
-          "Níveis", "Sistema de pontuação", "Estatísticas (métricas de progresso)", "Reconhecimento", "Raridade (itens exclusivos, objetos raros)", "Economia (sistema monetário)", "Escolha imposta (decisões forçadas)", "Chance (sorte e probabilidade)", "Pressão de tempo", "Reputação (prestígio, renome, status)", "Cooperação", "Competição", "Pressão social", "Sensação (imersão, experiência sensorial)", "Objetivo (missão, meta do jogo)", "Quebra-cabeça", "Renovação (atualizações de conteúdo)", "Novidade (novas funcionalidades)", "Storytelling", "Customização de personagem", "Customização de equipamento", "Chat ou sistema de mensagens", "Interação social com outros jogadores", "Feedback claro sobre o desempenho", "Progressão baseada em habilidade", "Narrativas envolventes", "Sistema de classificação e ranking", "Recompensas atraentes"
-        ];
+          { name: "Níveis", icon: <FaLayerGroup /> },
+          { name: "Sistema de pontuação", icon: <FaStar /> },
+          { name: "Estatísticas", icon: <FaChartBar /> },
+          { name: "Reconhecimento", icon: <FaAward /> },
+          { name: "Raridade", icon: <FaGem /> },
+          { name: "Economia", icon: <FaCoins /> },
+          { name: "Escolha imposta", icon: <FaCodeBranch /> },
+          { name: "Chance", icon: <FaDice /> },
+          { name: "Pressão de tempo", icon: <FaClock /> },
+          { name: "Reputação", icon: <FaIdBadge /> },
+          { name: "Cooperação", icon: <FaHandshake /> },
+          { name: "Competição", icon: <FaTrophy /> },
+          { name: "Pressão social", icon: <FaUsers /> },
+          { name: "Sensação (imersão)", icon: <FaVrCardboard /> },
+          { name: "Objetivo (missão)", icon: <FaBullseye /> },
+          { name: "Quebra-cabeça", icon: <FaPuzzlePiece /> },
+          { name: "Renovação", icon: <FaSyncAlt /> },
+          { name: "Novidade", icon: <FaLightbulb /> },
+          { name: "Storytelling", icon: <FaBook /> },
+          { name: "Customização de personagem", icon: <FaUserEdit /> },
+          { name: "Customização de equipamento", icon: <FaShieldAlt /> },
+          { name: "Chat ou sistema de mensagens", icon: <FaComments /> },
+          { name: "Interação social", icon: <FaShareAlt /> },
+          { name: "Feedback claro sobre o desempenho", icon: <FaCheckCircle /> },
+          { name: "Progressão baseada em habilidade", icon: <FaChartLine /> },
+          { name: "Narrativas envolventes", icon: <FaBookOpen /> },
+          { name: "Sistema de classificação e ranking", icon: <FaListOl /> },
+          { name: "Recompensas atraentes", icon: <FaGift /> },
+          { name: "Conquistas", icon: <FaAward /> }, // Adicionado para o perfil Realizador
+        ].sort((a, b) => a.name.localeCompare(b.name)); // Ordena alfabeticamente para melhor visualização
+
+        const handleElementSelection = (elementName) => {
+          const currentElements = activityData.gameElements.selectedElements;
+          const newElements = currentElements.includes(elementName)
+            ? currentElements.filter(el => el !== elementName)
+            : [...currentElements, elementName];
+          
+          handleInputChange({
+            target: {
+              name: 'gameElements.selectedElements',
+              value: newElements,
+            },
+          });
+        };
 
         return (
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Elementos de Jogos</h3>
-            <p className="text-gray-700 dark:text-gray-200 text-sm mb-4">Nesta seção, você pode selecionar os elementos de jogos desejados. Alguns elementos são previamente selecionados com base nas suas escolhas de perfil de jogador. Escolha com cuidado e selecione apenas os elementos que deseja usar em seus jogos.</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              {allGameElements.map(element => (
-                <div key={element} className="flex items-center">
-                  <input type="checkbox" id={`element-${element}`} name="gameElements.selectedElements" value={element} checked={activityData.gameElements.selectedElements.includes(element)} onChange={handleInputChange} className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
-                  <label htmlFor={`element-${element}`} className="ml-2 text-sm text-gray-700 dark:text-gray-300">{element}{recommendedElements.has(element) && <span className="text-xs text-blue-500 ml-1">(Sugerido)</span>}</label>
-                </div>
-              ))}
+          <div className="space-y-8 animate-fade-in">
+            {/* SEÇÃO 1: Título e Descrição */}
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+                Escolha os Elementos de Jogo
+              </h2>
+              <p className="mt-2 text-gray-600 dark:text-gray-400">
+                Selecione os componentes que darão vida à sua atividade. Os elementos marcados com uma estrela são sugeridos com base nos perfis de jogador que você escolheu.
+              </p>
             </div>
-            <div className="mt-4">
-              <label htmlFor="gameElements.otherElement" className="block text-sm font-medium text-gray-700 dark:text-gray-200">Outro elemento de jogo:</label>
-              <input type="text" id="gameElements.otherElement" name="gameElements.otherElement" value={activityData.gameElements.otherElement} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Descreva outro elemento" />
+
+            {/* SEÇÃO 2: Seleção de Elementos com Cards */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              {allGameElements.map((element) => {
+                const isSelected = activityData.gameElements.selectedElements.includes(element.name);
+                const isRecommended = recommendedElements.has(element.name);
+                return (
+                  <div
+                    key={element.name}
+                    onClick={() => handleElementSelection(element.name)}
+                    className={`
+                      group relative flex h-full cursor-pointer flex-col items-center justify-start space-y-2 rounded-xl border p-4 text-center transition-all duration-200
+                      ${isSelected
+                        ? 'border-2 border-teal-500 bg-teal-50 dark:bg-teal-900/40 ring-2 ring-teal-500/20'
+                        : 'border-gray-300 bg-white hover:border-teal-400 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:hover:border-teal-500'
+                      }
+                    `}
+                  >
+                    {isRecommended && (
+                      <div className="absolute top-2 right-2 text-yellow-500" title="Sugerido">
+                        <FaStar />
+                      </div>
+                    )}
+                    <div className={`text-4xl ${isSelected ? 'text-teal-500' : 'text-gray-400 group-hover:text-teal-500 dark:text-gray-500 dark:group-hover:text-teal-400'}`}>
+                      {element.icon}
+                    </div>
+                    <p className={`text-sm font-medium ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-gray-700 dark:text-gray-300'}`}>
+                      {element.name}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
-            {/* Campos de narrativa aparecem condicionalmente se "Narrativas envolventes" for selecionado */}
+            
+            {/* SEÇÃO 3: Campo Aberto */}
+            <div className="pt-4">
+              <label htmlFor="gameElements.otherElement" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Outro elemento não listado? (Opcional)
+              </label>
+              <input 
+                type="text" 
+                id="gameElements.otherElement" 
+                name="gameElements.otherElement" 
+                value={activityData.gameElements.otherElement} 
+                onChange={handleInputChange} 
+                className="mt-1 block w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                placeholder="Descreva um elemento de jogo personalizado" 
+              />
+            </div>
+
+            {/* SEÇÃO 4: Detalhes da Narrativa (Condicional) */}
             {activityData.gameElements.selectedElements.includes("Narrativas envolventes") && (
-              <div className="mt-4 p-4 border border-blue-300 rounded-md bg-blue-50 dark:bg-blue-900/20">
-                <h4 className="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-2">Detalhes da Narrativa/Storytelling:</h4>
-                <div>
-                  <label htmlFor="gameElements.narrativeTitle" className="block text-sm font-medium text-gray-700 dark:text-gray-200">Título da Narrativa:</label>
-                  <input type="text" id="gameElements.narrativeTitle" name="gameElements.narrativeTitle" value={activityData.gameElements.narrativeTitle} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Ex: A Jornada do Desenvolvedor" />
+              <div className="mt-4 p-6 border border-teal-300 dark:border-teal-800 rounded-lg bg-teal-50 dark:bg-teal-900/20 animate-fade-in">
+                <h4 className="text-lg font-semibold text-teal-800 dark:text-teal-200 mb-4">
+                  Construindo sua Narrativa
+                </h4>
+                <div className="space-y-4">
+                  <div>
+                    <label htmlFor="gameElements.narrativeTitle" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Título da Narrativa:</label>
+                    <input type="text" id="gameElements.narrativeTitle" name="gameElements.narrativeTitle" value={activityData.gameElements.narrativeTitle} onChange={handleInputChange} className="mt-1 block w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm" placeholder="Ex: A Saga do Código Perdido" />
+                  </div>
+                  <div>
+                    <label htmlFor="gameElements.narrativeContent" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Conteúdo da Narrativa:</label>
+                    <textarea id="gameElements.narrativeContent" name="gameElements.narrativeContent" value={activityData.gameElements.narrativeContent} onChange={handleInputChange} rows="5" className="mt-1 block w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm" placeholder="Descreva o enredo, os personagens e o mundo da sua atividade."></textarea>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">Dica: Use um LLM como o Gemini para gerar ideias e rascunhos para sua história!</p>
+                  </div>
                 </div>
-                <div className="mt-2">
-                  <label htmlFor="gameElements.narrativeContent" className="block text-sm font-medium text-gray-700 dark:text-gray-200">Conteúdo da Narrativa:</label>
-                  <textarea id="gameElements.narrativeContent" name="gameElements.narrativeContent" value={activityData.gameElements.narrativeContent} onChange={handleInputChange} rows="5" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Descreva a história e o mundo da gamificação aqui."></textarea>
-                </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">Futuramente, poderá haver integração com APIs de LLMs (como o Gemini API) para auxiliar na geração de rascunhos de narrativa.</p>
               </div>
             )}
-            <button onClick={() => openHelpModal("Ajuda - Elementos de Jogos", `Descrição detalhada das mecânicas e componentes dos jogos...`)} className="mt-4 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Ajuda - Elementos de Jogos</button>
           </div>
         );
-
+      }
       // ETAPA 6: RECOMPENSAS OFERECIDAS
-      case 6:
+      case 6: {
+        // Array de objetos para as recompensas com seus ícones
+        const rewards = [
+          { text: "Pontos de bônus para a participação.", icon: <FaPlusCircle /> },
+          { text: "Conquistas digitais para metas alcançadas.", icon: <FaAward /> },
+          { text: "Vantagens para jogos e desafios.", icon: <FaStar /> },
+          { text: "Tempo extra para atividades divertidas.", icon: <FaHourglassHalf /> },
+          { text: "Destaque na apresentação de trabalhos.", icon: <FaMicrophoneAlt /> },
+          { text: "Acesso a recursos exclusivos.", icon: <FaKey /> },
+          { text: "Brindes (canetas, adesivos, livros).", icon: <FaGift /> },
+          { text: "Certificados digitais de conclusão.", icon: <FaCertificate /> },
+          { text: "Oportunidades para liderar a turma.", icon: <FaUserTie /> },
+          { text: "Acesso a vídeos ou jogos extras.", icon: <FaFilm /> },
+          { text: "Acesso a um espaço diferenciado.", icon: <FaDoorOpen /> },
+          { text: "Participação em eventos ou viagens.", icon: <FaPlane /> },
+          { text: "Reconhecimento público na turma.", icon: <FaBullhorn /> },
+          { text: "Oportunidades para mentorar colegas.", icon: <FaHandsHelping /> },
+          { text: "Prêmios em dinheiro ou descontos.", icon: <FaMoneyBillWave /> },
+        ];
+
+        /**
+        * Função para manipular a seleção de recompensas.
+        */
+        const handleRewardSelection = (rewardText) => {
+          const currentRewards = activityData.rewardsOffered.selectedRewards;
+          const newRewards = currentRewards.includes(rewardText)
+            ? currentRewards.filter(r => r !== rewardText)
+            : [...currentRewards, rewardText];
+          
+          handleInputChange({
+            target: {
+              name: 'rewardsOffered.selectedRewards',
+              value: newRewards,
+            },
+          });
+        };
+
         return (
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Recompensas oferecidas</h3>
-            <p className="text-gray-700 dark:text-gray-200 text-sm mb-4">Nesta seção, você encontrará 15 sugestões de recompensas para usar em sala de aula gamificada. Escolha de acordo com o perfil do jogador. Motive os alunos com certificados, pontos extras, prêmios físicos e experiências especiais.</p>
-            {[
-              "Pontos de bônus para a participação na aula.", "Conquistas digitais para metas alcançadas.", "Vantagens para jogos e desafios.", "Tempo extra para jogos e atividades divertidas.", "Destaque na apresentação de trabalhos.", "Acesso a recursos exclusivos (por exemplo, jogos, ferramentas, aplicativos).", "Brindes (por exemplo, canetas, adesivos, livros, chocolates).", "Certificados digitais.", "Oportunidades para liderar a turma em atividades.", "Acesso a vídeos, filmes ou jogos extras.", "Acesso a sala dos professores.", "Participação em eventos ou viagens.", "Reconhecimento público (por exemplo, menção em redes sociais ou na frente da turma).", "Oportunidades para mentorar colegas.", "Prêmios em dinheiro ou descontos.",
-            ].map(reward => (
-              <div key={reward} className="flex items-center">
-                <input type="checkbox" id={`reward-${reward}`} name="rewardsOffered.selectedRewards" value={reward} checked={activityData.rewardsOffered.selectedRewards.includes(reward)} onChange={handleInputChange} className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
-                <label htmlFor={`reward-${reward}`} className="ml-2 text-sm text-gray-700 dark:text-gray-300">{reward}</label>
-              </div>
-            ))}
-            <div className="mt-2">
-              <label htmlFor="rewardsOffered.otherReward" className="block text-sm font-medium text-gray-700 dark:text-gray-200">Outra recompensa específica:</label>
-              <input type="text" id="rewardsOffered.otherReward" name="rewardsOffered.otherReward" value={activityData.rewardsOffered.otherReward} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Descreva outra recompensa" />
+          <div className="space-y-8 animate-fade-in">
+            {/* SEÇÃO 1: Título e Descrição */}
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+                Quais Recompensas Serão Oferecidas?
+              </h2>
+              <p className="mt-2 text-gray-600 dark:text-gray-400">
+                Escolha os incentivos para motivar seus alunos. Recompensas bem pensadas aumentam o engajamento e a sensação de progresso.
+              </p>
             </div>
-            <button onClick={() => openHelpModal("Ajuda - Recompensas Oferecidas", `Relações entre os perfis de jogadores e as recompensas sugeridas...`)} className="mt-4 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Ajuda - Recompensas Oferecidas</button>
+
+            {/* SEÇÃO 2: Seleção de Recompensas com Cards */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              {rewards.map((reward) => {
+                const isSelected = activityData.rewardsOffered.selectedRewards.includes(reward.text);
+                return (
+                  <div
+                    key={reward.text}
+                    onClick={() => handleRewardSelection(reward.text)}
+                    className={`
+                      group relative flex h-full cursor-pointer flex-col items-center justify-start space-y-2 rounded-xl border p-4 text-center transition-all duration-200
+                      ${isSelected
+                        ? 'border-2 border-teal-500 bg-teal-50 dark:bg-teal-900/40 ring-2 ring-teal-500/20'
+                        : 'border-gray-300 bg-white hover:border-teal-400 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:hover:border-teal-500'
+                      }
+                    `}
+                  >
+                    <div className={`text-4xl ${isSelected ? 'text-teal-500' : 'text-gray-400 group-hover:text-teal-500 dark:text-gray-500 dark:group-hover:text-teal-400'}`}>
+                      {reward.icon}
+                    </div>
+                    <p className={`text-sm font-medium ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-gray-700 dark:text-gray-300'}`}>
+                      {reward.text}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+            
+            {/* SEÇÃO 3: Campo Aberto */}
+            <div className="pt-4">
+              <label htmlFor="rewardsOffered.otherReward" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Outra recompensa específica? (Opcional)
+              </label>
+              <input 
+                type="text" 
+                id="rewardsOffered.otherReward" 
+                name="rewardsOffered.otherReward" 
+                value={activityData.rewardsOffered.otherReward} 
+                onChange={handleInputChange} 
+                className="mt-1 block w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                placeholder="Descreva uma recompensa personalizada" 
+              />
+            </div>
           </div>
         );
+      }
 
       // ETAPA 7: AÇÕES RECOMPENSADAS
-      case 7:
+      case 7: {
+        // Array de objetos para as ações recompensadas
+        const rewardedActions = [
+          { text: "Participação ativa nas discussões em aula.", icon: <FaComments /> },
+          { text: "Conclusão de tarefas antes do prazo.", icon: <FaCalendarCheck /> },
+          { text: "Atingir uma pontuação elevada em um jogo.", icon: <FaTrophy /> },
+          { text: "Colaboração efetiva em projetos de grupo.", icon: <FaUsers /> },
+          { text: "Contribuição criativa em atividades.", icon: <FaPaintBrush /> },
+          { text: "Demonstrar pensamento crítico em desafios.", icon: <FaBrain /> },
+          { text: "Responder corretamente a perguntas de revisão.", icon: <FaQuestionCircle /> },
+          { text: "Auxiliar um colega com dificuldades.", icon: <FaHandsHelping /> },
+          { text: "Apresentar um trabalho com excelência.", icon: <FaChalkboardTeacher /> },
+          { text: "Atender prontamente às solicitações.", icon: <FaBell /> },
+          { text: "Realizar atividades extras para aprofundar.", icon: <FaBookReader /> },
+          { text: "Cuidar e organizar o material escolar.", icon: <FaBoxOpen /> },
+          { text: "Demonstrar habilidades de liderança.", icon: <FaUserTie /> },
+        ];
+
+        /**
+        * Função para manipular a seleção de ações.
+        */
+        const handleActionSelection = (actionText) => {
+          const currentActions = activityData.rewardedActions.selectedActions;
+          const newActions = currentActions.includes(actionText)
+            ? currentActions.filter(a => a !== actionText)
+            : [...currentActions, actionText];
+          
+          handleInputChange({
+            target: {
+              name: 'rewardedActions.selectedActions',
+              value: newActions,
+            },
+          });
+        };
+
         return (
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Ações Recompensadas</h3>
-            <p className="text-gray-700 dark:text-gray-200 text-sm mb-4">Lista de 15 sugestões de ações para ganhar recompensas. Escolha as que mais se adequam a você. As recompensas são limitadas e serão concedidas com base no desempenho e no progresso em relação às metas estabelecidas.</p>
-            {[
-              "Participação ativa nas discussões em sala de aula", "Conclusão de tarefas antes do prazo estipulado", "Atingir uma pontuação elevada em um jogo educacional", "Colaboração com outros alunos em projetos de grupo", "Contribuição criativa em atividades de escrita ou arte", "Demonstrar pensamento crítico em tarefas desafiadoras", "Responder corretamente a perguntas de revisão de material", "Auxiliar um colega com dificuldades em uma tarefa", "Apresentar um trabalho com excelência", "Atender prontamente as solicitações do professor", "Realizar atividades extras em casa para aprofundar o aprendizado", "Ser responsável pelo cuidado e organização do material escolar", "Demonstração de habilidades de liderança em atividades em grupo",
-            ].map(action => (
-              <div key={action} className="flex items-center">
-                <input type="checkbox" id={`action-${action}`} name="rewardedActions.selectedActions" value={action} checked={activityData.rewardedActions.selectedActions.includes(action)} onChange={handleInputChange} className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
-                <label htmlFor={`action-${action}`} className="ml-2 text-sm text-gray-700 dark:text-gray-300">{action}</label>
-              </div>
-            ))}
-            <div className="mt-2">
-              <label htmlFor="rewardedActions.otherAction" className="block text-sm font-medium text-gray-700 dark:text-gray-200">Outra:</label>
-              <input type="text" id="rewardedActions.otherAction" name="rewardedActions.otherAction" value={activityData.rewardedActions.otherAction} onChange={handleInputChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Descreva outra ação" />
+          <div className="space-y-8 animate-fade-in">
+            {/* SEÇÃO 1: Título e Descrição */}
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+                Quais Ações Valem Recompensas?
+              </h2>
+              <p className="mt-2 text-gray-600 dark:text-gray-400">
+                Defina quais comportamentos e conquistas dos alunos serão recompensados. Ações claras incentivam o engajamento direcionado.
+              </p>
             </div>
-            <button onClick={() => openHelpModal("Ajuda - Ações Recompensadas", `Aqui estão algumas dicas para estabelecer ações claras e significativas...`)} className="mt-4 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Ajuda - Ações Recompensadas</button>
+
+            {/* SEÇÃO 2: Seleção de Ações com Cards */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              {rewardedActions.map((action) => {
+                const isSelected = activityData.rewardedActions.selectedActions.includes(action.text);
+                return (
+                  <div
+                    key={action.text}
+                    onClick={() => handleActionSelection(action.text)}
+                    className={`
+                      group relative flex h-full cursor-pointer flex-col items-center justify-start space-y-2 rounded-xl border p-4 text-center transition-all duration-200
+                      ${isSelected
+                        ? 'border-2 border-teal-500 bg-teal-50 dark:bg-teal-900/40 ring-2 ring-teal-500/20'
+                        : 'border-gray-300 bg-white hover:border-teal-400 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:hover:border-teal-500'
+                      }
+                    `}
+                  >
+                    <div className={`text-4xl ${isSelected ? 'text-teal-500' : 'text-gray-400 group-hover:text-teal-500 dark:text-gray-500 dark:group-hover:text-teal-400'}`}>
+                      {action.icon}
+                    </div>
+                    <p className={`text-sm font-medium ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-gray-700 dark:text-gray-300'}`}>
+                      {action.text}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+            
+            {/* SEÇÃO 3: Campo Aberto */}
+            <div className="pt-4">
+              <label htmlFor="rewardedActions.otherAction" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Outra ação a ser recompensada? (Opcional)
+              </label>
+              <input 
+                type="text" 
+                id="rewardedActions.otherAction" 
+                name="rewardedActions.otherAction" 
+                value={activityData.rewardedActions.otherAction} 
+                onChange={handleInputChange} 
+                className="mt-1 block w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                placeholder="Descreva uma ação personalizada" 
+              />
+            </div>
           </div>
         );
+      }
 
       // ETAPA 8: REGRAS E COMPARTILHAMENTO
-      case 8:
+      case 8: {
+        // Array de objetos para as regras gerais
+        const generalRules = [
+          { text: "Respeite as regras do jogo e as decisões do professor.", icon: <FaGavel /> },
+          { text: "Seja respeitoso e colaborativo com outros jogadores.", icon: <FaUsers /> },
+          { text: "Entenda as regras e como elas se aplicam a cada atividade.", icon: <FaBook /> },
+          { text: "Busque sempre aprender e se esforçar para alcançar seus objetivos.", icon: <FaGraduationCap /> },
+          { text: "Comunique-se com outros jogadores de forma clara e objetiva.", icon: <FaComments /> },
+          { text: "Proteja a privacidade e a segurança de todos os jogadores.", icon: <FaUserShield /> },
+          { text: "Use dispositivos eletrônicos apenas para fins educacionais.", icon: <FaMobileAlt /> },
+          { text: "Respeite as políticas da instituição em todas as atividades.", icon: <FaUniversity /> },
+          { text: "Mantenha-se atualizado com as atualizações nas regras.", icon: <FaSyncAlt /> },
+          { text: "Busque sempre a supervisão do professor quando necessário.", icon: <FaUserTie /> },
+        ];
+
+        /**
+        * Função para manipular a seleção de regras.
+        */
+        const handleRuleSelection = (ruleText) => {
+          const currentRules = activityData.gamificationRules.generalRules;
+          const newRules = currentRules.includes(ruleText)
+            ? currentRules.filter(r => r !== ruleText)
+            : [...currentRules, ruleText];
+          
+          handleInputChange({
+            target: {
+              name: 'gamificationRules.generalRules',
+              value: newRules,
+            },
+          });
+        };
+
         return (
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Regras da Gamificação</h3>
-            <p className="text-gray-700 dark:text-gray-200 text-sm mb-4">Nesta seção, encontrará sugestões de regras gerais para uma sala de aula gamificada. Elas promovem um ambiente de aprendizado engajador e divertido. Adapte e personalize as sugestões de acordo com as necessidades da sua turma.</p>
-            {[
-              "Respeite as regras do jogo e as decisões do professor em todas as atividades.", "Seja respeitoso e colaborativo com outros jogadores em todas as atividades.", "Entenda as regras do jogo e como elas se aplicam a cada atividade.", "Busque sempre aprender e se esforçar para alcançar seus objetivos em cada atividade.", "Comunique-se com outros jogadores de forma clara e objetiva em todas as atividades.", "Proteja a privacidade e a segurança de todos os jogadores em todas as atividades.", "Use dispositivos eletrônicos apenas para fins educacionais relacionados ao jogo.", "Respeite as regras e políticas da instituição em todas as atividades.", "Mantenha-se atualizado com as atualizações nas regras do jogo em todas as atividades.", "Busque sempre a supervisão do professor em todas as atividades.",
-            ].map(rule => (
-              <div key={rule} className="flex items-center">
-                <input type="checkbox" id={`rule-${rule}`} name="gamificationRules.generalRules" value={rule} checked={activityData.gamificationRules.generalRules.includes(rule)} onChange={handleInputChange} className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
-                <label htmlFor={`rule-${rule}`} className="ml-2 text-sm text-gray-700 dark:text-gray-300">{rule}</label>
+          <div className="space-y-8 animate-fade-in">
+            {/* SEÇÃO 1: Título e Descrição */}
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+                Regras da Gamificação e Compartilhamento
+              </h2>
+              <p className="mt-2 text-gray-600 dark:text-gray-400">
+                Defina as regras que guiarão a atividade. Boas regras criam um ambiente justo, divertido e produtivo para todos.
+              </p>
+            </div>
+
+            {/* SEÇÃO 2: Seleção de Regras Gerais com Cards */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+                Regras Gerais Sugeridas
+              </h3>
+              <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {generalRules.map((rule) => {
+                  const isSelected = activityData.gamificationRules.generalRules.includes(rule.text);
+                  return (
+                    <div
+                      key={rule.text}
+                      onClick={() => handleRuleSelection(rule.text)}
+                      className={`
+                        group relative flex h-full cursor-pointer flex-col items-center justify-start space-y-3 rounded-xl border p-5 text-center transition-all duration-200
+                        ${isSelected
+                          ? 'border-2 border-teal-500 bg-teal-50 dark:bg-teal-900/40 ring-2 ring-teal-500/20'
+                          : 'border-gray-300 bg-white hover:border-teal-400 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:hover:border-teal-500'
+                        }
+                      `}
+                    >
+                      <div className={`text-4xl ${isSelected ? 'text-teal-500' : 'text-gray-400 group-hover:text-teal-500 dark:text-gray-500 dark:group-hover:text-teal-400'}`}>
+                        {rule.icon}
+                      </div>
+                      <p className={`text-sm font-medium ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-gray-700 dark:text-gray-300'}`}>
+                        {rule.text}
+                      </p>
+                    </div>
+                  );
+                })}
               </div>
-            ))}
-            <div className="mt-2">
-              <label htmlFor="gamificationRules.specificRules" className="block text-sm font-medium text-gray-700 dark:text-gray-200">Regras específicas da atividade planejada:</label>
-              <textarea id="gamificationRules.specificRules" name="gamificationRules.specificRules" value={activityData.gamificationRules.specificRules} onChange={handleInputChange} rows="3" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Descreva as regras específicas aqui"></textarea>
             </div>
-            {/* Opção de Compartilhamento (Tornar a atividade pública) */}
-            <div className="mt-4 flex items-center">
-              <input type="checkbox" id="isPublic" name="isPublic" checked={activityData.isPublic} onChange={handleInputChange} className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
-              <label htmlFor="isPublic" className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-200">Compartilhar esta atividade com outros professores (tornar pública)?</label>
+            
+            {/* SEÇÃO 3: Regras Específicas e Compartilhamento */}
+            <div className="pt-4 space-y-6">
+              <div>
+                <label htmlFor="gamificationRules.specificRules" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Regras específicas da sua atividade (Opcional)
+                </label>
+                <textarea 
+                  id="gamificationRules.specificRules" 
+                  name="gamificationRules.specificRules" 
+                  value={activityData.gamificationRules.specificRules} 
+                  onChange={handleInputChange} 
+                  rows="4" 
+                  className="mt-1 block w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm" 
+                  placeholder="Ex: Não é permitido usar o celular durante o desafio. A entrega do projeto deve conter no mínimo 3 commits."
+                ></textarea>
+              </div>
+              
+              <div className="relative flex items-start">
+                <div className="flex h-6 items-center">
+                  <input
+                    id="isPublic"
+                    name="isPublic"
+                    type="checkbox"
+                    checked={activityData.isPublic}
+                    onChange={handleInputChange}
+                    className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                  />
+                </div>
+                <div className="ml-3 text-sm leading-6">
+                  <label htmlFor="isPublic" className="font-medium text-gray-900 dark:text-gray-200">
+                    Compartilhar esta atividade?
+                  </label>
+                  <p className="text-gray-500 dark:text-gray-400">Ao marcar, sua atividade ficará pública para outros professores usarem como modelo.</p>
+                </div>
+              </div>
             </div>
-            <button onClick={() => openHelpModal("Ajuda - Regras da Gamificação", `Aqui estao algumas dicas para alinhar regras com objetivos...`)} className="mt-4 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Ajuda - Regras da Gamificação</button>
           </div>
         );
+      }
       default:
         // Caso padrão para evitar erros se `currentStep` for um valor inesperado.
         console.warn(`renderStep: Estado de etapa inválido: ${currentStep}. Renderizando null.`);
@@ -924,6 +1611,5 @@ function ActivityCreationPage({ existingActivity }) {
   );
 }
 
-// ... (renderStep permanece funcionalmente igual, mas com melhorias visuais)
 
 export default ActivityCreationPage;

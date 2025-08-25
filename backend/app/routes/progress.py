@@ -1,7 +1,7 @@
 # backend/app/routes/progress.py
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from ..models import db, User, ActivityProgress, Activity, StudentResponse, EventLog, RouletteWin
+from ..models import db, User, ActivityProgress, Activity, StudentResponse, EventLog, RouletteWin, SlotWin
 from sqlalchemy.orm import joinedload
 from flask_cors import cross_origin 
 progress_bp = Blueprint('progress', __name__)
@@ -223,52 +223,53 @@ def update_activity_progress(activity_id):
         return jsonify({"message": "Apenas alunos podem atualizar o progresso."}), 403
 
     data = request.get_json()
-    points_to_add = data.get('points')
+    points_to_add = data.get('points', 0) # Pega os pontos, ou 0 se não for fornecido
+    coins_to_add = data.get('coins', 0)   # Pega as moedas, ou 0 se não for fornecido
 
-    if points_to_add is None:
-        return jsonify({"message": "Pontos não fornecidos."}), 400
+    if points_to_add is None and coins_to_add is None:
+        return jsonify({"message": "Nenhum ponto ou moeda fornecido."}), 400
 
     try:
-        # Garante que os pontos recebidos sejam tratados como um número inteiro
         points_to_add = int(points_to_add)
+        coins_to_add = int(coins_to_add)
     except (ValueError, TypeError):
-        return jsonify({"message": "Valor de pontos inválido."}), 400
+        return jsonify({"message": "Valores de pontos ou moedas inválidos."}), 400
     
-    # 1. Busca a atividade primeiro para obter o class_id
     activity = Activity.query.get(activity_id)
     if not activity or not activity.class_id:
         return jsonify({"message": "Atividade ou turma associada não encontrada."}), 404
 
-       # --- INÍCIO DA CORREÇÃO ---
-    # Busca o progresso existente DENTRO de uma transação para evitar race conditions
     try:
         progress = ActivityProgress.query.filter_by(student_id=user.id, activity_id=activity_id).first()
 
         if not progress:
-            # Se não existe, CRIA um novo com os pontos atuais
             progress = ActivityProgress(
                 student_id=user.id,
                 activity_id=activity_id,
                 class_id=activity.class_id,
-                points_earned=points_to_add, # Apenas os pontos novos
+                points_earned=points_to_add,
+                coins=coins_to_add,
                 attempts=1,
                 status='in_progress'
             )
             db.session.add(progress)
         else:
-            # Se já existe, SOMA os novos pontos
-            progress.points_earned += points_to_add
+            # Garante que os valores não sejam nulos antes de somar
+            progress.points_earned = (progress.points_earned or 0) + points_to_add
+            progress.coins = (progress.coins or 0) + coins_to_add
         
         db.session.commit()
         
         return jsonify({
             "message": "Progresso atualizado com sucesso.",
-            "new_total_points": progress.points_earned
+            "new_total_points": progress.points_earned,
+            "new_total_coins": progress.coins
         }), 200
 
     except Exception as e:
         db.session.rollback()
-        # current_app.logger.error(f"Erro ao atualizar progresso para user {current_user_id} na atividade {activity_id}: {str(e)}")
+        # Adicione um log para depuração
+        current_app.logger.error(f"Erro ao atualizar progresso para user {current_user_id} na atividade {activity_id}: {str(e)}")
         return jsonify({"message": "Erro interno ao salvar o progresso."}), 500
 
 # --- ROTA DA ROLETA (VERSÃO CORRIGIDA) ---
@@ -351,6 +352,111 @@ def get_roulette_winners(activity_id):
         {
             "userName": row.name,
             "prize": row.prize_label
+        }
+        for row in winners
+    ]
+    
+    return jsonify(winners_data), 200
+
+# ... (outros imports e funções)
+
+@progress_bp.route('/<int:activity_id>/play-slot', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def play_slot_machine(activity_id):
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    
+    spin_cost = 0 #custo para rodar tigrinho
+    
+    progress = ActivityProgress.query.filter_by(student_id=user_id, activity_id=activity_id).first()
+    
+    # --- INÍCIO DA CORREÇÃO DEFINITIVA ---
+    
+    # Se não houver registro de progresso, ou se as moedas forem Nulas, não pode jogar.
+    if not progress:
+        return jsonify({"message": "Você precisa iniciar a atividade antes de jogar."}), 404
+        
+    # Converte moedas nulas para 0 antes de comparar
+    current_coins = progress.coins if progress.coins is not None else 0
+    
+    if current_coins < spin_cost:
+        return jsonify({"message": f"Moedas insuficientes! Você tem {current_coins} e precisa de {spin_cost}."}), 400
+
+    # Deduz o custo
+    progress.coins = current_coins - spin_cost
+    
+    # --- FIM DA CORREÇÃO ---
+    
+    outcomes = { "gem": 80, "star": 15, "trophy": 4, "gift": 1 }
+    symbols = list(outcomes.keys())
+    weights = list(outcomes.values())
+    result = random.choices(symbols, weights=weights, k=3)
+    
+    prize_data = None
+    if result[0] == result[1] == result[2]:
+        winning_symbol = result[0]
+        current_points = progress.points_earned if progress.points_earned is not None else 0
+        
+        if winning_symbol == 'gem':
+            prize_data = {"description": "Pequeno Bônus de 25 XP!", "type": "xp", "value": 25}
+            progress.points_earned = current_points + 25
+        elif winning_symbol == 'star':
+            prize_data = {"description": "Bônus Médio de 75 XP!", "type": "xp", "value": 75}
+            progress.points_earned = current_points + 75
+        elif winning_symbol == 'trophy':
+            prize_data = {"description": "Grande Bônus de 200 XP!", "type": "xp", "value": 200}
+            progress.points_earned = current_points + 200
+        elif winning_symbol == 'gift':
+            prize_data = {"description": "Prêmio Especial! +1 item!", "type": "special", "value": 1}
+
+        # ===> ADICIONE ESTE TRECHO PARA SALVAR O PRÊMIO <===
+        if prize_data:
+            new_win = SlotWin(
+                user_id=user_id,
+                activity_id=activity_id,
+                prize_description=prize_data['description']
+            )
+            db.session.add(new_win)
+
+    db.session.commit()
+    
+    return jsonify({
+        "result": result,
+        "prize": prize_data,
+        "new_coin_balance": progress.coins
+    }), 200
+
+@progress_bp.route('/<int:activity_id>/slot-winners', methods=['GET'])
+@jwt_required()
+@cross_origin()
+def get_slot_winners(activity_id):
+    """Retorna os últimos 5 vencedores do caça-níquel para uma atividade."""
+    
+    limit_amount = 5 
+
+    winners_query = db.session.query(
+        User.name,
+        SlotWin.prize_description
+    ).join(
+        User, User.id == SlotWin.user_id
+    ).filter(
+        SlotWin.activity_id == activity_id
+    ).order_by(
+        SlotWin.timestamp.desc()
+    ).limit(limit_amount)
+    
+    winners = winners_query.all()
+
+    # ===> LOG DE DIAGNÓSTICO <===
+    # Este log aparecerá no seu terminal do backend
+    #current_app.logger.info(f"Buscando ganhadores para activity_id {activity_id}. Encontrados {len(winners)} de um limite de {limit_amount}.")
+    # ============================
+
+    winners_data = [
+        {
+            "userName": row.name,
+            "prize": row.prize_description
         }
         for row in winners
     ]

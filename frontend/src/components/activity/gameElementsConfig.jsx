@@ -2,7 +2,7 @@
 import React from 'react';
 import { 
     FaBookOpen, FaQuestionCircle, FaTrophy, FaComments, FaStore, 
-    FaBullseye, FaMedal, FaDice
+    FaBullseye, FaMedal, FaDice, FaGamepad
 } from 'react-icons/fa';
 
 /**
@@ -90,6 +90,15 @@ export const cardsConfig = [
     icon: <FaDice className="text-3xl text-rose-400" />,
     color: "rose",
     // Disponível apenas para alunos com elementos de sorte
+    isEnabled: (elements, userRole) => userRole === 'aluno' && elements.includes("Chance (sorte e probabilidade)")
+  },
+  {
+    key: 'slot',
+    title: "Caça-Prêmios",
+    description: "Use suas moedas para tentar a sorte e ganhar recompensas.",
+    icon: <FaGamepad className="text-3xl text-teal-400" />,
+    color: "teal",
+    // Habilita se o elemento "Chance" estiver ativo e for um aluno
     isEnabled: (elements, userRole) => userRole === 'aluno' && elements.includes("Chance (sorte e probabilidade)")
   },
   {

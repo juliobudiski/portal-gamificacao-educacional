@@ -1,0 +1,27 @@
+.reel {
+  /* O rolo em si é um container flexível vertical */
+  display: flex;
+  flex-direction: column;
+  /* Transição suave para quando a roleta para no resultado final */
+  transition: transform 0.5s cubic-bezier(0.32, 1.07, 0.76, 1.02);
+}
+
+.reel.spinning {
+  /* Aplica a animação de giro contínuo */
+  animation: spin 0.25s linear infinite;
+}
+
+/* A animação move a "fita" de ícones para cima.
+O valor de translateY deve ser a altura de um ícone multiplicada pelo número de ícones.
+- Altura aproximada do ícone (text-6xl + p-4) = 92px
+- Número de ícones = 4
+- Total = 92px * 4 = 368px
+*/
+@keyframes spin {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-368px);
+  }
+}

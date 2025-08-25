@@ -7,7 +7,7 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-
+import SlotMachineTab from '../components/activity/SlotMachineTab';
 // Importando os componentes modulares
 import StudentSidebar from '../components/activity/StudentSidebar';
 import ProfessorSidebar from '../components/activity/ProfessorSidebar';
@@ -46,6 +46,8 @@ function ActivityPage() {
   const [error, setError] = useState('');
   const [currentView, setCurrentView] = useState('dashboard');
   const [showStatsModal, setShowStatsModal] = useState(false);
+  const [slotWinners, setSlotWinners] = useState([]);
+  const [loadingSlotWinners, setLoadingSlotWinners] = useState(true);
 
   // Função utilitária para logging
   const debugLog = useCallback((message, ...optionalParams) => {
@@ -91,6 +93,17 @@ function ActivityPage() {
       setError(prev => `${prev}\n${errorMsg}`);
     }
   }, [user?.token, debugLog]);
+
+   const fetchSlotWinners = useCallback(async () => {
+    setLoadingSlotWinners(true);
+    // Usamos a função fetchData que já existe para buscar os dados
+    await fetchData(`/api/progress/${activityId}/slot-winners`, setSlotWinners);
+    setLoadingSlotWinners(false);
+  }, [activityId, fetchData]);
+
+  
+
+  
 
   // Busca todos os dados necessários ao carregar a página
   useEffect(() => {
@@ -148,6 +161,11 @@ function ActivityPage() {
             debugLog('Carregando itens da loja...');
             dataPromises.push(fetchData(`/api/progress/${activityId}/store-items`, setStoreItems));
         }
+        if (elements.includes("Chance (sorte e probabilidade)")) {
+          dataPromises.push(fetchSlotWinners());
+        }
+
+        // Aguarda todas as promessas
 
         await Promise.all(dataPromises);
         debugLog('Todos os dados complementares carregados');
@@ -158,12 +176,12 @@ function ActivityPage() {
         setError(errorMsg);
       } finally {
         setLoading(false);
-        debugLog('Finalizado fetchAllData');
+        debugLog('Finalizado fetchAllData, fetchSlotWinners');
       }
     };
 
     fetchAllData();
-  }, [activityId, user, fetchData, debugLog]);
+  }, [activityId, user, fetchData, debugLog, fetchSlotWinners]);
 
   // --- LÓGICA DE NÍVEL E XP (CLIENT-SIDE PARA FEEDBACK IMEDIATO) ---
   const xpForNextLevel = useCallback((level) => 100 + (level - 1) * 50, []);
@@ -302,6 +320,16 @@ function ActivityPage() {
         {currentView === 'store' && <StoreTab items={storeItems} userPoints={userProgress?.points_earned || 0} onPurchase={handlePurchase} />}
         {currentView === 'achievements' && <AchievementsTab />}
         {currentView === 'roulette' && <RouletteTab onPrizeWon={handlePointsEarned} />}
+        {currentView === 'slot' && (
+          <SlotMachineTab 
+            userCoins={userProgress?.coins || 0} 
+            onPrizeWon={handlePointsEarned}
+            // Passando os dados e a função para o filho
+            winners={slotWinners}
+            loadingWinners={loadingSlotWinners}
+            onWin={fetchSlotWinners} // <--- A "ferramenta" para o filho atualizar a lista
+          />
+        )}
       </div>
     );
   };

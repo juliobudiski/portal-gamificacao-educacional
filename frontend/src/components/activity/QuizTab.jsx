@@ -108,6 +108,8 @@ const QuizTab = ({ questions = [], onAnswerCorrect, gameElements = [] }) => {
 
     const isCorrect = answer === questions[currentIndex].correct_option;
     const points = isCorrect ? questions[currentIndex].points : 0;
+    const coins = isCorrect ? questions[currentIndex].coins : 0;
+
     setFeedback({
       type: isCorrect ? 'success' : 'error',
       message: isCorrect ? `+${points} Pontos!` : 'Resposta Incorreta!'
@@ -125,7 +127,8 @@ const QuizTab = ({ questions = [], onAnswerCorrect, gameElements = [] }) => {
             question_text: currentQuestion.text,
             selected_option: answer,
             is_correct: isCorrect,
-            points_earned: points
+            points_earned: points,
+            coins_earned: coins
           })
         });
         if (!response.ok) {
@@ -255,6 +258,7 @@ QuizTab.propTypes = {
       options: PropTypes.arrayOf(PropTypes.string).isRequired,
       correct_option: PropTypes.string.isRequired,
       points: PropTypes.number.isRequired,
+      coins: PropTypes.number,
       timeLimit: PropTypes.number
     })
   ),

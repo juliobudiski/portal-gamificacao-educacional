@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FaPlus, FaSave, FaTrash, FaEdit, FaQuestion, FaList, FaCheck, FaClock, FaStar } from 'react-icons/fa';
+import { FaPlus, FaSave, FaTrash, FaEdit, FaQuestion, FaList, FaCheck, FaClock, FaStar, FaGem } from 'react-icons/fa';
 
 function QuizEditorPage() {
     const { activityId } = useParams();
@@ -12,7 +12,7 @@ function QuizEditorPage() {
     const [questions, setQuestions] = useState([]);
     // NOVO ESTADO: para armazenar os elementos de jogo da atividade
     const [gameElements, setGameElements] = useState([]); 
-    const [currentQuestion, setCurrentQuestion] = useState({ text: '', options: ['', '', '', ''], correct_option: '', points: 10, timeLimit: 30 });
+    const [currentQuestion, setCurrentQuestion] = useState({ text: '', options: ['', '', '', ''], correct_option: '', points: 10, coins: 5, timeLimit: 30 });
     const [editingIndex, setEditingIndex] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -70,7 +70,7 @@ function QuizEditorPage() {
         } else {
             setQuestions([...questions, currentQuestion]);
         }
-        setCurrentQuestion({ text: '', options: ['', '', '', ''], correct_option: '', points: 10, timeLimit: 30 });
+        setCurrentQuestion({ text: '', options: ['', '', '', ''], correct_option: '', points: 10, coins: 5, timeLimit: 30 });
     };
 
     const handleEditQuestion = (index) => {
@@ -192,6 +192,20 @@ function QuizEditorPage() {
                                     className="w-full p-3 bg-gray-700 rounded-xl border border-gray-600 focus:border-[#ffbd30] focus:ring-2 focus:ring-[#ffbd30]/30 transition-all duration-300" 
                                 />
                             </div>
+
+                            {/* NOVO CAMPO PARA MOEDAS */}
+                            <div>
+                                <label className="block text-sm text-gray-400 mb-1 flex items-center gap-1">
+                                    <FaGem className="text-[#ffbd30]" /> Moedas
+                                </label>
+                                <input 
+                                    type="number" 
+                                    name="coins" 
+                                    value={currentQuestion.coins} 
+                                    onChange={handleInputChange} 
+                                    className="w-full p-3 bg-gray-700 rounded-xl border border-gray-600 focus:border-[#ffbd30] focus:ring-2 focus:ring-[#ffbd30]/30 transition-all duration-300" 
+                                />
+                            </div>
                             
                             {/* ATUALIZADO: Renderização condicional do campo de tempo */}
                             {isTimed && (
@@ -251,6 +265,10 @@ function QuizEditorPage() {
                                                     <span className="bg-gray-700 px-2 py-1 rounded-lg text-xs flex items-center">
                                                         <FaStar className="mr-1 text-[#69e8cb]" /> 
                                                         {q.points} pontos
+                                                    </span>
+                                                    <span className="bg-gray-700 px-2 py-1 rounded-lg text-xs flex items-center">
+                                                        <FaGem className="mr-1 text-[#ffbd30]" /> 
+                                                        {q.coins || 0} moedas
                                                     </span>
                                                     {/* ATUALIZADO: Mostra o tempo limite apenas se for relevante */}
                                                     {isTimed && (

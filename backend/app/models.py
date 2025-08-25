@@ -126,6 +126,7 @@ class ActivityProgress(db.Model):
     activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=False)
     class_id = db.Column(db.Integer, db.ForeignKey('class.id'), nullable=False)
     points_earned = db.Column(db.Integer, default=0)
+    coins = db.Column(db.Integer, nullable=False, default=0, server_default='0')
     status = db.Column(db.String(50), default='not_started')
     completed_at = db.Column(db.DateTime, nullable=True)
     attempts = db.Column(db.Integer, default=0)
@@ -211,3 +212,13 @@ class RouletteWin(db.Model):
     # Relações para facilitar as consultas
     user = db.relationship('User', backref='roulette_wins')
     activity = db.relationship('Activity', backref='roulette_wins')
+
+class SlotWin(db.Model):
+    __tablename__ = 'slot_win'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=False)
+    prize_description = db.Column(db.String(255), nullable=False)
+    timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
+    user = db.relationship('User', backref='slot_wins')
+    activity = db.relationship('Activity', backref='slot_wins')
