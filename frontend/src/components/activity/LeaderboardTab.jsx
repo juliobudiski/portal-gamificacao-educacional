@@ -1,8 +1,25 @@
 import React from 'react';
 import { FaCrown } from 'react-icons/fa';
-
+import backgroundImage from '../../assets/leaderboard-background.png';
 const LeaderboardTab = ({ leaderboardData }) => (
-    <div className="bg-gray-800 p-8 rounded-lg text-white">
+    <div className="bg-gray-800 p-8 rounded-lg text-white" 
+    style={{
+            backgroundImage: `url(${backgroundImage})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            minHeight: '600px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            padding: '2rem',
+            borderRadius: '1rem',
+            boxShadow: '0 5px 15px rgba(0, 0, 0, 0.5)',
+            color: 'white',
+            width: '90%',
+            maxWidth: '1200px',
+            }}
+    >
         <h2 className="text-3xl font-bold text-yellow-400 mb-6 text-center">Ranking da Atividade</h2>
         <div className="space-y-4">
             {leaderboardData.map(player => (

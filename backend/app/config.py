@@ -10,4 +10,7 @@ class Config:
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
     UPLOAD_FOLDER = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'uploads/avatars')
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-    GOOGLE_CLIENT_ID_BACKEND = os.getenv('GOOGLE_CLIENT_ID')
+    GOOGLE_CLIENT_ID_BACKEND = os.getenv('GOOGLE_CLIENT_ID_BACKEND')
+    
+    if not GOOGLE_CLIENT_ID_BACKEND:
+        raise ValueError("A variável de ambiente GOOGLE_CLIENT_ID_BACKEND não foi definida!")

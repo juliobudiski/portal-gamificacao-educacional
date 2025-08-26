@@ -111,7 +111,7 @@ def google_auth():
 
     try:
         # Verifica o token com o backend do Google
-        idinfo = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID_BACKEND)
+        idinfo = id_token.verify_oauth2_token(token, requests.Request(), Config.GOOGLE_CLIENT_ID_BACKEND)
         current_app.logger.debug(f"Informações do token Google verificado: {idinfo.get('email')}")
 
         google_id = idinfo['sub']
