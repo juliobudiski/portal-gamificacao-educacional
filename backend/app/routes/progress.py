@@ -1,7 +1,7 @@
 # backend/app/routes/progress.py
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from ..models import db, User, ActivityProgress, Activity, StudentResponse, EventLog, RouletteWin, SlotWin
+from ..models import db, Purchase, StoreItem, User, ActivityProgress, Activity, StudentResponse, EventLog, RouletteWin, SlotWin
 from sqlalchemy.orm import joinedload
 from flask_cors import cross_origin 
 progress_bp = Blueprint('progress', __name__)
@@ -87,30 +87,48 @@ def get_activity_progress(activity_id):
 @jwt_required()
 @cross_origin()
 def get_leaderboard(activity_id):
-    # Esta consulta busca todos os progressos para uma atividade,
-    # ordena pelos pontos em ordem decrescente e pega os 10 primeiros.
+    """Busca o ranking e enriquece com os efeitos cosméticos comprados pelos alunos."""
+    
     leaderboard_data = db.session.query(
+        User.id,
         User.name,
         User.profile_picture,
-        ActivityProgress.points_earned
+        ActivityProgress.total_xp_earned
     ).join(
         ActivityProgress, User.id == ActivityProgress.student_id
     ).filter(
         ActivityProgress.activity_id == activity_id
     ).order_by(
-        ActivityProgress.points_earned.desc()
+        ActivityProgress.total_xp_earned.desc()
     ).limit(10).all()
 
-    # Formata os dados para o frontend
-    leaderboard = [
-        {
+    leaderboard = []
+    for index, row in enumerate(leaderboard_data):
+        active_purchases = db.session.query(
+            StoreItem.effect_id
+        ).join(
+            Purchase, Purchase.item_id == StoreItem.id
+        ).filter(
+            Purchase.user_id == row.id,
+            Purchase.activity_id == activity_id,
+            StoreItem.item_type == 'cosmetic',
+            # --- LÓGICA DE EXPIRAÇÃO ADICIONADA AQUI ---
+            # O efeito está ativo se:
+            # 1. Ele não foi consumido E
+            # 2. A data de expiração é NULA (permanente) OU está no futuro.
+            Purchase.is_consumed == False,
+            ( (Purchase.expires_at == None) | (Purchase.expires_at > datetime.utcnow()) )
+        ).all()
+        
+        active_effects = [effect[0] for effect in active_purchases if effect[0]]
+        
+        leaderboard.append({
             "rank": index + 1,
             "name": row.name,
             "avatar": row.profile_picture or f"https://ui-avatars.com/api/?name={row.name.replace(' ', '+')}&background=random",
-            "points": row.points_earned
-        }
-        for index, row in enumerate(leaderboard_data)
-    ]
+            "points": row.total_xp_earned,
+            "active_effects": active_effects  # <-- A MÁGICA ACONTECE AQUI!
+        })
     
     return jsonify(leaderboard), 200
 
@@ -195,19 +213,128 @@ def get_analytics(activity_id):
     
     return jsonify(analytics), 200
 
+@progress_bp.route('/<int:activity_id>/purchase', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def purchase_store_item(activity_id):
+    """Processa a compra de um item da loja por um aluno."""
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    
+    if not user or user.role != 'aluno':
+        return jsonify({"message": "Apenas alunos podem comprar itens."}), 403
 
+    data = request.get_json()
+    item_id = data.get('item_id')
+    if not item_id:
+        return jsonify({"message": "O ID do item é obrigatório."}), 400
+
+    # 1. Validação
+    item = StoreItem.query.get(item_id)
+    progress = ActivityProgress.query.filter_by(student_id=user_id, activity_id=activity_id).first()
+
+    if not item:
+        return jsonify({"message": "Item não encontrado na loja."}), 404
+    if not progress:
+        return jsonify({"message": "Progresso do aluno não encontrado."}), 404
+    
+    # Garante que os pontos não sejam nulos
+    current_points = progress.points_earned if progress.points_earned is not None else 0
+
+    if current_points < item.price:
+        return jsonify({"message": "Pontos insuficientes para realizar esta compra."}), 400
+
+    try:
+        # 2. Lógica da Transação
+        # Subtrai o custo do item dos pontos do aluno
+        progress.points_earned = current_points - item.price
+        
+        # Cria um registro da compra
+        new_purchase = Purchase(
+            user_id=user_id,
+            activity_id=activity_id,
+            item_id=item.id,
+            item_name=item.name,
+            price_paid=item.price
+        )
+
+        duration_days = data.get('duration_days') # Recebe a duração do frontend
+        if duration_days:
+            new_purchase.expires_at = datetime.utcnow() + timedelta(days=int(duration_days))
+        
+        db.session.add(new_purchase)
+        db.session.commit()
+        
+        return jsonify({
+            "message": "Compra realizada com sucesso!",
+            "new_total_points": progress.points_earned,
+            "purchase": new_purchase.to_dict()
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Erro na compra do item {item_id} para o usuário {user_id}: {str(e)}")
+        return jsonify({"message": "Erro interno ao processar a compra."}), 500
+
+# 1. ROTA PARA BUSCAR ITENS
 @progress_bp.route('/<int:activity_id>/store-items', methods=['GET'])
 @jwt_required()
 @cross_origin()
 def get_store_items(activity_id):
-    # No futuro, isso viria do banco de dados e poderia ser configurado pelo professor.
-    # Por enquanto, manteremos os dados mockados, pois não há um modelo para eles.
-    dummy_store_items = [
-        { "id": 1, "name": "Dica Extra", "price": 50, "icon": "💡" },
-        { "id": 2, "name": "Pular Questão", "price": 200, "icon": "⏩" },
-        { "id": 3, "name": "Segunda Chance", "price": 150, "icon": "❤️" }
-    ]
-    return jsonify(dummy_store_items), 200
+    """Busca os itens da loja para uma atividade específica."""
+    items = StoreItem.query.filter_by(activity_id=activity_id).all()
+    return jsonify([item.to_dict() for item in items]), 200
+
+# ROTA PARA PROFESSOR ADICIONAR UM ITEM
+@progress_bp.route('/<int:activity_id>/store-items', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def add_store_item(activity_id):
+    """Adiciona um novo item à loja de uma atividade."""
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+
+    if not user or user.role != 'professor':
+        return jsonify({"message": "Acesso negado."}), 403
+
+    activity = Activity.query.get(activity_id)
+    if not activity or activity.professor_id != user.id:
+        return jsonify({"message": "Atividade não encontrada ou você não tem permissão."}), 404
+
+    data = request.get_json()
+    new_item = StoreItem(
+        activity_id=activity_id,
+        name=data.get('name'),
+        description=data.get('description'),
+        price=int(data.get('price', 50)),
+        icon=data.get('icon', '💡'),
+        item_type=data.get('item_type', 'utility'), # Salva o tipo do item
+        effect_id=data.get('effect_id')             # Salva o ID do efeito
+    )
+    db.session.add(new_item)
+    db.session.commit()
+    return jsonify(new_item.to_dict()), 201
+
+# ROTA PARA PROFESSOR DELETAR UM ITEM
+@progress_bp.route('/store-items/<int:item_id>', methods=['DELETE'])
+@jwt_required()
+@cross_origin()
+def delete_store_item(item_id):
+    """Deleta um item da loja."""
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+
+    item = StoreItem.query.get(item_id)
+    if not item:
+        return jsonify({"message": "Item não encontrado."}), 404
+        
+    activity = Activity.query.get(item.activity_id)
+    if not user or user.role != 'professor' or activity.professor_id != user.id:
+        return jsonify({"message": "Acesso negado."}), 403
+
+    db.session.delete(item)
+    db.session.commit()
+    return jsonify({"message": "Item deletado com sucesso."}), 200
 
 @progress_bp.route('/<int:activity_id>/update', methods=['POST'])
 @jwt_required()
@@ -257,6 +384,7 @@ def update_activity_progress(activity_id):
             # Garante que os valores não sejam nulos antes de somar
             progress.points_earned = (progress.points_earned or 0) + points_to_add
             progress.coins = (progress.coins or 0) + coins_to_add
+            progress.total_xp_earned = (progress.total_xp_earned or 0) + points_to_add
         
         db.session.commit()
         
@@ -308,6 +436,7 @@ def spin_roulette_for_activity(activity_id):
         # Garante que, se os pontos forem None, usamos 0 como base
         current_points = progress.points_earned or 0
         progress.points_earned = current_points + prize['value']
+        progress.total_xp_earned = (progress.total_xp_earned or 0) + prize['value']
         # --- FIM DA CORREÇÃO ---
 
     progress.last_spin_date = datetime.utcnow()
@@ -401,12 +530,15 @@ def play_slot_machine(activity_id):
         if winning_symbol == 'gem':
             prize_data = {"description": "Pequeno Bônus de 25 XP!", "type": "xp", "value": 25}
             progress.points_earned = current_points + 25
+            progress.total_xp_earned = (progress.total_xp_earned or 0) + 25
         elif winning_symbol == 'star':
             prize_data = {"description": "Bônus Médio de 75 XP!", "type": "xp", "value": 75}
             progress.points_earned = current_points + 75
+            progress.total_xp_earned = (progress.total_xp_earned or 0) + 75
         elif winning_symbol == 'trophy':
             prize_data = {"description": "Grande Bônus de 200 XP!", "type": "xp", "value": 200}
             progress.points_earned = current_points + 200
+            progress.total_xp_earned = (progress.total_xp_earned or 0) + 200
         elif winning_symbol == 'gift':
             prize_data = {"description": "Prêmio Especial! +1 item!", "type": "special", "value": 1}
 

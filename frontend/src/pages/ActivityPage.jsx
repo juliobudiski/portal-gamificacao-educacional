@@ -157,8 +157,8 @@ function ActivityPage() {
             debugLog('Carregando leaderboard...');
             dataPromises.push(fetchData(`/api/progress/${activityId}/leaderboard`, setLeaderboard));
         }
-        if (elements.includes("Economia (sistema monetário)") && user.role === 'aluno') {
-            debugLog('Carregando itens da loja...');
+        if (elements.includes("Economia (sistema monetário)")) { 
+            debugLog('Carregando itens da loja para aluno ou professor...');
             dataPromises.push(fetchData(`/api/progress/${activityId}/store-items`, setStoreItems));
         }
         if (elements.includes("Chance (sorte e probabilidade)")) {
@@ -236,9 +236,50 @@ function ActivityPage() {
   }, [activityId, user.token, debugLog, xpForNextLevel]);
 
   const handlePurchase = useCallback(async (item) => {
-    debugLog('handlePurchase chamado para item:', item);
-    alert(`Compra de ${item.name} a ser implementada!`);
-  }, [debugLog]);
+      debugLog('Tentando comprar o item:', item);
+      
+      if (!window.confirm(`Você tem certeza que quer gastar ${item.price} pontos para comprar "${item.name}"?`)) {
+          return;
+      }
+
+      try {
+          const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
+          const response = await fetch(`${API_BASE}/api/progress/${activityId}/purchase`, {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${user.token}`
+              },
+              body: JSON.stringify({ item_id: item.id }),
+              duration_days: item.duration_days
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+              throw new Error(data.message || "Falha ao processar a compra.");
+          }
+          
+          // 1. Atualiza os pontos do usuário na tela (carteira)
+          setUserProgress(prev => ({
+              ...prev,
+              points_earned: data.new_total_points
+          }));
+
+          // 2. A MÁGICA: Busca os dados do ranking novamente
+          // Isso garante que o componente receba a lista com os novos 'active_effects'.
+          debugLog('Compra bem-sucedida, atualizando o ranking para exibir os novos efeitos...');
+          await fetchData(`/api/progress/${activityId}/leaderboard`, setLeaderboard);
+
+          alert(`"${item.name}" comprado com sucesso!`);
+          debugLog('Ranking atualizado.');
+
+      } catch (err) {
+          debugLog("Erro na compra:", err);
+          setError(`Erro na compra: ${err.message}`);
+          setTimeout(() => setError(''), 5000);
+      }
+  }, [activityId, user?.token, debugLog, fetchData, setLeaderboard]); 
 
   // --- NOVA FUNÇÃO PARA SELEÇÃO DE VIEW COM ATUALIZAÇÃO DE DADOS ---
   const handleSelectView = useCallback(async (view) => {
@@ -249,6 +290,40 @@ function ActivityPage() {
     }
     setCurrentView(view);
   }, [activityId, fetchData, debugLog]);
+
+  // Função para adicionar item (passada para o StoreTab)
+    const handleAddItem = async (itemData) => {
+        try {
+            const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
+            const response = await fetch(`${API_BASE}/api/progress/${activityId}/store-items`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` },
+                body: JSON.stringify(itemData)
+            });
+            if (!response.ok) throw new Error("Falha ao adicionar item.");
+            const newItem = await response.json();
+            setStoreItems(prev => [...prev, newItem]); // Atualiza a lista na UI
+        } catch (err) {
+            setError(err.message);
+        }
+    };
+
+    // Função para deletar item (passada para o StoreTab)
+    const handleDeleteItem = async (itemId) => {
+        if (!window.confirm("Tem certeza que deseja remover este item da loja?")) return;
+        try {
+            const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
+            const response = await fetch(`${API_BASE}/api/progress/store-items/${itemId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${user.token}` }
+            });
+            if (!response.ok) throw new Error("Falha ao deletar item.");
+            setStoreItems(prev => prev.filter(item => item.id !== itemId));
+        } catch (err) {
+            setError(err.message);
+        }
+    };
+
 
 
   // ---------- [COMPONENTE INTERNO: DASHBOARD] ----------
@@ -317,7 +392,16 @@ function ActivityPage() {
         {currentView === 'leaderboard' && <LeaderboardTab leaderboardData={leaderboard} />}
         {currentView === 'mission' && <MissionTab activity={activity} />}
         {currentView === 'chat' && <ChatTab />}
-        {currentView === 'store' && <StoreTab items={storeItems} userPoints={userProgress?.points_earned || 0} onPurchase={handlePurchase} />}
+        {currentView === 'store' && (
+        <StoreTab 
+            items={storeItems} 
+            userPoints={userProgress?.points_earned || 0} 
+            onPurchase={handlePurchase}
+            onAddItem={handleAddItem}
+            onDeleteItem={handleDeleteItem}
+            activityId={activityId}
+        />
+    )}
         {currentView === 'achievements' && <AchievementsTab />}
         {currentView === 'roulette' && <RouletteTab onPrizeWon={handlePointsEarned} />}
         {currentView === 'slot' && (

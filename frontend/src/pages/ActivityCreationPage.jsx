@@ -894,56 +894,62 @@ function ActivityCreationPage({ existingActivity }) {
       case 5: {
         // A lógica para sugerir elementos é mantida
         const recommendedElements = new Set();
-        if (activityData.playerProfile.selectedProfiles.includes("Competitivo")) { ["Níveis", "Sistema de pontuação", "Estatísticas", "Reconhecimento", "Competição", "Progressão baseada em habilidade", "Sistema de classificação e ranking"].forEach(el => recommendedElements.add(el)); }
-        if (activityData.playerProfile.selectedProfiles.includes("Cooperativo")) { ["Cooperação", "Chat ou sistema de mensagens", "Interação social"].forEach(el => recommendedElements.add(el)); }
-        if (activityData.playerProfile.selectedProfiles.includes("Imersivo")) { ["Narrativas envolventes", "Storytelling", "Sensação (imersão)", "Customização de personagem", "Customização de equipamento"].forEach(el => recommendedElements.add(el)); }
-        if (activityData.playerProfile.selectedProfiles.includes("Realizador")) { ["Níveis", "Sistema de pontuação", "Conquistas", "Recompensas atraentes", "Progressão baseada em habilidade", "Feedback claro sobre o desempenho"].forEach(el => recommendedElements.add(el)); }
-        if (activityData.playerProfile.selectedProfiles.includes("Social")) { ["Interação social", "Chat ou sistema de mensagens", "Reputação", "Cooperação", "Feedback claro sobre o desempenho"].forEach(el => recommendedElements.add(el)); }
+        if (activityData.playerProfile.selectedProfiles.includes("Competitivo")) { ["Níveis", "Sistema de pontuação", "Estatísticas (métricas de progresso)", "Reconhecimento", "Competição", "Progressão baseada em habilidade", "Sistema de classificação e ranking"].forEach(el => recommendedElements.add(el)); }
+        if (activityData.playerProfile.selectedProfiles.includes("Cooperativo")) { ["Cooperação", "Chat ou sistema de mensagens", "Interação social com outros jogadores"].forEach(el => recommendedElements.add(el)); }
+        if (activityData.playerProfile.selectedProfiles.includes("Imersivo")) { ["Narrativas envolventes", "Storytelling", "Sensação (imersão, experiência sensorial)", "Customização de personagem", "Customização de equipamento"].forEach(el => recommendedElements.add(el)); }
+        if (activityData.playerProfile.selectedProfiles.includes("Realizador")) { ["Níveis", "Sistema de pontuação", "Conquistas digitais para metas alcançadas", "Recompensas atraentes", "Progressão baseada em habilidade", "Feedback claro sobre o desempenho"].forEach(el => recommendedElements.add(el)); }
+        if (activityData.playerProfile.selectedProfiles.includes("Social")) { ["Interação social com outros jogadores", "Chat ou sistema de mensagens", "Reputação (prestígio, renome, status)", "Cooperação", "Feedback claro sobre o desempenho"].forEach(el => recommendedElements.add(el)); }
 
-        // Mapeamento de todos os elementos de jogo para seus ícones correspondentes
+        // --- CORREÇÃO: Lista de 'allGameElements' atualizada com os nomes corretos e completos ---
         const allGameElements = [
           { name: "Níveis", icon: <FaLayerGroup /> },
           { name: "Sistema de pontuação", icon: <FaStar /> },
-          { name: "Estatísticas", icon: <FaChartBar /> },
+          { name: "Estatísticas (métricas de progresso)", icon: <FaChartBar /> },
           { name: "Reconhecimento", icon: <FaAward /> },
-          { name: "Raridade", icon: <FaGem /> },
-          { name: "Economia", icon: <FaCoins /> },
-          { name: "Escolha imposta", icon: <FaCodeBranch /> },
-          { name: "Chance", icon: <FaDice /> },
+          { name: "Raridade (itens exclusivos, objetos raros)", icon: <FaGem /> },
+          { name: "Economia (sistema monetário)", icon: <FaCoins /> },
+          { name: "Escolha imposta (decisões forçadas)", icon: <FaCodeBranch /> },
+          { name: "Chance (sorte e probabilidade)", icon: <FaDice /> },
           { name: "Pressão de tempo", icon: <FaClock /> },
-          { name: "Reputação", icon: <FaIdBadge /> },
+          { name: "Reputação (prestígio, renome, status)", icon: <FaIdBadge /> },
           { name: "Cooperação", icon: <FaHandshake /> },
           { name: "Competição", icon: <FaTrophy /> },
           { name: "Pressão social", icon: <FaUsers /> },
-          { name: "Sensação (imersão)", icon: <FaVrCardboard /> },
-          { name: "Objetivo (missão)", icon: <FaBullseye /> },
+          { name: "Sensação (imersão, experiência sensorial)", icon: <FaVrCardboard /> },
+          { name: "Objetivo (missão, meta do jogo)", icon: <FaBullseye /> },
           { name: "Quebra-cabeça", icon: <FaPuzzlePiece /> },
-          { name: "Renovação", icon: <FaSyncAlt /> },
-          { name: "Novidade", icon: <FaLightbulb /> },
+          { name: "Renovação (atualizações de conteúdo)", icon: <FaSyncAlt /> },
+          { name: "Novidade (novas funcionalidades)", icon: <FaLightbulb /> },
           { name: "Storytelling", icon: <FaBook /> },
           { name: "Customização de personagem", icon: <FaUserEdit /> },
           { name: "Customização de equipamento", icon: <FaShieldAlt /> },
           { name: "Chat ou sistema de mensagens", icon: <FaComments /> },
-          { name: "Interação social", icon: <FaShareAlt /> },
+          { name: "Interação social com outros jogadores", icon: <FaShareAlt /> },
           { name: "Feedback claro sobre o desempenho", icon: <FaCheckCircle /> },
           { name: "Progressão baseada em habilidade", icon: <FaChartLine /> },
           { name: "Narrativas envolventes", icon: <FaBookOpen /> },
           { name: "Sistema de classificação e ranking", icon: <FaListOl /> },
           { name: "Recompensas atraentes", icon: <FaGift /> },
-          { name: "Conquistas", icon: <FaAward /> }, // Adicionado para o perfil Realizador
-        ].sort((a, b) => a.name.localeCompare(b.name)); // Ordena alfabeticamente para melhor visualização
+          { name: "Conquistas digitais para metas alcançadas", icon: <FaAward /> },
+        ].sort((a, b) => a.name.localeCompare(b.name));
 
+        // --- CORREÇÃO APLICADA AQUI ---
+        // Esta função agora atualiza o estado diretamente, sem depender da antiga 'handleInputChange'.
         const handleElementSelection = (elementName) => {
-          const currentElements = activityData.gameElements.selectedElements;
-          const newElements = currentElements.includes(elementName)
-            ? currentElements.filter(el => el !== elementName)
-            : [...currentElements, elementName];
-          
-          handleInputChange({
-            target: {
-              name: 'gameElements.selectedElements',
-              value: newElements,
-            },
+          setActivityData(prevData => {
+            const currentElements = prevData.gameElements.selectedElements;
+            const newElements = currentElements.includes(elementName)
+              ? currentElements.filter(el => el !== elementName) // Remove o elemento
+              : [...currentElements, elementName]; // Adiciona o elemento
+
+            // Retorna o novo estado completo
+            return {
+              ...prevData,
+              gameElements: {
+                ...prevData.gameElements,
+                selectedElements: newElements,
+              },
+            };
           });
         };
 

@@ -1,0 +1,31 @@
+/* bakcup/src/styles/Leaderboard.css */
+
+.text-gold {
+  color: #FFD700;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.7);
+}
+
+.text-gradient-rainbow {
+  /* Animação de gradiente para o texto */
+  background: linear-gradient(90deg, #ffbd30, #69e8cb, #9570d9, #ffbd30);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: rainbow-animation 3s ease infinite;
+}
+
+@keyframes rainbow-animation {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Animação simples de fade-in para os títulos */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out;
+}

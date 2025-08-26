@@ -126,6 +126,7 @@ class ActivityProgress(db.Model):
     activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=False)
     class_id = db.Column(db.Integer, db.ForeignKey('class.id'), nullable=False)
     points_earned = db.Column(db.Integer, default=0)
+    total_xp_earned = db.Column(db.Integer, default=0, nullable=False, server_default='0')
     coins = db.Column(db.Integer, nullable=False, default=0, server_default='0')
     status = db.Column(db.String(50), default='not_started')
     completed_at = db.Column(db.DateTime, nullable=True)
@@ -222,3 +223,71 @@ class SlotWin(db.Model):
     timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
     user = db.relationship('User', backref='slot_wins')
     activity = db.relationship('Activity', backref='slot_wins')
+
+class Purchase(db.Model):
+    __tablename__ = 'purchase'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=False)
+    item_id = db.Column(db.Integer, db.ForeignKey('store_item.id'), nullable=False)
+    
+    item_name = db.Column(db.String(100), nullable=False)
+    price_paid = db.Column(db.Integer, nullable=False)
+    purchase_date = db.Column(db.DateTime, default=db.func.current_timestamp())
+    expires_at = db.Column(db.DateTime, nullable=True)
+
+    # Para itens consumíveis (ex: Dica Extra), podemos controlar se já foi usado.
+    is_consumed = db.Column(db.Boolean, default=False, nullable=False)
+
+    # Relações para facilitar as consultas
+    user = db.relationship('User', backref='purchases')
+    activity = db.relationship('Activity', backref='purchases')
+    item = db.relationship('StoreItem', backref=db.backref('purchases', cascade="all, delete-orphan"))
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'item_id': self.item_id,
+            'item_name': self.item_name,
+            'price_paid': self.price_paid,
+            'purchase_date': self.purchase_date.isoformat(),
+            'is_consumed': self.is_consumed,
+            'expires_at': self.expires_at.isoformat() if self.expires_at else None
+        }
+
+
+
+class StoreItem(db.Model):
+    __tablename__ = 'store_item'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(255), nullable=True)
+    price = db.Column(db.Integer, nullable=False, default=50)
+    icon = db.Column(db.String(50), nullable=True, default='💡') # Armazena o emoji ou nome do ícone
+    
+    price = db.Column(db.Integer, nullable=False, default=50)
+    icon = db.Column(db.String(50), nullable=True, default='💡')
+    
+    # --- NOVOS CAMPOS ---
+    # Para identificar o tipo de item (cosmético, utilitário)
+    item_type = db.Column(db.String(50), nullable=False, default='utility') 
+    # Um identificador único para o efeito (ex: 'RANKING_COLOR_GOLD')
+    effect_id = db.Column(db.String(100), nullable=True) 
+
+    activity = db.relationship('Activity', backref='store_items')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'activity_id': self.activity_id,
+            'name': self.name,
+            'description': self.description,
+            'price': self.price,
+            'icon': self.icon,
+            'item_type': self.item_type,
+            'effect_id': self.effect_id
+        }

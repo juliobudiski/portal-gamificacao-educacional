@@ -201,6 +201,7 @@ def submit_answer(activity_id):
 
         # Atualiza os contadores de progresso
         progress.points_earned += points_earned
+        progress.total_xp_earned = (progress.total_xp_earned or 0) + points_earned
         progress.attempts += 1
         
         db.session.commit()
