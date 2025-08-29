@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import '../../styles/SlotMachine.css'; // Criaremos este arquivo de CSS a seguir
 import backgroundImage from '../../assets/slot-background.png';
+import useAnalytics from '../../hooks/useAnalytics';
 // --- Configuração dos Símbolos e Prêmios ---
 // Adicione ou remova símbolos conforme desejar.
 const symbols = [
@@ -25,7 +26,7 @@ const SlotMachineTab = ({ userCoins, onPrizeWon, winners, loadingWinners, onWin 
   const [loading, setLoading] = useState(false);
   const spinCost = 0; // Custo para girar
 
-  
+  const { logEvent } = useAnalytics("slot_machine", user.token, activityId);
 
   // Função para lidar com o clique no botão de girar
   
@@ -41,6 +42,7 @@ const SlotMachineTab = ({ userCoins, onPrizeWon, winners, loadingWinners, onWin 
     setError('');
     setLoading(true);
     setIsSpinning(true);
+    logEvent("slot_machine_attempt");
 
     try {
       const response = await fetch(

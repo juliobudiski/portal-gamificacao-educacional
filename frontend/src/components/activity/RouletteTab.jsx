@@ -4,6 +4,8 @@ import { FaDice, FaTrophy, FaGift, FaSyncAlt, FaExclamationTriangle, FaCheckCirc
 import { useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import backgroundImage from '../../assets/roulette-wallpaper.png';
+import useAnalytics from '../../hooks/useAnalytics';
+
 const style = `
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
@@ -34,6 +36,7 @@ const RouletteTab = ({ onPrizeWon }) => {
   const [error, setError] = useState("");
   const [winners, setWinners] = useState([]);
   const [loadingWinners, setLoadingWinners] = useState(true);
+  const { logEvent } = useAnalytics("roulette", user.token, activityId);
 
   // Os segmentos agora são apenas um array de strings
   const segments = basePrizes.map((p) => p.text);
@@ -63,6 +66,9 @@ const RouletteTab = ({ onPrizeWon }) => {
     setError("");
     setLoading(true);
     setWinningPrizeIndex(null);
+
+    logEvent("roulette_spin_attempt");
+
 
     try {
       const response = await fetch(

@@ -4,6 +4,7 @@ import PropTypes from 'prop-types'; // Import adicionado para validação de pro
 import { useAuth } from '../../context/AuthContext'; // Importe o useAuth
 import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import useAnalytics from '../../hooks/useAnalytics';
 // Verifica se o modo debug está ativado
 const isDebugMode = import.meta.env.VITE_DEBUG_MODE === 'true';
 
@@ -27,11 +28,13 @@ const NarrativeTab = ({ narrativeConfig, onStart }) => {
       dialogueLines: narrativeConfig?.dialogue?.length || 0
     });
   }
+  
 
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
   const { user } = useAuth(); // Obtenha o usuário do contexto
   const { activityId } = useParams();
-
+// 2. Inicializar o hook de analytics para a seção "narrative"
+  const { logEvent } = useAnalytics("narrative", user.token, activityId);
   // Se não houver configuração de narrativa, exibe uma mensagem padrão.
   if (!narrativeConfig || !narrativeConfig.scenario || narrativeConfig.characters.length === 0) {
     // Log de narrativa não configurada
@@ -54,27 +57,17 @@ const NarrativeTab = ({ narrativeConfig, onStart }) => {
   }
 
   useEffect(() => {
-    const logView = async () => {
-      // Só registra se for um aluno
-      if (user?.role === 'aluno') {
-        try {
-          await fetch(`http://127.0.0.1:5000/api/activities/${activityId}/log_event`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${user.token}`
-            },
-            body: JSON.stringify({ event_type: 'narrative_viewed' })
-          });
-          console.log('[NarrativeTab] Visualização da narrativa registrada.');
-        } catch (error) {
-          console.error('[NarrativeTab] Erro ao registrar visualização:', error);
-        }
-      }
-    };
-
-    logView();
-  }, [activityId, user]);
+    // Este useEffect agora roda apenas uma vez quando o componente é montado
+    // para registrar que a narrativa foi visualizada.
+    if (user?.role === 'aluno') {
+      logEvent("narrative_viewed", {
+          total_dialogue_lines: narrativeConfig?.dialogue?.length || 0
+      });
+      console.log('[NarrativeTab] Visualização da narrativa registrada via useAnalytics.');
+    }
+    // A dependência de 'logEvent' garante que isso só rode uma vez,
+    // pois a função é memoizada pelo useCallback no hook.
+  }, [logEvent, user?.role, narrativeConfig?.dialogue?.length]);
 
   const { scenario, characters, dialogue } = narrativeConfig;
   const currentLine = dialogue[currentLineIndex];
@@ -92,7 +85,11 @@ const NarrativeTab = ({ narrativeConfig, onStart }) => {
       if (isDebugMode) {
         console.log(`[NarrativeTab] Avançando para o próximo diálogo: ${currentLineIndex + 1}/${dialogue.length}`);
       }
-      
+      logEvent("narrative_next_line", {
+          from_line: currentLineIndex,
+          to_line: currentLineIndex + 1,
+          character_role: currentLine?.characterRole
+      });
       setCurrentLineIndex(prev => prev + 1);
     }
   };
@@ -108,9 +105,19 @@ const NarrativeTab = ({ narrativeConfig, onStart }) => {
       if (isDebugMode) {
         console.log(`[NarrativeTab] Retrocedendo para diálogo anterior: ${currentLineIndex - 1}/${dialogue.length}`);
       }
-      
+      logEvent("narrative_previous_line", {
+          from_line: currentLineIndex,
+          to_line: currentLineIndex - 1,
+          character_role: currentLine?.characterRole
+      });
       setCurrentLineIndex(prev => prev - 1);
     }
+  };
+
+  const handleStartChallenge = () => {
+      // 6. Logar o momento em que o usuário finaliza a narrativa e começa o desafio
+      logEvent("narrative_completed");
+      onStart(); // Chama a função original para mudar a aba
   };
 
   // Log de renderização
@@ -171,7 +178,7 @@ const NarrativeTab = ({ narrativeConfig, onStart }) => {
             </button>
         ) : (
             <button 
-                onClick={onStart} 
+                onClick={handleStartChallenge} 
                 className="py-2 px-4 bg-green-600 hover:bg-green-700 rounded-lg flex items-center font-bold"
             >
                 Iniciar Desafio! <FaPlay className="ml-2"/>

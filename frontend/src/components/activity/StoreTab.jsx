@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { FaGem, FaShoppingCart, FaPlus, FaTrash, FaExclamationTriangle, FaPalette, FaCrown } from 'react-icons/fa';
-
+import backgroundImage from '../../assets/store-background.png';
+import useAnalytics from "../../hooks/useAnalytics";
 // Lista de ícones que o professor pode escolher
 
 const PREDEFINED_ITEMS = [
@@ -52,7 +53,7 @@ const ManageItemCard = ({ item, onDelete }) => (
 // Componente principal da Loja
 const StoreTab = ({ items, userPoints, onPurchase, onAddItem, onDeleteItem }) => {
     const { user } = useAuth();
-    
+    const { logEvent } = useAnalytics("store", user.token); // Inicializa o hook
     // Estado para o item pré-definido selecionado pelo professor
     const [selectedPredefinedItem, setSelectedPredefinedItem] = useState(PREDEFINED_ITEMS[0]);
 
@@ -65,7 +66,23 @@ const StoreTab = ({ items, userPoints, onPurchase, onAddItem, onDeleteItem }) =>
     // VISÃO DO ALUNO (sem mudanças)
     if (user.role === 'aluno') {
         return (
-            <div className="bg-gray-800 p-8 rounded-lg text-white">
+            <div className="bg-gray-800 p-8 rounded-lg text-white"
+            style={{
+                backgroundImage: `url(${backgroundImage})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                minHeight: '600px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                padding: '2rem',
+                borderRadius: '1rem',
+                boxShadow: '0 5px 15px rgba(0, 0, 0, 0.5)',
+                color: 'white',
+                width: '90%',
+                maxWidth: '1200px',
+                }}>
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-3xl font-bold text-green-400">Loja de Recompensas</h2>
                     <div className="text-xl font-bold text-yellow-400 flex items-center">
@@ -91,7 +108,23 @@ const StoreTab = ({ items, userPoints, onPurchase, onAddItem, onDeleteItem }) =>
     // VISÃO DO PROFESSOR (MODIFICADA)
     if (user.role === 'professor') {
         return (
-            <div className="bg-gray-800 p-8 rounded-lg text-white">
+            <div className="bg-gray-800 p-8 rounded-lg text-white"
+            style={{
+                backgroundImage: `url(${backgroundImage})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                minHeight: '600px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                padding: '2rem',
+                borderRadius: '1rem',
+                boxShadow: '0 5px 15px rgba(0, 0, 0, 0.5)',
+                color: 'white',
+                width: '90%',
+                maxWidth: '1200px',
+                }}>
                 <h2 className="text-3xl font-bold text-green-400 mb-6">Gerenciar Itens da Loja</h2>
                 
                 {/* Formulário para adicionar item pré-definido */}

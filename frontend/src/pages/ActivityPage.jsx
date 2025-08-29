@@ -22,6 +22,7 @@ import AchievementsTab from '../components/activity/AchievementsTab';
 import RouletteTab from '../components/activity/RouletteTab';
 // Ícones para os cards do dashboard
 import { FaArrowLeft } from 'react-icons/fa';
+import useAnalytics from "../hooks/useAnalytics";
 import { cardsConfig } from '../components/activity/gameElementsConfig';
 // Configuração de debug - ativar no .env.local
 const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === 'true';
@@ -35,7 +36,7 @@ function ActivityPage() {
   const { activityId } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
-  
+  const { logEvent } = useAnalytics("activity_page", user.token, activityId);
   // Estados da aplicação
   const [activity, setActivity] = useState(null);
   const [userProgress, setUserProgress] = useState(null);
@@ -237,7 +238,11 @@ function ActivityPage() {
 
   const handlePurchase = useCallback(async (item) => {
       debugLog('Tentando comprar o item:', item);
-      
+      logEvent("purchase_item", { 
+            item_id: item.id, 
+            item_type: item.item_type, 
+            price: item.price 
+        }, "store");
       if (!window.confirm(`Você tem certeza que quer gastar ${item.price} pontos para comprar "${item.name}"?`)) {
           return;
       }

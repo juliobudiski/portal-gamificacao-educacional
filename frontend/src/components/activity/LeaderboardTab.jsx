@@ -2,7 +2,9 @@ import React from 'react';
 import { FaCrown } from 'react-icons/fa';
 import backgroundImage from '../../assets/leaderboard-background.png';
 import '../../styles/Leaderboard.css'; // Certifique-se que este caminho está correto
-
+import { useParams } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import useAnalytics from '../../hooks/useAnalytics';
 // --- NOVO SUBCOMPONENTE ---
 // Este componente é responsável por renderizar o nome com os efeitos corretos.
 const PlayerName = ({ name, effects = [] }) => { // Adicionado 'effects = []' como valor padrão
@@ -31,7 +33,13 @@ const PlayerName = ({ name, effects = [] }) => { // Adicionado 'effects = []' co
 };
 
 
-const LeaderboardTab = ({ leaderboardData }) => (
+const LeaderboardTab = ({ leaderboardData }) => {
+    const { user } = useAuth();
+    const { activityId } = useParams();
+    
+    
+    useAnalytics("leaderboard", user.token, activityId);
+    return (
     <div className="bg-gray-800 p-8 rounded-lg text-white" 
         style={{
             backgroundImage: `url(${backgroundImage})`,
@@ -73,6 +81,7 @@ const LeaderboardTab = ({ leaderboardData }) => (
             ))}
         </div>
     </div>
-);
+    )
+};
 
 export default LeaderboardTab;

@@ -25,17 +25,22 @@ const JsonViewer = ({ data, title }) => {
 
   // Função para formatar um valor para exibição
   const formatValue = (value) => {
-    if (Array.isArray(value)) {
-      return value.length > 0 ? value.join(', ') : 'N/A';
-    }
-    if (typeof value === 'boolean') {
-      return value ? 'Sim' : 'Não';
-    }
-    if (value === null || value === undefined || value.trim() === '') {
-      return 'N/A';
-    }
-    return value;
-  };
+  if (Array.isArray(value)) {
+    return value.length > 0 ? value.join(', ') : 'N/A';
+  }
+  if (typeof value === 'boolean') {
+    return value ? 'Sim' : 'Não';
+  }
+  // VERIFICAÇÃO ADICIONAL: só usa .trim() se o valor for uma string.
+  if (typeof value === 'string' && value.trim() === '') {
+    return 'N/A';
+  }
+  if (value === null || value === undefined) {
+    return 'N/A';
+  }
+  // Converte o valor para string para garantir a renderização.
+  return String(value);
+};
 
   return (
     <div className="bg-gray-700 p-4 rounded-xl shadow-md mt-3 border border-gray-600 transition-all duration-300 hover:border-accent-teal/50">

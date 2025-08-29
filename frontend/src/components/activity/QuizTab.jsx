@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FaClock, FaCheckCircle } from 'react-icons/fa';
 import PropTypes from 'prop-types'; // Import adicionado para validação de props
 import { useAuth } from '../../context/AuthContext';
 import { useParams } from 'react-router-dom';
+import backgroundImage from '../../assets/quizz-background.png';
+import useAnalytics from '../../hooks/useAnalytics';
 // Verifica se o modo debug está ativado
 const isDebugMode = import.meta.env.VITE_DEBUG_MODE === 'true';
 
@@ -26,12 +28,17 @@ const QuizTab = ({ questions = [], onAnswerCorrect, gameElements = [] }) => {
 
   const { user } = useAuth();
   const { activityId } = useParams();
+  const { logEvent } = useAnalytics("quiz", user.token, activityId);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [feedback, setFeedback] = useState({ type: '', message: '' });
   const [timeLeft, setTimeLeft] = useState(30);
   const [isFinished, setIsFinished] = useState(false);
+
+  //  Refs para métricas de interação (hesitação, abandono)
+  const firstClickTimestamp = useRef(null);
+  const questionStartTime = useRef(null);
 
   // Verifica se "Pressão de tempo" está habilitado
   const isTimed = gameElements.includes("Pressão de tempo");
@@ -90,6 +97,24 @@ const QuizTab = ({ questions = [], onAnswerCorrect, gameElements = [] }) => {
     };
   }, [currentIndex, questions, isFinished, isTimed]);
 
+  // 4. Efeito para registrar o início da questão e a taxa de abandono
+  useEffect(() => {
+    // Marca o tempo em que a pergunta atual foi exibida
+    questionStartTime.current = Date.now();
+    firstClickTimestamp.current = null; // Reseta o timestamp de clique
+
+    // Função de limpeza (cleanup) que será executada quando o componente for desmontado
+    return () => {
+      // Se o componente for desmontado antes de o quiz terminar, registra o abandono
+      if (!isFinished) {
+        logEvent("quiz_abandon", { 
+            question_index: currentIndex,
+            time_spent_on_question: (Date.now() - questionStartTime.current) / 1000
+        });
+      }
+    };
+  }, [currentIndex, isFinished, logEvent]);
+
   /**
    * @function handleSubmit
    * @desc Processa resposta do usuário e fornece feedback
@@ -98,13 +123,25 @@ const QuizTab = ({ questions = [], onAnswerCorrect, gameElements = [] }) => {
    */
   const handleSubmit = async (answer) => {
     const currentQuestion = questions[currentIndex];
-    
+    const submitTimestamp = Date.now();
     if (isDebugMode) {
       console.log(`[QuizTab] Resposta submetida para pergunta ${currentIndex + 1}:`, {
         selected: answer,
         correct: questions[currentIndex].correct_option
       });
     }
+    //  Logar o evento de submissão da resposta com o tempo de hesitação
+    const hesitationTime = firstClickTimestamp.current 
+        ? (submitTimestamp - firstClickTimestamp.current) / 1000
+        : (submitTimestamp - questionStartTime.current) / 1000; // Tempo total se não houve clique
+
+    logEvent("quiz_answer_submit", {
+        question_id: currentIndex, // ou um ID único da pergunta se tiver
+        question_text: currentQuestion.text,
+        selected_option: answer,
+        is_correct: answer === currentQuestion.correct_option,
+        hesitation_time: hesitationTime
+    });
 
     const isCorrect = answer === questions[currentIndex].correct_option;
     const points = isCorrect ? questions[currentIndex].points : 0;
@@ -161,6 +198,9 @@ const QuizTab = ({ questions = [], onAnswerCorrect, gameElements = [] }) => {
         if (isDebugMode) {
           console.log('[QuizTab] Quiz finalizado. Exibindo tela de conclusão');
         }
+        logEvent("quiz_complete", {
+            total_questions: questions.length
+        });
         setIsFinished(true);
       }
     }, 2000);
@@ -205,7 +245,23 @@ const QuizTab = ({ questions = [], onAnswerCorrect, gameElements = [] }) => {
   }
 
   return (
-    <div className="bg-gray-800 p-8 rounded-lg text-white relative">
+    <div className="bg-gray-800 p-8 rounded-lg text-white relative"
+    style={{
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        minHeight: '600px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        padding: '2rem',
+        borderRadius: '1rem',
+        boxShadow: '0 5px 15px rgba(0, 0, 0, 0.5)',
+        color: 'white',
+        width: '90%',
+        maxWidth: '1200px',
+        }}>
       {/* Pop-up de feedback visual */}
       {feedback.message && (
         <div className={`absolute top-0 left-1/2 -translate-x-1/2 p-4 rounded-b-lg text-xl font-bold animate-bounce ${feedback.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>
@@ -229,6 +285,11 @@ const QuizTab = ({ questions = [], onAnswerCorrect, gameElements = [] }) => {
           <button 
             key={option} 
             onClick={() => {
+              // 7. Captura o timestamp do primeiro clique em uma opção
+              if (!firstClickTimestamp.current) {
+                  firstClickTimestamp.current = Date.now();
+              }
+              
               setSelectedAnswer(option);
               if (isDebugMode) {
                 console.log(`[QuizTab] Opção selecionada: ${option}`);

@@ -140,15 +140,26 @@ class ActivityProgress(db.Model):
 
 class EventLog(db.Model):
     __tablename__ = 'event_log'
+    
     id = db.Column(db.Integer, primary_key=True)
+    
+    # --- Contexto do usuário ---
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
-    event_type = db.Column(db.String(100), nullable=False)
-    event_data = db.Column(JSONB)
+    activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=True)
+    
+    # --- Nova Estrutura de Logging ---
+    section = db.Column(db.String(50), nullable=True)   # Ex: 'quiz', 'store', 'ranking'
+    action = db.Column(db.String(100), nullable=False)  # Ex: 'start_quiz', 'purchase_item'
+    details = db.Column(JSONB, nullable=True)           # Dados extras flexíveis
+        
+    # --- Metadados ---
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     ip_address = db.Column(db.String(50))
     user_agent = db.Column(db.Text)
-    
+
+    # Relacionamentos
     user = db.relationship('User', backref='event_logs')
+    activity = db.relationship('Activity', backref='event_logs')
 
 class StudentResponse(db.Model):
     __tablename__ = 'student_response'
