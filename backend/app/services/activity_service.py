@@ -7,8 +7,8 @@ from ..models import db, Activity, Tag, activity_tag, ActivityRevision, User, Cl
 from sqlalchemy.orm import noload
 from copy import deepcopy
 from sqlalchemy import or_
-
 logger = logging.getLogger(__name__)
+from ..utils.logging import _log_system_event
 
 def create_activity(user, data):
     logger.info(f"Usuário ID {user.id} tentando criar uma nova atividade.")
@@ -44,11 +44,13 @@ def create_activity(user, data):
         
         db.session.add(new_activity)
         db.session.commit()
+        _log_system_event(
+            user_id=user.id,
+            action='activity_created',
+            activity_id=new_activity.id,
+            details={'title': new_activity.title}
+        )
         
-        log_event(user.id, 'activity_created', {
-            'activity_id': new_activity.id,
-            'title': new_activity.title
-        })
         
         return {"message": "Atividade criada", "activity": new_activity.to_dict()}, 201
     
@@ -81,6 +83,11 @@ def update_activity(user, activity_id, data):
         activity.gamification_rules = data.get('gamificationRules', activity.gamification_rules)
         
         db.session.commit()
+        _log_system_event(
+            user_id=user.id,
+            action='activity_edited',
+            activity_id=activity.id
+        )
         logger.info(f"Atividade ID {activity_id} atualizada com sucesso pelo usuário ID {user.id}")
         return {"message": "Atividade atualizada com sucesso", "activity": activity.to_dict()}, 200
     except Exception as e:
@@ -130,16 +137,6 @@ def create_revision(user, activity_id, data):
         db.session.rollback()
         return {"message": str(e)}, 500
 
-# Função auxiliar para registro de eventos
-def log_event(user_id, event_type, event_data):
-    from ..models import EventLog
-    event = EventLog(
-        user_id=user_id,
-        event_type=event_type,
-        event_data=event_data
-    )
-    db.session.add(event)
-    db.session.commit()
 
 
 def get_activity(user, activity_id):
@@ -274,7 +271,12 @@ def copy_activity(user, activity_id):
         db.session.add(original_activity)
         db.session.add(copied_activity)
         db.session.commit()
-        
+        _log_system_event(
+            user_id=user.id,
+            action='activity_copied',
+            activity_id=copied_activity.id,
+            details={'original_activity_id': original_activity.id}
+        )
         logger.info(f"Atividade ID {activity_id} copiada para o usuário ID {user.id}. Nova atividade ID: {copied_activity.id}")
         return {"message": "Atividade copiada com sucesso!", "activity": copied_activity.to_dict()}, 201
         
@@ -313,6 +315,11 @@ def bulk_delete_activities(user, activity_ids):
             db.session.delete(activity)
 
         db.session.commit()
+        _log_system_event(
+            user_id=user.id,
+            action='activity_bulk_deleted',
+            details={'deleted_count': deleted_count, 'deleted_ids': ids_to_delete}
+        )
         logger.info(f"Usuário ID {user.id} deletou {deleted_count} atividades em massa.")
         return {"message": f"{deleted_count} atividades foram deletadas com sucesso!"}, 200
 

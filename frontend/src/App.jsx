@@ -31,9 +31,19 @@ import ClassEditPage from './pages/ClassEditPage';
 import AssignActivityToClass from './pages/AssignActivityToClass';
 import ActivityPage from './pages/ActivityPage';
 import ActivityEditPage from './pages/ActivityEditPage';
+import DashboardOverviewPage from './pages/admin/DashboardOverviewPage';
+import UserManagementPage from './pages/admin/UserManagementPage';
+import ActivityManagementPage from './pages/admin/ActivityManagementPage';
+import SystemAnalyticsPage from './pages/admin/SystemAnalyticsPage';
+
+
+
 // Importação dos ícones da biblioteca Lucide React para a UI
 import { Home, LogIn, UserPlus, Key, User, BookOpen, LayoutDashboard, PlusCircle, Users, BarChart2, Award, LogOut, Info, Settings, ShieldCheck } from 'lucide-react';
 import Footer from './components/Footer'; 
+
+
+
 /**
  * Componente App
  * Este é o componente raiz da aplicação. Ele é responsável por:
@@ -355,7 +365,7 @@ function App() {
                 {user?.role === 'admin' && (
                   <li>
                     <Link 
-                      to="/admin/dashboard" 
+                      to="/admin" 
                       className="flex items-center space-x-1 px-3 py-2 rounded-lg hover:bg-[#2c3135] text-[#ff416c] transition-colors duration-200"
                       onClick={closeAllMenus}
                     >
@@ -415,7 +425,16 @@ function App() {
 
           {/* Rota Admin */}
           <Route element={<PrivateRoute allowedRoles={['admin']} />}>
-            <Route path="/admin/dashboard" element={<AdminPage />} />
+            {/* Rota Pai para o Layout do Admin */}
+              <Route path="/admin" element={<AdminPage />}>
+                {/* Rota "index" é a página padrão quando se acessa /admin */}
+                <Route index element={<DashboardOverviewPage />} />
+
+                {/* Rotas Filhas */}
+                <Route path="users" element={<UserManagementPage />} />
+                <Route path="activities" element={<ActivityManagementPage />} />
+                <Route path="analytics" element={<SystemAnalyticsPage />} />
+              </Route>
           </Route>
 
           {/* Rota 404 */}

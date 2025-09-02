@@ -8,7 +8,7 @@ import {
   FaCalendarCheck, FaPaintBrush, FaQuestionCircle, FaBell, FaBookReader, FaBoxOpen,
   FaGavel, FaUserShield, FaMobileAlt, FaUniversity
 } from 'react-icons/fa';
-
+import useAnalytics from '../hooks/useAnalytics';
 
 
 
@@ -33,7 +33,7 @@ function ActivityCreationPage({ existingActivity }) {
   
   const { activityId } = useParams();
   const isEditMode = !!existingActivity;
-
+  const { logEvent } = useAnalytics('activity_creation', user?.token, activityId);
   // Estado para controlar se a tela de seleção de template inicial deve ser exibida (com as duas opções).
   const [showInitialSelection, setShowInitialSelection] = useState(true);
   // Estado para controlar se a lista de templates (os cards) deve ser exibida.
@@ -103,6 +103,47 @@ function ActivityCreationPage({ existingActivity }) {
       specificRules: '',
     },
   });
+
+  // --- RASTREAMENTO DE TEMPO POR ETAPA ---
+const stepStartTimeRef = useRef(Date.now());
+const previousStepRef = useRef(currentStep);
+
+useEffect(() => {
+  const startTime = stepStartTimeRef.current;
+  const previousStep = previousStepRef.current;
+  
+  // Calcula a duração na etapa anterior
+  const durationInSeconds = Math.round((Date.now() - startTime) / 1000);
+
+  // Evita logar na primeira renderização (duração de 0s)
+  if (durationInSeconds > 0 && previousStep !== currentStep) {
+    console.log(`Logando duração da Etapa ${previousStep}: ${durationInSeconds}s`);
+    logEvent("step_view_duration", { 
+      step: previousStep,
+      duration_seconds: durationInSeconds 
+    });
+  }
+
+  // Reseta o timer para a nova etapa
+  stepStartTimeRef.current = Date.now();
+  previousStepRef.current = currentStep;
+
+}, [currentStep, logEvent]); // O efeito roda sempre que a etapa muda
+
+const isSubmittingRef = useRef(false);
+
+useEffect(() => {
+  // A função de retorno (cleanup) é executada quando o componente é desmontado
+  return () => {
+    // Só loga abandono se o formulário não foi concluído e não está no processo de submissão
+    if (!isSubmittingRef.current) {
+        console.log(`Usuário abandonou o formulário na etapa ${previousStepRef.current}`);
+        logEvent("form_abandoned", {
+            last_step: previousStepRef.current
+        });
+    }
+  };
+}, [logEvent]); // O array vazio garante que o cleanup só rode ao desmontar
 
   // --- Verificação de Autenticação e Autorização ---
 
@@ -290,7 +331,7 @@ function ActivityCreationPage({ existingActivity }) {
         : 'http://127.0.0.1:5000/api/activities';
       
       const method = isEditMode ? 'PUT' : 'POST';
-
+      isSubmittingRef.current = true;
       console.log(`Submetendo formulário em modo de ${isEditMode ? 'EDIÇÃO' : 'CRIAÇÃO'}`);
       console.log(`URL: ${method} ${url}`);
       
@@ -325,6 +366,10 @@ function ActivityCreationPage({ existingActivity }) {
   const handlePrevious = () => {
     console.log(`handlePrevious: Retornando da etapa ${currentStep}.`);
     if (currentStep > 1) {
+      logEvent("previous_button_click", { 
+        from_step: currentStep, 
+        to_step: currentStep - 1 
+      });
       setCurrentStep(prevStep => prevStep - 1);
     }
   };
@@ -381,6 +426,7 @@ function ActivityCreationPage({ existingActivity }) {
    */
   const openHelpModal = (title, text) => {
     console.log(`openHelpModal: Abrindo modal de ajuda com o título: "${title}"`);
+    logEvent("help_button_click", { step: currentStep, help_title: title });
     setHelpContent({ title, text });
     setShowHelpModal(true);
   };

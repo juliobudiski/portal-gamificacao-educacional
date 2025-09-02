@@ -147,7 +147,6 @@ def get_analytics(activity_id):
     if not activity or activity.professor_id != user.id:
         return jsonify({"message": "Você não tem permissão para ver a análise desta atividade."}), 403
 
-    # Buscamos os dados de progresso e também o User para pegar o total de pontos globais
     progress_data = db.session.query(
         User,
         ActivityProgress
@@ -157,34 +156,25 @@ def get_analytics(activity_id):
         ActivityProgress.activity_id == activity_id
     ).all()
     
-    # --- LÓGICA DE ANÁLISE ATUALIZADA E EXPANDIDA ---
     students_analytics = []
     total_score_sum = 0
 
     for student_user, progress in progress_data:
-        # Contagem de respostas corretas e incorretas
         correct_answers = StudentResponse.query.filter_by(student_id=student_user.id, activity_id=activity_id, is_correct=True).count()
         wrong_answers = StudentResponse.query.filter_by(student_id=student_user.id, activity_id=activity_id, is_correct=False).count()
         total_answers = correct_answers + wrong_answers
-        
-        # NOVO: Cálculo da taxa de acerto
         accuracy = (correct_answers / total_answers * 100) if total_answers > 0 else 0
-
-        # NOVO: Contagem de mensagens no chat (a ser implementado com a tabela de chat)
-        chat_messages = 0 # Placeholder, pois a tabela ChatMessages ainda não existe
-
-        # NOVO: Cálculo do nível do aluno (usando a mesma função que já temos)
-        # Supondo que o nível geral do aluno é baseado em todos os pontos que ele já ganhou.
-        # Precisaríamos de uma coluna `total_points` na tabela User para isso.
-        # Por enquanto, vamos calcular o nível baseado nos pontos desta atividade.
+        chat_messages = 0
         level_info = calculate_level(progress.points_earned)
 
-        # Contagem de visualizações da narrativa
+        # --- CORREÇÃO APLICADA AQUI ---
+        # Trocamos a busca de 'event_type' e 'event_data' para usar 'action' e 'activity_id'
         narrative_views = EventLog.query.filter(
             EventLog.user_id == student_user.id,
-            EventLog.event_type == 'narrative_viewed',
-            EventLog.event_data['activity_id'].astext == str(activity_id)
+            EventLog.action == 'narrative_viewed', # Usando a coluna correta
+            EventLog.activity_id == activity_id    # Usando a coluna correta
         ).count()
+        # ---------------------------------
         
         total_score_sum += progress.points_earned or 0
 
@@ -193,9 +183,9 @@ def get_analytics(activity_id):
             "name": student_user.name,
             "status": progress.status,
             "points": progress.points_earned,
-            "level": level_info['level'], # NOVO
-            "accuracy": accuracy, # NOVO
-            "chat_messages": chat_messages, # NOVO (Placeholder)
+            "level": level_info['level'],
+            "accuracy": accuracy,
+            "chat_messages": chat_messages,
             "total_answers": total_answers,
             "correct_answers": correct_answers,
             "wrong_answers": wrong_answers,

@@ -3,13 +3,35 @@
 from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from werkzeug.security import generate_password_hash, check_password_hash
-from ..models import db, User
+from ..models import db, User, EventLog
 from ..config import Config
 from flask_cors import cross_origin
 from google.oauth2 import id_token
 from google.auth.transport import requests
 
 auth_bp = Blueprint('auth', __name__)
+
+# --- 2. FUNÇÃO AUXILIAR PARA LOGGING DE AUTENTICAÇÃO ---
+def _log_auth_event(user_id, action, details, is_success=True):
+    """
+    Cria e salva um evento de log de autenticação.
+    O commit é feito separadamente para garantir que falhas sejam registradas.
+    """
+    try:
+        event = EventLog(
+            user_id=user_id,
+            section='auth',
+            action=action,
+            details=details,
+            ip_address=request.remote_addr,
+            user_agent=request.headers.get("User-Agent")
+        )
+        db.session.add(event)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Falha CRÍTICA ao registrar evento de log de auth: {e}")
+# ---------------------------------------------------------
 
 # Rota para registrar um novo usuário
 @auth_bp.route('/register', methods=['POST'])
@@ -30,6 +52,12 @@ def register_user():
     existing_user = User.query.filter_by(email=email).first()
     if existing_user:
         current_app.logger.warning(f"Falha no registro: e-mail '{email}' já cadastrado.")
+        _log_auth_event(
+            user_id=None,
+            action='register_fail',
+            details={'email': email, 'reason': 'email_exists'},
+            is_success=False
+        )
         return jsonify({"message": "E-mail já cadastrado."}), 409
 
     hashed_password = generate_password_hash(password)
@@ -39,6 +67,11 @@ def register_user():
         db.session.add(new_user)
         db.session.commit()
         current_app.logger.info(f"Usuário '{email}' registrado com sucesso com ID: {new_user.id}")
+        _log_auth_event(
+            user_id=new_user.id,
+            action='register_success',
+            details={'email': new_user.email, 'method': 'email'}
+        )
 
         additional_claims = {
             "email": new_user.email, "name": new_user.name, "role": new_user.role,
@@ -76,6 +109,11 @@ def login_user():
 
     if user and check_password_hash(user.password_hash, password):
         current_app.logger.info(f"Login bem-sucedido para o usuário: {email}")
+        _log_auth_event(
+            user_id=user.id,
+            action='login_success',
+            details={'email': user.email, 'method': 'email'}
+        )
         additional_claims = {
             "email": user.email, "name": user.name, "role": user.role,
             "profile_picture": user.profile_picture,
@@ -93,6 +131,12 @@ def login_user():
         return jsonify(access_token=access_token, user=user_data), 200
     else:
         current_app.logger.warning(f"Falha no login para o e-mail: {email}. Credenciais inválidas.")
+        _log_auth_event(
+            user_id=user.id if user else None,  # Loga o ID se o usuário existir mas a senha estiver errada
+            action='login_fail',
+            details={'email': email, 'reason': 'invalid_credentials'},
+            is_success=False
+        )
         return jsonify({"message": "Credenciais inválidas."}), 401
 
 # Rota para autenticação via Google Sign-In
@@ -124,6 +168,7 @@ def google_auth():
 
         if user:
             current_app.logger.info(f"Usuário encontrado pelo google_id: {email}")
+            _log_auth_event(user_id=user.id, action='login_success', details={'email': user.email, 'method': 'google'})
             if user.role != selected_role:
                 current_app.logger.info(f"Atualizando role do usuário {email} de '{user.role}' para '{selected_role}'.")
                 user.role = selected_role
@@ -141,8 +186,10 @@ def google_auth():
                     existing_email_user.role = selected_role
                 db.session.commit()
                 user = existing_email_user
+                _log_auth_event(user_id=user.id, action='link_google_account', details={'email': user.email})
             else:
                 current_app.logger.info(f"Nenhum usuário encontrado. Criando novo usuário Google para {email}.")
+                _log_auth_event(user_id=user.id, action='register_success', details={'email': user.email, 'method': 'google'})
                 user = User(
                     email=email, password_hash='google_auth_only', google_id=google_id,
                     name=name, profile_picture=picture, role=selected_role
@@ -169,10 +216,22 @@ def google_auth():
 
     except ValueError as e:
         current_app.logger.error(f"Erro de validação do token Google: {str(e)}", exc_info=True)
+        _log_auth_event(
+            user_id=None,
+            action='google_auth_fail',
+            details={'reason': 'invalid_token', 'error': str(e)},
+            is_success=False
+        )
         return jsonify({"message": f"Token do Google inválido ou expirado. {str(e)}"}), 401
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Erro inesperado na autenticação Google: {str(e)}", exc_info=True)
+        _log_auth_event(
+            user_id=None,
+            action='google_auth_fail',
+            details={'reason': 'internal_server_error', 'error': str(e)},
+            is_success=False
+        )
         return jsonify({"message": f"Erro interno no servidor durante autenticação Google: {str(e)}"}), 500
 
 # Rota para professores atualizarem informações de instituição e disciplina

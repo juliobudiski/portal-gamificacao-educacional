@@ -6,6 +6,8 @@ from copy import deepcopy
 import logging
 from ..models import db, Activity, Tag, activity_tag, ActivityRevision, User, Class, ActivityProgress, StudentResponse, EventLog
 from ..services import activity_service
+from ..utils.logging import _log_system_event
+
 
 activity_bp = Blueprint('activities', __name__)
 logger = logging.getLogger(__name__)
@@ -303,10 +305,16 @@ def assign_activity_to_class(activity_id):
         return jsonify({"message": "Turma não encontrada ou você não tem permissão sobre ela."}), 404
 
     try:
+        
         # CASO 1: A atividade é um "modelo mestre" e nunca foi atribuída.
         if original_activity.class_id is None:
             current_app.logger.info(f"Atividade ID {activity_id} é um modelo. Atribuindo diretamente à turma ID {class_id}.")
-            
+            _log_system_event(
+                user_id=user.id,
+                action='activity_assigned',
+                activity_id=original_activity.id,
+                details={'class_id': class_id, 'method': 'direct_assignment'}
+            )
             # Apenas atualiza a atividade original com o ID da turma
             original_activity.class_id = class_id
             original_activity.assignment_count += 1 # Incrementa o contador
@@ -322,7 +330,16 @@ def assign_activity_to_class(activity_id):
         # CASO 2: A atividade já está em uso. Cria uma cópia.
         else:
             current_app.logger.info(f"Atividade ID {activity_id} já está em uso. Criando uma cópia para a turma ID {class_id}.")
-            
+            _log_system_event(
+                user_id=user.id,
+                action='activity_assigned',
+                activity_id=new_activity.id, # Loga o ID da nova atividade copiada
+                details={
+                    'class_id': class_id, 
+                    'method': 'copy_assignment',
+                    'original_activity_id': original_activity.id
+                }
+            )
             # Cria uma cópia da atividade original
             new_activity = Activity(
                 professor_id=user.id,
@@ -412,6 +429,12 @@ def delete_activity(activity_id):
         return jsonify({"message": "Acesso negado"}), 403
     
     try:
+        _log_system_event(
+            user_id=current_user.id,
+            action='activity_deleted',
+            activity_id=activity.id,
+            details={'title': activity.title} # Salva o título antes de ser deletado
+        )
         # 1. Deleta todos os registros de progresso associados a esta atividade primeiro.
         ActivityProgress.query.filter_by(activity_id=activity_id).delete()
         
