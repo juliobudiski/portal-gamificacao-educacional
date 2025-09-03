@@ -3,7 +3,7 @@ from ..models import Activity, ActivityRevision, Tag, EventLog, ActivityProgress
 from flask import jsonify
 import logging
 from flask_jwt_extended import jwt_required, current_user, get_jwt_identity
-from ..models import db, Activity, Tag, activity_tag, ActivityRevision, User, Class, Enrollment
+from ..models import db, Activity, Tag, activity_tag, ActivityRevision, User, Class, Enrollment, Purchase, StoreItem, SlotWin, RouletteWin, StudentResponse
 from sqlalchemy.orm import noload
 from copy import deepcopy
 from sqlalchemy import or_
@@ -286,14 +286,9 @@ def copy_activity(user, activity_id):
         return {"message": str(e)}, 500
 
 def bulk_delete_activities(user, activity_ids):
-    """
-    Deleta uma lista de atividades em massa, verificando a propriedade de cada uma.
-    """
     if not isinstance(activity_ids, list) or not all(isinstance(i, int) for i in activity_ids):
         return {"message": "Entrada inválida. Esperava-se uma lista de IDs numéricos."}, 400
 
-    # Busca todas as atividades que correspondem aos IDs fornecidos E que pertencem ao usuário logado.
-    # Esta é a verificação de segurança crucial.
     activities_to_delete = Activity.query.filter(
         Activity.id.in_(activity_ids),
         Activity.professor_id == user.id
@@ -306,20 +301,34 @@ def bulk_delete_activities(user, activity_ids):
     ids_to_delete = [act.id for act in activities_to_delete]
 
     try:
-        # Passo 1: Deletar registros dependentes primeiro para evitar erros de chave estrangeira.
-        # Esta operação é mais eficiente do que deletar em um loop.
+        # --- CORREÇÃO: Deletar registros dependentes ANTES de deletar a atividade ---
+        # A ordem é importante para respeitar as chaves estrangeiras.
+        
+        # Deleta de tabelas que dependem de outras tabelas primeiro (se houver)
+        # Ex: ManualFeedback depende de StudentResponse
+        
+        # Agora deleta de tabelas que dependem diretamente da Atividade
+        Purchase.query.filter(Purchase.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
+        StoreItem.query.filter(StoreItem.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
+        SlotWin.query.filter(SlotWin.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
+        RouletteWin.query.filter(RouletteWin.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
+        StudentResponse.query.filter(StudentResponse.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
         ActivityProgress.query.filter(ActivityProgress.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
-
-        # Passo 2: Deletar as atividades em si.
+        EventLog.query.filter(EventLog.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
+        ActivityRevision.query.filter(ActivityRevision.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
+        
+        # Finalmente, deleta as atividades
         for activity in activities_to_delete:
             db.session.delete(activity)
 
         db.session.commit()
+
         _log_system_event(
             user_id=user.id,
             action='activity_bulk_deleted',
             details={'deleted_count': deleted_count, 'deleted_ids': ids_to_delete}
         )
+
         logger.info(f"Usuário ID {user.id} deletou {deleted_count} atividades em massa.")
         return {"message": f"{deleted_count} atividades foram deletadas com sucesso!"}, 200
 

@@ -1,10 +1,11 @@
 # backend/app/routes/admin.py
+from flask_cors import cross_origin 
 from flask import Blueprint, jsonify, current_app, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from ..models import db, User, Activity, EventLog
 from sqlalchemy import func, case
 from datetime import datetime, timedelta
-
+from collections import Counter
 admin_bp = Blueprint('admin', __name__)
 
 # Função auxiliar para verificar se o usuário é admin
@@ -233,3 +234,42 @@ def get_system_logs():
     })
 
 
+@admin_bp.route('/analytics/creation_trends', methods=['GET'])
+@jwt_required()
+@cross_origin()
+def get_creation_trends():
+    if not check_admin(): return jsonify({"message": "Acesso negado."}), 403
+
+    activities = Activity.query.all()
+    if not activities:
+        return jsonify({
+            "game_elements": [], "player_profiles": [],
+            "rewarded_actions": [], "rewards_offered": []
+        })
+
+    # Usando collections.Counter para agregar os dados de forma eficiente
+    game_elements_counter = Counter()
+    player_profiles_counter = Counter()
+    rewarded_actions_counter = Counter()
+    rewards_offered_counter = Counter()
+
+    for activity in activities:
+        if activity.game_elements and 'selectedElements' in activity.game_elements:
+            game_elements_counter.update(activity.game_elements['selectedElements'])
+        if activity.player_profile and 'selectedProfiles' in activity.player_profile:
+            player_profiles_counter.update(activity.player_profile['selectedProfiles'])
+        if activity.rewarded_actions and 'selectedActions' in activity.rewarded_actions:
+            rewarded_actions_counter.update(activity.rewarded_actions['selectedActions'])
+        if activity.rewards_offered and 'selectedRewards' in activity.rewards_offered:
+            rewards_offered_counter.update(activity.rewards_offered['selectedRewards'])
+            
+    # Função auxiliar para formatar os dados para os gráficos
+    def format_counter_data(counter, name_key='name', value_key='count'):
+        return [{name_key: item, value_key: count} for item, count in counter.most_common(10)]
+
+    return jsonify({
+        "game_elements": format_counter_data(game_elements_counter, 'element', 'count'),
+        "player_profiles": format_counter_data(player_profiles_counter, 'profile', 'count'),
+        "rewarded_actions": format_counter_data(rewarded_actions_counter, 'action', 'count'),
+        "rewards_offered": format_counter_data(rewards_offered_counter, 'reward', 'count')
+    })

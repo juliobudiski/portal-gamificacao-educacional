@@ -1,8 +1,8 @@
 // frontend/src/pages/admin/SystemAnalyticsPage.jsx
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { AuthContext } from '../../context/AuthContext';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { ChevronLeft, ChevronRight, Activity, LogIn, AlertTriangle, FilePlus, Search } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, Tooltip as PieTooltip } from 'recharts';
+import { ChevronLeft, ChevronRight, Activity, LogIn, AlertTriangle, FilePlus, Search, Puzzle, Users, Trophy, Gift } from 'lucide-react';
 import { useDebounce } from 'use-debounce';
 
 // Componente para os cards de KPI
@@ -18,6 +18,43 @@ const KPI_Card = ({ title, value, icon, color }) => (
     </div>
 );
 
+// Componente reutilizável para gráficos de barras horizontais
+const HorizontalBarChart = ({ data, dataKey, nameKey, title, icon }) => (
+    <div className="bg-gray-800/50 p-6 rounded-xl">
+        <h2 className="text-xl font-bold text-white mb-4 flex items-center"><span className="mr-2">{icon}</span>{title}</h2>
+        <div style={{ width: '100%', height: 300 }}>
+            <ResponsiveContainer>
+                <BarChart layout="vertical" data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                    <XAxis type="number" stroke="#9ca3af" />
+                    <YAxis type="category" dataKey={nameKey} stroke="#9ca3af" width={150} fontSize={12} />
+                    <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #4b5563' }} cursor={{ fill: 'rgba(107, 114, 128, 0.1)' }} />
+                    <Bar dataKey={dataKey} fill="#8884d8" name="Seleções" radius={[0, 4, 4, 0]} />
+                </BarChart>
+            </ResponsiveContainer>
+        </div>
+    </div>
+);
+
+// Componente para o gráfico de pizza
+const ProfilePieChart = ({ data }) => {
+    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF'];
+    return (
+        <div className="bg-gray-800/50 p-6 rounded-xl">
+            <h2 className="text-xl font-bold text-white mb-4 flex items-center"><Users className="mr-2" />Perfis de Jogador Mais Visados</h2>
+            <div style={{ width: '100%', height: 300 }}>
+                <ResponsiveContainer>
+                    <PieChart>
+                        <Pie data={data} cx="50%" cy="50%" labelLine={false} outerRadius={120} fill="#8884d8" dataKey="count" nameKey="profile" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                            {data.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
+                        </Pie>
+                        <PieTooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #4b5563' }}/>
+                    </PieChart>
+                </ResponsiveContainer>
+            </div>
+        </div>
+    );
+};
+
 function SystemAnalyticsPage() {
     const { user } = useContext(AuthContext);
     const [kpis, setKpis] = useState(null);
@@ -26,7 +63,7 @@ function SystemAnalyticsPage() {
     const [pagination, setPagination] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-
+    const [creationTrends, setCreationTrends] = useState(null);
     // Estados para filtros
     const [currentPage, setCurrentPage] = useState(1);
     const [userSearch, setUserSearch] = useState('');
@@ -44,36 +81,24 @@ function SystemAnalyticsPage() {
         const headers = { 'Authorization': `Bearer ${token}` };
 
         try {
-            // Constrói a URL para os logs com os filtros
-            const logParams = new URLSearchParams({
-                page: currentPage,
-                limit: 15,
-                ...(debouncedUserSearch && { user: debouncedUserSearch }),
-                ...(actionFilter && { action: actionFilter }),
-            });
+            const logParams = new URLSearchParams({ page: currentPage, limit: 15, ...(debouncedUserSearch && { user: debouncedUserSearch }), ...(actionFilter && { action: actionFilter }), });
             const logUrl = `${apiPrefix}/logs?${logParams.toString()}`;
 
-            const [kpiRes, distRes, logRes] = await Promise.all([
+            const [kpiRes, distRes, logRes, trendsRes] = await Promise.all([ // <-- Adicionado trendsRes
                 fetch(`${apiPrefix}/kpis`, { headers }),
                 fetch(`${apiPrefix}/event_distribution`, { headers }),
                 fetch(logUrl, { headers }),
+                fetch(`${apiPrefix}/creation_trends`, { headers }), // <-- Busca os novos dados
             ]);
 
-            if (!kpiRes.ok || !distRes.ok || !logRes.ok) throw new Error('Falha ao buscar dados de análise.');
+            if (!kpiRes.ok || !distRes.ok || !logRes.ok || !trendsRes.ok) throw new Error('Falha ao buscar dados de análise.');
 
-            const kpiData = await kpiRes.json();
-            const distData = await distRes.json();
+            setKpis(await kpiRes.json());
+            setEventDistribution(await distRes.json());
             const logData = await logRes.json();
-
-            setKpis(kpiData);
-            setEventDistribution(distData);
             setLogs(logData.logs);
-            setPagination({
-                totalPages: logData.total_pages,
-                currentPage: logData.current_page,
-                hasNext: logData.has_next,
-                hasPrev: logData.has_prev,
-            });
+            setPagination({ totalPages: logData.total_pages, currentPage: logData.current_page, hasNext: logData.has_next, hasPrev: logData.has_prev });
+            setCreationTrends(await trendsRes.json()); // <-- Salva os novos dados no estado
 
         } catch (e) {
             setError(e.message);
@@ -108,6 +133,19 @@ function SystemAnalyticsPage() {
                 <KPI_Card title="Logins com Sucesso (24h)" value={kpis?.successful_logins_24h ?? '...'} icon={<LogIn size={24}/>} color="bg-green-500/30" />
                 <KPI_Card title="Tentativas de Login Falhas (24h)" value={kpis?.failed_logins_24h ?? '...'} icon={<AlertTriangle size={24}/>} color="bg-yellow-500/30" />
                 <KPI_Card title="Atividades Criadas (7d)" value={kpis?.activities_created_7d ?? '...'} icon={<FilePlus size={24}/>} color="bg-purple-500/30" />
+            </div>
+
+            {/* NOVA SEÇÃO: Tendências de Criação de Atividades */}
+            <div className="space-y-6">
+                <h2 className="text-2xl font-bold border-b border-gray-700 pb-2">Tendências de Criação de Conteúdo</h2>
+                {creationTrends && (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <HorizontalBarChart data={creationTrends.game_elements} dataKey="count" nameKey="element" title="Top Elementos de Jogo" icon={<Puzzle/>} />
+                        <ProfilePieChart data={creationTrends.player_profiles} />
+                        <HorizontalBarChart data={creationTrends.rewards_offered} dataKey="count" nameKey="reward" title="Top Recompensas Oferecidas" icon={<Gift/>} />
+                        <HorizontalBarChart data={creationTrends.rewarded_actions} dataKey="count" nameKey="action" title="Top Ações Recompensadas" icon={<Trophy/>} />
+                    </div>
+                )}
             </div>
 
             {/* Seção de Gráficos */}

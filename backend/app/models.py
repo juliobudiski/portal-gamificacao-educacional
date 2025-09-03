@@ -133,7 +133,7 @@ class ActivityProgress(db.Model):
     attempts = db.Column(db.Integer, default=0)
     last_spin_date = db.Column(db.DateTime, nullable=True)
     student = db.relationship('User', backref='activity_progresses', lazy=True)
-    activity = db.relationship('Activity', backref='progresses', lazy=True)
+    activity = db.relationship('Activity', backref=db.backref('progresses', cascade="all, delete-orphan"))
     class_obj = db.relationship('Class', backref='activity_progresses', lazy=True)
     __table_args__ = (db.UniqueConstraint('student_id', 'activity_id', name='_student_activity_uc'),)
 
@@ -159,7 +159,7 @@ class EventLog(db.Model):
 
     # Relacionamentos
     user = db.relationship('User', backref='event_logs')
-    activity = db.relationship('Activity', backref='event_logs')
+    activity = db.relationship('Activity', backref=db.backref('event_logs', cascade="all, delete-orphan"))
 
 class StudentResponse(db.Model):
     __tablename__ = 'student_response'
@@ -172,7 +172,7 @@ class StudentResponse(db.Model):
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     
     student = db.relationship('User', backref='responses')
-    activity = db.relationship('Activity', backref='responses')
+    activity = db.relationship('Activity', backref=db.backref('responses', cascade="all, delete-orphan"))
 
 class Tag(db.Model):
     __tablename__ = 'tag'
@@ -223,7 +223,7 @@ class RouletteWin(db.Model):
 
     # Relações para facilitar as consultas
     user = db.relationship('User', backref='roulette_wins')
-    activity = db.relationship('Activity', backref='roulette_wins')
+    activity = db.relationship('Activity', backref=db.backref('roulette_wins', cascade="all, delete-orphan"))
 
 class SlotWin(db.Model):
     __tablename__ = 'slot_win'
@@ -233,7 +233,7 @@ class SlotWin(db.Model):
     prize_description = db.Column(db.String(255), nullable=False)
     timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
     user = db.relationship('User', backref='slot_wins')
-    activity = db.relationship('Activity', backref='slot_wins')
+    activity = db.relationship('Activity', backref=db.backref('slot_wins', cascade="all, delete-orphan"))
 
 class Purchase(db.Model):
     __tablename__ = 'purchase'
@@ -253,7 +253,7 @@ class Purchase(db.Model):
 
     # Relações para facilitar as consultas
     user = db.relationship('User', backref='purchases')
-    activity = db.relationship('Activity', backref='purchases')
+    activity = db.relationship('Activity', backref=db.backref('purchases', cascade="all, delete-orphan"))
     item = db.relationship('StoreItem', backref=db.backref('purchases', cascade="all, delete-orphan"))
 
     def to_dict(self):
@@ -289,7 +289,7 @@ class StoreItem(db.Model):
     # Um identificador único para o efeito (ex: 'RANKING_COLOR_GOLD')
     effect_id = db.Column(db.String(100), nullable=True) 
 
-    activity = db.relationship('Activity', backref='store_items')
+    activity = db.relationship('Activity', backref=db.backref('store_items', cascade="all, delete-orphan"))
 
     def to_dict(self):
         return {
