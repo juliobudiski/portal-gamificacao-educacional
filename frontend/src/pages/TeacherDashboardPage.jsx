@@ -111,16 +111,18 @@ function TeacherDashboardPage() {
 
                 {/* Card para Dashboard */}
                 <Link 
-                  to="/professor/dashboard" 
+                  to="/professor/ranking" 
                   className="group block p-6 bg-[#343a40] rounded-2xl shadow-xl hover:shadow-2xl border-l-4 border-[#ffbd30] hover:border-[#9570d9] transition-all duration-300 transform hover:-translate-y-1"
                 >
                   <div className="flex items-center justify-center h-20 w-20 rounded-full bg-gradient-to-br from-[#ffbd30]/20 to-[#ffbd30]/50 mb-6 group-hover:from-[#9570d9]/20 group-hover:to-[#9570d9]/50 transition-all">
+                    {/* Ícone de Troféu */}
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-[#ffbd30] group-hover:text-[#9570d9] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 11l3-3m0 0l3 3m-3-3v8m0-13a9 9 0 110 18 9 9 0 010-18z" transform="rotate(180 12 12)"/>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" transform="scale(0.8) translate(3, 3)"/>
                     </svg>
                   </div>
-                  <h3 className="text-xl md:text-2xl font-bold text-white">Dashboard</h3>
-                  <p className="mt-2 text-gray-300">Visão geral do seu desempenho.</p>
+                  <h3 className="text-xl md:text-2xl font-bold text-white">Ranking de Professores</h3>
+                  <p className="mt-2 text-gray-300">Veja sua posição e a dos seus colegas.</p>
                   <div className="mt-4 flex items-center text-[#ffbd30] group-hover:text-[#9570d9] transition-colors">
                     <span>Acessar</span>
                     <svg xmlns="http://www.w3.org/2000/svg" className="ml-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

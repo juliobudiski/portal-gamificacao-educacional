@@ -64,7 +64,7 @@ export default function useAnalytics(section, token, activityId) {
       }
 
       if (duration > 0) {
-        logEvent("view_duration", { section: sectionName, duration }, sectionName);
+        logEvent("view_duration", { section: sectionName, duration_seconds: duration }, sectionName);
       }
 
       startTimeRef.current = null;

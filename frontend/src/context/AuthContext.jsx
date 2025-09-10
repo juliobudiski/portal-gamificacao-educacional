@@ -1,7 +1,7 @@
 // frontend/src/context/AuthContext.jsx
 
 // --- 1. IMPORTAÇÕES ---
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import { jwtDecode } from 'jwt-decode';
 
 // --- 2. CRIAÇÃO DO CONTEXTO DE AUTENTICAÇÃO ---
@@ -158,13 +158,18 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
   };
 
+  const getToken = useCallback(() => {
+    return user?.token || localStorage.getItem('token');
+  }, [user]);
+
   // --- Valor do Contexto ---
   const value = {
     user,
     isAuthenticated, // Agora isAuthenticated é um estado próprio
     login,
     logout,
-    updateUserData, // Inclua updateUserData no value
+    updateUserData,
+    getToken, // Inclua updateUserData no value
   };
 
   // --- Renderização do Provedor ---

@@ -23,7 +23,7 @@ import AboutUsPage from './pages/AboutUsPage';
 import AdminPage from './pages/AdminPage';
 import QuizEditorPage from './pages/QuizEditorPage'; 
 import NarrativeEditorPage from './pages/NarrativeEditorPage'; 
-// Importar as novas páginas e componentes
+import TeacherRankingPage from './pages/TeacherRankingPage';
 import CreateClassPage from './pages/CreateClassPage'; 
 import ClassListPage from './pages/ClassManagementPage';
 import ClassDetailsPage from './pages/ClassDetailsPage';
@@ -411,6 +411,7 @@ function App() {
             <Route path="/professor/atividades/:activityId/edit" element={<ActivityEditPage />} />
             <Route path="/professor/activity/:activityId/quiz/edit" element={<QuizEditorPage />} />
             <Route path="/professor/activity/:activityId/narrative/edit" element={<NarrativeEditorPage />} />
+            <Route path="/professor/ranking" element={<TeacherRankingPage />} />            
           </Route>
 
           {/* Rotas Aluno */}

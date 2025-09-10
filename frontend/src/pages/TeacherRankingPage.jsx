@@ -1,0 +1,84 @@
+// frontend/src/pages/TeacherRankingPage.jsx
+
+import React, { useState, useEffect } from 'react';
+import TeacherRankingList from '../components/TeacherRankingList'; // Corrigido para o caminho correto
+import { useAuth } from '../context/AuthContext';
+
+const TeacherRankingPage = () => {
+  const [creatorsRanking, setCreatorsRanking] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const { getToken } = useAuth(); // Usando o hook useAuth para pegar a função getToken
+
+  // Define a URL base da API a partir das variáveis de ambiente
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+  useEffect(() => {
+    const fetchRanking = async () => {
+      try {
+        setIsLoading(true);
+        const token = getToken(); // Chamando a função para obter o token
+        
+        if (!token) {
+          throw new Error('Usuário não autenticado. Não foi possível carregar o ranking.');
+        }
+
+        // Usando a variável API_URL para montar o endpoint
+        const response = await fetch(`${API_URL}/api/rankings/teachers/creators`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          // Verifica se a mensagem de erro vem do backend, senão usa uma padrão
+          throw new Error(errorData.message || 'Falha ao buscar os dados do ranking.');
+        }
+
+        const data = await response.json();
+        setCreatorsRanking(data.ranking);
+        setError(null);
+      } catch (err) {
+        // Define o erro como a mensagem do objeto de erro
+        setError(err.message);
+        console.error("Erro ao buscar ranking:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchRanking();
+  }, [getToken, API_URL]); // Adicionado API_URL às dependências
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#2c3135] to-[#1e2226] p-4 md:p-8">
+      <div className="max-w-4xl mx-auto">
+        <header className="mb-8 text-center">
+            <h1 className="text-3xl md:text-4xl font-extrabold text-white">
+              Quadro de Honra dos Professores
+            </h1>
+            <p className="mt-2 text-xl text-gray-400">
+              Veja quem mais contribui com a plataforma!
+            </p>
+        </header>
+        
+        <main className="grid grid-cols-1 gap-8">
+            <TeacherRankingList
+              title="🏆 Top Criadores de Atividades"
+              rankingData={creatorsRanking}
+              isLoading={isLoading}
+              error={error} // Passando a mensagem de erro (string) em vez do objeto
+            />
+             {/* Placeholder para o futuro ranking de avaliadores */}
+            <div className="bg-[#343a40] text-white p-6 rounded-2xl shadow-lg border border-dashed border-gray-700">
+                <h3 className="text-2xl font-bold mb-4 text-gray-500">⭐ Top Avaliadores</h3>
+                <p className="text-gray-400">Em breve: um ranking para os professores que mais avaliam e fornecem feedback sobre atividades da comunidade.</p>
+            </div>
+        </main>
+      </div>
+    </div>
+  );
+};
+
+export default TeacherRankingPage;

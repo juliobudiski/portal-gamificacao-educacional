@@ -56,6 +56,7 @@ function ActivityManagementPage() {
                             <th className="py-4 px-4 text-left text-sm font-bold uppercase">ID</th>
                             <th className="py-4 px-4 text-left text-sm font-bold uppercase">Título</th>
                             <th className="py-4 px-4 text-left text-sm font-bold uppercase">Professor</th>
+                            <th className="py-4 px-4 text-left text-sm font-bold uppercase">Tempo Médio</th>
                             <th className="py-4 px-4 text-left text-sm font-bold uppercase">Status</th>
                             <th className="py-4 px-4 text-right text-sm font-bold uppercase">Detalhes</th>
                         </tr>
@@ -67,6 +68,7 @@ function ActivityManagementPage() {
                                     <td className="py-4 px-4 text-sm font-medium text-accent-yellow">{activity.id}</td>
                                     <td className="py-4 px-4 text-sm text-white">{activity.title}</td>
                                     <td className="py-4 px-4 text-sm text-gray-300">{activity.professor_name || 'N/A'}</td>
+                                    <td className="py-4 px-4 text-sm text-gray-300"> {activity.average_engagement_time || 'N/A'}</td>
                                     <td className="py-4 px-4 text-sm">
                                         <span className={activity.isPublic ? 'text-green-400' : 'text-gray-400'}>
                                             {activity.isPublic ? 'Pública' : 'Privada'}

@@ -381,10 +381,17 @@ useEffect(() => {
    * @param {React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>} e - O evento do input.
    */
   const handleInputChange = (e) => {
+    let processedValue = value;
     const { name, value, type, checked } = e.target;
     console.log(`handleInputChange: Input alterado -> name='${name}', type='${type}', value='${value}', checked=${checked}`);
 
     const nameParts = name.split('.');
+    // Se for o campo de perfis de jogador, converter string para array
+    if (name === 'playerProfile.selectedProfiles') {
+      if (typeof value === 'string') {
+        processedValue = value.split(',').map(item => item.trim());
+      }
+    }
 
     setActivityData(prevData => {
       let newData;
@@ -392,6 +399,7 @@ useEffect(() => {
         const fieldName = nameParts[0];
         newData = {
           ...prevData,
+          [name]: processedValue,
           [fieldName]: type === 'checkbox' ? checked : value,
         };
       } else { // Campo aninhado (ex: 'currentScenario.problems')

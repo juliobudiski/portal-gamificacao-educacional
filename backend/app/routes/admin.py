@@ -3,7 +3,7 @@ from flask_cors import cross_origin
 from flask import Blueprint, jsonify, current_app, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from ..models import db, User, Activity, EventLog
-from sqlalchemy import func, case
+from sqlalchemy import func, case, cast, Numeric
 from datetime import datetime, timedelta
 from collections import Counter
 admin_bp = Blueprint('admin', __name__)
@@ -49,14 +49,33 @@ def get_all_activities():
     if not check_admin():
         return jsonify({"message": "Acesso não autorizado"}), 403
 
+    # Subconsulta para calcular o tempo médio de engajamento por atividade
+    engagement_subquery = db.session.query(
+        EventLog.activity_id,
+        func.avg(cast(EventLog.details['duration_seconds'].astext, Numeric)).label('avg_duration')
+    ).filter(
+        EventLog.action == 'view_duration',
+        EventLog.activity_id.isnot(None),
+        EventLog.details['duration_seconds'].isnot(None)
+    ).group_by(EventLog.activity_id).subquery()
+
     activities_with_professors = db.session.query(
-        Activity, User.name.label('professor_name')
-    ).join(User, User.id == Activity.professor_id).all()
+        Activity, User.name.label('professor_name'), engagement_subquery.c.avg_duration
+    ).join(User, User.id == Activity.professor_id
+    ).outerjoin(engagement_subquery, engagement_subquery.c.activity_id == Activity.id).all()
     
     activities_list = []
-    for activity, professor_name in activities_with_professors:
+    for activity, professor_name, avg_duration in activities_with_professors:
         act_dict = activity.to_dict()
         act_dict['professor_name'] = professor_name
+        # Convertendo a duração média para formato legível
+        if avg_duration is not None:
+            # Converter para minutos e segundos
+            minutes = int(avg_duration // 60)
+            seconds = int(avg_duration % 60)
+            act_dict['average_engagement_time'] = f"{minutes}m {seconds}s"
+        else:
+            act_dict['average_engagement_time'] = 'N/A'
         activities_list.append(act_dict)
 
     return jsonify(activities_list)
@@ -144,34 +163,7 @@ def get_activity_feed():
     return jsonify(feed_items)
 
 
-@admin_bp.route('/analytics/kpis', methods=['GET'])
-@jwt_required()
-def get_analytics_kpis():
-    if not check_admin(): return jsonify({"message": "Acesso negado."}), 403
 
-    # Contagem total de eventos
-    total_events = db.session.query(func.count(EventLog.id)).scalar()
-
-    # Contagem de logins (sucesso e falha) nas últimas 24h
-    one_day_ago = datetime.utcnow() - timedelta(hours=24)
-    logins_today = db.session.query(
-        func.count(case((EventLog.action == 'login_success', 1))),
-        func.count(case((EventLog.action == 'login_fail', 1)))
-    ).filter(EventLog.created_at >= one_day_ago).first()
-
-    # Contagem de atividades criadas nos últimos 7 dias
-    one_week_ago = datetime.utcnow() - timedelta(days=7)
-    activities_this_week = db.session.query(func.count(EventLog.id)).filter(
-        EventLog.action == 'activity_created',
-        EventLog.created_at >= one_week_ago
-    ).scalar()
-
-    return jsonify({
-        "total_events": total_events or 0,
-        "successful_logins_24h": logins_today[0] or 0,
-        "failed_logins_24h": logins_today[1] or 0,
-        "activities_created_7d": activities_this_week or 0
-    })
 
 @admin_bp.route('/analytics/event_distribution', methods=['GET'])
 @jwt_required()
@@ -238,7 +230,8 @@ def get_system_logs():
 @jwt_required()
 @cross_origin()
 def get_creation_trends():
-    if not check_admin(): return jsonify({"message": "Acesso negado."}), 403
+    if not check_admin(): 
+        return jsonify({"message": "Acesso negado."}), 403
 
     activities = Activity.query.all()
     if not activities:
@@ -247,21 +240,54 @@ def get_creation_trends():
             "rewarded_actions": [], "rewards_offered": []
         })
 
-    # Usando collections.Counter para agregar os dados de forma eficiente
+    # Mapeamento para normalizar os nomes dos perfis
+    profile_mapping = {
+        "Jogador cooperativo": "Cooperativo",
+        "Jogador de realização": "Realizador",
+        # Adicione outros mapeamentos conforme necessário
+    }
+
     game_elements_counter = Counter()
     player_profiles_counter = Counter()
     rewarded_actions_counter = Counter()
     rewards_offered_counter = Counter()
 
     for activity in activities:
-        if activity.game_elements and 'selectedElements' in activity.game_elements:
-            game_elements_counter.update(activity.game_elements['selectedElements'])
+        # Processar player profiles
         if activity.player_profile and 'selectedProfiles' in activity.player_profile:
-            player_profiles_counter.update(activity.player_profile['selectedProfiles'])
+            profiles = activity.player_profile['selectedProfiles']
+            
+            # Se for uma string, converter para array
+            if isinstance(profiles, str):
+                profiles = [p.strip() for p in profiles.split(',')]
+            
+            # Normalizar os nomes
+            normalized_profiles = [
+                profile_mapping.get(profile, profile) 
+                for profile in profiles
+            ]
+            player_profiles_counter.update(normalized_profiles)
+            
+        # Processar game elements
+        if activity.game_elements and 'selectedElements' in activity.game_elements:
+            elements = activity.game_elements['selectedElements']
+            if isinstance(elements, str):
+                elements = [e.strip() for e in elements.split(',')]
+            game_elements_counter.update(elements)
+            
+        # Processar rewarded actions
         if activity.rewarded_actions and 'selectedActions' in activity.rewarded_actions:
-            rewarded_actions_counter.update(activity.rewarded_actions['selectedActions'])
+            actions = activity.rewarded_actions['selectedActions']
+            if isinstance(actions, str):
+                actions = [a.strip() for a in actions.split(',')]
+            rewarded_actions_counter.update(actions)
+            
+        # Processar rewards offered
         if activity.rewards_offered and 'selectedRewards' in activity.rewards_offered:
-            rewards_offered_counter.update(activity.rewards_offered['selectedRewards'])
+            rewards = activity.rewards_offered['selectedRewards']
+            if isinstance(rewards, str):
+                rewards = [r.strip() for r in rewards.split(',')]
+            rewards_offered_counter.update(rewards)
             
     # Função auxiliar para formatar os dados para os gráficos
     def format_counter_data(counter, name_key='name', value_key='count'):
@@ -273,3 +299,129 @@ def get_creation_trends():
         "rewarded_actions": format_counter_data(rewarded_actions_counter, 'action', 'count'),
         "rewards_offered": format_counter_data(rewards_offered_counter, 'reward', 'count')
     })
+
+@admin_bp.route('/analytics/kpis', methods=['GET'])
+@jwt_required()
+def get_analytics_kpis():
+    if not check_admin(): return jsonify({"message": "Acesso negado."}), 403
+
+    # Contagem total de eventos
+    total_events = db.session.query(func.count(EventLog.id)).scalar()
+
+    # Contagem de logins (sucesso e falha) nas últimas 24h
+    one_day_ago = datetime.utcnow() - timedelta(hours=24)
+    logins_today = db.session.query(
+        func.count(case((EventLog.action == 'login_success', 1))),
+        func.count(case((EventLog.action == 'login_fail', 1)))
+    ).filter(EventLog.created_at >= one_day_ago).first()
+
+    # Contagem de atividades criadas nos últimos 7 dias
+    one_week_ago = datetime.utcnow() - timedelta(days=7)
+    activities_this_week = db.session.query(func.count(EventLog.id)).filter(
+        EventLog.action == 'activity_created',
+        EventLog.created_at >= one_week_ago
+    ).scalar()
+
+    # NOVOS KPIs: Logins dos últimos 30 dias e usuários ativos (únicos) nos últimos 30 dias
+    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+    
+    # Total de logins com sucesso nos últimos 30 dias
+    successful_logins_30d = db.session.query(func.count(EventLog.id)).filter(
+        EventLog.action == 'login_success',
+        EventLog.created_at >= thirty_days_ago
+    ).scalar()
+
+    # Número de usuários distintos que fizeram login nos últimos 30 dias
+    active_users_30d = db.session.query(func.count(func.distinct(EventLog.user_id))).filter(
+        EventLog.action == 'login_success',
+        EventLog.created_at >= thirty_days_ago
+    ).scalar()
+
+    return jsonify({
+        "total_events": total_events or 0,
+        "successful_logins_24h": logins_today[0] or 0,
+        "failed_logins_24h": logins_today[1] or 0,
+        "activities_created_7d": activities_this_week or 0,
+        # Novos KPIs
+        "successful_logins_30d": successful_logins_30d or 0,
+        "active_users_30d": active_users_30d or 0
+    })
+
+@admin_bp.route('/analytics/creation_steps', methods=['GET'])
+@jwt_required()
+def get_creation_steps_analytics():
+    if not check_admin():
+        return jsonify({"message": "Acesso negado."}), 403
+
+    # Mapeamento de números para nomes das etapas
+    step_names = {
+        '1': 'Cenário Atual',
+        '2': 'Cenário Desejado', 
+        '3': 'Planejamento',
+        '4': 'Perfil do Jogador',
+        '5': 'Elementos de Jogo',
+        '6': 'Recompensas',
+        '7': 'Ações Recompensadas',
+        '8': 'Regras e Compartilhamento'
+    }
+
+    # Consulta para tempo médio por etapa
+    step_duration_data = db.session.query(
+        EventLog.details['step'].astext.label('step'),
+        func.avg(cast(EventLog.details['duration_seconds'].astext, Numeric)).label('avg_duration'),
+        func.count(EventLog.id).label('event_count')
+    ).filter(
+        EventLog.action == 'step_view_duration',
+        EventLog.details['duration_seconds'].isnot(None),
+        EventLog.details['step'].isnot(None)
+    ).group_by(
+        EventLog.details['step'].astext
+    ).all()
+
+    # Consulta para abandonos por etapa
+    step_abandon_data = db.session.query(
+        EventLog.details['last_step'].astext.label('step'),
+        func.count(EventLog.id).label('abandon_count')
+    ).filter(
+        EventLog.action == 'form_abandoned',
+        EventLog.details['last_step'].isnot(None)
+    ).group_by(
+        EventLog.details['last_step'].astext
+    ).all()
+
+    # Consulta para cliques de ajuda por etapa
+    help_clicks_data = db.session.query(
+        EventLog.details['step'].astext.label('step'),
+        func.count(EventLog.id).label('help_count')
+    ).filter(
+        EventLog.action == 'help_button_click',
+        EventLog.details['step'].isnot(None)
+    ).group_by(
+        EventLog.details['step'].astext
+    ).all()
+
+    # Transformar os resultados em dicionários
+    duration_dict = {str(row.step): {'avg_duration': float(row.avg_duration or 0), 'event_count': row.event_count} for row in step_duration_data}
+    abandon_dict = {str(row.step): row.abandon_count or 0 for row in step_abandon_data}
+    help_dict = {str(row.step): row.help_count or 0 for row in help_clicks_data}
+
+    # Juntar todos os steps que aparecem em qualquer consulta
+    all_steps = set(duration_dict.keys()) | set(abandon_dict.keys()) | set(help_dict.keys())
+    
+    # Ordenar os steps numericamente
+    sorted_steps = sorted(all_steps, key=lambda x: int(x))
+    
+    # Construir o resultado apenas com steps que têm dados
+    result = []
+    for step in sorted_steps:
+        duration_info = duration_dict.get(step, {'avg_duration': 0, 'event_count': 0})
+        result.append({
+            'step': step,
+            'step_name': step_names.get(step, f'Etapa {step}'),
+            'avg_duration': duration_info['avg_duration'],
+            'event_count': duration_info['event_count'],
+            'abandon_count': abandon_dict.get(step, 0),
+            'help_count': help_dict.get(step, 0)
+        })
+
+    return jsonify(result)

@@ -49,7 +49,7 @@ const formatActionText = (item) => {
         case 'register_success': return `se cadastrou na plataforma.`;
         
         // Eventos de Analytics do Frontend (mais detalhados)
-        case 'step_view_duration':
+        case 'view_duration':
             return `permaneceu por ${item.details?.duration_seconds || 0}s na etapa ${item.details?.step} de "${section}".`;
         case 'form_abandoned':
             return `abandonou o formulário de "${section}" na etapa ${item.details?.last_step}.`;

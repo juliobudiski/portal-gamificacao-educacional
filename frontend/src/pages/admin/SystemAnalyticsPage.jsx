@@ -1,8 +1,8 @@
 // frontend/src/pages/admin/SystemAnalyticsPage.jsx
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { AuthContext } from '../../context/AuthContext';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, Tooltip as PieTooltip } from 'recharts';
-import { ChevronLeft, ChevronRight, Activity, LogIn, AlertTriangle, FilePlus, Search, Puzzle, Users, Trophy, Gift } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, PieChart, ComposedChart, Line, CartesianGrid, Pie, Cell, Tooltip as PieTooltip } from 'recharts';
+import { ChevronLeft, ChevronRight, Activity, LogIn, AlertTriangle, FilePlus, Search, Puzzle, Users, Trophy, Gift, Clock, XCircle, HelpCircle } from 'lucide-react';
 import { useDebounce } from 'use-debounce';
 
 // Componente para os cards de KPI
@@ -22,7 +22,7 @@ const KPI_Card = ({ title, value, icon, color }) => (
 const HorizontalBarChart = ({ data, dataKey, nameKey, title, icon }) => (
     <div className="bg-gray-800/50 p-6 rounded-xl">
         <h2 className="text-xl font-bold text-white mb-4 flex items-center"><span className="mr-2">{icon}</span>{title}</h2>
-        <div style={{ width: '100%', height: 300 }}>
+        <div style={{ width: '100%', height: 400 }}>  {/* Altura aumentada de 300 para 400 */}
             <ResponsiveContainer>
                 <BarChart layout="vertical" data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                     <XAxis type="number" stroke="#9ca3af" />
@@ -35,16 +35,26 @@ const HorizontalBarChart = ({ data, dataKey, nameKey, title, icon }) => (
     </div>
 );
 
-// Componente para o gráfico de pizza
+// Componente para o gráfico de pizza (MODIFICADO)
 const ProfilePieChart = ({ data }) => {
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF'];
     return (
         <div className="bg-gray-800/50 p-6 rounded-xl">
             <h2 className="text-xl font-bold text-white mb-4 flex items-center"><Users className="mr-2" />Perfis de Jogador Mais Visados</h2>
-            <div style={{ width: '100%', height: 300 }}>
+            <div style={{ width: '100%', height: 400 }}>  {/* Altura aumentada de 300 para 400 */}
                 <ResponsiveContainer>
                     <PieChart>
-                        <Pie data={data} cx="50%" cy="50%" labelLine={false} outerRadius={120} fill="#8884d8" dataKey="count" nameKey="profile" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                        <Pie 
+                            data={data} 
+                            cx="50%" 
+                            cy="50%" 
+                            labelLine={false} 
+                            outerRadius={140}  
+                            fill="#8884d8" 
+                            dataKey="count" 
+                            nameKey="profile" 
+                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        >
                             {data.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
                         </Pie>
                         <PieTooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #4b5563' }}/>
@@ -69,6 +79,7 @@ function SystemAnalyticsPage() {
     const [userSearch, setUserSearch] = useState('');
     const [debouncedUserSearch] = useDebounce(userSearch, 500); // Adiciona um delay para não sobrecarregar a API
     const [actionFilter, setActionFilter] = useState('');
+    const [creationStepsData, setCreationStepsData] = useState([]);
 
     // Busca todos os dados da página
     const fetchData = useCallback(async () => {
@@ -84,11 +95,12 @@ function SystemAnalyticsPage() {
             const logParams = new URLSearchParams({ page: currentPage, limit: 15, ...(debouncedUserSearch && { user: debouncedUserSearch }), ...(actionFilter && { action: actionFilter }), });
             const logUrl = `${apiPrefix}/logs?${logParams.toString()}`;
 
-            const [kpiRes, distRes, logRes, trendsRes] = await Promise.all([ // <-- Adicionado trendsRes
-                fetch(`${apiPrefix}/kpis`, { headers }),
-                fetch(`${apiPrefix}/event_distribution`, { headers }),
-                fetch(logUrl, { headers }),
-                fetch(`${apiPrefix}/creation_trends`, { headers }), // <-- Busca os novos dados
+            const [kpiRes, distRes, logRes, trendsRes, stepsRes] = await Promise.all([
+            fetch(`${apiPrefix}/kpis`, { headers }),
+            fetch(`${apiPrefix}/event_distribution`, { headers }),
+            fetch(logUrl, { headers }),
+            fetch(`${apiPrefix}/creation_trends`, { headers }),
+            fetch(`${apiPrefix}/creation_steps`, { headers }), // Nova chamada
             ]);
 
             if (!kpiRes.ok || !distRes.ok || !logRes.ok || !trendsRes.ok) throw new Error('Falha ao buscar dados de análise.');
@@ -99,6 +111,7 @@ function SystemAnalyticsPage() {
             setLogs(logData.logs);
             setPagination({ totalPages: logData.total_pages, currentPage: logData.current_page, hasNext: logData.has_next, hasPrev: logData.has_prev });
             setCreationTrends(await trendsRes.json()); // <-- Salva os novos dados no estado
+            setCreationStepsData(await stepsRes.json());
 
         } catch (e) {
             setError(e.message);
@@ -133,18 +146,180 @@ function SystemAnalyticsPage() {
                 <KPI_Card title="Logins com Sucesso (24h)" value={kpis?.successful_logins_24h ?? '...'} icon={<LogIn size={24}/>} color="bg-green-500/30" />
                 <KPI_Card title="Tentativas de Login Falhas (24h)" value={kpis?.failed_logins_24h ?? '...'} icon={<AlertTriangle size={24}/>} color="bg-yellow-500/30" />
                 <KPI_Card title="Atividades Criadas (7d)" value={kpis?.activities_created_7d ?? '...'} icon={<FilePlus size={24}/>} color="bg-purple-500/30" />
+                <KPI_Card title="Total de Logins (30d)" 
+                    value={kpis?.successful_logins_30d ?? '...'} 
+                    icon={<LogIn size={24}/>} 
+                    color="bg-blue-500/30" 
+                />
+                <KPI_Card title="Usuários Ativos (30d)" 
+                    value={kpis?.active_users_30d ?? '...'} 
+                    icon={<Users size={24}/>} 
+                    color="bg-green-500/30" 
+                />
             </div>
 
             {/* NOVA SEÇÃO: Tendências de Criação de Atividades */}
             <div className="space-y-6">
                 <h2 className="text-2xl font-bold border-b border-gray-700 pb-2">Tendências de Criação de Conteúdo</h2>
                 {creationTrends && (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 gap-6"> 
                         <HorizontalBarChart data={creationTrends.game_elements} dataKey="count" nameKey="element" title="Top Elementos de Jogo" icon={<Puzzle/>} />
                         <ProfilePieChart data={creationTrends.player_profiles} />
                         <HorizontalBarChart data={creationTrends.rewards_offered} dataKey="count" nameKey="reward" title="Top Recompensas Oferecidas" icon={<Gift/>} />
                         <HorizontalBarChart data={creationTrends.rewarded_actions} dataKey="count" nameKey="action" title="Top Ações Recompensadas" icon={<Trophy/>} />
                     </div>
+                )}
+            </div>
+
+            {/* Seção de Análise das Etapas de Criação */}
+            <div className="space-y-6">
+            <h2 className="text-2xl font-bold border-b border-gray-700 pb-2">Análise das Etapas de Criação</h2>
+            
+            {/* Informações Gerais */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-gray-800/50 p-4 rounded-xl text-center">
+                <Clock className="mx-auto mb-2" size={24} />
+                <h3 className="font-semibold text-white">Total de Eventos de Duração</h3>
+                <p className="text-2xl font-bold text-accent-teal">
+                    {creationStepsData.reduce((sum, step) => sum + step.event_count, 0)}
+                </p>
+                </div>
+                <div className="bg-gray-800/50 p-4 rounded-xl text-center">
+                <XCircle className="mx-auto mb-2" size={24} />
+                <h3 className="font-semibold text-white">Total de Abandonos</h3>
+                <p className="text-2xl font-bold text-accent-yellow">
+                    {creationStepsData.reduce((sum, step) => sum + step.abandon_count, 0)}
+                </p>
+                </div>
+                <div className="bg-gray-800/50 p-4 rounded-xl text-center">
+                <HelpCircle className="mx-auto mb-2" size={24} />
+                <h3 className="font-semibold text-white">Total de Solicitações de Ajuda</h3>
+                <p className="text-2xl font-bold text-accent-purple">
+                    {creationStepsData.reduce((sum, step) => sum + step.help_count, 0)}
+                </p>
+                </div>
+            </div>
+
+            {/* Gráfico de Tempo Médio por Etapa */}
+            <div className="bg-gray-800/50 p-6 rounded-xl">
+                <h2 className="text-xl font-bold text-white mb-4 flex items-center">
+                <Clock className="mr-2" /> Tempo Médio por Etapa (segundos)
+                </h2>
+                <div style={{ width: '100%', height: 400 }}>
+                <ResponsiveContainer>
+                    <BarChart data={creationStepsData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#4A5568" />
+                    <XAxis dataKey="step_name" stroke="#A0AEC0" />
+                    <YAxis stroke="#A0AEC0" />
+                    <Tooltip 
+                        contentStyle={{ 
+                        backgroundColor: '#2D3748', 
+                        border: '1px solid #4A5568',
+                        borderRadius: '0.5rem'
+                        }} 
+                        formatter={(value, name, props) => {
+                        if (name === 'avg_duration') return [`${value.toFixed(2)} segundos`, 'Tempo Médio'];
+                        return [value, name];
+                        }}
+                    />
+                    <Legend />
+                    <Bar dataKey="avg_duration" name="Tempo Médio (segundos)" fill="#8884d8" />
+                    </BarChart>
+                </ResponsiveContainer>
+                </div>
+            </div>
+
+            {/* Gráfico de Abandonos e Ajuda */}
+            <div className="bg-gray-800/50 p-6 rounded-xl">
+                <h2 className="text-xl font-bold text-white mb-4 flex items-center">
+                <XCircle className="mr-2" /> Abandonos e Solicitações de Ajuda
+                </h2>
+                <div style={{ width: '100%', height: 400 }}>
+                <ResponsiveContainer>
+                    <BarChart data={creationStepsData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#4A5568" />
+                    <XAxis dataKey="step_name" stroke="#A0AEC0" />
+                    <YAxis stroke="#A0AEC0" />
+                    <Tooltip 
+                        contentStyle={{ 
+                        backgroundColor: '#2D3748', 
+                        border: '1px solid #4A5568',
+                        borderRadius: '0.5rem'
+                        }} 
+                    />
+                    <Legend />
+                    <Bar dataKey="abandon_count" name="Abandonos" fill="#ff8042" />
+                    <Bar dataKey="help_count" name="Solicitações de Ajuda" fill="#00C49F" />
+                    </BarChart>
+                </ResponsiveContainer>
+                </div>
+            </div>
+
+            {/* Tabela Detalhada */}
+            <div className="bg-gray-800/50 p-6 rounded-xl">
+                <h2 className="text-xl font-bold text-white mb-4">Detalhes por Etapa</h2>
+                <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-700">
+                    <thead>
+                    <tr>
+                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-300">Etapa</th>
+                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-300">Tempo Médio (s)</th>
+                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-300">Eventos</th>
+                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-300">Abandonos</th>
+                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-300">Solicitações de Ajuda</th>
+                    </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-700">
+                    {creationStepsData.map((step) => (
+                        <tr key={step.step}>
+                        <td className="px-4 py-2 text-sm text-white">{step.step_name}</td>
+                        <td className="px-4 py-2 text-sm text-gray-300">{step.avg_duration.toFixed(2)}</td>
+                        <td className="px-4 py-2 text-sm text-gray-300">{step.event_count}</td>
+                        <td className="px-4 py-2 text-sm text-gray-300">{step.abandon_count}</td>
+                        <td className="px-4 py-2 text-sm text-gray-300">{step.help_count}</td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+                </div>
+            </div>
+            </div>
+
+            {/* Resumo das Etapas */}
+            <div className="bg-gray-800/50 p-6 rounded-xl">
+                <h2 className="text-xl font-bold text-white mb-4">Resumo das Etapas de Criação</h2>
+                {creationStepsData.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="text-center p-4 bg-gray-700/50 rounded-lg">
+                    <p className="text-gray-400">Etapa Mais Demorada</p>
+                    <p className="text-2xl font-bold text-white">
+                        {creationStepsData.reduce((max, step) => step.avg_duration > max.avg_duration ? step : max, creationStepsData[0]).step_name}
+                    </p>
+                    <p className="text-gray-400">
+                        {Math.round(creationStepsData.reduce((max, step) => step.avg_duration > max.avg_duration ? step : max, creationStepsData[0]).avg_duration)} segundos
+                    </p>
+                    </div>
+                    <div className="text-center p-4 bg-gray-700/50 rounded-lg">
+                    <p className="text-gray-400">Etapa com Mais Abandonos</p>
+                    <p className="text-2xl font-bold text-white">
+                        {creationStepsData.reduce((max, step) => step.abandon_count > max.abandon_count ? step : max, creationStepsData[0]).step_name}
+                    </p>
+                    <p className="text-gray-400">
+                        {creationStepsData.reduce((max, step) => step.abandon_count > max.abandon_count ? step : max, creationStepsData[0]).abandon_count} abandonos
+                    </p>
+                    </div>
+                    <div className="text-center p-4 bg-gray-700/50 rounded-lg">
+                    <p className="text-gray-400">Etapa com Mais Dúvidas</p>
+                    <p className="text-2xl font-bold text-white">
+                        {creationStepsData.reduce((max, step) => step.help_count > max.help_count ? step : max, creationStepsData[0]).step_name}
+                    </p>
+                    <p className="text-gray-400">
+                        {creationStepsData.reduce((max, step) => step.help_count > max.help_count ? step : max, creationStepsData[0]).help_count} solicitações de ajuda
+                    </p>
+                    </div>
+                </div>
+                ) : (
+                <p className="text-gray-400 text-center py-4">Nenhum dado disponível para análise das etapas.</p>
                 )}
             </div>
 
