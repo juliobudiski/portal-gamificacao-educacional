@@ -30,7 +30,7 @@ function ActivityCreationPage({ existingActivity }) {
   const totalSteps = 8;
   // Hook para acessar o contexto de autenticação (dados do usuário, token, etc.).
   const { user } = useAuth();
-  
+  const formStartedRef = useRef(false);
   const { activityId } = useParams();
   const isEditMode = !!existingActivity;
   const { logEvent } = useAnalytics('activity_creation', user?.token, activityId);
@@ -56,7 +56,7 @@ function ActivityCreationPage({ existingActivity }) {
     title: '',
     description: '',
     areaKnowledge: '',
-    isPublic: false,
+    isPublic: true,
 
     // Etapa 1: Cenário Atual
     currentScenario: {
@@ -136,8 +136,8 @@ useEffect(() => {
   // A função de retorno (cleanup) é executada quando o componente é desmontado
   return () => {
     // Só loga abandono se o formulário não foi concluído e não está no processo de submissão
-    if (!isSubmittingRef.current) {
-        console.log(`Usuário abandonou o formulário na etapa ${previousStepRef.current}`);
+    if (formStartedRef.current && !isSubmittingRef.current) { 
+        console.log(`Usuário abandonou o formulário INICIADO na etapa ${previousStepRef.current}`);
         logEvent("form_abandoned", {
             last_step: previousStepRef.current
         });
@@ -267,6 +267,7 @@ useEffect(() => {
    */
   const handleSelectTemplate = (templateData) => {
     console.log("handleSelectTemplate: Selecionando template e preenchendo dados...", templateData);
+    formStartedRef.current = true;
     setActivityData(templateData); // Preenche o estado com os dados do template
     setShowInitialSelection(false); // Esconde a tela de seleção inicial
     setShowTemplateList(false); // Esconde a lista de templates
@@ -278,6 +279,7 @@ useEffect(() => {
    */
   const handleStartFromScratch = () => {
     console.log("handleStartFromScratch: Iniciando atividade do zero.");
+    formStartedRef.current = true;
     // Reseta activityData para o estado inicial vazio
     setActivityData({
       title: '', description: '', areaKnowledge: '', isPublic: false,
@@ -326,6 +328,14 @@ useEffect(() => {
     if (currentStep < totalSteps) {
       setCurrentStep(prevStep => prevStep + 1);
     } else {
+      const finalStepDuration = Math.round((Date.now() - stepStartTimeRef.current) / 1000);
+      if (finalStepDuration > 0) {
+        console.log(`Logando duração da Etapa FINAL ${currentStep}: ${finalStepDuration}s`);
+        logEvent("step_view_duration", {
+          step: currentStep,
+          duration_seconds: finalStepDuration
+        });
+      }
       const url = isEditMode
         ? `http://127.0.0.1:5000/api/activities/${activityId}`
         : 'http://127.0.0.1:5000/api/activities';
@@ -381,17 +391,10 @@ useEffect(() => {
    * @param {React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>} e - O evento do input.
    */
   const handleInputChange = (e) => {
-    let processedValue = value;
     const { name, value, type, checked } = e.target;
     console.log(`handleInputChange: Input alterado -> name='${name}', type='${type}', value='${value}', checked=${checked}`);
 
     const nameParts = name.split('.');
-    // Se for o campo de perfis de jogador, converter string para array
-    if (name === 'playerProfile.selectedProfiles') {
-      if (typeof value === 'string') {
-        processedValue = value.split(',').map(item => item.trim());
-      }
-    }
 
     setActivityData(prevData => {
       let newData;
@@ -399,7 +402,6 @@ useEffect(() => {
         const fieldName = nameParts[0];
         newData = {
           ...prevData,
-          [name]: processedValue,
           [fieldName]: type === 'checkbox' ? checked : value,
         };
       } else { // Campo aninhado (ex: 'currentScenario.problems')

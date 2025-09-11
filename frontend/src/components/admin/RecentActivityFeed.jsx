@@ -49,7 +49,10 @@ const formatActionText = (item) => {
         case 'register_success': return `se cadastrou na plataforma.`;
         
         // Eventos de Analytics do Frontend (mais detalhados)
-        case 'view_duration':
+        // --- CORREÇÃO APLICADA AQUI ---
+        // O case 'view_duration' agora é 'step_view_duration' para ser mais específico
+        // e o case duplicado foi removido.
+        case 'step_view_duration':
             return `permaneceu por ${item.details?.duration_seconds || 0}s na etapa ${item.details?.step} de "${section}".`;
         case 'form_abandoned':
             return `abandonou o formulário de "${section}" na etapa ${item.details?.last_step}.`;
@@ -58,9 +61,10 @@ const formatActionText = (item) => {
         case 'previous_button_click':
             return `voltou da etapa ${item.details?.from_step} para a ${item.details?.to_step} em "${section}".`;
 
-        // Eventos genéricos (caso existam)
+        // Evento genérico, se necessário
         case 'view_start': return `começou a visualizar "${section}".`;
-        case 'view_duration': return `permaneceu por ${item.details?.duration}s em "${section}".`;
+        
+        // O case 'view_duration' duplicado foi removido.
 
         default: return item.action.replace(/_/g, ' ');
     }
@@ -93,4 +97,3 @@ function RecentActivityFeed({ feedItems }) {
 }
 
 export default RecentActivityFeed;
-

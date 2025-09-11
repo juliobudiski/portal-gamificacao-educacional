@@ -2,7 +2,7 @@
 from flask_cors import cross_origin 
 from flask import Blueprint, jsonify, current_app, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from ..models import db, User, Activity, EventLog
+from ..models import db, User, Activity, EventLog, Purchase, ActivityProgress
 from sqlalchemy import func, case, cast, Numeric
 from datetime import datetime, timedelta
 from collections import Counter
@@ -244,7 +244,9 @@ def get_creation_trends():
     profile_mapping = {
         "Jogador cooperativo": "Cooperativo",
         "Jogador de realização": "Realizador",
-        # Adicione outros mapeamentos conforme necessário
+        "Jogador imersivo": "Imersivo",
+        "Jogador competitivo": "Competitivo",
+        "Jogador social": "Social"        
     }
 
     game_elements_counter = Counter()
@@ -425,3 +427,73 @@ def get_creation_steps_analytics():
         })
 
     return jsonify(result)
+
+@admin_bp.route('/analytics/student_engagement', methods=['GET'])
+@jwt_required()
+def get_student_engagement_data():
+    if not check_admin():
+        return jsonify({"message": "Acesso negado."}), 403
+
+    # 1. Gráfico: Elementos de Jogo Mais Utilizados
+    element_usage_results = db.session.query(
+        EventLog.action,
+        func.count(EventLog.id)
+    ).filter(
+        
+        EventLog.action.in_([
+            'quiz_complete', 
+            'roulette_spin_attempt', 
+            'slot_machine_attempt',
+            'narrative_completed',
+            'purchase_item'
+        ])
+    ).group_by(EventLog.action).all()
+    
+    # Mapeamento expandido para nomes amigáveis
+    element_usage_map = {
+        'quiz_complete': 'Quizzes Finalizados',
+        'roulette_spin_attempt': 'Roleta (Tentativas)',
+        'slot_machine_attempt': 'Caça-níquel (Tentativas)',
+        'narrative_completed': 'Narrativas Concluídas',
+        'purchase_item': 'Compras na Loja'
+    }
+    game_element_usage = [{'name': element_usage_map.get(row[0], row[0]), 'count': row[1]} for row in element_usage_results]
+
+    # 2. Gráfico: Itens Mais Comprados na Loja
+    top_store_items_results = db.session.query(
+        Purchase.item_name,
+        func.count(Purchase.id)
+    ).group_by(Purchase.item_name).order_by(func.count(Purchase.id).desc()).limit(10).all()
+    top_store_items = [{'name': row[0], 'count': row[1]} for row in top_store_items_results]
+
+    # 3. Gráfico: Atividades com Maior Engajamento (soma de durações)
+    most_engaging_activities_results = db.session.query(
+        Activity.title,
+        func.sum(cast(EventLog.details['duration_seconds'].astext, Numeric))
+    ).join(Activity, Activity.id == EventLog.activity_id).filter(
+        EventLog.action == 'step_view_duration',
+        EventLog.details['duration_seconds'].isnot(None)
+    ).group_by(Activity.title).order_by(func.sum(cast(EventLog.details['duration_seconds'].astext, Numeric)).desc()).limit(10).all()
+    
+    most_engaging_activities = [{'title': row[0], 'total_seconds': float(row[1] or 0)} for row in most_engaging_activities_results]
+
+    # 4. KPIs: Saúde da Economia Interna
+    coins_earned = db.session.query(func.sum(ActivityProgress.coins)).scalar() or 0
+    coins_spent = db.session.query(func.sum(Purchase.price_paid)).scalar() or 0
+    economy_kpis = {'coins_earned': coins_earned, 'coins_spent': coins_spent}
+
+    # 5. Gráfico: Funil de Progresso do Aluno
+    progress_status_results = db.session.query(
+        ActivityProgress.status,
+        func.count(ActivityProgress.id)
+    ).group_by(ActivityProgress.status).all()
+    progress_status = [{'status': row[0], 'count': row[1]} for row in progress_status_results]
+    
+    # Consolida tudo em um único objeto de resposta
+    return jsonify({
+        "game_element_usage": game_element_usage,
+        "top_store_items": top_store_items,
+        "most_engaging_activities": most_engaging_activities,
+        "economy_kpis": economy_kpis,
+        "progress_status": progress_status,
+    })

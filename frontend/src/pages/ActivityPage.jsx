@@ -24,6 +24,8 @@ import RouletteTab from '../components/activity/RouletteTab';
 import { FaArrowLeft } from 'react-icons/fa';
 import useAnalytics from "../hooks/useAnalytics";
 import { cardsConfig } from '../components/activity/gameElementsConfig';
+import GameBoardViewer from '../components/activity/GameBoardViewer';
+
 // Configuração de debug - ativar no .env.local
 const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === 'true';
 
@@ -472,7 +474,8 @@ function ActivityPage() {
       <main className="w-3/4 p-8">
         <h1 className="text-5xl font-extrabold mb-2">{activity.title}</h1>
         <p className="mb-8 text-lg text-gray-400">{activity.description}</p>
-        
+        {/* Adicione o componente do tabuleiro aqui */}
+        <GameBoardViewer />
         {renderContent()}
       </main>
 

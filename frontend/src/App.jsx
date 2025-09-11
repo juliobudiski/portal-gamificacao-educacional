@@ -35,7 +35,7 @@ import DashboardOverviewPage from './pages/admin/DashboardOverviewPage';
 import UserManagementPage from './pages/admin/UserManagementPage';
 import ActivityManagementPage from './pages/admin/ActivityManagementPage';
 import SystemAnalyticsPage from './pages/admin/SystemAnalyticsPage';
-
+import LogExplorerPage from './pages/admin/LogExplorerPage';
 
 
 // Importação dos ícones da biblioteca Lucide React para a UI
@@ -435,6 +435,8 @@ function App() {
                 <Route path="users" element={<UserManagementPage />} />
                 <Route path="activities" element={<ActivityManagementPage />} />
                 <Route path="analytics" element={<SystemAnalyticsPage />} />
+                <Route path="logs" element={<LogExplorerPage />} />
+                
               </Route>
           </Route>
 
