@@ -34,7 +34,6 @@ class User(db.Model):
 
 class Activity(db.Model):
     __tablename__ = 'activity'
-
     id = db.Column(db.Integer, primary_key=True)
     professor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     title = db.Column(db.String(255), nullable=False)
@@ -44,7 +43,6 @@ class Activity(db.Model):
     activity_planning = db.Column(JSONB, nullable=True)
     player_profile = db.Column(JSONB, nullable=True)
     game_elements = db.Column(JSONB, nullable=True)
-    # NOVO CAMPO ADICIONADO AQUI
     narrative_image_url = db.Column(db.String(512), nullable=True)
     rewards_offered = db.Column(JSONB, nullable=True)
     rewarded_actions = db.Column(JSONB, nullable=True)
@@ -58,6 +56,7 @@ class Activity(db.Model):
     assignment_count = db.Column(db.Integer, nullable=False, default=0, server_default='0')
     professor = db.relationship('User', backref='activities', lazy=True)
     class_obj = db.relationship('Class', backref='assigned_activities', lazy=True)
+    gamification_design = db.Column(JSONB, nullable=True)
 
     def to_dict(self):
         return {
@@ -70,7 +69,6 @@ class Activity(db.Model):
             'activityPlanning': self.activity_planning,
             'playerProfile': self.player_profile,
             'gameElements': self.game_elements,
-            # NOVO CAMPO ADICIONADO À RESPOSTA DA API
             'narrativeImageUrl': self.narrative_image_url,
             'rewardsOffered': self.rewards_offered,
             'rewardedActions': self.rewarded_actions,
@@ -84,9 +82,35 @@ class Activity(db.Model):
             'class_id': self.class_id,
             'class_name': self.class_obj.name if self.class_obj else None,
             'copy_count': self.copy_count,
-            'assignment_count': self.assignment_count
-            
+            'assignment_count': self.assignment_count,
+            'gamification_design': self.gamification_design
         }
+
+# --- NOVAS TABELAS PARA CONTEÚDO DOS PASSOS ---
+
+class QuizContent(db.Model):
+    __tablename__ = 'quiz_content'
+    id = db.Column(db.Integer, primary_key=True)
+    activity_id = db.Column(db.Integer, db.ForeignKey('activity.id', ondelete='CASCADE'), nullable=False)
+    step_id = db.Column(db.String(50), nullable=False)
+    questions = db.Column(JSONB, nullable=False, default=[])
+    
+    activity = db.relationship('Activity', backref=db.backref('quiz_contents', cascade="all, delete-orphan"))
+    __table_args__ = (db.UniqueConstraint('activity_id', 'step_id', name='_activity_step_uc_quiz'),)
+
+class NarrativeContent(db.Model):
+    __tablename__ = 'narrative_content'
+    id = db.Column(db.Integer, primary_key=True)
+    activity_id = db.Column(db.Integer, db.ForeignKey('activity.id', ondelete='CASCADE'), nullable=False)
+    step_id = db.Column(db.String(50), nullable=False)
+    scenario = db.Column(db.String(255), nullable=True)
+    characters = db.Column(JSONB, nullable=True, default=[])
+    dialogue = db.Column(JSONB, nullable=True, default=[])
+
+    activity = db.relationship('Activity', backref=db.backref('narrative_contents', cascade="all, delete-orphan"))
+    __table_args__ = (db.UniqueConstraint('activity_id', 'step_id', name='_activity_step_uc_narrative'),)
+
+
 
 class Class(db.Model):
     __tablename__ = 'class'
@@ -136,6 +160,7 @@ class ActivityProgress(db.Model):
     activity = db.relationship('Activity', backref=db.backref('progresses', cascade="all, delete-orphan"))
     class_obj = db.relationship('Class', backref='activity_progresses', lazy=True)
     __table_args__ = (db.UniqueConstraint('student_id', 'activity_id', name='_student_activity_uc'),)
+    completed_steps = db.Column(JSONB, nullable=True, server_default='[]')
 
 
 class EventLog(db.Model):

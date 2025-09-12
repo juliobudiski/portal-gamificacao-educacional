@@ -27,73 +27,82 @@ const CHARACTERS = [
  * Permite configurar cenários, personagens e diálogos para atividades
  */
 function NarrativeEditorPage() {
-    const { activityId } = useParams();
+    // --- ALTERAÇÃO: Lendo 'stepId' da URL ---
+    const { activityId, stepId } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
 
-    // --- Estados do Componente ---
     const [activityTitle, setActivityTitle] = useState('');
-    const [narrativeConfig, setNarrativeConfig] = useState({
-        scenario: '',
-        characters: [],
-        dialogue: [],
-    });
+    const [narrativeConfig, setNarrativeConfig] = useState({ scenario: '', characters: [], dialogue: [] });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [message, setMessage] = useState('');
 
-    // --- Busca os dados da atividade ---
-    useEffect(() => {
-        const fetchActivity = async () => {
-            if (isDebugMode) {
-                console.log('[NarrativeEditorPage] Buscando atividade ID:', activityId);
-            }
-            setLoading(true);
-            setError('');
+    
+        const fetchContent = useCallback(async () => {
+        try {
+            const activityResponse = await fetch(`http://127.0.0.1:5000/api/activities/${activityId}`, {
+                headers: { 'Authorization': `Bearer ${user.token}` },
+            });
+            const activityData = await activityResponse.json();
+            if (!activityResponse.ok) throw new Error(activityData.message);
             
-            try {
-                const response = await fetch(`http://127.0.0.1:5000/api/activities/${activityId}`, {
-                    headers: { 'Authorization': `Bearer ${user.token}` },
+            setActivityTitle(activityData.title);
+            setGameElements(activityData.gameElements?.selectedElements || []);
+            
+            // Processar conteúdos dos steps
+            if (activityData.quiz_contents || activityData.narrative_contents) {
+                setActivityData(prevData => {
+                    const newData = {
+                        ...prevData,
+                        gamificationDesign: {
+                            ...prevData.gamificationDesign,
+                            progression_path: prevData.gamificationDesign.progression_path.map(step => {
+                                // Buscar conteúdo de quiz
+                                const quizContent = activityData.quiz_contents?.find(qc => qc.step_id === step.id);
+                                if (quizContent) {
+                                    return {
+                                        ...step,
+                                        content: {
+                                            type: 'quiz',
+                                            questions: quizContent.questions
+                                        }
+                                    };
+                                }
+                                
+                                // Buscar conteúdo de narrativa
+                                const narrativeContent = activityData.narrative_contents?.find(nc => nc.step_id === step.id);
+                                if (narrativeContent) {
+                                    return {
+                                        ...step,
+                                        content: {
+                                            type: 'narrative',
+                                            scenario: narrativeContent.scenario,
+                                            characters: narrativeContent.characters,
+                                            dialogue: narrativeContent.dialogue
+                                        }
+                                    };
+                                }
+                                
+                                return step;
+                            })
+                        }
+                    };
+                    
+                    return newData;
                 });
-                
-                if (isDebugMode) {
-                    console.log('[NarrativeEditorPage] Resposta da API recebida. Status:', response.status);
-                }
-                
-                const data = await response.json();
-                if (!response.ok) {
-                    throw new Error(data.message || 'Erro ao buscar atividade');
-                }
-
-                setActivityTitle(data.title);
-                
-                if (data.gameElements?.narrativeConfig) {
-                    if (isDebugMode) {
-                        console.log('[NarrativeEditorPage] Configuração narrativa encontrada:',
-                            `Cenário: ${Boolean(data.gameElements.narrativeConfig.scenario)},`,
-                            `Personagens: ${data.gameElements.narrativeConfig.characters.length},`,
-                            `Diálogos: ${data.gameElements.narrativeConfig.dialogue.length}`
-                        );
-                    }
-                    setNarrativeConfig(data.gameElements.narrativeConfig);
-                } else if (isDebugMode) {
-                    console.log('[NarrativeEditorPage] Nenhuma configuração narrativa encontrada');
-                }
+            }
+            
             } catch (err) {
-                if (isDebugMode) {
-                    console.error('[NarrativeEditorPage] Erro na requisição:',
-                        err.message,
-                        '\nStack trace:', err.stack
-                    );
-                }
                 setError(err.message);
             } finally {
                 setLoading(false);
             }
-        };
-        
-        fetchActivity();
-    }, [activityId, user.token]);
+        }, [activityId, user.token]);
+    
+        useEffect(() => {
+            fetchContent();
+        }, [fetchContent]);
 
     // --- Handlers para as mudanças no formulário ---
 
@@ -166,65 +175,56 @@ function NarrativeEditorPage() {
 
     // --- Handler para Salvar ---
     const handleSaveChanges = async () => {
+    setLoading(true);
+    setMessage('');
+    setError('');
+    
+    if (isDebugMode) {
+        console.log('[NarrativeEditorPage] Iniciando salvamento...');
+        console.log('[NarrativeEditorPage] Dados a serem enviados:', narrativeConfig);
+        console.log('[NarrativeEditorPage] IDs:', { activityId, stepId });
+    }
+
+    try {
+        const response = await fetch(`http://127.0.0.1:5000/api/content_editor/activity/${activityId}/step/${stepId}/content`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${user.token}`
+            },
+            body: JSON.stringify(narrativeConfig)
+        });
+
+        const data = await response.json();
+
         if (isDebugMode) {
-            console.log('[NarrativeEditorPage] Iniciando salvamento da narrativa');
+            console.log(`[NarrativeEditorPage] Resposta do servidor - Status: ${response.status}`);
+            console.log('[NarrativeEditorPage] Dados recebidos:', data);
         }
-        setLoading(true);
-        setMessage('');
-        setError('');
+
+        if (!response.ok) {
+            throw new Error(data.message || `Erro HTTP: ${response.status}`);
+        }
+
+        if (isDebugMode) {
+            console.log('[NarrativeEditorPage] Salvamento realizado com sucesso');
+        }
         
-        try {
-            const activityRes = await fetch(`http://127.0.0.1:5000/api/activities/${activityId}`, {
-                headers: { 'Authorization': `Bearer ${user.token}` },
-            });
-            
-            if (!activityRes.ok) {
-                throw new Error('Falha ao buscar dados atuais da atividade');
-            }
-            const activityData = await activityRes.json();
-
-            const updatedGameElements = {
-                ...activityData.gameElements,
-                narrativeConfig: narrativeConfig
-            };
-
-            const response = await fetch(`http://127.0.0.1:5000/api/activities/${activityId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${user.token}`
-                },
-                body: JSON.stringify({ 
-                    ...activityData, 
-                    gameElements: updatedGameElements 
-                })
-            });
-
-            if (isDebugMode) {
-                console.log('[NarrativeEditorPage] Resposta de salvamento recebida. Status:', response.status);
-            }
-            
-            const data = await response.json();
-            if (!response.ok) {
-                throw new Error(data.message || 'Erro ao salvar narrativa');
-            }
-            
-            setMessage('Narrativa salva com sucesso!');
-            if (isDebugMode) {
-                console.log('[NarrativeEditorPage] Narrativa salva com sucesso');
-            }
-            setTimeout(() => navigate(`/activities/${activityId}`), 2000);
-
+        setMessage('Narrativa salva com sucesso!');
+        setTimeout(() => navigate(`/professor/atividades/${activityId}/edit`), 2000);
+        
         } catch (err) {
             if (isDebugMode) {
-                console.error('[NarrativeEditorPage] Erro no salvamento:',
-                    err.message,
-                    '\nStack trace:', err.stack
-                );
+                console.error('[NarrativeEditorPage] Erro no salvamento:', err);
+                console.error('[NarrativeEditorPage] Stack trace:', err.stack);
             }
-            setError(err.message);
+            
+            setError(err.message || 'Erro ao salvar narrativa. Verifique o console para mais detalhes.');
         } finally {
             setLoading(false);
+            if (isDebugMode) {
+                console.log('[NarrativeEditorPage] Operação de salvamento finalizada');
+            }
         }
     };
 

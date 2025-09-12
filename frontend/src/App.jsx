@@ -36,6 +36,7 @@ import UserManagementPage from './pages/admin/UserManagementPage';
 import ActivityManagementPage from './pages/admin/ActivityManagementPage';
 import SystemAnalyticsPage from './pages/admin/SystemAnalyticsPage';
 import LogExplorerPage from './pages/admin/LogExplorerPage';
+import GameBoardTestPage from './pages/GameBoardTestPage';
 
 
 // Importação dos ícones da biblioteca Lucide React para a UI
@@ -395,6 +396,7 @@ function App() {
             <Route path="/perfil" element={<UserProfilePage />} />
             <Route path="/classes/:class_id" element={<ClassDetailsPage />} />
             <Route path="/activities/:activityId" element={<ActivityPage />} />
+            <Route path="/teste-tabuleiro" element={<GameBoardTestPage />} />
           </Route>
 
           {/* Rotas Professor */}
@@ -409,8 +411,8 @@ function App() {
             <Route path="/classes/:class_id/edit" element={<ClassEditPage />} /> 
             <Route path="/assign-activity-to-class/:activityId" element={<AssignActivityToClass />} />
             <Route path="/professor/atividades/:activityId/edit" element={<ActivityEditPage />} />
-            <Route path="/professor/activity/:activityId/quiz/edit" element={<QuizEditorPage />} />
-            <Route path="/professor/activity/:activityId/narrative/edit" element={<NarrativeEditorPage />} />
+            <Route path="/professor/atividades/:activityId/quiz/:stepId/edit" element={<QuizEditorPage />} />
+            <Route path="/professor/atividades/:activityId/narrative/:stepId/edit" element={<NarrativeEditorPage />} />
             <Route path="/professor/ranking" element={<TeacherRankingPage />} />            
           </Route>
 

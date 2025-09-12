@@ -9,8 +9,17 @@ import {
   FaGavel, FaUserShield, FaMobileAlt, FaUniversity
 } from 'react-icons/fa';
 import useAnalytics from '../hooks/useAnalytics';
+import GameBoardEditor from '../components/activity/GameBoardEditor';
 
-
+const hubElementCardMap = {
+    "Chance (sorte e probabilidade)": ["roulette", "slot_machine"], // Agora ativa ambos
+    "Competição": ["ranking"],
+    "Sistema de classificação e ranking": ["ranking"],
+    "Chat ou sistema de mensagens": ["chat"],
+    "Conquistas digitais para metas alcançadas": ["badges"],
+    "Economia (sistema monetário)": ["store"],
+    "Objetivo (missão, meta do jogo)": ["mission"],
+};
 
 /**
  * Componente ActivityCreationPage
@@ -32,7 +41,7 @@ function ActivityCreationPage({ existingActivity }) {
   const { user } = useAuth();
   const formStartedRef = useRef(false);
   const { activityId } = useParams();
-  const isEditMode = !!existingActivity;
+  const isEditMode = !!activityId || !!existingActivity;
   const { logEvent } = useAnalytics('activity_creation', user?.token, activityId);
   // Estado para controlar se a tela de seleção de template inicial deve ser exibida (com as duas opções).
   const [showInitialSelection, setShowInitialSelection] = useState(true);
@@ -86,6 +95,11 @@ function ActivityCreationPage({ existingActivity }) {
       otherElement: '',
       narrativeTitle: '',
       narrativeContent: '',
+    },
+    gamificationDesign: {
+            theme: 'vila_da_aventura', // Tema padrão
+            progression_path: [],
+            hub_elements: [],
     },
     // Etapa 6: Recompensas Oferecidas
     rewardsOffered: {
@@ -190,22 +204,23 @@ useEffect(() => {
 
   // Novo useEffect para preencher o formulário no modo de edição
   useEffect(() => {
-    if (isEditMode) {
-      console.log("Modo de edição ativado. Preenchendo formulário com dados existentes:", existingActivity);
-      setActivityData({
-          title: existingActivity.title || '',
-          description: existingActivity.description || '',
-          areaKnowledge: existingActivity.areaKnowledge || '',
-          isPublic: existingActivity.isPublic || false,
-          currentScenario: existingActivity.currentScenario || { problems: [], otherProblem: '' },
-          desiredScenario: existingActivity.desiredScenario || { objectives: [], otherObjective: '' },
-          activityPlanning: existingActivity.activityPlanning || { characteristics: [], participantsQuantity: '', expectedDuration: '', location: '', otherInfo: '' },
-          playerProfile: existingActivity.playerProfile || { selectedProfiles: [] },
-          gameElements: existingActivity.gameElements || { selectedElements: [], otherElement: '', narrativeTitle: '', narrativeContent: '' },
-          rewardsOffered: existingActivity.rewardsOffered || { selectedRewards: [], otherReward: '' },
-          rewardedActions: existingActivity.rewardedActions || { selectedActions: [], otherAction: '' },
-          gamificationRules: existingActivity.gamificationRules || { generalRules: [], specificRules: '' },
-      });
+        if (isEditMode && existingActivity) {
+          setActivityData({
+              title: existingActivity.title || '',
+              description: existingActivity.description || '',
+              areaKnowledge: existingActivity.areaKnowledge || '',
+              isPublic: existingActivity.isPublic == null ? true : existingActivity.isPublic,
+              currentScenario: existingActivity.currentScenario || { problems: [], otherProblem: '' },
+              desiredScenario: existingActivity.desiredScenario || { objectives: [], otherObjective: '' },
+              activityPlanning: existingActivity.activityPlanning || { characteristics: [], participantsQuantity: '', expectedDuration: '', location: '', otherInfo: '' },
+              playerProfile: existingActivity.playerProfile || { selectedProfiles: [] },
+              gameElements: existingActivity.gameElements || { selectedElements: [], otherElement: '' },
+              // Esta linha garante que o objeto sempre exista.
+              gamificationDesign: existingActivity.gamificationDesign || { theme: 'vila_da_aventura', progression_path: [], hub_elements: [] },
+              rewardsOffered: existingActivity.rewardsOffered || { selectedRewards: [], otherReward: '' },
+              rewardedActions: existingActivity.rewardedActions || { selectedActions: [], otherAction: '' },
+              gamificationRules: existingActivity.gamificationRules || { generalRules: [], specificRules: '' },
+          });
       setShowInitialSelection(false); // Garante que o formulário seja exibido diretamente
     }
   }, [isEditMode, existingActivity]);
@@ -296,6 +311,55 @@ useEffect(() => {
     setShowTemplateList(false); // Esconde a lista de templates
     setCurrentStep(1); // Volta para a primeira etapa do formulário
   };
+
+  useEffect(() => {
+        const selectedCards = activityData.gameElements.selectedElements;
+        const currentHubElements = activityData.gamificationDesign?.hub_elements || [];
+        
+        // Usamos um Set para garantir que cada tipo de hub apareça apenas uma vez
+        const targetHubTypes = new Set();
+        selectedCards.forEach(cardName => {
+            const types = hubElementCardMap[cardName];
+            if (types) {
+                types.forEach(type => targetHubTypes.add(type));
+            }
+        });
+
+        const newHubElements = Array.from(targetHubTypes).map(type => {
+            const existingElement = currentHubElements.find(el => el.type === type);
+            return {
+                id: `hub_${type}`,
+                type: type,
+                enabled: existingElement ? existingElement.enabled : true,
+                config: existingElement ? existingElement.config : {},
+            };
+        });
+
+        if (JSON.stringify(newHubElements) !== JSON.stringify(currentHubElements)) {
+            setActivityData(prev => ({
+                ...prev,
+                gamificationDesign: {
+                    ...prev.gamificationDesign,
+                    hub_elements: newHubElements,
+                }
+            }));
+        }
+    }, [activityData.gameElements.selectedElements]);
+
+  const handleOpenContentEditor = (step) => {
+        const effectiveActivityId = activityId || existingActivity?.id;
+        
+        if (!effectiveActivityId) {
+            alert("Você precisa salvar a atividade pelo menos uma vez antes de poder editar o conteúdo.");
+            return;
+        }
+        
+        // --- ADICIONE ESTA LINHA ---
+        console.log(`Tentando navegar para: /professor/atividades/${effectiveActivityId}/${step.type}/${step.id}/edit`);
+
+        // A linha original de navegação
+        navigate(`/professor/atividades/${effectiveActivityId}/${step.type}/${step.id}/edit`);
+    };
 
   /**
    * handleShowTemplates: Exibe a lista de templates.
@@ -1069,6 +1133,11 @@ useEffect(() => {
                 placeholder="Descreva um elemento de jogo personalizado" 
               />
             </div>
+            <GameBoardEditor 
+              gamificationDesign={activityData.gamificationDesign}
+              setActivityData={setActivityData}
+              onEditContent={handleOpenContentEditor}
+            />
 
             {/* SEÇÃO 4: Detalhes da Narrativa (Condicional) */}
             {activityData.gameElements.selectedElements.includes("Narrativas envolventes") && (

@@ -4,33 +4,74 @@ import { useAuth } from '../context/AuthContext';
 import { FaPlus, FaSave, FaTrash, FaEdit, FaQuestion, FaList, FaCheck, FaClock, FaStar, FaGem } from 'react-icons/fa';
 
 function QuizEditorPage() {
-    const { activityId } = useParams();
+    // --- ALTERAÇÃO: Lendo 'stepId' da URL ---
+    const { activityId, stepId } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
 
     const [activityTitle, setActivityTitle] = useState('');
     const [questions, setQuestions] = useState([]);
-    // NOVO ESTADO: para armazenar os elementos de jogo da atividade
-    const [gameElements, setGameElements] = useState([]); 
+    const [gameElements, setGameElements] = useState([]);
     const [currentQuestion, setCurrentQuestion] = useState({ text: '', options: ['', '', '', ''], correct_option: '', points: 10, coins: 5, timeLimit: 30 });
     const [editingIndex, setEditingIndex] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [message, setMessage] = useState('');
 
-    // Busca os dados da atividade, incluindo os elementos de jogo
-    const fetchActivity = useCallback(async () => {
-        try {
-            const response = await fetch(`http://127.0.0.1:5000/api/activities/${activityId}`, {
-                headers: { 'Authorization': `Bearer ${user.token}` },
+    const fetchContent = useCallback(async () => {
+    try {
+        const activityResponse = await fetch(`http://127.0.0.1:5000/api/activities/${activityId}`, {
+            headers: { 'Authorization': `Bearer ${user.token}` },
+        });
+        const activityData = await activityResponse.json();
+        if (!activityResponse.ok) throw new Error(activityData.message);
+        
+        setActivityTitle(activityData.title);
+        setGameElements(activityData.gameElements?.selectedElements || []);
+        
+        // Processar conteúdos dos steps
+        if (activityData.quiz_contents || activityData.narrative_contents) {
+            setActivityData(prevData => {
+                const newData = {
+                    ...prevData,
+                    gamificationDesign: {
+                        ...prevData.gamificationDesign,
+                        progression_path: prevData.gamificationDesign.progression_path.map(step => {
+                            // Buscar conteúdo de quiz
+                            const quizContent = activityData.quiz_contents?.find(qc => qc.step_id === step.id);
+                            if (quizContent) {
+                                return {
+                                    ...step,
+                                    content: {
+                                        type: 'quiz',
+                                        questions: quizContent.questions
+                                    }
+                                };
+                            }
+                            
+                            // Buscar conteúdo de narrativa
+                            const narrativeContent = activityData.narrative_contents?.find(nc => nc.step_id === step.id);
+                            if (narrativeContent) {
+                                return {
+                                    ...step,
+                                    content: {
+                                        type: 'narrative',
+                                        scenario: narrativeContent.scenario,
+                                        characters: narrativeContent.characters,
+                                        dialogue: narrativeContent.dialogue
+                                    }
+                                };
+                            }
+                            
+                            return step;
+                        })
+                    }
+                };
+                
+                return newData;
             });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message);
-
-            setActivityTitle(data.title);
-            setQuestions(data.gameElements?.questions || []);
-            // ATUALIZADO: Salva os elementos de jogo no novo estado
-            setGameElements(data.gameElements?.selectedElements || []); 
+        }
+        
         } catch (err) {
             setError(err.message);
         } finally {
@@ -39,10 +80,9 @@ function QuizEditorPage() {
     }, [activityId, user.token]);
 
     useEffect(() => {
-        fetchActivity();
-    }, [fetchActivity]);
-    
-    // NOVO: Variável para verificar se o modo de tempo está ativo
+        fetchContent();
+    }, [fetchContent]);
+
     const isTimed = gameElements.includes("Pressão de tempo");
 
     const handleInputChange = (e, index) => {
@@ -90,8 +130,9 @@ function QuizEditorPage() {
         setMessage('');
         setError('');
         try {
-            const response = await fetch(`http://127.0.0.1:5000/api/activities/${activityId}/quiz`, {
-                method: 'PUT',
+            // --- ALTERAÇÃO: Salva o conteúdo na nova rota específica do passo ---
+            const response = await fetch(`http://127.0.0.1:5000/api/content_editor/activity/${activityId}/step/${stepId}/content`, {
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${user.token}`
@@ -101,7 +142,7 @@ function QuizEditorPage() {
             const data = await response.json();
             if (!response.ok) throw new Error(data.message);
             setMessage('Quiz salvo com sucesso!');
-            setTimeout(() => navigate(`/activities/${activityId}`), 2000);
+            setTimeout(() => navigate(`/professor/atividades/${activityId}/edit`), 2000);
         } catch (err) {
             setError(err.message);
         } finally {
