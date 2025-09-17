@@ -45,7 +45,7 @@ const RouletteTab = ({ onPrizeWon }) => {
     setLoadingWinners(true);
     try {
       const response = await fetch(
-        `http://127.0.0.1:5000/api/progress/${activityId}/roulette-winners`,
+        `${import.meta.env.VITE_API_URL}/api/progress/${activityId}/roulette-winners`,
         { headers: { Authorization: `Bearer ${user.token}` } }
       );
       if (response.ok) setWinners(await response.json());
@@ -72,7 +72,7 @@ const RouletteTab = ({ onPrizeWon }) => {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:5000/api/progress/${activityId}/spin`,
+        `${import.meta.env.VITE_API_URL}/api/progress/${activityId}/spin`,
         { method: "POST", headers: { Authorization: `Bearer ${user.token}` } }
       );
       const result = await response.json();

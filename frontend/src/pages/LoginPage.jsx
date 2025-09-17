@@ -27,7 +27,7 @@ function LoginPage() {
     if (response.credential) {
       console.log('[Google Callback] Credencial (ID Token) encontrada. Enviando para o backend...');
       try {
-        const backendResponse = await fetch('http://127.0.0.1:5000/api/auth/google', {
+        const backendResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/google`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -75,14 +75,14 @@ function LoginPage() {
   const handleLogin = async (e) => {
     e.preventDefault();
     console.log('[Login Padrão] Tentativa de login iniciada.');
-    
+    //alert(`Tentando conectar com: ${import.meta.env.VITE_API_URL}`);
     setError('');
     setSuccess('');
 
     console.log('[Login Padrão] Dados do formulário:', { email, password });
 
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/auth/login', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

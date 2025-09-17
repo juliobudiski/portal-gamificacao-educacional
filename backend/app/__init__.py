@@ -23,7 +23,7 @@ def create_app():
     # 3. Associe as instâncias das extensões com o objeto 'app'
     db.init_app(app)
     migrate.init_app(app, db)
-    CORS(app)  # Habilita o CORS globalmente
+    CORS(app, resources={r"/api/*": {"origins": "*"}}) # Habilita o CORS globalmente
 
     # Importa e configura o JWT
     from .utils.auth_utils import configure_jwt

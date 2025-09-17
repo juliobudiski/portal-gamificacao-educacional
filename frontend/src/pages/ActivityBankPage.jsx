@@ -33,8 +33,8 @@ function ActivityBankPage() {
 
             // Busca ambas as listas com o mesmo termo de busca
             const [myRes, publicRes] = await Promise.all([
-                fetch(`http://127.0.0.1:5000/api/activities/my_activities${query}`, { headers }),
-                fetch(`http://127.0.0.1:5000/api/activities/public${query}`, { headers })
+                fetch(`${import.meta.env.VITE_API_URL}/api/activities/my_activities${query}`, { headers }),
+                fetch(`${import.meta.env.VITE_API_URL}/api/activities/public${query}`, { headers })
             ]);
 
             const myData = await myRes.json();
@@ -69,7 +69,7 @@ function ActivityBankPage() {
         if (!window.confirm("Tem certeza que deseja criar uma cópia editável desta atividade?")) return;
         setMessage('Copiando atividade...');
         try {
-            const response = await fetch(`http://127.0.0.1:5000/api/activities/${activityId}/copy`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${activityId}/copy`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${user.token}` }
             });
@@ -90,7 +90,7 @@ function ActivityBankPage() {
         if (!window.confirm("Tem certeza que deseja deletar esta atividade? Esta ação é irreversível.")) return;
         setMessage('Deletando atividade...');
         try {
-            const response = await fetch(`http://127.0.0.1:5000/api/activities/${activityId}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${activityId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${user.token}` }
             });
@@ -150,7 +150,7 @@ function ActivityBankPage() {
         
         setMessage('Deletando atividades selecionadas...');
         try {
-            const response = await fetch(`http://127.0.0.1:5000/api/activities/bulk-delete`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/bulk-delete`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${user.token}`,

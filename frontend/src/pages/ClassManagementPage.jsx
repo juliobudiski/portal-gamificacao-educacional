@@ -32,7 +32,7 @@ function ClassListPage() {
         }
 
         try {
-            const response = await fetch('http://127.0.0.1:5000/api/classes', {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/classes`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -85,7 +85,7 @@ function ClassListPage() {
         }
 
         try {
-            const response = await fetch(`http://127.0.0.1:5000/api/classes/${classId}/leave`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/classes/${classId}/leave`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -130,7 +130,7 @@ function ClassListPage() {
         }
 
         try {
-            const response = await fetch(`http://127.0.0.1:5000/api/classes/${classId}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/classes/${classId}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',

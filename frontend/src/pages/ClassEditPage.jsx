@@ -35,7 +35,7 @@ function ClassEditPage() {
         setError('');
         try {
             // Usa a nova rota otimizada do backend
-            const response = await fetch(`http://127.0.0.1:5000/api/classes/${class_id}/management-details`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/classes/${class_id}/management-details`, {
                 headers: { 'Authorization': `Bearer ${user.token}` },
             });
             const data = await response.json();
@@ -92,7 +92,7 @@ function ClassEditPage() {
     const handleUpdateDetails = (e) => {
         e.preventDefault();
         handleApiCall(
-            `http://127.0.0.1:5000/api/classes/${class_id}`, 
+            `${import.meta.env.VITE_API_URL}/api/classes/${class_id}`, 
             'PUT', 
             { name: classDetails.name, description: classDetails.description }, 
             'Detalhes da turma atualizados com sucesso!'
@@ -103,7 +103,7 @@ function ClassEditPage() {
     const handleAddStudent = () => {
         if (!studentEmail.trim()) return setError("Por favor, insira um e-mail válido.");
         handleApiCall(
-            `http://127.0.0.1:5000/api/classes/${class_id}/students`, 
+            `${import.meta.env.VITE_API_URL}/api/classes/${class_id}/students`, 
             'POST', 
             { email: studentEmail }, 
             'Aluno adicionado com sucesso!'
@@ -116,7 +116,7 @@ function ClassEditPage() {
     const handleRemoveStudent = (studentId) => {
         if (window.confirm("Tem certeza que deseja remover este aluno da turma?")) {
             handleApiCall(
-                `http://127.0.0.1:5000/api/classes/${class_id}/students/${studentId}`, 
+                `${import.meta.env.VITE_API_URL}/api/classes/${class_id}/students/${studentId}`, 
                 'DELETE', 
                 null, 
                 'Aluno removido com sucesso!'
@@ -128,7 +128,7 @@ function ClassEditPage() {
     const handleAddActivity = () => {
         if (!activityToAdd) return setError("Por favor, selecione uma atividade para associar.");
         handleApiCall(
-            `http://127.0.0.1:5000/api/classes/${class_id}/activities`, 
+            `${import.meta.env.VITE_API_URL}/api/classes/${class_id}/activities`, 
             'POST', 
             { activity_id: parseInt(activityToAdd) }, // Garante que o ID é um número
             'Atividade associada com sucesso!'
@@ -139,7 +139,7 @@ function ClassEditPage() {
     const handleRemoveActivity = (activityId) => {
         if (window.confirm("Tem certeza que deseja desassociar esta atividade? Ela não será excluída, apenas removida desta turma.")) {
             handleApiCall(
-                `http://127.0.0.1:5000/api/classes/${class_id}/activities/${activityId}`, 
+                `${import.meta.env.VITE_API_URL}/api/classes/${class_id}/activities/${activityId}`, 
                 'DELETE', 
                 null, 
                 'Atividade desassociada com sucesso!'

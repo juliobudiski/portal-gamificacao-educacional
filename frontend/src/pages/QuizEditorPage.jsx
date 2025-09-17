@@ -20,7 +20,7 @@ function QuizEditorPage() {
 
     const fetchContent = useCallback(async () => {
     try {
-        const activityResponse = await fetch(`http://127.0.0.1:5000/api/activities/${activityId}`, {
+        const activityResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${activityId}`, {
             headers: { 'Authorization': `Bearer ${user.token}` },
         });
         const activityData = await activityResponse.json();
@@ -130,8 +130,11 @@ function QuizEditorPage() {
         setMessage('');
         setError('');
         try {
+            const apiUrl = `${import.meta.env.VITE_API_URL}/api/content_editor/activity/${activityId}/step/${stepId}/content`;
+            console.log(`[QuizEditorPage] URL de salvamento que será usada: ${apiUrl}`);
+
             // --- ALTERAÇÃO: Salva o conteúdo na nova rota específica do passo ---
-            const response = await fetch(`http://127.0.0.1:5000/api/content_editor/activity/${activityId}/step/${stepId}/content`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/content_editor/activity/${activityId}/step/${stepId}/content`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

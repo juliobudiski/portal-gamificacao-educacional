@@ -154,7 +154,7 @@ const QuizTab = ({ questions = [], onAnswerCorrect, gameElements = [] }) => {
     
     if (user?.role === 'aluno') {
       try {
-        const response = await fetch(`http://127.0.0.1:5000/api/activities/${activityId}/submit_answer`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${activityId}/submit_answer`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

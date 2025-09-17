@@ -20,7 +20,7 @@ function ActivityEditPage() {
             }
 
             try {
-                const response = await fetch(`http://127.0.0.1:5000/api/activities/${activityId}`, {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${activityId}`, {
                     headers: {
                         'Authorization': `Bearer ${user.token}`,
                     },

@@ -157,10 +157,10 @@ function ClassDetailsPage() {
             try {
                 // Busca detalhes da turma e atividades em paralelo para otimizar
                 const [classResponse, activitiesResponse] = await Promise.all([
-                    fetch(`http://127.0.0.1:5000/api/classes/${class_id}`, {
+                    fetch(`${import.meta.env.VITE_API_URL}/api/classes/${class_id}`, {
                         headers: { 'Authorization': `Bearer ${token}` },
                     }),
-                    fetch(`http://127.0.0.1:5000/api/classes/${class_id}/activities`, {
+                    fetch(`${import.meta.env.VITE_API_URL}/api/classes/${class_id}/activities`, {
                         headers: { 'Authorization': `Bearer ${token}` },
                     })
                 ]);

@@ -41,6 +41,7 @@ function ActivityCreationPage({ existingActivity }) {
   const { user } = useAuth();
   const formStartedRef = useRef(false);
   const { activityId } = useParams();
+  console.log(`[ActivityCreationPage] RENDERIZANDO. ID da Atividade em foco: ${activityId}`);
   const isEditMode = !!activityId || !!existingActivity;
   const { logEvent } = useAnalytics('activity_creation', user?.token, activityId);
   // Estado para controlar se a tela de seleção de template inicial deve ser exibida (com as duas opções).
@@ -201,6 +202,35 @@ useEffect(() => {
     }
   }, [user, navigate]);
 
+  useEffect(() => {
+    const fetchActivityDataForBoard = async () => {
+        if (activityId && user?.token) {
+            console.log(`[ActivityCreationPage] useEffect detectou um activityId (${activityId}). BUSCANDO DADOS ATUALIZADOS da atividade.`);
+            try {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${activityId}`, {
+                    headers: { 'Authorization': `Bearer ${user.token}` }
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    console.log('[ActivityCreationPage] DADOS FRESCOS RECEBIDOS DO BACKEND:', data);
+                    // Aqui é onde o estado deveria ser atualizado com os novos dados
+                    setActivityData(prev => ({ ...prev, ...data }));
+                } else {
+                    console.error('[ActivityCreationPage] Erro ao buscar dados frescos:', data.message);
+                }
+            } catch (error) {
+                console.error('[ActivityCreationPage] Erro de rede ao buscar dados frescos:', error);
+            }
+        } else {
+            console.log('[ActivityCreationPage] useEffect de recarregamento executado, mas sem activityId ou token para agir.');
+        }
+    };
+
+    fetchActivityDataForBoard();
+  }, [activityId, user?.token]); // Dependências corretas para recarregar
+
+    console.log('[ActivityCreationPage] Estado ATUAL de activityData que será renderizado:', activityData);
+
 
   // Novo useEffect para preencher o formulário no modo de edição
   useEffect(() => {
@@ -238,7 +268,7 @@ useEffect(() => {
       try {
         setLoadingTemplates(true);
         setTemplateError(null);
-        const response = await fetch('http://127.0.0.1:5000/api/activities/templates', {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/templates`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -401,8 +431,8 @@ useEffect(() => {
         });
       }
       const url = isEditMode
-        ? `http://127.0.0.1:5000/api/activities/${activityId}`
-        : 'http://127.0.0.1:5000/api/activities';
+        ? `${import.meta.env.VITE_API_URL}/api/activities/${activityId}`
+        : `${import.meta.env.VITE_API_URL}/api/activities`;
       
       const method = isEditMode ? 'PUT' : 'POST';
       isSubmittingRef.current = true;

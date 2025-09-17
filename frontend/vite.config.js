@@ -4,4 +4,11 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  server: {
+    host: true, // Garante que o servidor seja acessível na rede
+    allowedHosts: [
+      'specifies-footwear-choices-liabilities.trycloudflare.com'
+    ]
+  }
 })
+

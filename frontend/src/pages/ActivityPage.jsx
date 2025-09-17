@@ -76,7 +76,7 @@ function ActivityPage() {
     }
     
     try {
-      const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
+      const API_BASE = import.meta.env.VITE_API_URL;
       const response = await fetch(`${API_BASE}${url}`, {
         headers: { 'Authorization': `Bearer ${user.token}` }
       });
@@ -131,7 +131,7 @@ function ActivityPage() {
       
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000'}/api/activities/${activityId}`, 
+          `${import.meta.env.VITE_API_URL}/api/activities/${activityId}`, 
           { headers: { 'Authorization': `Bearer ${user.token}` } }
         );
         
@@ -223,7 +223,7 @@ function ActivityPage() {
 
     // 3. Envia a atualização para o backend (sem se preocupar com a resposta imediata)
     try {
-      const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
+      const API_BASE = import.meta.env.VITE_API_URL;
       const response = await fetch(`${API_BASE}/api/progress/${activityId}/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` },
@@ -250,7 +250,7 @@ function ActivityPage() {
       }
 
       try {
-          const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
+          const API_BASE = import.meta.env.VITE_API_URL;
           const response = await fetch(`${API_BASE}/api/progress/${activityId}/purchase`, {
               method: 'POST',
               headers: {
@@ -301,7 +301,7 @@ function ActivityPage() {
   // Função para adicionar item (passada para o StoreTab)
     const handleAddItem = async (itemData) => {
         try {
-            const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
+            const API_BASE = import.meta.env.VITE_API_URL;
             const response = await fetch(`${API_BASE}/api/progress/${activityId}/store-items`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` },
@@ -319,7 +319,7 @@ function ActivityPage() {
     const handleDeleteItem = async (itemId) => {
         if (!window.confirm("Tem certeza que deseja remover este item da loja?")) return;
         try {
-            const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
+            const API_BASE = import.meta.env.VITE_API_URL;
             const response = await fetch(`${API_BASE}/api/progress/store-items/${itemId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${user.token}` }

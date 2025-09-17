@@ -33,7 +33,7 @@ function LogExplorerPage() {
             return;
         }
 
-        const apiPrefix = 'http://127.0.0.1:5000/api/admin/analytics';
+        const apiPrefix = `${import.meta.env.VITE_API_URL}/api/admin/analytics`;
         const logParams = new URLSearchParams({
             page: currentPage,
             limit: 15,

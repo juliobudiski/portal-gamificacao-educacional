@@ -46,7 +46,7 @@ const SlotMachineTab = ({ userCoins, onPrizeWon, winners, loadingWinners, onWin 
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:5000/api/progress/${activityId}/play-slot`,
+        `${import.meta.env.VITE_API_URL}/api/progress/${activityId}/play-slot`,
         { method: 'POST', headers: { Authorization: `Bearer ${user.token}` } }
       );
 

@@ -22,7 +22,7 @@ function ActivityManagementPage() {
                 const token = user?.token;
                 if (!token) throw new Error("Token não encontrado.");
 
-                const response = await fetch('http://127.0.0.1:5000/api/admin/activities', {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/activities`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!response.ok) throw new Error('Falha ao buscar atividades.');

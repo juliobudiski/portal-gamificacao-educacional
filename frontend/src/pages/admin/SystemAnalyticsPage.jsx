@@ -99,7 +99,7 @@ function SystemAnalyticsPage() {
     const [error, setError] = useState(null);
     const [studentEngagementData, setStudentEngagementData] = useState(null);
 
-    const apiPrefix = 'http://127.0.0.1:5000/api/admin/analytics';
+    const apiPrefix = `${import.meta.env.VITE_API_URL}/api/admin/analytics`;
     const headers = { 'Authorization': `Bearer ${user?.token}` };
 
     const fetchData = useCallback(async (endpoint, setter, setLoading) => {

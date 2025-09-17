@@ -31,7 +31,9 @@ export function useAuthOperations() {
       console.log(`[useAuthOperations] Tentando fazer uma requisição ${method} para: ${url}`);
       const response = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(body)
       });
       return await handleAuthResponse(response, 'Operação bem-sucedida!');

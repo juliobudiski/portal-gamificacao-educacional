@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FaImage, FaUserCircle, FaSave, FaPlus, FaTrash, FaBookOpen } from 'react-icons/fa';
@@ -31,6 +31,7 @@ function NarrativeEditorPage() {
     const { activityId, stepId } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
+    const [gameElements, setGameElements] = useState([]);
 
     const [activityTitle, setActivityTitle] = useState('');
     const [narrativeConfig, setNarrativeConfig] = useState({ scenario: '', characters: [], dialogue: [] });
@@ -41,7 +42,7 @@ function NarrativeEditorPage() {
     
         const fetchContent = useCallback(async () => {
         try {
-            const activityResponse = await fetch(`http://127.0.0.1:5000/api/activities/${activityId}`, {
+            const activityResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${activityId}`, {
                 headers: { 'Authorization': `Bearer ${user.token}` },
             });
             const activityData = await activityResponse.json();
@@ -184,9 +185,12 @@ function NarrativeEditorPage() {
         console.log('[NarrativeEditorPage] Dados a serem enviados:', narrativeConfig);
         console.log('[NarrativeEditorPage] IDs:', { activityId, stepId });
     }
+    const apiUrl = `${import.meta.env.VITE_API_URL}/api/content_editor/activity/${activityId}/step/${stepId}/content`;
+    console.log(`[NarrativeEditorPage] URL de salvamento que será usada: ${apiUrl}`);
+
 
     try {
-        const response = await fetch(`http://127.0.0.1:5000/api/content_editor/activity/${activityId}/step/${stepId}/content`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/content_editor/activity/${activityId}/step/${stepId}/content`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

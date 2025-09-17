@@ -27,7 +27,7 @@ function DashboardOverviewPage() {
       }
 
       try {
-        const apiPrefix = 'http://127.0.0.1:5000/api/admin';
+        const apiPrefix = `${import.meta.env.VITE_API_URL}/api/admin`;
         const headers = { 'Authorization': `Bearer ${token}` };
 
         const [

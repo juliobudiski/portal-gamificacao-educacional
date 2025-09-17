@@ -5,6 +5,10 @@ import { useAuth } from '../context/AuthContext'; // Importa o hook useAuth para
 import useGoogleSignIn from '../hooks/useGoogleSignIn';
 import { useAuthOperations } from '../hooks/useAuthOperations';
 import TermsOfUseModal from '../components/TermsOfUseModal';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
+
+/**}
+
 /**
  * Componente RegisterPage
  * Esta página renderiza um formulário de cadastro para novos usuários.
@@ -20,6 +24,10 @@ function RegisterPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [selectedRole, setSelectedRole] = useState('aluno'); // Estado para o tipo de perfil (aluno/professor)
+
+  // --- NOVO: Estados para controlar a visibilidade da senha ---
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
@@ -48,10 +56,10 @@ function RegisterPage() {
     if (response.credential) {
       console.log("handleGoogleSignInCallback: Credencial recebida. Enviando para o backend com o perfil:", selectedRole);
       try {
-        const backendResponse = await fetch('http://127.0.0.1:5000/auth/google', {
+        const backendResponse = await fetch(`${import.meta.env.VITE_API_URL}/auth/google`, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({ id_token: response.credential, role: selectedRole }), // Envia o token e o perfil
         });
@@ -109,7 +117,7 @@ function RegisterPage() {
   const registrationData = { name, email, password, role: selectedRole };
   
   const result = await performAuthRequest(
-    'http://127.0.0.1:5000/api/auth/register',
+    `${import.meta.env.VITE_API_URL}/api/auth/register`,
     'POST',
     registrationData
   );
@@ -324,11 +332,45 @@ Professora Orientadora: Prof.ª Dr.ª Aline Maria Malachini Miotto Amaral - ammm
               </div>
               <div className="space-y-2">
                 <label htmlFor="password" className="block text-sm font-medium text-gray-300">Senha</label>
-                <div className="relative"><input type="password" id="password" name="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-3 bg-[#2c3135] border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30] text-white placeholder-gray-500 transition-all duration-200" placeholder="********"/><div className="absolute inset-y-0 right-0 flex items-center pr-3"><svg className="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" /></svg></div></div>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'} // Alterna o tipo do input
+                    id="password"
+                    name="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full px-4 py-3 bg-[#2c3135] border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30] text-white placeholder-gray-500"
+                    placeholder="********"
+                  />
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-gray-500 focus:outline-none">
+                      {showPassword ? <FaEyeSlash /> : <FaEye />}
+                    </button>
+                  </div>
+                </div>
               </div>
+              
+              {/* --- CAMPO CONFIRME A SENHA MODIFICADO --- */}
               <div className="space-y-2">
                 <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-300">Confirme a Senha</label>
-                <div className="relative"><input type="password" id="confirm-password" name="confirm-password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="w-full px-4 py-3 bg-[#2c3135] border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30] text-white placeholder-gray-500 transition-all duration-200" placeholder="********"/><div className="absolute inset-y-0 right-0 flex items-center pr-3"><svg className="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" /></svg></div></div>
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'} // Alterna o tipo do input
+                    id="confirm-password"
+                    name="confirm-password"
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full px-4 py-3 bg-[#2c3135] border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30] text-white placeholder-gray-500"
+                    placeholder="********"
+                  />
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                    <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="text-gray-500 focus:outline-none">
+                      {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                    </button>
+                  </div>
+                </div>
               </div>
               <button
                 type="submit"

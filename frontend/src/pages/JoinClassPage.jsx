@@ -56,7 +56,7 @@ function JoinClassPage() {
         console.log('[JoinClassPage] Código de inscrição a ser enviado:', enrollmentCode);
 
         try {
-            const response = await fetch('http://127.0.0.1:5000/api/classes/join', {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/classes/join`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -57,7 +57,7 @@ function CreateClassPage() {
         console.log('[CreateClassPage] Dados do formulário:', { name, description });
         
         try {
-            const response = await fetch('http://127.0.0.1:5000/api/classes', {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/classes`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
