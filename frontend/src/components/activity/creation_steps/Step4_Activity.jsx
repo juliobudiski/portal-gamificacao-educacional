@@ -1,0 +1,125 @@
+// frontend/src/components/steps/Step4_PlayerProfile.jsx
+import React from 'react';
+import { 
+  FaTrophy, 
+  FaUsers, 
+  FaBookOpen, 
+  FaAward, 
+  FaComments 
+} from 'react-icons/fa';
+
+/**
+ * Componente para a Etapa 4 do formulário de criação de atividades.
+ * Permite ao professor selecionar os perfis de jogador que deseja engajar.
+ * @param {object} props - As propriedades passadas do componente pai.
+ * @param {object} props.activityData - O objeto de estado que contém todos os dados do formulário.
+ * @param {function} props.setActivityData - A função para definir o estado da atividade, ideal para manipular arrays.
+ * @param {function} props.openHelpModal - A função para abrir o modal de ajuda do componente pai.
+ */
+function Step4_PlayerProfile({ activityData, setActivityData, openHelpModal }) {
+  // Array de objetos para os perfis de jogadores com descrições e ícones.
+  const playerProfiles = [
+    { 
+      name: "Competitivo", 
+      description: "Motivado por desafios, rankings e por ser o melhor.", 
+      icon: <FaTrophy /> 
+    },
+    { 
+      name: "Cooperativo", 
+      description: "Gosta de trabalhar em equipe para alcançar objetivos comuns.", 
+      icon: <FaUsers /> 
+    },
+    { 
+      name: "Imersivo", 
+      description: "Busca se aprofundar na história e no universo da atividade.", 
+      icon: <FaBookOpen /> 
+    },
+    { 
+      name: "Realizador", 
+      description: "Focado em completar tarefas, coletar itens e alcançar metas.", 
+      icon: <FaAward /> 
+    },
+    { 
+      name: "Social", 
+      description: "Valoriza a interação, a comunicação e a conexão com outros.", 
+      icon: <FaComments /> 
+    },
+  ];
+
+  /**
+   * Manipula a seleção de perfis de jogador a partir dos cards.
+   * Adiciona ou remove o perfil do array no estado pai usando setActivityData.
+   * @param {string} profileName - O nome do perfil que foi clicado.
+   */
+  const handleProfileSelection = (profileName) => {
+    setActivityData(prevData => {
+      const currentProfiles = prevData.playerProfile.selectedProfiles;
+      const newProfiles = currentProfiles.includes(profileName)
+        ? currentProfiles.filter(p => p !== profileName)
+        : [...currentProfiles, profileName];
+      
+      return {
+        ...prevData,
+        playerProfile: {
+          ...prevData.playerProfile,
+          selectedProfiles: newProfiles,
+        },
+      };
+    });
+  };
+
+  return (
+    <div className="space-y-8 animate-fade-in">
+      {/* SEÇÃO 1: Título e Descrição */}
+      <div>
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+          Qual perfil de jogador você quer engajar?
+        </h2>
+        <p className="mt-2 text-gray-600 dark:text-gray-400">
+          Selecionar os perfis corretos ajuda a definir os elementos de gamificação mais eficazes para a sua atividade.
+        </p>
+      </div>
+
+      {/* SEÇÃO 2: Seleção de Perfis com Cards */}
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {playerProfiles.map((profile) => {
+          const isSelected = activityData.playerProfile.selectedProfiles.includes(profile.name);
+          return (
+            <div
+              key={profile.name}
+              onClick={() => handleProfileSelection(profile.name)}
+              className={`
+                group relative flex h-full cursor-pointer flex-col items-center justify-start space-y-3 rounded-xl border p-6 text-center transition-all duration-200
+                ${isSelected
+                  ? 'border-2 border-teal-500 bg-teal-50 dark:bg-teal-900/40 ring-2 ring-teal-500/20'
+                  : 'border-gray-300 bg-white hover:border-teal-400 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:hover:border-teal-500'
+                }
+              `}
+            >
+              <div className={`text-5xl mb-2 ${isSelected ? 'text-teal-500' : 'text-gray-400 group-hover:text-teal-500 dark:text-gray-500 dark:group-hover:text-teal-400'}`}>
+                {profile.icon}
+              </div>
+              <h4 className={`text-base font-semibold ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-gray-800 dark:text-gray-200'}`}>
+                {profile.name}
+              </h4>
+              <p className={`text-xs ${isSelected ? 'text-teal-700 dark:text-teal-200' : 'text-gray-500 dark:text-gray-400'}`}>
+                {profile.description}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+      
+      {/* SEÇÃO 3: Botão de Ajuda */}
+      <div className="pt-4 text-center">
+        <button 
+          onClick={() => openHelpModal("Ajuda - Perfil do Jogador", `A seguir, listo alguns dos elementos de jogos ideais...`)} 
+          className="py-2 px-5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          Precisa de ajuda para escolher?
+        </button> 
+      </div>
+    </div>
+  );
+}
+
+export default Step4_PlayerProfile;

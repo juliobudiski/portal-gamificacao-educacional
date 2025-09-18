@@ -83,7 +83,7 @@ class Activity(db.Model):
             'class_name': self.class_obj.name if self.class_obj else None,
             'copy_count': self.copy_count,
             'assignment_count': self.assignment_count,
-            'gamification_design': self.gamification_design
+            'gamificationDesign': self.gamification_design
         }
 
 # --- NOVAS TABELAS PARA CONTEÚDO DOS PASSOS ---

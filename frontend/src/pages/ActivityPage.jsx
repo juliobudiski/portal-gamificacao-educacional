@@ -331,6 +331,12 @@ function ActivityPage() {
         }
     };
 
+    const handleStepClick = (step) => {
+        console.log("Aluno clicou no passo:", step);
+        // Aqui virá a lógica para navegar para a página do Quiz ou da Narrativa
+        // Ex: navigate(`/aluno/atividade/${activityId}/step/${step.id}`);
+    };
+
 
 
   // ---------- [COMPONENTE INTERNO: DASHBOARD] ----------
@@ -474,9 +480,24 @@ function ActivityPage() {
       <main className="w-3/4 p-8">
         <h1 className="text-5xl font-extrabold mb-2">{activity.title}</h1>
         <p className="mb-8 text-lg text-gray-400">{activity.description}</p>
-        {/* Adicione o componente do tabuleiro aqui */}
-        <GameBoardViewer />
+        
+        {/* --- INÍCIO DA CORREÇÃO --- */}
+        
+        {/* 1. Renderização condicional: Só mostra o tabuleiro se os dados E o progresso estiverem prontos */}
+        {activity.gamificationDesign && (user.role === 'professor' || (user.role === 'aluno' && userProgress)) && (
+          <GameBoardViewer
+              gamificationDesign={activity.gamificationDesign}
+              studentProgress={userProgress} // Será 'null' para o professor, e vamos tratar isso no componente filho
+              onStepClick={handleStepClick}
+              userRole={user.role} // Passamos o papel do usuário para o viewer
+          />
+        )}
+
+
+        {/* 2. O renderContent continua como antes */}
         {renderContent()}
+
+        {/* --- FIM DA CORREÇÃO --- */}
       </main>
 
       {/* Modal de Estatísticas */}

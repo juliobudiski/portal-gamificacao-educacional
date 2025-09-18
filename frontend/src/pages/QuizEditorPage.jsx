@@ -19,65 +19,41 @@ function QuizEditorPage() {
     const [message, setMessage] = useState('');
 
     const fetchContent = useCallback(async () => {
-    try {
-        const activityResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${activityId}`, {
-            headers: { 'Authorization': `Bearer ${user.token}` },
-        });
-        const activityData = await activityResponse.json();
-        if (!activityResponse.ok) throw new Error(activityData.message);
-        
-        setActivityTitle(activityData.title);
-        setGameElements(activityData.gameElements?.selectedElements || []);
-        
-        // Processar conteúdos dos steps
-        if (activityData.quiz_contents || activityData.narrative_contents) {
-            setActivityData(prevData => {
-                const newData = {
-                    ...prevData,
-                    gamificationDesign: {
-                        ...prevData.gamificationDesign,
-                        progression_path: prevData.gamificationDesign.progression_path.map(step => {
-                            // Buscar conteúdo de quiz
-                            const quizContent = activityData.quiz_contents?.find(qc => qc.step_id === step.id);
-                            if (quizContent) {
-                                return {
-                                    ...step,
-                                    content: {
-                                        type: 'quiz',
-                                        questions: quizContent.questions
-                                    }
-                                };
-                            }
-                            
-                            // Buscar conteúdo de narrativa
-                            const narrativeContent = activityData.narrative_contents?.find(nc => nc.step_id === step.id);
-                            if (narrativeContent) {
-                                return {
-                                    ...step,
-                                    content: {
-                                        type: 'narrative',
-                                        scenario: narrativeContent.scenario,
-                                        characters: narrativeContent.characters,
-                                        dialogue: narrativeContent.dialogue
-                                    }
-                                };
-                            }
-                            
-                            return step;
-                        })
-                    }
-                };
-                
-                return newData;
-            });
+        if (!activityId || !stepId || !user.token) {
+            setLoading(false);
+            setError("IDs de atividade ou passo ausentes.");
+            return;
         }
-        
+        setLoading(true);
+        try {
+            // 1. Busca os dados gerais da atividade (para o título e gameElements)
+            const activityResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${activityId}`, {
+                headers: { 'Authorization': `Bearer ${user.token}` },
+            });
+            const activityData = await activityResponse.json();
+            if (!activityResponse.ok) throw new Error(`Erro ao buscar atividade: ${activityData.message}`);
+            
+            setActivityTitle(activityData.title);
+            setGameElements(activityData.gameElements?.selectedElements || []);
+
+            // 2. Busca o conteúdo específico deste passo (o quiz já existente)
+            const contentResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/content_editor/activity/${activityId}/step/${stepId}/content?type=quiz`, {
+                 headers: { 'Authorization': `Bearer ${user.token}` },
+            });
+            const contentData = await contentResponse.json();
+            if (!contentResponse.ok) throw new Error(`Erro ao buscar conteúdo do quiz: ${contentData.message}`);
+            
+            // 3. Preenche o estado com as perguntas existentes
+            if (contentData && contentData.questions) {
+                setQuestions(contentData.questions);
+            }
+
         } catch (err) {
             setError(err.message);
         } finally {
             setLoading(false);
         }
-    }, [activityId, user.token]);
+    }, [activityId, stepId, user.token]); // Adiciona stepId como dependência
 
     useEffect(() => {
         fetchContent();
@@ -132,6 +108,10 @@ function QuizEditorPage() {
         try {
             const apiUrl = `${import.meta.env.VITE_API_URL}/api/content_editor/activity/${activityId}/step/${stepId}/content`;
             console.log(`[QuizEditorPage] URL de salvamento que será usada: ${apiUrl}`);
+            const payload = {
+                type: 'quiz', // Adiciona o tipo explicitamente
+                questions: questions
+            };
 
             // --- ALTERAÇÃO: Salva o conteúdo na nova rota específica do passo ---
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/content_editor/activity/${activityId}/step/${stepId}/content`, {
@@ -140,12 +120,12 @@ function QuizEditorPage() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${user.token}`
                 },
-                body: JSON.stringify({ questions: questions })
+                body: JSON.stringify(payload)
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data.message);
             setMessage('Quiz salvo com sucesso!');
-            setTimeout(() => navigate(`/professor/atividades/${activityId}/edit`), 2000);
+            setTimeout(() => navigate(`/professor/atividades/${activityId}/edit`, { state: { fromStep: 5 } }), 2000);
         } catch (err) {
             setError(err.message);
         } finally {

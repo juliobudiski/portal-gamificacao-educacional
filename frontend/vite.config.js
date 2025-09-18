@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     host: true, // Garante que o servidor seja acessível na rede
     allowedHosts: [
-      'specifies-footwear-choices-liabilities.trycloudflare.com'
+      'wagon-fifty-hoping-saint.trycloudflare.com'
     ]
   }
 })

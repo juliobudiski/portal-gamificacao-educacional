@@ -138,17 +138,73 @@ const GameBoardStyles = `
     }
 `;
 
-function GameBoardViewer() {
+// Mapeamento dos ícones para fácil acesso
+const elementConfig = {
+    path: {
+        narrative: { icon: '/board/narrative_board.png', name: 'Narrativa' },
+        quiz: { icon: '/board/quizz_board.png', name: 'Quiz' },
+    },
+    hub: {
+        roulette: { icon: '/board/roleta_board.png', name: 'Roleta' },
+        slot_machine: { icon: '/board/slotmachine_board.png', name: 'Caça-níquel' },
+        ranking: { icon: '/board/ranking_board.png', name: 'Ranking' },
+        badges: { icon: '/board/badges_board.png', name: 'Medalhas' },
+        chat: { icon: '/board/chat_board.png', name: 'Chat' },
+        store: { icon: '/board/store_board.png', name: 'Loja' },
+        mission: { icon: '/board/mission_character_board.png', name: 'Missão' },
+    }
+};
+
+function GameBoardViewer({ gamificationDesign, studentProgress, onStepClick, userRole }) { 
+  
+  // Lógica para determinar qual é o passo ativo
+  // É o primeiro passo na trilha que ainda não foi completado pelo aluno.
+  const completedStepsSet = userRole === 'aluno' 
+    ? new Set(studentProgress?.completed_steps || []) 
+    : new Set();
+  
+  let activeStepId = null;
+
+  // A lógica para encontrar o passo ativo só roda para alunos.
+  if (userRole === 'aluno' && gamificationDesign.progression_path) {
+    for (const step of gamificationDesign.progression_path) {
+        if (!completedStepsSet.has(step.id)) {
+            activeStepId = step.id;
+            break;
+        }
+    }
+  }
+
+  const getStepStatus = (step) => {
+    // Para o professor, todos os passos são 'ativos' para permitir a visualização.
+    if (userRole === 'professor') {
+        return 'active'; 
+    }
+    // A lógica para o aluno permanece a mesma.
+    if (completedStepsSet.has(step.id)) {
+        return 'completed';
+    }
+    if (step.id === activeStepId) {
+        return 'active';
+    }
+    return 'locked';
+  };
+
+  
+
   return (
     <>
       <style>{GameBoardStyles}</style>
       
       <div className="game-board-container">
+        {/* Decorações podem ser mantidas ou se tornarem dinâmicas baseadas no tema */}
         <img src="/board/tree_board.png" alt="Decoração de árvore" className="decoration tree-1" />
         <img src="/board/rock_board.png" alt="Decoração de pedra" className="decoration rock-1" />
 
+        {/* --- TRILHA DE PROGRESSÃO DINÂMICA --- */}
         <div className="game-board">
           
+          {/* Passo Inicial (sempre existe e está completo) */}
           <div className="step step--completed" data-type="start">
             <div className="step-content">
               <div className="step-label">Início</div>
@@ -158,29 +214,50 @@ function GameBoardViewer() {
             </div>
           </div>
 
-          <div className="step step--active" data-type="narrative">
-            <div className="step-content">
-              <div className="step-label">A Lenda</div>
-            </div>
-          </div>
+          {/* Mapeia e renderiza cada passo da trilha vindo da API */}
+          {(gamificationDesign.progression_path || []).map(step => {
+            const status = getStepStatus(step);
+            const config = elementConfig.path[step.type];
+            if (!config) return null; // Ignora passos com tipo desconhecido
 
-          <div className="step step--locked" data-type="quiz">
-             <div className="step-content">
-              <div className="step-label">Primeiro Desafio</div>
-            </div>
-          </div>
-          
-          <div className="step step--locked" data-type="quiz">
-             <div className="step-content">
-              <div className="step-label">Enigma da Floresta</div>
-            </div>
-          </div>
-
+            return (
+              <div
+                key={step.id}
+                className={`step step--${status}`}
+                data-type={step.type}
+                onClick={() => status === 'active' && onStepClick(step)}
+              >
+                <div className="step-content">
+                  <div className="step-label">{step.content?.title || config.name}</div>
+                </div>
+                {status === 'completed' && (
+                  <div className="step-checkmark">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
+      </div>
+
+      {/* --- HUB DA VILA DINÂMICO --- */}
+      <div className="hub-container">
+        {(gamificationDesign.hub_elements || []).map(hubElement => {
+            if (!hubElement.enabled) return null; // Só mostra elementos ativados
+            
+            const config = elementConfig.hub[hubElement.type];
+            if (!config) return null;
+
+            return (
+                <div key={hubElement.id} className="hub-item" title={config.name}>
+                    <img src={config.icon} alt={config.name} />
+                </div>
+            );
+        })}
       </div>
     </>
   );
 }
 
 export default GameBoardViewer;
-

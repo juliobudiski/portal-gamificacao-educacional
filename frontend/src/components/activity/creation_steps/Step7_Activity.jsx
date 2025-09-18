@@ -1,0 +1,126 @@
+// frontend/src/components/steps/Step7_RewardedActions.jsx
+import React from 'react';
+import {
+  FaComments,
+  FaCalendarCheck,
+  FaTrophy,
+  FaUsers,
+  FaPaintBrush,
+  FaBrain,
+  FaQuestionCircle,
+  FaHandsHelping,
+  FaChalkboardTeacher,
+  FaBell,
+  FaBookReader,
+  FaBoxOpen,
+  FaUserTie,
+} from 'react-icons/fa';
+
+/**
+ * Componente para a Etapa 7 do formulário de criação de atividades.
+ * Focado na seleção das ações dos alunos que serão elegíveis para recompensas.
+ * @param {object} props - As propriedades passadas do componente pai.
+ * @param {object} props.activityData - O objeto de estado que contém todos os dados do formulário.
+ * @param {function} props.handleInputChange - A função para manipular mudanças em inputs de texto.
+ * @param {function} props.setActivityData - A função para definir o estado da atividade, ideal para manipular arrays.
+ */
+function Step7_RewardedActions({ activityData, handleInputChange, setActivityData }) {
+  // Array de objetos para as ações recompensadas, facilitando a renderização dos cards.
+  const rewardedActions = [
+    { text: "Participação ativa nas discussões em aula.", icon: <FaComments /> },
+    { text: "Conclusão de tarefas antes do prazo.", icon: <FaCalendarCheck /> },
+    { text: "Atingir uma pontuação elevada em um jogo.", icon: <FaTrophy /> },
+    { text: "Colaboração efetiva em projetos de grupo.", icon: <FaUsers /> },
+    { text: "Contribuição criativa em atividades.", icon: <FaPaintBrush /> },
+    { text: "Demonstrar pensamento crítico em desafios.", icon: <FaBrain /> },
+    { text: "Responder corretamente a perguntas de revisão.", icon: <FaQuestionCircle /> },
+    { text: "Auxiliar um colega com dificuldades.", icon: <FaHandsHelping /> },
+    { text: "Apresentar um trabalho com excelência.", icon: <FaChalkboardTeacher /> },
+    { text: "Atender prontamente às solicitações.", icon: <FaBell /> },
+    { text: "Realizar atividades extras para aprofundar.", icon: <FaBookReader /> },
+    { text: "Cuidar e organizar o material escolar.", icon: <FaBoxOpen /> },
+    { text: "Demonstrar habilidades de liderança.", icon: <FaUserTie /> },
+  ];
+
+  /**
+   * Manipula a seleção de ações a partir dos cards.
+   * Adiciona ou remove a ação do array no estado pai.
+   * @param {string} actionText - O texto da ação que foi clicada.
+   */
+  const handleActionSelection = (actionText) => {
+    // Utiliza setActivityData para uma atualização de estado aninhado mais segura e explícita.
+    setActivityData(prevData => {
+      const currentActions = prevData.rewardedActions.selectedActions;
+      const newActions = currentActions.includes(actionText)
+        ? currentActions.filter(a => a !== actionText)
+        : [...currentActions, actionText];
+
+      return {
+        ...prevData,
+        rewardedActions: {
+          ...prevData.rewardedActions,
+          selectedActions: newActions,
+        },
+      };
+    });
+  };
+
+  return (
+    <div className="space-y-8 animate-fade-in">
+      {/* SEÇÃO 1: Título e Descrição */}
+      <div>
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+          Quais Ações Valem Recompensas?
+        </h2>
+        <p className="mt-2 text-gray-600 dark:text-gray-400">
+          Defina quais comportamentos e conquistas dos alunos serão recompensados. Ações claras incentivam o engajamento direcionado.
+        </p>
+      </div>
+
+      {/* SEÇÃO 2: Seleção de Ações com Cards */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        {rewardedActions.map((action) => {
+          const isSelected = activityData.rewardedActions.selectedActions.includes(action.text);
+          return (
+            <div
+              key={action.text}
+              onClick={() => handleActionSelection(action.text)}
+              className={`
+                group relative flex h-full cursor-pointer flex-col items-center justify-start space-y-2 rounded-xl border p-4 text-center transition-all duration-200
+                ${isSelected
+                  ? 'border-2 border-teal-500 bg-teal-50 dark:bg-teal-900/40 ring-2 ring-teal-500/20'
+                  : 'border-gray-300 bg-white hover:border-teal-400 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:hover:border-teal-500'
+                }
+              `}
+            >
+              <div className={`text-4xl ${isSelected ? 'text-teal-500' : 'text-gray-400 group-hover:text-teal-500 dark:text-gray-500 dark:group-hover:text-teal-400'}`}>
+                {action.icon}
+              </div>
+              <p className={`text-sm font-medium ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-gray-700 dark:text-gray-300'}`}>
+                {action.text}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+      
+      {/* SEÇÃO 3: Campo Aberto */}
+      <div className="pt-4">
+        <label htmlFor="rewardedActions.otherAction" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          Outra ação a ser recompensada? (Opcional)
+        </label>
+        <input 
+          type="text" 
+          id="rewardedActions.otherAction" 
+          name="rewardedActions.otherAction" 
+          value={activityData.rewardedActions.otherAction} 
+          onChange={handleInputChange} 
+          className="mt-1 block w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+          placeholder="Descreva uma ação personalizada" 
+        />
+      </div>
+    </div>
+  );
+}
+
+export default Step7_RewardedActions;

@@ -79,24 +79,20 @@ def save_step_content(activity_id, step_id):
         return jsonify({"message": "Acesso não autorizado."}), 403
 
     data = request.get_json()
-    
-    # Log para debug
-    current_app.logger.info(f"Salvando conteúdo para step_id: {step_id}")
+    # Pega o tipo explicitamente do corpo da requisição
+    content_type = data.get('type')
+
+    current_app.logger.info(f"Salvando conteúdo para step_id: {step_id} do tipo: {content_type}")
     current_app.logger.info(f"Dados recebidos: {data}")
 
-    # Verifica se foi especificado um tipo via parâmetro de query
-    content_type = request.args.get('type', '').lower()
-
-    # Determina o tipo com base nos dados recebidos ou parâmetro
-    if 'questions' in data or content_type == 'quiz':
+    if content_type == 'quiz':
         content = QuizContent.query.filter_by(activity_id=activity_id, step_id=step_id).first()
         if not content:
             content = QuizContent(activity_id=activity_id, step_id=step_id)
             db.session.add(content)
         content.questions = data.get('questions', [])
-        current_app.logger.info(f"Salvando conteúdo do tipo quiz para step_id: {step_id}")
 
-    elif 'dialogue' in data or 'characters' in data or 'scenario' in data or content_type == 'narrative':
+    elif content_type == 'narrative':
         content = NarrativeContent.query.filter_by(activity_id=activity_id, step_id=step_id).first()
         if not content:
             content = NarrativeContent(activity_id=activity_id, step_id=step_id)
@@ -104,16 +100,16 @@ def save_step_content(activity_id, step_id):
         content.scenario = data.get('scenario')
         content.characters = data.get('characters', [])
         content.dialogue = data.get('dialogue', [])
-        current_app.logger.info(f"Salvando conteúdo do tipo narrative para step_id: {step_id}")
-
+        
     else:
-        current_app.logger.error(f"Não foi possível determinar o tipo para step_id: {step_id} com dados: {data}")
-        return jsonify({"message": "Tipo de conteúdo inválido. Especifique o parâmetro 'type' como 'quiz' ou 'narrative'."}), 400
+        current_app.logger.error(f"Tipo de conteúdo inválido ou não fornecido para step_id: {step_id}")
+        return jsonify({"message": "O campo 'type' ('quiz' ou 'narrative') é obrigatório no corpo da requisição."}), 400
 
     try:
         db.session.commit()
         current_app.logger.info(f"Conteúdo salvo com sucesso para step_id: {step_id}")
-        return jsonify({"message": "Conteúdo salvo com sucesso!"}), 200
+        # Retorna o conteúdo salvo para confirmação no frontend
+        return jsonify({"message": "Conteúdo salvo com sucesso!", "saved_content": data}), 200
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Erro ao salvar conteúdo para step_id: {step_id}: {str(e)}")

@@ -515,3 +515,16 @@ def bulk_delete_activities_route():
     result, status_code = activity_service.bulk_delete_activities(current_user, activity_ids)
     
     return jsonify(result), status_code
+
+
+@activity_bp.route('/<int:activity_id>/structure', methods=['PATCH'])
+@jwt_required()
+def update_activity_structure_route(activity_id):
+    """
+    Rota leve para salvar apenas a estrutura de gamificação (gamificationDesign).
+    """
+    if current_user.role != 'professor':
+        return jsonify({"message": "Acesso negado"}), 403
+    
+    data = request.get_json()
+    return activity_service.update_activity_structure(current_user, activity_id, data)

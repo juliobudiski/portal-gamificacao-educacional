@@ -39,8 +39,13 @@ const hasContent = (step) => {
 // --- CORREÇÃO APLICADA AQUI ---
 // Adicionamos um valor padrão para a prop 'gamificationDesign'.
 // Se ela for 'undefined', o componente usará este objeto padrão, evitando o crash.
-function GameBoardEditor({ gamificationDesign = { theme: 'vila_da_aventura', progression_path: [], hub_elements: [] }, setActivityData, onEditContent }) {
+function GameBoardEditor({ gamificationDesign = { theme: 'vila_da_aventura', progression_path: [], hub_elements: [] }, setActivityData, onEditContent, onStructureChange }) {
 
+    console.log("%cLOG 5: PROP 'gamificationDesign' RECEBIDA NO EDITOR", "color: red; font-weight: bold;", gamificationDesign);
+    const path_to_render = gamificationDesign?.progression_path || [];
+    console.log("%cLOG 6: 'progression_path' QUE SERÁ USADO PARA RENDERIZAR", "color: brown; font-weight: bold;", path_to_render);
+  
+  
     const updateDesign = (key, value) => {
         setActivityData(prev => ({
             ...prev,
@@ -51,6 +56,8 @@ function GameBoardEditor({ gamificationDesign = { theme: 'vila_da_aventura', pro
         }));
     };
 
+    
+
     const addPathStep = (type) => {
         const newStep = {
             id: `step_${new Date().getTime()}`,
@@ -59,11 +66,22 @@ function GameBoardEditor({ gamificationDesign = { theme: 'vila_da_aventura', pro
             config: {},
         };
         const currentPath = gamificationDesign.progression_path || [];
-        updateDesign('progression_path', [...currentPath, newStep]);
+        const newPath = [...currentPath, newStep];
+        const newDesign = { ...gamificationDesign, progression_path: newPath };
+
+        // Atualiza o estado local primeiro (para a UI ser rápida)
+        updateDesign('progression_path', newPath); 
+        // Dispara o auto-save com o novo design completo
+        onStructureChange(newDesign); 
     };
 
+
     const removePathStep = (stepId) => {
-        updateDesign('progression_path', gamificationDesign.progression_path.filter(step => step.id !== stepId));
+        const newPath = gamificationDesign.progression_path.filter(step => step.id !== stepId);
+        const newDesign = { ...gamificationDesign, progression_path: newPath };
+
+        updateDesign('progression_path', newPath);
+        onStructureChange(newDesign);
     };
     
     const toggleMandatory = (stepId) => {

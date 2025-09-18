@@ -41,65 +41,44 @@ function NarrativeEditorPage() {
 
     
         const fetchContent = useCallback(async () => {
+        if (!activityId || !stepId || !user.token) {
+            setLoading(false);
+            setError("IDs de atividade ou passo ausentes.");
+            return;
+        }
+        setLoading(true);
         try {
+            // 1. Busca os dados gerais da atividade (para o título)
             const activityResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${activityId}`, {
                 headers: { 'Authorization': `Bearer ${user.token}` },
             });
             const activityData = await activityResponse.json();
-            if (!activityResponse.ok) throw new Error(activityData.message);
+            if (!activityResponse.ok) throw new Error(`Erro ao buscar atividade: ${activityData.message}`);
             
             setActivityTitle(activityData.title);
-            setGameElements(activityData.gameElements?.selectedElements || []);
+
+            // 2. Busca o conteúdo específico deste passo (a narrativa já existente)
+            const contentResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/content_editor/activity/${activityId}/step/${stepId}/content?type=narrative`, {
+                 headers: { 'Authorization': `Bearer ${user.token}` },
+            });
+            const contentData = await contentResponse.json();
+            if (!contentResponse.ok) throw new Error(`Erro ao buscar conteúdo da narrativa: ${contentData.message}`);
             
-            // Processar conteúdos dos steps
-            if (activityData.quiz_contents || activityData.narrative_contents) {
-                setActivityData(prevData => {
-                    const newData = {
-                        ...prevData,
-                        gamificationDesign: {
-                            ...prevData.gamificationDesign,
-                            progression_path: prevData.gamificationDesign.progression_path.map(step => {
-                                // Buscar conteúdo de quiz
-                                const quizContent = activityData.quiz_contents?.find(qc => qc.step_id === step.id);
-                                if (quizContent) {
-                                    return {
-                                        ...step,
-                                        content: {
-                                            type: 'quiz',
-                                            questions: quizContent.questions
-                                        }
-                                    };
-                                }
-                                
-                                // Buscar conteúdo de narrativa
-                                const narrativeContent = activityData.narrative_contents?.find(nc => nc.step_id === step.id);
-                                if (narrativeContent) {
-                                    return {
-                                        ...step,
-                                        content: {
-                                            type: 'narrative',
-                                            scenario: narrativeContent.scenario,
-                                            characters: narrativeContent.characters,
-                                            dialogue: narrativeContent.dialogue
-                                        }
-                                    };
-                                }
-                                
-                                return step;
-                            })
-                        }
-                    };
-                    
-                    return newData;
+            // 3. Preenche o estado com a configuração da narrativa existente
+            if (contentData) {
+                setNarrativeConfig({
+                    scenario: contentData.scenario || '',
+                    characters: contentData.characters || [],
+                    dialogue: contentData.dialogue || [],
                 });
             }
-            
-            } catch (err) {
-                setError(err.message);
-            } finally {
-                setLoading(false);
-            }
-        }, [activityId, user.token]);
+
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    }, [activityId, stepId, user.token]);
     
         useEffect(() => {
             fetchContent();
@@ -190,13 +169,17 @@ function NarrativeEditorPage() {
 
 
     try {
+        const payload = {
+            type: 'narrative', // Adiciona o tipo explicitamente
+            ...narrativeConfig // Usa o spread operator para incluir scenario, characters e dialogue
+        };
         const response = await fetch(`${import.meta.env.VITE_API_URL}/api/content_editor/activity/${activityId}/step/${stepId}/content`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${user.token}`
             },
-            body: JSON.stringify(narrativeConfig)
+            body: JSON.stringify(payload)
         });
 
         const data = await response.json();
@@ -215,7 +198,7 @@ function NarrativeEditorPage() {
         }
         
         setMessage('Narrativa salva com sucesso!');
-        setTimeout(() => navigate(`/professor/atividades/${activityId}/edit`), 2000);
+        setTimeout(() => navigate(`/professor/atividades/${activityId}/edit`, { state: { fromStep: 5 } }), 2000);
         
         } catch (err) {
             if (isDebugMode) {

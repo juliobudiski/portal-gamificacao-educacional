@@ -3,10 +3,11 @@ from ..models import Activity, ActivityRevision, Tag, EventLog, ActivityProgress
 from flask import jsonify
 import logging
 from flask_jwt_extended import jwt_required, current_user, get_jwt_identity
-from ..models import db, Activity, Tag, activity_tag, ActivityRevision, User, Class, Enrollment, Purchase, StoreItem, SlotWin, RouletteWin, StudentResponse
+from ..models import db, Activity, Tag, activity_tag, ActivityRevision, User, Class, Enrollment, Purchase, StoreItem, SlotWin, RouletteWin, StudentResponse, QuizContent, NarrativeContent
 from sqlalchemy.orm import noload
 from copy import deepcopy
 from sqlalchemy import or_
+import json
 logger = logging.getLogger(__name__)
 from ..utils.logging import _log_system_event
 
@@ -58,7 +59,36 @@ def create_activity(user, data):
         db.session.rollback()
         return {"message": str(e)}, 500
 
+def update_activity_structure(user, activity_id, data):
+    """Atualiza apenas o campo gamification_design de uma atividade."""
+    activity = Activity.query.get(activity_id)
+
+    if not activity:
+        return {"message": "Atividade não encontrada"}, 404
+    
+    if activity.professor_id != user.id:
+        return {"message": "Acesso negado."}, 403
+
+    try:
+        if 'gamificationDesign' in data:
+            activity.gamification_design = data['gamificationDesign']
+            db.session.commit()
+            logger.info(f"Estrutura da atividade ID {activity_id} atualizada.")
+            return {"message": "Estrutura salva com sucesso!"}, 200
+        else:
+            return {"message": "Nenhum dado de estrutura fornecido."}, 400
+            
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Erro ao atualizar estrutura da atividade ID {activity_id}: {str(e)}")
+        return {"message": "Erro interno ao salvar estrutura."}, 500
+
 def update_activity(user, activity_id, data):
+    print("--- PAYLOAD RECEBIDO NA ROTA DE UPDATE ---", flush=True)
+    print(json.dumps(data, indent=2), flush=True)
+    print("--- FIM DO PAYLOAD ---", flush=True)
+
+    """Atualiza uma atividade existente."""
     activity = Activity.query.get(activity_id)
 
     if not activity:
@@ -68,6 +98,7 @@ def update_activity(user, activity_id, data):
         return {"message": "Acesso negado. Você não é o dono desta atividade."}, 403
 
     try:
+        # Atualiza todos os campos vindos do frontend
         activity.title = data.get('title', activity.title)
         activity.description = data.get('description', activity.description)
         activity.area_knowledge = data.get('areaKnowledge', activity.area_knowledge)
@@ -76,18 +107,23 @@ def update_activity(user, activity_id, data):
         activity.desired_scenario = data.get('desiredScenario', activity.desired_scenario)
         activity.activity_planning = data.get('activityPlanning', activity.activity_planning)
         activity.player_profile = data.get('playerProfile', activity.player_profile)
-        # O campo game_elements agora carrega toda a estrutura da narrativa
         activity.game_elements = data.get('gameElements', activity.game_elements)
         activity.rewards_offered = data.get('rewardsOffered', activity.rewards_offered)
         activity.rewarded_actions = data.get('rewardedActions', activity.rewarded_actions)
         activity.gamification_rules = data.get('gamificationRules', activity.gamification_rules)
         
-        db.session.commit()
+        # 1. Nossa correção para salvar o tabuleiro de gamificação
+        if 'gamificationDesign' in data:
+            activity.gamification_design = data['gamificationDesign']
+        
+        # 2. O log de eventos importante da segunda versão
         _log_system_event(
             user_id=user.id,
             action='activity_edited',
             activity_id=activity.id
         )
+        
+        db.session.commit()
         logger.info(f"Atividade ID {activity_id} atualizada com sucesso pelo usuário ID {user.id}")
         return {"message": "Atividade atualizada com sucesso", "activity": activity.to_dict()}, 200
     except Exception as e:
@@ -158,8 +194,39 @@ def get_activity(user, activity_id):
     # Permite o acesso se o usuário for o dono, a atividade for pública, ou se for um aluno matriculado
     if not (is_owner or is_public or is_enrolled_student):
         return jsonify({"message": "Acesso negado."}), 403
+    
+    # 1. Converte a atividade principal para um dicionário
+    activity_dict = activity.to_dict()
 
-    return jsonify(activity.to_dict()), 200
+    # 2. Busca todos os conteúdos de quiz e narrativa associados a esta atividade
+    quiz_contents = QuizContent.query.filter_by(activity_id=activity_id).all()
+    narrative_contents = NarrativeContent.query.filter_by(activity_id=activity_id).all()
+
+    # 3. Cria um mapa (dicionário) para acesso rápido ao conteúdo pelo step_id
+    content_map = {}
+    for qc in quiz_contents:
+        content_map[qc.step_id] = {
+            'type': 'quiz',
+            'questions': qc.questions
+        }
+    for nc in narrative_contents:
+        content_map[nc.step_id] = {
+            'type': 'narrative',
+            'scenario': nc.scenario,
+            'characters': nc.characters,
+            'dialogue': nc.dialogue
+        }
+
+    # 4. Anexa o conteúdo a cada passo correspondente na trilha de progressão
+    if activity_dict.get('gamificationDesign') and 'progression_path' in activity_dict['gamificationDesign']:
+        for step in activity_dict['gamificationDesign']['progression_path']:
+            step_id = step.get('id')
+            if step_id in content_map:
+                step['content'] = content_map[step_id]
+    
+
+    # 5. Retorna o dicionário da atividade agora "enriquecido" com o conteúdo
+    return jsonify(activity_dict), 200
 
 
 def get_activities_by_professor(professor_id, search_term=None):
@@ -202,39 +269,7 @@ def get_public_activities(current_user_id, search_term=None):
     activities = query.all()
     return [a.to_dict() for a in activities]
 
-def update_activity(user, activity_id, data):
-    """Atualiza uma atividade existente."""
-    activity = Activity.query.get(activity_id)
 
-    if not activity:
-        return {"message": "Atividade não encontrada"}, 404
-    
-    # Apenas o professor que criou a atividade pode editá-la
-    if activity.professor_id != user.id:
-        return {"message": "Acesso negado. Você não é o dono desta atividade."}, 403
-
-    try:
-        # Atualiza os campos
-        activity.title = data.get('title', activity.title)
-        activity.description = data.get('description', activity.description)
-        activity.area_knowledge = data.get('areaKnowledge', activity.area_knowledge)
-        activity.is_public = data.get('isPublic', activity.is_public)
-        activity.current_scenario = data.get('currentScenario', activity.current_scenario)
-        activity.desired_scenario = data.get('desiredScenario', activity.desired_scenario)
-        activity.activity_planning = data.get('activityPlanning', activity.activity_planning)
-        activity.player_profile = data.get('playerProfile', activity.player_profile)
-        activity.game_elements = data.get('gameElements', activity.game_elements)
-        activity.rewards_offered = data.get('rewardsOffered', activity.rewards_offered)
-        activity.rewarded_actions = data.get('rewardedActions', activity.rewarded_actions)
-        activity.gamification_rules = data.get('gamificationRules', activity.gamification_rules)
-        
-        db.session.commit()
-        logger.info(f"Atividade ID {activity_id} atualizada com sucesso pelo usuário ID {user.id}")
-        return {"message": "Atividade atualizada com sucesso", "activity": activity.to_dict()}, 200
-    except Exception as e:
-        db.session.rollback()
-        logger.error(f"Erro ao atualizar atividade ID {activity_id}: {str(e)}")
-        return {"message": str(e)}, 500
 
 def copy_activity(user, activity_id):
     """Copia uma atividade pública para o professor logado."""
