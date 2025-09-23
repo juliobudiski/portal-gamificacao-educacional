@@ -1,32 +1,140 @@
 import React from 'react';
+import useAssetLoader from '../../hooks/useAssetLoader';
 
-// Os estilos foram completamente reescritos para corresponder ao novo design do prompt.
+// --- TELA DE CARREGAMENTO (SUB-COMPONENTE) ---
+const LoadingScreen = ({ progress, etr }) => (
+    <div style={{
+        width: '100%',
+        height: '500px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: 'white',
+        fontFamily: 'var(--font-family-main)'
+    }}>
+        <div style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Carregando o mundo da atividade...</div>
+        <div style={{ width: '80%', backgroundColor: '#2d3748', borderRadius: '8px', overflow: 'hidden', border: '1px solid #4a5568' }}>
+            <div style={{
+                width: `${progress}%`,
+                height: '20px',
+                backgroundColor: 'var(--color-active-glow)',
+                transition: 'width 0.3s ease-in-out',
+                borderRadius: '8px'
+            }}></div>
+        </div>
+        <div style={{ marginTop: '1rem', fontSize: '1.5rem', fontWeight: 'bold' }}>{progress}%</div>
+        {etr && (
+            <div style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#a0aec0' }}>
+                {etr}
+            </div>
+        )}
+    </div>
+);
+
+
+// 1. LISTA ATUALIZADA com todos os seus novos assets de decoração.
+// O sistema agora tratará cada imagem como um item único a ser posicionado.
+const decorationConfig = [
+    // Árvores (agora com mais variedade)
+    { id: 'tree1', src: '/board/tree_board.png', className: 'decoration-tree', weight: 3 },
+    { id: 'tree2', src: '/board/tree_board_2.png', className: 'decoration-tree', weight: 3 },
+    { id: 'tree3', src: '/board/tree_board_3.png', className: 'decoration-tree', weight: 2 },
+    { id: 'tree4', src: '/board/tree_board_4.png', className: 'decoration-tree', weight: 2 },
+    { id: 'tree5', src: '/board/tree_board_5.png', className: 'decoration-tree', weight: 1 },
+    { id: 'tree6', src: '/board/tree_board_6.png', className: 'decoration-tree', weight: 1 },
+    { id: 'tree7', src: '/board/tree_board_7.png', className: 'decoration-tree', weight: 1 },
+    
+    // Rochas (expandida)
+    { id: 'rock1', src: '/board/rock_board.png', className: 'decoration-rock', weight: 3 },
+    { id: 'rock2', src: '/board/rock_board_2.png', className: 'decoration-rock', weight: 3 },
+    { id: 'rock3', src: '/board/rock_board_3.png', className: 'decoration-rock', weight: 2 },
+    { id: 'rock4', src: '/board/rock_board_4.png', className: 'decoration-rock', weight: 2 },
+    { id: 'rock5', src: '/board/rock_board_5.png', className: 'decoration-rock', weight: 1 },
+];
+
+// PONTOS DE APARIÇÃO OTIMIZADOS - Evitando a área inferior do hub
+const decorationSpawnPoints = [
+    // Área superior - muitas decorações
+    { x: '3%', y: '3%', size: 'large' }, { x: '8%', y: '7%', size: 'normal' }, 
+    { x: '12%', y: '4%', size: 'small' }, { x: '17%', y: '2%', size: 'small' },
+    { x: '22%', y: '6%', size: 'normal' }, { x: '28%', y: '3%', size: 'small' },
+    { x: '35%', y: '5%', size: 'small' }, { x: '42%', y: '2%', size: 'normal' },
+    { x: '50%', y: '4%', size: 'small' }, { x: '58%', y: '6%', size: 'small' },
+    { x: '65%', y: '3%', size: 'normal' }, { x: '72%', y: '5%', size: 'small' },
+    { x: '78%', y: '2%', size: 'small' }, { x: '85%', y: '6%', size: 'normal' },
+    { x: '92%', y: '4%', size: 'small' }, { x: '96%', y: '8%', size: 'large' },
+    
+    // Laterais esquerdas - denso
+    { x: '2%', y: '15%', size: 'normal' }, { x: '4%', y: '25%', size: 'small' },
+    { x: '1%', y: '35%', size: 'large' }, { x: '3%', y: '45%', size: 'normal' },
+    { x: '5%', y: '55%', size: 'small' }, { x: '2%', y: '65%', size: 'normal' },
+    { x: '4%', y: '75%', size: 'small' }, { x: '1%', y: '85%', size: 'large' },
+    
+    // Laterais direitas - denso
+    { x: '98%', y: '20%', size: 'normal' }, { x: '96%', y: '30%', size: 'small' },
+    { x: '99%', y: '40%', size: 'large' }, { x: '97%', y: '50%', size: 'normal' },
+    { x: '95%', y: '60%', size: 'small' }, { x: '98%', y: '70%', size: 'normal' },
+    { x: '96%', y: '80%', size: 'small' }, { x: '99%', y: '90%', size: 'large' },
+    
+    // Área central superior - poucas e pequenas
+    { x: '25%', y: '20%', size: 'small' }, { x: '35%', y: '18%', size: 'small' },
+    { x: '45%', y: '22%', size: 'small' }, { x: '55%', y: '19%', size: 'small' },
+    { x: '65%', y: '21%', size: 'small' }, { x: '75%', y: '17%', size: 'small' },
+    
+    // Área central intermediária - muito espaçadas
+    { x: '30%', y: '40%', size: 'small' }, { x: '50%', y: '45%', size: 'small' },
+    { x: '70%', y: '42%', size: 'small' }, { x: '40%', y: '55%', size: 'small' },
+    { x: '60%', y: '52%', size: 'small' },
+    
+    // Área inferior (acima do hub) - pequenas e discretas
+    { x: '20%', y: '65%', size: 'small' }, { x: '30%', y: '68%', size: 'small' },
+    { x: '40%', y: '72%', size: 'small' }, { x: '50%', y: '75%', size: 'small' },
+    { x: '60%', y: '70%', size: 'small' }, { x: '70%', y: '73%', size: 'small' },
+    { x: '80%', y: '67%', size: 'small' },
+    
+    // Cantos inferiores - agrupamentos naturais
+    { x: '8%', y: '88%', size: 'normal' }, { x: '12%', y: '92%', size: 'small' },
+    { x: '5%', y: '95%', size: 'large' }, { x: '15%', y: '96%', size: 'small' },
+    { x: '88%', y: '90%', size: 'normal' }, { x: '92%', y: '94%', size: 'small' },
+    { x: '85%', y: '97%', size: 'large' }, { x: '95%', y: '92%', size: 'small' }
+];
+
+// Função auxiliar para embaralhar uma array
+const shuffleArray = (array) => {
+    let currentIndex = array.length, randomIndex;
+    while (currentIndex !== 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+    }
+    return array;
+};
+
 const GameBoardStyles = `
-    /* === Variáveis de Tema (Fácil de Customizar) === */
+    /* === Variáveis de Tema === */
     :root {
         --font-family-main: 'Inter', sans-serif;
-        --color-path: #a16207; /* Marrom da trilha */
-        --color-hub-bg: rgba(0, 0, 0, 0.2); /* Fundo do Hub */
-        --color-hub-border: #4a2c2a;
         --color-active-glow: #facc15; /* Amarelo dourado */
         --color-completed-glow: #4ade80; /* Verde claro */
-        --color-locked-text: #9ca3af;
+        --color-path-stroke: #854d0e; /* Cor da borda do caminho */
+        --color-path-fill: #a16207; /* Cor do preenchimento do caminho */
     }
 
     /* === Animações Globais === */
-    @keyframes pulse-glow {
+    @keyframes pulse-glow-shape {
         0%, 100% {
-            box-shadow: 0 0 15px 3px var(--color-active-glow);
+            filter: drop-shadow(0 0 6px var(--color-active-glow));
             transform: scale(1);
         }
         50% {
-            box-shadow: 0 0 25px 8px var(--color-active-glow);
+            filter: drop-shadow(0 0 14px var(--color-active-glow));
             transform: scale(1.05);
         }
     }
     @keyframes float {
         0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-8px); }
+        50% { transform: translateY(-5px); }
     }
 
     /* === Container Principal do Mapa === */
@@ -34,17 +142,16 @@ const GameBoardStyles = `
         width: 100%;
         max-width: 900px;
         margin: auto;
-        padding: 2rem 1rem;
+        padding: 1rem;
         font-family: var(--font-family-main);
         background-image: url('/board/background_board.png');
         background-size: cover;
         background-position: center;
         border-radius: 2rem;
         border: 10px solid;
-        border-image: url('/board/wood_border.png') 30 stretch; /* Borda de madeira texturizada */
+        border-image: url('/board/wood_border.png') 30 stretch;
         box-shadow: 0 10px 40px rgba(0,0,0,0.6), inset 0 0 20px rgba(0,0,0,0.5);
         position: relative;
-        overflow: hidden;
         display: flex;
         flex-direction: column;
     }
@@ -52,20 +159,28 @@ const GameBoardStyles = `
     /* === Área da Trilha de Progressão === */
     .progress-path-area {
         position: relative;
-        flex-grow: 1;
-        min-height: 400px; /* Altura mínima para a trilha */
+        width: 100%;
+        height: 500px; /* Altura fixa para o SVG e posicionamento absoluto */
+        margin-bottom: 1rem;
+    }
+    
+    /* SVG para desenhar o caminho */
+    .path-svg {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        z-index: 1; /* O caminho fica no fundo */
+        overflow: visible;
     }
 
-    /* O caminho sinuoso (usando um SVG de fundo) */
-    .progress-path-area::before {
-        content: '';
-        position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background-image: url('/board/winding_path.svg'); /* Crie um SVG de caminho sinuoso */
-        background-repeat: no-repeat;
-        background-position: center top;
-        background-size: contain;
-        opacity: 0.6;
+    /* Estilo da linha do caminho */
+    .path-line {
+        fill: none;
+        stroke: var(--color-path-fill);
+        stroke-width: 12;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        filter: drop-shadow(2px 3px 2px rgba(0,0,0,0.4));
     }
 
     /* Wrapper para cada passo, para posicionamento absoluto */
@@ -73,59 +188,53 @@ const GameBoardStyles = `
         position: absolute;
         text-align: center;
         transition: transform 0.3s ease;
+        z-index: 5; /* Os nós ficam na frente do caminho */
+        width: 110px;
+        transform: translate(-50%, -50%); /* Centraliza o wrapper no ponto exato */
     }
     .path-node-wrapper:hover {
-        transform: scale(1.05);
+        transform: translate(-50%, -50%) scale(1.1);
         z-index: 10;
     }
 
-    /* O pedestal/base de cada passo */
+    /* O elemento clicável que contém a imagem da casa/ícone */
     .path-node {
-        width: 100px;
-        height: 100px;
-        background-image: url('/board/stone_plinth.png'); /* Imagem do pedestal */
-        background-size: contain;
-        background-repeat: no-repeat;
-        background-position: center;
+        width: 90px;
+        height: 90px;
         display: flex;
         align-items: center;
         justify-content: center;
         position: relative;
-        filter: drop-shadow(4px 6px 5px rgba(0,0,0,0.4));
-    }
-    .path-node img {
-        width: 60px;
-        height: 60px;
-        object-fit: contain;
-        transition: transform 0.3s ease;
-    }
-
-    /* Rótulo do passo */
-    .path-label {
-        font-size: 0.8rem;
-        font-weight: 700;
-        color: white;
-        margin-top: -10px;
-        background-color: rgba(0, 0, 0, 0.6);
-        padding: 2px 10px;
-        border-radius: 12px;
-        display: inline-block;
-    }
-
-    /* === Estilos de Estado dos Passos === */
-    .path-node--active {
-        animation: pulse-glow 2.5s infinite ease-in-out;
         cursor: pointer;
     }
-    .path-node--active img {
-        animation: float 3s infinite ease-in-out;
-    }
 
-    .path-node--completed::after {
+    /* A imagem da casinha */
+    .path-node-image {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        transition: transform 0.3s ease, filter 0.3s ease;
+        filter: drop-shadow(4px 6px 5px rgba(0,0,0,0.4));
+    }
+    
+    /* === CORREÇÃO DO BRILHO === */
+    /* A animação é aplicada diretamente na imagem */
+    .path-node--active .path-node-image {
+        animation: pulse-glow-shape 2.5s infinite ease-in-out, float 3s infinite ease-in-out;
+    }
+    
+    .path-node--locked {
+        cursor: not-allowed;
+    }
+    .path-node--locked .path-node-image {
+        filter: grayscale(1) opacity(0.6);
+    }
+    
+    .path-node--completed .path-node-image::after {
         content: '✔';
         position: absolute;
-        top: 5px; right: 5px;
-        width: 28px; height: 28px;
+        bottom: 10px; right: 10px;
+        width: 24px; height: 24px;
         background-color: var(--color-completed-glow);
         color: #14532d;
         font-weight: bold;
@@ -135,53 +244,133 @@ const GameBoardStyles = `
         justify-content: center;
         border: 2px solid white;
         box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    }
-    
-    .path-node--locked {
-        filter: grayscale(1) opacity(0.5) drop-shadow(2px 2px 2px rgba(0,0,0,0.2));
-        cursor: not-allowed;
+        z-index: 15;
     }
 
-    /* === Hub da Vila === */
+    /* Rótulo do passo */
+    .path-label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: white;
+        margin-top: -5px;
+        background-color: rgba(0, 0, 0, 0.7);
+        padding: 2px 10px;
+        border-radius: 12px;
+        display: inline-block;
+        text-shadow: 1px 1px 1px black;
+    }
+
+    /* === Hub da Vila (sem alterações significativas) === */
+    /* === Hub da Vila - LAYOUT GRID COM CONTROLE DE LINHAS === */
     .hub-village {
-        grid-area: hub;
-        padding: 1.5rem 1rem;
-        margin-top: 2rem;
-        background-image: url('/board/cobblestone_bg.png'); /* Textura de paralelepípedo */
+        padding: 1.5rem;
+        background-image: url('/board/cobblestone_bg.png');
         border-radius: 1rem;
-        border-top: 6px solid var(--color-hub-border);
+        border-top: 6px solid #4a2c2a;
         box-shadow: inset 0 5px 15px rgba(0,0,0,0.4);
-        display: flex;
-        justify-content: center;
-        align-items: flex-end;
-        gap: 1.5rem;
-        flex-wrap: wrap;
+        
+        /* MUDANÇA PRINCIPAL: Grid em vez de flex */
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+        gap: 1rem;
+        justify-items: center;
+        align-items: center;
+        
+        position: relative;
+        z-index: 10;
+        max-width: 100%;
+        margin: 0 auto;
     }
 
-    /* Edifício/Marco do Hub */
+    /* Para garantir no máximo 4 colunas em telas grandes */
+    @media (min-width: 768px) {
+        .hub-village {
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.2rem;
+        }
+    }
+
+    /* Em telas pequenas, máximo 3 colunas */
+    @media (max-width: 767px) {
+        .hub-village {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.8rem;
+            padding: 1rem;
+        }
+    }
+
+    /* Em telas muito pequenas, 2 colunas */
+    @media (max-width: 480px) {
+        .hub-village {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.6rem;
+        }
+    }
+
+    /* Ajustes nos elementos do hub */
     .hub-building {
         text-align: center;
         cursor: pointer;
         transition: transform 0.2s ease;
+        width: 100%;
+        max-width: 90px; /* Limite máximo de tamanho */
     }
+
     .hub-building:hover {
-        transform: translateY(-10px);
+        transform: scale(1.15) translateY(-5px);
     }
+
     .hub-building img {
-        width: 70px;
-        height: 70px;
+        width: 65px; /* Reduzido um pouco para caber melhor */
+        height: 65px;
         object-fit: contain;
         filter: drop-shadow(3px 5px 4px rgba(0,0,0,0.3));
     }
+
     .hub-label {
-        font-size: 0.75rem;
+        font-size: 0.7rem; /* Um pouco menor */
         font-weight: 600;
         color: white;
         margin-top: 0.25rem;
         background-color: rgba(0,0,0,0.5);
-        padding: 2px 8px;
+        padding: 2px 6px;
         border-radius: 8px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 90px;
     }
+
+    .board-decoration {
+        position: absolute;
+        z-index: 2;
+        pointer-events: none;
+        filter: drop-shadow(2px 3px 2px rgba(0,0,0,0.3));
+        transition: transform 0.3s ease;
+        animation: float 8s ease-in-out infinite;
+    }
+
+    /* Árvores */
+    .decoration-tree { width: 80px; }
+    .decoration-tree--small { width: 50px; }
+    .decoration-tree--normal { width: 80px; }
+    .decoration-tree--large { width: 100px; }
+
+    /* Rochas */
+    .decoration-rock { width: 60px; }
+    .decoration-rock--small { width: 35px; }
+    .decoration-rock--normal { width: 60px; }
+    .decoration-rock--large { width: 75px; }
+
+    /* Efeito sutil ao passar o mouse */
+    .board-decoration:hover {
+        transform: scale(1.05);
+        z-index: 3;
+    }
+
+    .board-decoration:nth-child(odd) { animation-delay: 0.5s; }
+    .board-decoration:nth-child(3n) { animation-delay: 1.2s; }
+    .board-decoration:nth-child(4n) { animation-delay: 2s; }
 `;
 
 // Mapeamento dos ícones para fácil acesso
@@ -201,84 +390,176 @@ const elementConfig = {
     }
 };
 
-function GameBoardViewer({ gamificationDesign, studentProgress, onStepClick, userRole }) { 
-    const completedStepsSet = userRole === 'aluno' 
-        ? new Set(studentProgress?.completed_steps || []) 
-        : new Set();
+function GameBoardViewer({ gamificationDesign, studentProgress, onStepClick, userRole }) {
+    
+    // NOVO: Coleta TODAS as URLs de imagens usadas pelo componente
+    const allImageUrls = React.useMemo(() => {
+        const urls = new Set();
+        // Imagens de fundo e borda (do CSS)
+        urls.add('/board/background_board.png');
+        urls.add('/board/wood_border.png');
+        urls.add('/board/cobblestone_bg.png');
+        // Imagens dos passos da trilha
+        Object.values(elementConfig.path).forEach(p => urls.add(p.icon));
+        // Imagens do Hub
+        Object.values(elementConfig.hub).forEach(h => urls.add(h.icon));
+        // Imagens das decorações
+        decorationConfig.forEach(d => urls.add(d.src));
+        return Array.from(urls);
+    }, []);
+
+    // NOVO: Usa o hook para pré-carregar as imagens
+    const { loadingProgress, isLoaded, etr } = useAssetLoader(allImageUrls);
+
+    const completedStepsSet = userRole === 'aluno' ? new Set(studentProgress?.completed_steps || []) : new Set();
     
     let activeStepId = null;
     if (userRole === 'aluno' && gamificationDesign.progression_path) {
         for (const step of gamificationDesign.progression_path) {
-            if (!completedStepsSet.has(step.id)) {
-                activeStepId = step.id;
-                break;
-            }
+            if (!completedStepsSet.has(step.id)) { activeStepId = step.id; break; }
         }
     }
 
     const getStepStatus = (step) => {
-        if (userRole === 'professor') return 'active'; 
+        if (userRole === 'professor') return 'active';
         if (completedStepsSet.has(step.id)) return 'completed';
         if (step.id === activeStepId) return 'active';
         return 'locked';
     };
 
-    // Função para posicionar os passos na tela de forma sinuosa
-    const getStepPosition = (index, totalSteps) => {
-        const positions = [ // Posições pré-definidas para até ~8 passos
-            { top: '10%', left: '20%' }, { top: '25%', left: '60%' },
-            { top: '45%', left: '30%' }, { top: '60%', left: '70%' },
-            { top: '75%', left: '40%' }, { top: '5%', left: '80%' },
-            { top: '35%', left: '5%' },  { top: '80%', left: '15%' },
-        ];
-        return positions[index % positions.length]; // Usa módulo para evitar erro se tiver mais passos
+    const generateStepCoordinates = (numberOfSteps) => {
+        const coords = [];
+        const stepsPerRow = 4; const rowHeight = 30; const xMargin = 15; const yMargin = 15;
+        for (let i = 0; i < numberOfSteps; i++) {
+            const row = Math.floor(i / stepsPerRow);
+            const positionInRow = i % stepsPerRow;
+            const y = yMargin + (row * rowHeight);
+            let x;
+            if (row % 2 === 0) { x = xMargin + (positionInRow * ((100 - 2 * xMargin) / (stepsPerRow - 1))); } 
+            else { x = (100 - xMargin) - (positionInRow * ((100 - 2 * xMargin) / (stepsPerRow - 1))); }
+            coords.push({ x: `${x}%`, y: `${y}%` });
+        }
+        return coords;
+    };
+    
+    const stepCoordinates = generateStepCoordinates(gamificationDesign.progression_path?.length || 0);
+
+    // 3. LÓGICA DE POSICIONAMENTO ATUALIZADA - mais simples e direta
+    const renderedDecorations = React.useMemo(() => {
+        const occupiedPositions = new Set(stepCoordinates.map(c => `${c.x}-${c.y}`));
+        const availablePoints = shuffleArray([
+            ...decorationSpawnPoints.filter(p => !occupiedPositions.has(`${p.x}-${p.y}`))
+        ]);
+        
+        // Se não há pontos disponíveis, retorna vazio
+        if (availablePoints.length === 0) return [];
+
+        // Cria uma lista ponderada baseada no "weight" de cada decoração
+        const weightedDecorations = [];
+        decorationConfig.forEach(decoration => {
+            for (let i = 0; i < decoration.weight; i++) {
+                weightedDecorations.push(decoration);
+            }
+        });
+
+        // Embaralha as decorações ponderadas
+        const shuffledDecorations = shuffleArray(weightedDecorations);
+        
+        // Preenche todos os pontos disponíveis, repetindo se necessário
+        const decorationsToRender = [];
+        for (let i = 0; i < availablePoints.length; i++) {
+            const point = availablePoints[i];
+            const decoration = shuffledDecorations[i % shuffledDecorations.length];
+            
+            const sizeClass = `decoration-${decoration.className.split('-')[1]} decoration-${decoration.className.split('-')[1]}--${point.size || 'normal'}`;
+            
+            decorationsToRender.push({
+                ...decoration,
+                id: `${decoration.id}-${i}`, // ID único para cada instância
+                className: sizeClass,
+                style: {
+                    left: point.x,
+                    top: point.y,
+                }
+            });
+        }
+        
+        return decorationsToRender;
+    }, [stepCoordinates]);
+
+    const generateSvgPath = () => {
+        const pathPoints = stepCoordinates;
+        if (pathPoints.length < 2) return '';
+        
+        const boardWidth = 900;
+        const boardHeight = 500;
+        const absolutePoints = pathPoints.map(p => ({
+            x: parseFloat(p.x) / 100 * boardWidth,
+            y: parseFloat(p.y) / 100 * boardHeight,
+        }));
+
+        let pathString = `M ${absolutePoints[0].x} ${absolutePoints[0].y}`;
+        for (let i = 1; i < absolutePoints.length; i++) {
+            pathString += ` L ${absolutePoints[i].x} ${absolutePoints[i].y}`;
+        }
+        return pathString;
     };
 
-    return (
+     return (
         <>
             <style>{GameBoardStyles}</style>
             
             <div className="rpg-map-board">
-                {/* --- Área da Trilha de Progressão Dinâmica --- */}
-                <div className="progress-path-area">
-                    {(gamificationDesign.progression_path || []).map((step, index, arr) => {
-                        const status = getStepStatus(step);
-                        const config = elementConfig.path[step.type];
-                        if (!config) return null;
-
-                        return (
-                            <div
-                                key={step.id}
-                                className="path-node-wrapper"
-                                style={getStepPosition(index, arr.length)}
-                                onClick={() => status === 'active' && onStepClick(step)}
-                            >
-                                <div className={`path-node path-node--${status}`}>
-                                    <img src={config.icon} alt={config.name} />
-                                </div>
-                                <div className="path-label">
-                                    {step.content?.title || config.name}
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-
-                {/* --- Hub da Vila Dinâmico --- */}
-                <div className="hub-village">
-                    {(gamificationDesign.hub_elements || []).map(hubElement => {
-                        if (!hubElement.enabled) return null;
-                        const config = elementConfig.hub[hubElement.type];
-                        if (!config) return null;
-
-                        return (
-                            <div key={hubElement.id} className="hub-building" title={config.name}>
-                                <img src={config.icon} alt={config.name} />
-                                <div className="hub-label">{config.name}</div>
-                            </div>
-                        );
-                    })}
-                </div>
+                {!isLoaded ? (
+                    // Se não estiver carregado, mostra a tela de carregamento
+                    <LoadingScreen progress={loadingProgress} etr={etr} />
+                ) : (
+                    // Se estiver carregado, mostra o tabuleiro completo
+                    <>
+                        <div className="progress-path-area">
+                            {renderedDecorations.map(deco => (
+                                <img 
+                                    key={deco.id} 
+                                    src={deco.src} 
+                                    alt="Decoração do tabuleiro" 
+                                    className={`board-decoration ${deco.className}`} 
+                                    style={deco.style} 
+                                />
+                            ))}
+                            <svg className="path-svg" viewBox="0 0 900 500" preserveAspectRatio="xMidYMid meet">
+                                <path d={generateSvgPath()} className="path-line" />
+                            </svg>
+                            {(gamificationDesign.progression_path || []).map((step, index) => {
+                                const status = getStepStatus(step);
+                                const config = elementConfig.path[step.type];
+                                if (!config) return null;
+                                const position = stepCoordinates[index % stepCoordinates.length];
+                                return (
+                                    <div key={step.id} className="path-node-wrapper" style={{ top: position.y, left: position.x }} onClick={() => status === 'active' && onStepClick(step)}>
+                                        <div className={`path-node path-node--${status}`}>
+                                            <img className="path-node-image" src={config.icon} alt={config.name} />
+                                            {status === 'completed' && <div className="path-node--completed"></div>}
+                                        </div>
+                                        <div className="path-label">{step.content?.title || config.name}</div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        <div className="hub-village">
+                            {(gamificationDesign.hub_elements || []).map(hubElement => {
+                                if (!hubElement.enabled) return null;
+                                const config = elementConfig.hub[hubElement.type];
+                                if (!config) return null;
+                                return (
+                                    <div key={hubElement.id} className="hub-building" title={config.name}>
+                                        <img src={config.icon} alt={config.name} />
+                                        <div className="hub-label">{config.name}</div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </>
+                )}
             </div>
         </>
     );

@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     host: true, // Garante que o servidor seja acessível na rede
     allowedHosts: [
-      'wagon-fifty-hoping-saint.trycloudflare.com'
+      'frequent-mice-boxes-asylum.trycloudflare.com'
     ]
   }
 })
