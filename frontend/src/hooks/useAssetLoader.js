@@ -1,83 +1,83 @@
+// frontend/src/hooks/useAssetLoader.js
 import { useState, useEffect, useRef } from 'react';
 
-/**
- * Hook customizado para pré-carregar imagens com progresso e estimativa de tempo restante.
- * @param {string[]} imageUrls - Uma array de URLs das imagens a serem carregadas.
- * @returns {{loadingProgress: number, isLoaded: boolean, etr: string | null}} - Progresso, status e a string de tempo restante.
- */
 function useAssetLoader(imageUrls) {
     const [loadingProgress, setLoadingProgress] = useState(0);
     const [isLoaded, setIsLoaded] = useState(false);
-    // NOVO: Estado para armazenar a estimativa de tempo
     const [etr, setEtr] = useState(null);
-
-    // NOVO: useRef para guardar o tempo de início sem causar re-renderizações
     const startTimeRef = useRef(null);
 
     useEffect(() => {
+        // Reseta o estado para garantir que o loading funcione em recarregamentos
+        setIsLoaded(false);
+        setLoadingProgress(0);
+        setEtr(null);
+
+        // Se não há imagens, considera carregado imediatamente
         if (!imageUrls || imageUrls.length === 0) {
             setIsLoaded(true);
             return;
         }
 
-        startTimeRef.current = Date.now(); // Marca o tempo de início
+        startTimeRef.current = Date.now();
         let loadedCount = 0;
         const totalImages = imageUrls.length;
+        
+        const imagePromises = imageUrls.map((url) => {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.src = url;
 
-        imageUrls.forEach((url) => {
-            const img = new Image();
-            img.src = url;
-
-            const handleLoad = () => {
-                loadedCount++;
-                const progress = Math.round((loadedCount / totalImages) * 100);
-                setLoadingProgress(progress);
-                if (loadedCount === totalImages) {
-                    setIsLoaded(true);
-                    setEtr(null); // Limpa a estimativa ao concluir
-                }
-            };
-
-            img.onload = handleLoad;
-            img.onerror = handleLoad;
+                const handleLoad = () => {
+                    loadedCount++;
+                    const progress = Math.round((loadedCount / totalImages) * 100);
+                    setLoadingProgress(progress);
+                    resolve(); // Resolve a promessa
+                };
+                
+                img.onload = handleLoad;
+                // Trata erros como "carregado" para não travar o loader
+                img.onerror = () => {
+                    console.warn(`Falha ao carregar asset: ${url}`);
+                    handleLoad();
+                };
+            });
         });
 
-    }, [imageUrls]);
+        // Espera todas as promessas de imagem serem resolvidas
+        Promise.all(imagePromises).then(() => {
+            // Pequeno delay para a barra de 100% ser visível antes de sumir
+            setTimeout(() => {
+                setIsLoaded(true);
+                setEtr(null);
+            }, 300);
+        });
 
-    // NOVO: useEffect separado para calcular o ETR periodicamente
+    }, [imageUrls]); // O hook re-executa se a lista de URLs mudar
+
+    // O useEffect para calcular o ETR continua o mesmo
     useEffect(() => {
-        if (isLoaded || loadingProgress === 0) {
+        if (isLoaded || loadingProgress < 5) {
             setEtr(null);
             return;
         }
-
         const interval = setInterval(() => {
             const elapsedTime = Date.now() - startTimeRef.current;
-            // Só calcula se já passou algum tempo e temos algum progresso, para evitar divisões por zero
-            if (elapsedTime > 50 && loadingProgress > 5) {
-                const speed = loadingProgress / elapsedTime; // progresso por milissegundo
+            if (elapsedTime > 50) {
+                const speed = loadingProgress / elapsedTime;
                 const remainingProgress = 100 - loadingProgress;
-                const etrMs = remainingProgress / speed; // ETR em milissegundos
-                
+                const etrMs = remainingProgress / speed;
                 const etrSeconds = Math.round(etrMs / 1000);
-
-                if (etrSeconds > 1) {
-                    setEtr(`cerca de ${etrSeconds} segundos restantes...`);
-                } else if (etrSeconds === 1) {
-                    setEtr(`cerca de 1 segundo restante...`);
-                } else {
-                    setEtr('quase pronto...');
-                }
+                if (etrSeconds > 1) setEtr(`cerca de ${etrSeconds} segundos restantes...`);
+                else if (etrSeconds === 1) setEtr(`cerca de 1 segundo restante...`);
+                else setEtr('quase pronto...');
             }
-        }, 500); // Atualiza a estimativa a cada meio segundo
-
-        // Função de limpeza para remover o intervalo quando o carregamento terminar
+        }, 500);
         return () => clearInterval(interval);
-
     }, [loadingProgress, isLoaded]);
 
-    // ALTERADO: Retorna também o ETR
     return { loadingProgress, isLoaded, etr };
 }
 
 export default useAssetLoader;
+

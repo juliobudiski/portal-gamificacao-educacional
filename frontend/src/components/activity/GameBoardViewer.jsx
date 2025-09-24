@@ -1,4 +1,8 @@
+// frontend/src/components/activity/GameBoardViewer.jsx
 import React from 'react';
+
+// Importa apenas a configuração de ícones, pois é o que ele precisa para renderizar os nomes e imagens dos passos.
+import { elementConfig } from './GameBoardConfig';
 import useAssetLoader from '../../hooks/useAssetLoader';
 
 // --- TELA DE CARREGAMENTO (SUB-COMPONENTE) ---
@@ -33,83 +37,6 @@ const LoadingScreen = ({ progress, etr }) => (
 );
 
 
-// 1. LISTA ATUALIZADA com todos os seus novos assets de decoração.
-// O sistema agora tratará cada imagem como um item único a ser posicionado.
-const decorationConfig = [
-    // Árvores (agora com mais variedade)
-    { id: 'tree1', src: '/board/tree_board.png', className: 'decoration-tree', weight: 3 },
-    { id: 'tree2', src: '/board/tree_board_2.png', className: 'decoration-tree', weight: 3 },
-    { id: 'tree3', src: '/board/tree_board_3.png', className: 'decoration-tree', weight: 2 },
-    { id: 'tree4', src: '/board/tree_board_4.png', className: 'decoration-tree', weight: 2 },
-    { id: 'tree5', src: '/board/tree_board_5.png', className: 'decoration-tree', weight: 1 },
-    { id: 'tree6', src: '/board/tree_board_6.png', className: 'decoration-tree', weight: 1 },
-    { id: 'tree7', src: '/board/tree_board_7.png', className: 'decoration-tree', weight: 1 },
-    
-    // Rochas (expandida)
-    { id: 'rock1', src: '/board/rock_board.png', className: 'decoration-rock', weight: 3 },
-    { id: 'rock2', src: '/board/rock_board_2.png', className: 'decoration-rock', weight: 3 },
-    { id: 'rock3', src: '/board/rock_board_3.png', className: 'decoration-rock', weight: 2 },
-    { id: 'rock4', src: '/board/rock_board_4.png', className: 'decoration-rock', weight: 2 },
-    { id: 'rock5', src: '/board/rock_board_5.png', className: 'decoration-rock', weight: 1 },
-];
-
-// PONTOS DE APARIÇÃO OTIMIZADOS - Evitando a área inferior do hub
-const decorationSpawnPoints = [
-    // Área superior - muitas decorações
-    { x: '3%', y: '3%', size: 'large' }, { x: '8%', y: '7%', size: 'normal' }, 
-    { x: '12%', y: '4%', size: 'small' }, { x: '17%', y: '2%', size: 'small' },
-    { x: '22%', y: '6%', size: 'normal' }, { x: '28%', y: '3%', size: 'small' },
-    { x: '35%', y: '5%', size: 'small' }, { x: '42%', y: '2%', size: 'normal' },
-    { x: '50%', y: '4%', size: 'small' }, { x: '58%', y: '6%', size: 'small' },
-    { x: '65%', y: '3%', size: 'normal' }, { x: '72%', y: '5%', size: 'small' },
-    { x: '78%', y: '2%', size: 'small' }, { x: '85%', y: '6%', size: 'normal' },
-    { x: '92%', y: '4%', size: 'small' }, { x: '96%', y: '8%', size: 'large' },
-    
-    // Laterais esquerdas - denso
-    { x: '2%', y: '15%', size: 'normal' }, { x: '4%', y: '25%', size: 'small' },
-    { x: '1%', y: '35%', size: 'large' }, { x: '3%', y: '45%', size: 'normal' },
-    { x: '5%', y: '55%', size: 'small' }, { x: '2%', y: '65%', size: 'normal' },
-    { x: '4%', y: '75%', size: 'small' }, { x: '1%', y: '85%', size: 'large' },
-    
-    // Laterais direitas - denso
-    { x: '98%', y: '20%', size: 'normal' }, { x: '96%', y: '30%', size: 'small' },
-    { x: '99%', y: '40%', size: 'large' }, { x: '97%', y: '50%', size: 'normal' },
-    { x: '95%', y: '60%', size: 'small' }, { x: '98%', y: '70%', size: 'normal' },
-    { x: '96%', y: '80%', size: 'small' }, { x: '99%', y: '90%', size: 'large' },
-    
-    // Área central superior - poucas e pequenas
-    { x: '25%', y: '20%', size: 'small' }, { x: '35%', y: '18%', size: 'small' },
-    { x: '45%', y: '22%', size: 'small' }, { x: '55%', y: '19%', size: 'small' },
-    { x: '65%', y: '21%', size: 'small' }, { x: '75%', y: '17%', size: 'small' },
-    
-    // Área central intermediária - muito espaçadas
-    { x: '30%', y: '40%', size: 'small' }, { x: '50%', y: '45%', size: 'small' },
-    { x: '70%', y: '42%', size: 'small' }, { x: '40%', y: '55%', size: 'small' },
-    { x: '60%', y: '52%', size: 'small' },
-    
-    // Área inferior (acima do hub) - pequenas e discretas
-    { x: '20%', y: '65%', size: 'small' }, { x: '30%', y: '68%', size: 'small' },
-    { x: '40%', y: '72%', size: 'small' }, { x: '50%', y: '75%', size: 'small' },
-    { x: '60%', y: '70%', size: 'small' }, { x: '70%', y: '73%', size: 'small' },
-    { x: '80%', y: '67%', size: 'small' },
-    
-    // Cantos inferiores - agrupamentos naturais
-    { x: '8%', y: '88%', size: 'normal' }, { x: '12%', y: '92%', size: 'small' },
-    { x: '5%', y: '95%', size: 'large' }, { x: '15%', y: '96%', size: 'small' },
-    { x: '88%', y: '90%', size: 'normal' }, { x: '92%', y: '94%', size: 'small' },
-    { x: '85%', y: '97%', size: 'large' }, { x: '95%', y: '92%', size: 'small' }
-];
-
-// Função auxiliar para embaralhar uma array
-const shuffleArray = (array) => {
-    let currentIndex = array.length, randomIndex;
-    while (currentIndex !== 0) {
-        randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex--;
-        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
-    }
-    return array;
-};
 
 const GameBoardStyles = `
     /* === Variáveis de Tema === */
@@ -373,50 +300,19 @@ const GameBoardStyles = `
     .board-decoration:nth-child(4n) { animation-delay: 2s; }
 `;
 
-// Mapeamento dos ícones para fácil acesso
-const elementConfig = {
-    path: {
-        narrative: { icon: '/board/narrative_board.png', name: 'Narrativa' },
-        quiz: { icon: '/board/quiz_board.png', name: 'Quiz' },
-    },
-    hub: {
-        roulette: { icon: '/board/roleta_board.png', name: 'Roleta' },
-        slot_machine: { icon: '/board/slotmachine_board.png', name: 'Caça-níquel' },
-        ranking: { icon: '/board/ranking_board.png', name: 'Ranking' },
-        badges: { icon: '/board/badges_board.png', name: 'Medalhas' },
-        chat: { icon: '/board/chat_board.png', name: 'Chat' },
-        store: { icon: '/board/store_board.png', name: 'Loja' },
-        mission: { icon: '/board/mission_character_board.png', name: 'Missão' },
-    }
-};
 
-function GameBoardViewer({ gamificationDesign, studentProgress, onStepClick, userRole }) {
-    
-    // NOVO: Coleta TODAS as URLs de imagens usadas pelo componente
-    const allImageUrls = React.useMemo(() => {
-        const urls = new Set();
-        // Imagens de fundo e borda (do CSS)
-        urls.add('/board/background_board.png');
-        urls.add('/board/wood_border.png');
-        urls.add('/board/cobblestone_bg.png');
-        // Imagens dos passos da trilha
-        Object.values(elementConfig.path).forEach(p => urls.add(p.icon));
-        // Imagens do Hub
-        Object.values(elementConfig.hub).forEach(h => urls.add(h.icon));
-        // Imagens das decorações
-        decorationConfig.forEach(d => urls.add(d.src));
-        return Array.from(urls);
-    }, []);
 
-    // NOVO: Usa o hook para pré-carregar as imagens
-    const { loadingProgress, isLoaded, etr } = useAssetLoader(allImageUrls);
-
+function GameBoardViewer({ onHubIconClick, gamificationDesign, studentProgress, onStepClick, userRole, renderedDecorations, generateStepCoordinates }) {    
+    // A lógica de progresso, coordenadas e SVG permanece aqui.
     const completedStepsSet = userRole === 'aluno' ? new Set(studentProgress?.completed_steps || []) : new Set();
     
     let activeStepId = null;
     if (userRole === 'aluno' && gamificationDesign.progression_path) {
         for (const step of gamificationDesign.progression_path) {
-            if (!completedStepsSet.has(step.id)) { activeStepId = step.id; break; }
+            if (!completedStepsSet.has(step.id)) {
+                activeStepId = step.id;
+                break;
+            }
         }
     }
 
@@ -427,65 +323,8 @@ function GameBoardViewer({ gamificationDesign, studentProgress, onStepClick, use
         return 'locked';
     };
 
-    const generateStepCoordinates = (numberOfSteps) => {
-        const coords = [];
-        const stepsPerRow = 4; const rowHeight = 30; const xMargin = 15; const yMargin = 15;
-        for (let i = 0; i < numberOfSteps; i++) {
-            const row = Math.floor(i / stepsPerRow);
-            const positionInRow = i % stepsPerRow;
-            const y = yMargin + (row * rowHeight);
-            let x;
-            if (row % 2 === 0) { x = xMargin + (positionInRow * ((100 - 2 * xMargin) / (stepsPerRow - 1))); } 
-            else { x = (100 - xMargin) - (positionInRow * ((100 - 2 * xMargin) / (stepsPerRow - 1))); }
-            coords.push({ x: `${x}%`, y: `${y}%` });
-        }
-        return coords;
-    };
-    
     const stepCoordinates = generateStepCoordinates(gamificationDesign.progression_path?.length || 0);
 
-    // 3. LÓGICA DE POSICIONAMENTO ATUALIZADA - mais simples e direta
-    const renderedDecorations = React.useMemo(() => {
-        const occupiedPositions = new Set(stepCoordinates.map(c => `${c.x}-${c.y}`));
-        const availablePoints = shuffleArray([
-            ...decorationSpawnPoints.filter(p => !occupiedPositions.has(`${p.x}-${p.y}`))
-        ]);
-        
-        // Se não há pontos disponíveis, retorna vazio
-        if (availablePoints.length === 0) return [];
-
-        // Cria uma lista ponderada baseada no "weight" de cada decoração
-        const weightedDecorations = [];
-        decorationConfig.forEach(decoration => {
-            for (let i = 0; i < decoration.weight; i++) {
-                weightedDecorations.push(decoration);
-            }
-        });
-
-        // Embaralha as decorações ponderadas
-        const shuffledDecorations = shuffleArray(weightedDecorations);
-        
-        // Preenche todos os pontos disponíveis, repetindo se necessário
-        const decorationsToRender = [];
-        for (let i = 0; i < availablePoints.length; i++) {
-            const point = availablePoints[i];
-            const decoration = shuffledDecorations[i % shuffledDecorations.length];
-            
-            const sizeClass = `decoration-${decoration.className.split('-')[1]} decoration-${decoration.className.split('-')[1]}--${point.size || 'normal'}`;
-            
-            decorationsToRender.push({
-                ...decoration,
-                id: `${decoration.id}-${i}`, // ID único para cada instância
-                className: sizeClass,
-                style: {
-                    left: point.x,
-                    top: point.y,
-                }
-            });
-        }
-        
-        return decorationsToRender;
-    }, [stepCoordinates]);
 
     const generateSvgPath = () => {
         const pathPoints = stepCoordinates;
@@ -505,64 +344,63 @@ function GameBoardViewer({ gamificationDesign, studentProgress, onStepClick, use
         return pathString;
     };
 
-     return (
+    // O return agora é direto, sem tela de carregamento.
+    return (
         <>
             <style>{GameBoardStyles}</style>
-            
             <div className="rpg-map-board">
-                {!isLoaded ? (
-                    // Se não estiver carregado, mostra a tela de carregamento
-                    <LoadingScreen progress={loadingProgress} etr={etr} />
-                ) : (
-                    // Se estiver carregado, mostra o tabuleiro completo
-                    <>
-                        <div className="progress-path-area">
-                            {renderedDecorations.map(deco => (
-                                <img 
-                                    key={deco.id} 
-                                    src={deco.src} 
-                                    alt="Decoração do tabuleiro" 
-                                    className={`board-decoration ${deco.className}`} 
-                                    style={deco.style} 
-                                />
-                            ))}
-                            <svg className="path-svg" viewBox="0 0 900 500" preserveAspectRatio="xMidYMid meet">
-                                <path d={generateSvgPath()} className="path-line" />
-                            </svg>
-                            {(gamificationDesign.progression_path || []).map((step, index) => {
-                                const status = getStepStatus(step);
-                                const config = elementConfig.path[step.type];
-                                if (!config) return null;
-                                const position = stepCoordinates[index % stepCoordinates.length];
-                                return (
-                                    <div key={step.id} className="path-node-wrapper" style={{ top: position.y, left: position.x }} onClick={() => status === 'active' && onStepClick(step)}>
-                                        <div className={`path-node path-node--${status}`}>
-                                            <img className="path-node-image" src={config.icon} alt={config.name} />
-                                            {status === 'completed' && <div className="path-node--completed"></div>}
-                                        </div>
-                                        <div className="path-label">{step.content?.title || config.name}</div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                        <div className="hub-village">
-                            {(gamificationDesign.hub_elements || []).map(hubElement => {
-                                if (!hubElement.enabled) return null;
-                                const config = elementConfig.hub[hubElement.type];
-                                if (!config) return null;
-                                return (
-                                    <div key={hubElement.id} className="hub-building" title={config.name}>
-                                        <img src={config.icon} alt={config.name} />
-                                        <div className="hub-label">{config.name}</div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </>
-                )}
+                <div className="progress-path-area">
+                    {/* Renderiza as decorações calculadas pelo pai */}
+                    {renderedDecorations.map(deco => (
+                        <img 
+                            key={deco.id} 
+                            src={deco.src} 
+                            alt="Decoração do tabuleiro" 
+                            className={`board-decoration ${deco.className}`} 
+                            style={deco.style} 
+                        />
+                    ))}
+                    <svg className="path-svg" viewBox="0 0 900 500" preserveAspectRatio="xMidYMid meet">
+                        <path d={generateSvgPath()} className="path-line" />
+                    </svg>
+                    {(gamificationDesign.progression_path || []).map((step, index) => {
+                        const status = getStepStatus(step);
+                        const config = elementConfig.path[step.type];
+                        if (!config) return null;
+                        const position = stepCoordinates[index % stepCoordinates.length];
+                        return (
+                            <div key={step.id} className="path-node-wrapper" style={{ top: position.y, left: position.x }} onClick={() => status === 'active' && onStepClick(step)}>
+                                <div className={`path-node path-node--${status}`}>
+                                    <img className="path-node-image" src={config.icon} alt={config.name} />
+                                    {status === 'completed' && <div className="path-node--completed"></div>}
+                                </div>
+                                <div className="path-label">{step.content?.title || config.name}</div>
+                            </div>
+                        );
+                    })}
+                </div>
+                <div className="hub-village">
+                    {(gamificationDesign.hub_elements || []).map(hubElement => {
+                        if (!hubElement.enabled) return null;
+                        const config = elementConfig.hub[hubElement.type];
+                        if (!config) return null;
+                        return (
+                            <div 
+                            key={hubElement.id} 
+                            className="hub-building" 
+                            title={config.name}
+                            onClick={() => onHubIconClick(hubElement.type)}
+                            >
+                                <img src={config.icon} alt={config.name} />
+                                <div className="hub-label">{config.name}</div>
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
         </>
     );
 }
 
 export default GameBoardViewer;
+

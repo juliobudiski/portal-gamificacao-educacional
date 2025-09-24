@@ -7,6 +7,7 @@ from flask_cors import cross_origin
 progress_bp = Blueprint('progress', __name__)
 from datetime import datetime, timedelta # Adicione timedelta
 import random # Adicione random
+from sqlalchemy.orm.attributes import flag_modified
 
 def xp_for_next_level(level):
     """Calcula o XP necessário para o próximo nível com base no nível atual."""
@@ -79,7 +80,8 @@ def get_activity_progress(activity_id):
         "level": level_info["level"],
         "xp": level_info["xpEarnedForCurrentLevel"],
         "xpForNextLevel": level_info["xpForNextLevel"],
-        "stats": stats
+        "stats": stats,
+        "completed_steps": progress.completed_steps if progress else [] 
     }), 200
 
 
@@ -584,3 +586,69 @@ def get_slot_winners(activity_id):
     ]
     
     return jsonify(winners_data), 200
+
+
+
+@progress_bp.route('/<int:activity_id>/complete-step', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def complete_activity_step(activity_id):
+    """
+    Registra que um aluno completou um passo específico de uma atividade.
+    """
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+
+    if not user or user.role != 'aluno':
+        return jsonify({"message": "Apenas alunos podem completar passos."}), 403
+
+    data = request.get_json()
+    step_id_to_complete = data.get('step_id')
+
+    if not step_id_to_complete:
+        return jsonify({"message": "O ID do passo ('step_id') é obrigatório."}), 400
+
+    try:
+        progress = ActivityProgress.query.filter_by(
+            student_id=user.id,
+            activity_id=activity_id
+        ).first()
+
+        # --- INÍCIO DA CORREÇÃO ---
+        # Se o progresso não existir, cria um novo registro para o aluno.
+        if not progress:
+            activity = Activity.query.get(activity_id)
+            if not activity or not activity.class_id:
+                return jsonify({"message": "Atividade ou turma associada não encontrada."}), 404
+            
+            progress = ActivityProgress(
+                student_id=user.id,
+                activity_id=activity_id,
+                class_id=activity.class_id,
+                status='in_progress'
+            )
+            db.session.add(progress)
+        # --- FIM DA CORREÇÃO ---
+
+        # Garante que completed_steps seja uma lista
+        if progress.completed_steps is None:
+            progress.completed_steps = []
+        
+        # Adiciona o novo step_id à lista, evitando duplicatas
+        if step_id_to_complete not in progress.completed_steps:
+            # Modifica a lista diretamente
+            progress.completed_steps.append(step_id_to_complete)
+            # Notifica explicitamente o SQLAlchemy que o campo JSON foi alterado
+            flag_modified(progress, "completed_steps")
+        
+        db.session.commit()
+        
+        return jsonify({
+            "message": "Passo concluído com sucesso!",
+            "completed_steps": progress.completed_steps
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Erro ao completar passo {step_id_to_complete} para user {current_user_id}: {str(e)}")
+        return jsonify({"message": "Erro interno ao salvar a conclusão do passo."}), 500

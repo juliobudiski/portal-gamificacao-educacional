@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     host: true, // Garante que o servidor seja acessível na rede
     allowedHosts: [
-      'frequent-mice-boxes-asylum.trycloudflare.com'
+      'conventions-listings-radio-specializing.trycloudflare.com'
     ]
   }
 })

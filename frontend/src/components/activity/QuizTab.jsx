@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaClock, FaCheckCircle } from 'react-icons/fa';
+import { FaClock, FaCheckCircle, FaArrowLeft } from 'react-icons/fa';
 import PropTypes from 'prop-types'; // Import adicionado para validação de props
 import { useAuth } from '../../context/AuthContext';
 import { useParams } from 'react-router-dom';
-import backgroundImage from '../../assets/quizz-background.png';
+import backgroundImage from '../../assets/quiz-background.png';
 import useAnalytics from '../../hooks/useAnalytics';
 // Verifica se o modo debug está ativado
 const isDebugMode = import.meta.env.VITE_DEBUG_MODE === 'true';
@@ -17,7 +17,12 @@ const isDebugMode = import.meta.env.VITE_DEBUG_MODE === 'true';
  * @param {Array} props.gameElements - Elementos de jogo ativos
  * @returns {JSX.Element} Interface de quiz interativo
  */
-const QuizTab = ({ questions = [], onAnswerCorrect, gameElements = [] }) => { 
+const QuizTab = ({ content, onAnswerCorrect, onComplete }) => { 
+  
+  // Acessa as perguntas e elementos de dentro do objeto 'content'
+  const { questions = [], step_id } = content; // Pega 'questions' e o 'step_id' do nível superior
+  const gameElements = content.gameElements || []; // Pode ser útil se precisar no futuro
+
   // Log de inicialização do componente
   if (isDebugMode) {
     console.log('[QuizTab] Componente inicializado', {
@@ -42,6 +47,109 @@ const QuizTab = ({ questions = [], onAnswerCorrect, gameElements = [] }) => {
 
   // Verifica se "Pressão de tempo" está habilitado
   const isTimed = gameElements.includes("Pressão de tempo");
+
+  const handleFinishQuiz = () => {
+      setIsFinished(true);
+      // Esta função agora vai funcionar, pois 'content.step_id' existirá.
+      console.log(`[QuizTab] Quiz finalizado. Chamando onComplete com o step_id: ${content.step_id}`);
+      onComplete(content.step_id); 
+  };
+
+
+  
+
+  /**
+   * @function handleSubmit
+   * @desc Processa resposta do usuário e fornece feedback
+   * @param {string|null} answer - Resposta selecionada (null para tempo esgotado)
+   * @returns {void}
+   */
+  const handleSubmit = async (answer) => {
+    const currentQuestion = questions[currentIndex];
+    const submitTimestamp = Date.now();
+    if (isDebugMode) {
+      console.log(`[QuizTab] Resposta submetida para pergunta ${currentIndex + 1}:`, {
+        selected: answer,
+        correct: questions[currentIndex].correct_option
+      });
+    }
+    console.log('%c[DEBUG 2] Dentro de handleSubmit. Valor de `content`:', 'color: orange;', content);
+
+    //  Logar o evento de submissão da resposta com o tempo de hesitação
+    const hesitationTime = firstClickTimestamp.current 
+        ? (submitTimestamp - firstClickTimestamp.current) / 1000
+        : (submitTimestamp - questionStartTime.current) / 1000; // Tempo total se não houve clique
+
+    logEvent("quiz_answer_submit", {
+        question_id: currentIndex, // ou um ID único da pergunta se tiver
+        question_text: currentQuestion.text,
+        selected_option: answer,
+        is_correct: answer === currentQuestion.correct_option,
+        hesitation_time: hesitationTime
+    });
+
+    const isCorrect = answer === questions[currentIndex].correct_option;
+    const points = isCorrect ? questions[currentIndex].points : 0;
+    const coins = isCorrect ? questions[currentIndex].coins : 0;
+
+    setFeedback({
+      type: isCorrect ? 'success' : 'error',
+      message: isCorrect ? `+${points} Pontos!` : 'Resposta Incorreta!'
+    });
+    
+    if (user?.role === 'aluno') {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${activityId}/submit_answer`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${user.token}`
+          },
+          body: JSON.stringify({
+            question_text: currentQuestion.text,
+            selected_option: answer,
+            is_correct: isCorrect,
+            points_earned: points,
+            coins_earned: coins
+          })
+        });
+        if (!response.ok) {
+          console.error("Falha ao salvar a resposta no backend.");
+        } else {
+           // Chama a função onAnswerCorrect para atualizar a UI imediatamente
+           if (isCorrect) onAnswerCorrect(points);
+        }
+      } catch (error) {
+        console.error("Erro de rede ao salvar resposta:", error);
+      }
+    }
+
+    // Log de feedback
+    if (isDebugMode) {
+      console.log(`[QuizTab] Feedback: ${feedback.message}`);
+    }
+
+    setTimeout(() => {
+      setFeedback({ type: '', message: '' });
+      setSelectedAnswer(null);
+      
+      // Lógica de transição para próxima pergunta ou finalização
+      if (currentIndex < questions.length - 1) {
+        if (isDebugMode) {
+          console.log(`[QuizTab] Avançando para pergunta ${currentIndex + 2}/${questions.length}`);
+        }
+        setCurrentIndex(prev => prev + 1);
+      } else {
+        if (isDebugMode) {
+          console.log('[QuizTab] Quiz finalizado. Exibindo tela de conclusão');
+        }
+        logEvent("quiz_complete", {
+            total_questions: questions.length
+        });
+        handleFinishQuiz();
+      }
+    }, 2000);
+  };
 
   /**
    * Efeito para controle do temporizador
@@ -115,106 +223,14 @@ const QuizTab = ({ questions = [], onAnswerCorrect, gameElements = [] }) => {
     };
   }, [currentIndex, isFinished, logEvent]);
 
-  /**
-   * @function handleSubmit
-   * @desc Processa resposta do usuário e fornece feedback
-   * @param {string|null} answer - Resposta selecionada (null para tempo esgotado)
-   * @returns {void}
-   */
-  const handleSubmit = async (answer) => {
-    const currentQuestion = questions[currentIndex];
-    const submitTimestamp = Date.now();
-    if (isDebugMode) {
-      console.log(`[QuizTab] Resposta submetida para pergunta ${currentIndex + 1}:`, {
-        selected: answer,
-        correct: questions[currentIndex].correct_option
-      });
-    }
-    //  Logar o evento de submissão da resposta com o tempo de hesitação
-    const hesitationTime = firstClickTimestamp.current 
-        ? (submitTimestamp - firstClickTimestamp.current) / 1000
-        : (submitTimestamp - questionStartTime.current) / 1000; // Tempo total se não houve clique
-
-    logEvent("quiz_answer_submit", {
-        question_id: currentIndex, // ou um ID único da pergunta se tiver
-        question_text: currentQuestion.text,
-        selected_option: answer,
-        is_correct: answer === currentQuestion.correct_option,
-        hesitation_time: hesitationTime
-    });
-
-    const isCorrect = answer === questions[currentIndex].correct_option;
-    const points = isCorrect ? questions[currentIndex].points : 0;
-    const coins = isCorrect ? questions[currentIndex].coins : 0;
-
-    setFeedback({
-      type: isCorrect ? 'success' : 'error',
-      message: isCorrect ? `+${points} Pontos!` : 'Resposta Incorreta!'
-    });
-    
-    if (user?.role === 'aluno') {
-      try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${activityId}/submit_answer`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${user.token}`
-          },
-          body: JSON.stringify({
-            question_text: currentQuestion.text,
-            selected_option: answer,
-            is_correct: isCorrect,
-            points_earned: points,
-            coins_earned: coins
-          })
-        });
-        if (!response.ok) {
-          console.error("Falha ao salvar a resposta no backend.");
-        } else {
-           // Chama a função onAnswerCorrect para atualizar a UI imediatamente
-           if (isCorrect) onAnswerCorrect(points);
-        }
-      } catch (error) {
-        console.error("Erro de rede ao salvar resposta:", error);
-      }
-    }
-
-    // Log de feedback
-    if (isDebugMode) {
-      console.log(`[QuizTab] Feedback: ${feedback.message}`);
-    }
-
-    setTimeout(() => {
-      setFeedback({ type: '', message: '' });
-      setSelectedAnswer(null);
-      
-      // Lógica de transição para próxima pergunta ou finalização
-      if (currentIndex < questions.length - 1) {
-        if (isDebugMode) {
-          console.log(`[QuizTab] Avançando para pergunta ${currentIndex + 2}/${questions.length}`);
-        }
-        setCurrentIndex(prev => prev + 1);
-      } else {
-        if (isDebugMode) {
-          console.log('[QuizTab] Quiz finalizado. Exibindo tela de conclusão');
-        }
-        logEvent("quiz_complete", {
-            total_questions: questions.length
-        });
-        setIsFinished(true);
-      }
-    }, 2000);
-  };
-
   // Tela de finalização do quiz
   if (isFinished) {
     return (
-      <div className="bg-gray-800 p-8 rounded-lg text-white text-center flex flex-col items-center justify-center animate-fade-in">
+      <div className="bg-gray-800 p-8 rounded-lg text-white text-center">
         <FaCheckCircle className="text-green-400 text-6xl mb-4" />
         <h2 className="text-3xl font-bold text-green-400 mb-4">Quiz Finalizado!</h2>
-        <p className="text-lg text-gray-300">Parabéns por completar o desafio.</p>
-        {/* TODO: Adicionar botões para "Ver resultados detalhados" */}
-        {/* TODO: Implementar compartilhamento de conquistas */}
+        <p className="text-lg text-gray-300">Retornando ao tabuleiro...</p>
+        {/* O retorno agora é automático, mas poderia ter um botão se quisesse */}
       </div>
     );
   }
@@ -235,7 +251,7 @@ const QuizTab = ({ questions = [], onAnswerCorrect, gameElements = [] }) => {
     if (isDebugMode) {
       console.error(`[QuizTab] ${errorMsg} | Index: ${currentIndex}`);
     }
-    setIsFinished(true);
+    handleFinishQuiz();
     return null;
   }
 
@@ -311,20 +327,25 @@ const QuizTab = ({ questions = [], onAnswerCorrect, gameElements = [] }) => {
   );
 };
 
-// Validação de props
+// Validação de props ATUALIZADA
 QuizTab.propTypes = {
-  questions: PropTypes.arrayOf(
-    PropTypes.shape({
-      text: PropTypes.string.isRequired,
-      options: PropTypes.arrayOf(PropTypes.string).isRequired,
-      correct_option: PropTypes.string.isRequired,
-      points: PropTypes.number.isRequired,
-      coins: PropTypes.number,
-      timeLimit: PropTypes.number
-    })
-  ),
+  content: PropTypes.shape({
+    step_id: PropTypes.string.isRequired, // O ID do passo que está sendo executado
+    questions: PropTypes.arrayOf(
+      PropTypes.shape({
+        text: PropTypes.string.isRequired,
+        options: PropTypes.arrayOf(PropTypes.string).isRequired,
+        correct_option: PropTypes.string.isRequired,
+        points: PropTypes.number.isRequired,
+        coins: PropTypes.number,
+        timeLimit: PropTypes.number
+      })
+    ),
+    gameElements: PropTypes.arrayOf(PropTypes.string)
+  }).isRequired,
   onAnswerCorrect: PropTypes.func.isRequired,
-  gameElements: PropTypes.arrayOf(PropTypes.string)
+  onComplete: PropTypes.func.isRequired
 };
+
 
 export default QuizTab;

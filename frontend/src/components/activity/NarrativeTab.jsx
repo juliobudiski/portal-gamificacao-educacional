@@ -19,13 +19,15 @@ const isDebugMode = import.meta.env.VITE_DEBUG_MODE === 'true';
  * @param {Function} props.onStart - Callback para iniciar o desafio
  * @returns {JSX.Element} Interface de narrativa interativa
  */
-const NarrativeTab = ({ narrativeConfig, onStart }) => {
+const NarrativeTab = ({ content, onComplete }) => {
+  // Desestrutura os dados da narrativa de dentro do objeto 'content'
+  const { scenario, characters, dialogue } = content;
   // Log de inicialização do componente
   if (isDebugMode) {
     console.log('[NarrativeTab] Componente inicializado', {
-      configPresent: !!narrativeConfig,
-      characterCount: narrativeConfig?.characters?.length || 0,
-      dialogueLines: narrativeConfig?.dialogue?.length || 0
+      configPresent: !!content,
+      characterCount: characters?.length || 0,
+      dialogueLines: dialogue?.length || 0
     });
   }
   
@@ -36,7 +38,7 @@ const NarrativeTab = ({ narrativeConfig, onStart }) => {
 // 2. Inicializar o hook de analytics para a seção "narrative"
   const { logEvent } = useAnalytics("narrative", user.token, activityId);
   // Se não houver configuração de narrativa, exibe uma mensagem padrão.
-  if (!narrativeConfig || !narrativeConfig.scenario || narrativeConfig.characters.length === 0) {
+  if (!content || !scenario || characters.length === 0) {
     // Log de narrativa não configurada
     if (isDebugMode) {
       console.log('[NarrativeTab] Narrativa não configurada - exibindo estado padrão');
@@ -61,15 +63,15 @@ const NarrativeTab = ({ narrativeConfig, onStart }) => {
     // para registrar que a narrativa foi visualizada.
     if (user?.role === 'aluno') {
       logEvent("narrative_viewed", {
-          total_dialogue_lines: narrativeConfig?.dialogue?.length || 0
+          // --- CORREÇÃO APLICADA AQUI ---
+          total_dialogue_lines: dialogue?.length || 0 
       });
       console.log('[NarrativeTab] Visualização da narrativa registrada via useAnalytics.');
     }
-    // A dependência de 'logEvent' garante que isso só rode uma vez,
-    // pois a função é memoizada pelo useCallback no hook.
-  }, [logEvent, user?.role, narrativeConfig?.dialogue?.length]);
+    // A dependência agora é 'dialogue.length', que é a variável correta.
+  }, [logEvent, user?.role, dialogue?.length]);
 
-  const { scenario, characters, dialogue } = narrativeConfig;
+  
   const currentLine = dialogue[currentLineIndex];
   const currentCharacter = characters.find(c => c.role === currentLine?.characterRole);
   
@@ -114,10 +116,10 @@ const NarrativeTab = ({ narrativeConfig, onStart }) => {
     }
   };
 
-  const handleStartChallenge = () => {
-      // 6. Logar o momento em que o usuário finaliza a narrativa e começa o desafio
-      logEvent("narrative_completed");
-      onStart(); // Chama a função original para mudar a aba
+  const handleCompleteNarrative = () => {
+    console.log(`[NarrativeTab] Narrativa finalizada. Chamando onComplete com o step_id: ${content.step_id}`);
+    // Mesma correção: lê diretamente da prop 'content'
+    onComplete(content.step_id);
   };
 
   // Log de renderização
@@ -178,10 +180,10 @@ const NarrativeTab = ({ narrativeConfig, onStart }) => {
             </button>
         ) : (
             <button 
-                onClick={handleStartChallenge} 
+                onClick={handleCompleteNarrative} 
                 className="py-2 px-4 bg-green-600 hover:bg-green-700 rounded-lg flex items-center font-bold"
             >
-                Iniciar Desafio! <FaPlay className="ml-2"/>
+                Continuar Jornada! <FaPlay className="ml-2"/>
             </button>
         )}
       </div>
@@ -189,24 +191,27 @@ const NarrativeTab = ({ narrativeConfig, onStart }) => {
   );
 };
 
-// Validação de props
+// Validação de props ATUALIZADA
 NarrativeTab.propTypes = {
-  narrativeConfig: PropTypes.shape({
-    scenario: PropTypes.string.isRequired,
+  content: PropTypes.shape({
+    step_id: PropTypes.string.isRequired, // O ID do passo
+    scenario: PropTypes.string,
     characters: PropTypes.arrayOf(
       PropTypes.shape({
         role: PropTypes.string.isRequired,
         image: PropTypes.string.isRequired
       })
-    ).isRequired,
+    ),
     dialogue: PropTypes.arrayOf(
       PropTypes.shape({
         characterRole: PropTypes.string.isRequired,
         text: PropTypes.string.isRequired
       })
-    ).isRequired
-  }),
-  onStart: PropTypes.func.isRequired
+    )
+  }).isRequired,
+  onComplete: PropTypes.func.isRequired
 };
+
+
 
 export default NarrativeTab;
