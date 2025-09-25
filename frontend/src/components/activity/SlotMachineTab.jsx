@@ -83,32 +83,8 @@ const SlotMachineTab = ({ userCoins, onPrizeWon, winners, loadingWinners, onWin 
   };
 
   return (
-    <div className="bg-gray-800 p-6 rounded-2xl shadow-2xl text-white flex flex-col items-center"
-        style={{
-        backgroundImage: `url(${backgroundImage})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        minHeight: '600px',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        padding: '2rem',
-        borderRadius: '1rem',
-        boxShadow: '0 5px 15px rgba(0, 0, 0, 0.5)',
-        color: 'white',
-        width: '90%',
-        maxWidth: '1200px',
-        }}
-    >
-      <div className="flex items-center gap-3 mb-4">
-        <h2 
-          className="text-3xl font-bold text-yellow-400" 
-          style={{ textShadow: '2px 2px 4px rgba(0, 0, 0, 0.7)' }}
-        >
-          Caça-Prêmios
-        </h2>
-      </div>
+    <div className="w-full max-w-4xl mx-auto">
+      
       <p 
         className="text-sm text-gray-200 mb-2 font-semibold" 
         style={{ textShadow: '1px 1px 3px rgba(0, 0, 0, 0.8)' }}

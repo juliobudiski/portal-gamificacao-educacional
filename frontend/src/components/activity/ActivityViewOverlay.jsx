@@ -1,46 +1,138 @@
-// frontend/src/components/activity/ActivityViewOverlay.jsx
-import React from 'react';
-import { FaTimes } from 'react-icons/fa';
+import React, { useEffect, useRef } from 'react';
+import { FaTimes, FaRegLightbulb } from 'react-icons/fa';
+import boardBackground from '../../../public/board/background_board.png';
 
 const ActivityViewOverlay = ({ isOpen, onClose, title, backgroundImage, children }) => {
-  // Se não estiver aberto, não renderiza nada.
-  if (!isOpen) {
-    return null;
-  }
+  const closeBtnRef = useRef(null);
+  const titleId = 'activity-overlay-title';
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    // focus the close button for keyboard users when modal opens
+    closeBtnRef.current?.focus();
+
+    const handleKey = (e) => {
+      if (e.key === 'Escape') {
+        onClose?.();
+      }
+    };
+
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [isOpen, onClose]);
+
+  // don't render when closed
+  if (!isOpen) return null;
 
   return (
-    // Backdrop semi-transparente que cobre a tela inteira
-    <div 
-      className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4 animate-fadeIn"
-      onClick={onClose} // Permite fechar clicando fora do conteúdo
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      onClick={onClose}
     >
-      {/* Container do conteúdo que não fecha ao ser clicado */}
+      {/* Dimmed backdrop with subtle gradient + blur for depth */}
       <div
-        className="relative w-full max-w-4xl h-auto max-h-[90vh] bg-gray-800 rounded-2xl shadow-2xl border-4 border-yellow-400/50 overflow-hidden flex flex-col"
+        className="absolute inset-0"
         style={{
-          backgroundImage: `linear-gradient(rgba(31, 41, 55, 0.85), rgba(31, 41, 55, 0.95)), url(${backgroundImage})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
+          background: 'linear-gradient(180deg, rgba(0,0,0,0.65), rgba(0,0,0,0.8))',
         }}
-        onClick={(e) => e.stopPropagation()} // Impede que o clique no conteúdo feche o overlay
+        aria-hidden
+      />
+
+      {/* Decorative board background (covers full viewport, fixed so it doesn't scroll)	*/}
+      <div
+        className="absolute inset-0 bg-cover bg-center pointer-events-none "
+        style={{ backgroundImage: `url(${boardBackground})`, opacity: 0.18 }}
+        aria-hidden
+      />
+
+      {/* Floating accent image (fixed, non-interactive) */}
+      {backgroundImage && (
+        <img
+          src={backgroundImage}
+          alt="decorative"
+          className="z-50 fixed bottom-6 right-6 w-48 h-48 opacity-90 object-contain pointer-events-none select-none"
+          style={{ filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.6))' }}
+          aria-hidden
+        />
+      )}
+
+      {/* Close button (keyboard accessible) */}
+      <button
+        ref={closeBtnRef}
+        onClick={(e) => {
+          e.stopPropagation();
+          onClose?.();
+        }}
+        className="fixed top-4 right-4 z-30 inline-flex items-center justify-center rounded-full p-2 focus:outline-none focus:ring-2 focus:ring-offset-2"
+        aria-label="Voltar ao Tabuleiro"
+        style={{
+          background: 'rgba(0,0,0,0.45)',
+          color: '#ffffff',
+          boxShadow: '0 6px 18px rgba(0,0,0,0.6)',
+        }}
       >
-        {/* Botão de Fechar Universal */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors z-10"
-          aria-label="Voltar ao Tabuleiro"
-        >
-          <FaTimes size={24} />
-        </button>
+        <FaTimes size={20} />
+      </button>
 
-        {/* Título da Visão */}
-        <h2 className="text-3xl font-bold text-yellow-400 p-6 text-center border-b border-gray-700/50">
-          {title}
-        </h2>
+      {/* Main scrollable content area */}
+      <div
+        className="relative z-20 w-full h-full overflow-y-auto p-6 md:p-10"
+        onClick={(e) => e.stopPropagation()} // prevent clicks inside from closing
+      >
+        <div className="flex w-full min-h-[60vh] items-start justify-center">
+          <div
+            className="w-full max-w-5xl rounded-xl shadow-xl p-6 md:p-8 transition-transform duration-300 ease-out transform hover:-translate-y-1"
+            style={{
+              background: 'linear-gradient(180deg, rgba(44,49,53,0.72), rgba(30,34,37,0.72))',
+              border: '1px solid rgba(255,189,48,0.08)',
+              backdropFilter: 'blur(8px)',
+            }}
+          >
+            <header className="flex items-center gap-4 mb-6">
+              <div
+                className="flex items-center justify-center rounded-xl p-3 shadow-inner"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(105,232,203,0.06), rgba(149,112,217,0.06))',
+                }}
+                aria-hidden
+              >
+                <FaRegLightbulb size={20} className="opacity-90" />
+              </div>
 
-        {/* Conteúdo dinâmico (aqui entrarão seus componentes Tab) */}
-        <div className="p-6 overflow-y-auto">
-          {children}
+              <div className="flex-1">
+                <h2
+                  id={titleId}
+                  className="text-2xl md:text-4xl font-extrabold leading-tight"
+                  style={{
+                    color: '#ffbd30',
+                    textShadow: '0 3px 12px rgba(0,0,0,0.65)',
+                  }}
+                >
+                  {title}
+                </h2>
+                <p className="mt-1 text-sm text-gray-300/80">GamificaEdu Portal</p>
+              </div>
+
+              
+            </header>
+
+            {/* Body container — keep existing children and layout intact */}
+            <main className="w-full text-gray-100" aria-live="polite">
+              <div className="mb-6">
+                {/* subtle section divider */}
+                <div className="h-px w-full bg-gradient-to-r from-transparent via-[rgba(255,189,48,0.12)] to-transparent rounded" />
+              </div>
+
+              <div className="rounded-xl p-4 md:p-6 shadow-md" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.03))' }}>
+                {children}
+              </div>
+
+            </main>
+          </div>
         </div>
       </div>
     </div>

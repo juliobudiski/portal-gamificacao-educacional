@@ -4,6 +4,7 @@
 // 1. Configuração dos ÍCONES para os passos da trilha e elementos do hub
 export const elementConfig = {
     path: {
+        mission: { icon: '/board/mission_character_board.png', name: 'Missão' },
         narrative: { icon: '/board/narrative_board.png', name: 'Narrativa' },
         quiz: { icon: '/board/quiz_board.png', name: 'Quiz' },
     },
@@ -14,7 +15,7 @@ export const elementConfig = {
         badges: { icon: '/board/badges_board.png', name: 'Medalhas' },
         chat: { icon: '/board/chat_board.png', name: 'Chat' },
         store: { icon: '/board/store_board.png', name: 'Loja' },
-        mission: { icon: '/board/mission_character_board.png', name: 'Missão' },
+        
     }
 };
 

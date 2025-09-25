@@ -114,26 +114,12 @@ const RouletteTab = ({ onPrizeWon }) => {
 
   return (
     // 2. ADICIONE O ESTILO DE FUNDO AO DIV PRINCIPAL
-    <div 
-      className="bg-gray-800 p-6 rounded-2xl shadow-2xl text-white flex flex-col items-center relative overflow-hidden"
-      style={{
-        backgroundImage: `url(${backgroundImage})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
-      }}
-    >
+    <div className="w-full max-w-4xl mx-auto">
       <style>{style}</style>
       <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#ffbd30] opacity-10 rounded-full blur-xl"></div>
       <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-[#69e8cb] opacity-10 rounded-full blur-xl"></div>
       
-      <div className="flex items-center gap-3 mb-4 relative z-10">
-        <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#ffbd30] to-[#ff8c30] rounded-full blur-md opacity-70"></div>
-          <FaDice className="text-4xl text-[#ffbd30] relative z-10" />
-        </div>
-        <h2 className="text-3xl font-bold text-yellow-400">Roleta da Sorte</h2>
-      </div>
+      
       
       <p className="text-sm text-gray-400 mb-6 text-center max-w-md relative z-10">
         Gire uma vez para ganhar prêmios extras e aumentar sua pontuação!

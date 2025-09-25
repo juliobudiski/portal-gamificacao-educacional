@@ -68,7 +68,7 @@ const StoreTab = ({ items, userPoints, onPurchase, onAddItem, onDeleteItem }) =>
         return (
             <div className="bg-gray-800 p-8 rounded-lg text-white"
             style={{
-                backgroundImage: `url(${backgroundImage})`,
+                
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',
@@ -110,7 +110,7 @@ const StoreTab = ({ items, userPoints, onPurchase, onAddItem, onDeleteItem }) =>
         return (
             <div className="bg-gray-800 p-8 rounded-lg text-white"
             style={{
-                backgroundImage: `url(${backgroundImage})`,
+                
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',

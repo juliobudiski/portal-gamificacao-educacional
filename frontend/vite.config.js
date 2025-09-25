@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     host: true, // Garante que o servidor seja acessível na rede
     allowedHosts: [
-      'conventions-listings-radio-specializing.trycloudflare.com'
+      'holland-temp-worlds-spears.trycloudflare.com'
     ]
   }
 })

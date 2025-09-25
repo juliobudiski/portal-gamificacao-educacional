@@ -291,7 +291,29 @@ function ActivityPage() {
           throw new Error(errorData.message || "Status não-OK ao carregar atividade");
         }
 
-        const activityData = await response.json();
+        let activityData = await response.json();
+
+        // --- CÓDIGO PARA FORÇAR A MISSÃO COMO PRIMEIRO PASSO ---
+        const design = activityData.gamificationDesign;
+        // Encontra o elemento 'Missão' que está habilitado no hub
+        const missionInHub = design?.hub_elements?.find(el => el.type === 'mission' && el.enabled);
+
+        // Se a Missão existir e estiver habilitada no hub...
+        if (design?.progression_path && missionInHub) {
+            
+            // 1. Cria um objeto de passo para a Missão
+            const missionStep = {
+                id: 'forced_mission_step', // Um ID único para a chave do React
+                type: 'mission',
+                content: { title: 'Início' } 
+            };
+            
+            // 2. Insere este passo no INÍCIO da array da trilha
+            design.progression_path.unshift(missionStep);
+
+            // 3. Desabilita a Missão no hub para não aparecer em dois lugares
+            missionInHub.enabled = false;
+        }
         setActivity(activityData);
         debugLog('Atividade carregada:', activityData);
 
