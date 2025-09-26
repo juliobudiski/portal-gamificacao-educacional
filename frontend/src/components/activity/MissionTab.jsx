@@ -1,7 +1,7 @@
 import React from 'react';
 import { FaBullseye, FaExclamationCircle, FaCheckCircle } from 'react-icons/fa';
 import backgroundImage from '../../assets/mission-background.png';
-const MissionTab = ({ activity }) => {
+const MissionTab = ({ activity, onComplete }) => {
     if (!activity) return null;
 
     const { description, currentScenario, desiredScenario } = activity;
@@ -37,6 +37,13 @@ const MissionTab = ({ activity }) => {
                         {desiredScenario?.otherObjective && <li>{desiredScenario.otherObjective}</li>}
                     </ul>
                 </div>
+
+                <button 
+                    onClick={onComplete} // A MÁGICA ACONTECE AQUI!
+                    className="py-3 px-8 rounded-xl text-lg font-semibold text-gray-900 bg-gradient-to-r from-[#ffbd30] to-[#69e8cb] hover:opacity-90 transition-all duration-300 disabled:opacity-50 group shadow-lg"
+                >
+                    Iniciar Jornada!
+                </button>
             </div>
         
     );

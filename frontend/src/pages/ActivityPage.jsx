@@ -138,7 +138,7 @@ function ActivityPage() {
           });
       }
       
-      urls.add('../../assets/quiz-background.png'); // Adiciona a imagem de fundo do quiz
+      urls.add('/assets/quiz-background.png'); // Adiciona a imagem de fundo do quiz
       
       return Array.from(urls);
   }, [activity]);
@@ -619,8 +619,8 @@ function ActivityPage() {
     switch (currentView) {
       case 'ranking':
         return <LeaderboardTab leaderboardData={leaderboard} />;
-      case 'mission':
-        return <MissionTab activity={activity} onGoBack={() => setCurrentView('board')} />;
+      case 'mission': return <MissionTab activity={activity} onComplete={() => handleStepCompletion('forced_mission_step')} 
+         />;
       case 'store':
         return <StoreTab userRole={user.role} items={storeItems} userPoints={userProgress?.points_earned || 0} onPurchase={handlePurchase} onAddItem={handleAddItem} onDeleteItem={handleDeleteItem} />;
       case 'roulette':
