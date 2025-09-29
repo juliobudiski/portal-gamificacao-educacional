@@ -15,7 +15,7 @@ const symbols = [
 ];
 
 // O componente agora recebe tudo o que precisa via props
-const SlotMachineTab = ({ userCoins, onPrizeWon, winners, loadingWinners, onWin }) => {
+const SlotMachineTab = ({ userCoins, onPrizeWon, winners, loadingWinners, onWin, onReturn }) => {
   // Hooks são chamados aqui, no topo do componente.
   const { user } = useAuth();
   const { activityId } = useParams();
@@ -84,7 +84,15 @@ const SlotMachineTab = ({ userCoins, onPrizeWon, winners, loadingWinners, onWin 
 
   return (
     <div className="w-full max-w-4xl mx-auto">
-      
+      <button 
+          onClick={onReturn} 
+          className="mb-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200 transition-colors"
+      >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+          </svg>
+          Voltar ao Tabuleiro
+      </button>
       <p 
         className="text-sm text-gray-200 mb-2 font-semibold" 
         style={{ textShadow: '1px 1px 3px rgba(0, 0, 0, 0.8)' }}

@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     host: true, // Garante que o servidor seja acessível na rede
     allowedHosts: [
-      'option-advertisement-privilege-tank.trycloudflare.com'
+      'holmes-respect-bon-realistic.trycloudflare.com'
     ]
   }
 })

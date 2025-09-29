@@ -1,5 +1,5 @@
 // frontend/src/components/activity/GameBoardViewer.jsx
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 // Importa apenas a configuração de ícones, pois é o que ele precisa para renderizar os nomes e imagens dos passos.
 import { elementConfig } from './GameBoardConfig';
@@ -40,10 +40,30 @@ const LoadingScreen = ({ progress, etr }) => (
 
 
 
-function GameBoardViewer({ onHubIconClick, gamificationDesign, studentProgress, onStepClick, userRole, renderedDecorations, generateStepCoordinates }) {    
+function GameBoardViewer({ onHubIconClick, gamificationDesign, studentProgress, onStepClick, userRole, renderedDecorations, generateStepCoordinates, currentView, children }) {    
     // A lógica de progresso, coordenadas e SVG permanece aqui.
     const completedStepsSet = userRole === 'aluno' ? new Set(studentProgress?.completed_steps || []) : new Set();
-    
+    const boardRef = useRef(null); // Cria uma referência para a div do tabuleiro
+    const [boardSize, setBoardSize] = useState({ width: 900, height: 500 }); // Estado para guardar o tamanho
+
+    useEffect(() => {
+        const boardElement = boardRef.current;
+        if (!boardElement) return;
+
+        // O ResizeObserver é a forma moderna e eficiente de observar mudanças de tamanho
+        const observer = new ResizeObserver(entries => {
+            const entry = entries[0];
+            if (entry) {
+                const { width, height } = entry.contentRect;
+                setBoardSize({ width, height });
+            }
+        });
+
+        observer.observe(boardElement);
+
+        // Limpeza: para de observar quando o componente é desmontado
+        return () => observer.unobserve(boardElement);
+    }, []); // O array vazio [] garante que isso só rode uma vez
     let activeStepId = null;
     if (userRole === 'aluno' && gamificationDesign.progression_path) {
         for (const step of gamificationDesign.progression_path) {
@@ -68,8 +88,13 @@ function GameBoardViewer({ onHubIconClick, gamificationDesign, studentProgress, 
         const pathPoints = stepCoordinates;
         if (pathPoints.length < 2) return '';
         
-        const boardWidth = 900;
-        const boardHeight = 500;
+        // Substitui os valores fixos pelos valores do nosso estado
+        const boardWidth = boardSize.width;
+        const boardHeight = boardSize.height;
+
+        // Se o tabuleiro ainda não tiver tamanho, não desenha nada para evitar erros
+        if (boardWidth === 0 || boardHeight === 0) return '';
+
         const absolutePoints = pathPoints.map(p => ({
             x: parseFloat(p.x) / 100 * boardWidth,
             y: parseFloat(p.y) / 100 * boardHeight,
@@ -84,59 +109,56 @@ function GameBoardViewer({ onHubIconClick, gamificationDesign, studentProgress, 
 
     // O return agora é direto, sem tela de carregamento.
     return (
-        <>
-            
-            <div className="rpg-map-board">
-                <div className="progress-path-area">
-                    {/* Renderiza as decorações calculadas pelo pai */}
-                    {renderedDecorations.map(deco => (
-                        <img 
-                            key={deco.id} 
-                            src={deco.src} 
-                            alt="Decoração do tabuleiro" 
-                            className={`board-decoration ${deco.className}`} 
-                            style={deco.style} 
-                        />
-                    ))}
-                    <svg className="path-svg" viewBox="0 0 900 500" preserveAspectRatio="xMidYMid meet">
-                        <path d={generateSvgPath()} className="path-line" />
-                    </svg>
-                    {(gamificationDesign.progression_path || []).map((step, index) => {
-                        const status = getStepStatus(step);
-                        const config = elementConfig.path[step.type];
-                        if (!config) return null;
-                        const position = stepCoordinates[index % stepCoordinates.length];
-                        return (
-                            <div key={step.id} className="path-node-wrapper" style={{ top: position.y, left: position.x }} onClick={() => status === 'active' && onStepClick(step)}>
-                                <div className={`path-node path-node--${status}`}>
-                                    <img className="path-node-image" src={config.icon} alt={config.name} />
-                                    {status === 'completed' && <div className="path-node--completed"></div>}
+        // A moldura principal do tabuleiro agora envolve a lógica de troca
+        <div className="rpg-map-board">
+            {/* Se a view for 'board', mostra o mapa. Senão, mostra o conteúdo da ação. */}
+            {currentView === 'board' ? (
+                <>
+                    {/* Conteúdo original do tabuleiro (mapa, trilha, hub) */}
+                    <div className="progress-path-area" ref={boardRef}>
+                        {renderedDecorations.map(deco => (
+                            <img key={deco.id} src={deco.src} alt="Decoração" className={`board-decoration ${deco.className}`} style={deco.style} />
+                        ))}
+                        <svg className="path-svg" viewBox={`0 0 ${boardSize.width} ${boardSize.height}`} preserveAspectRatio="none">
+                            <path d={generateSvgPath()} className="path-line" />
+                        </svg>
+                        {(gamificationDesign.progression_path || []).map((step, index) => {
+                            const status = getStepStatus(step);
+                            const config = elementConfig.path[step.type];
+                            if (!config) return null;
+                            const position = stepCoordinates[index % stepCoordinates.length];
+                            return (
+                                <div key={step.id} className="path-node-wrapper" style={{ top: position.y, left: position.x }} onClick={() => (status === 'active' || status === 'completed') && onStepClick(step)}>
+                                    <div className={`path-node path-node--${status}`}>
+                                        <img className="path-node-image" src={config.icon} alt={config.name} />
+                                        {status === 'completed' && <div className="path-node-completed-check">✔</div>}
+                                    </div>
+                                    <div className="path-label">{step.content?.title || config.name}</div>
                                 </div>
-                                <div className="path-label">{step.content?.title || config.name}</div>
-                            </div>
-                        );
-                    })}
+                            );
+                        })}
+                    </div>
+                    <div className="hub-village">
+                        {(gamificationDesign.hub_elements || []).map(hubElement => {
+                            if (!hubElement.enabled) return null;
+                            const config = elementConfig.hub[hubElement.type];
+                            if (!config) return null;
+                            return (
+                                <div key={hubElement.id} className="hub-building hub-building--animated" title={config.name} onClick={() => onHubIconClick(hubElement.type)}>
+                                    <img src={config.icon} alt={config.name} />
+                                    <div className="hub-label">{config.name}</div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </>
+            ) : (
+                // Área que renderiza o conteúdo da ação (Quiz, Loja, etc.)
+                <div className="game-content-area">
+                    {children}
                 </div>
-                <div className="hub-village">
-                    {(gamificationDesign.hub_elements || []).map(hubElement => {
-                        if (!hubElement.enabled) return null;
-                        const config = elementConfig.hub[hubElement.type];
-                        if (!config) return null;
-                        return (
-                            <div 
-                            key={hubElement.id} 
-                            className="hub-building hub-building--animated" 
-                            title={config.name}
-                            onClick={() => onHubIconClick(hubElement.type)}
-                            >
-                                <img src={config.icon} alt={config.name} />
-                                <div className="hub-label">{config.name}</div>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-        </>
+            )}
+        </div>
     );
 }
 

@@ -25,7 +25,7 @@ const basePrizes = [
   { id: "prize-6", text: "150 XP", icon: FaTrophy, type: "xp", value: 150 },
 ];
 
-const RouletteTab = ({ onPrizeWon }) => {
+const RouletteTab = ({ onPrizeWon, onReturn }) => {
   const { user } = useAuth();
   const { activityId } = useParams();
 
@@ -115,6 +115,15 @@ const RouletteTab = ({ onPrizeWon }) => {
   return (
     // 2. ADICIONE O ESTILO DE FUNDO AO DIV PRINCIPAL
     <div className="w-full max-w-4xl mx-auto">
+      <button 
+          onClick={onReturn} 
+          className="mb-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200 transition-colors"
+      >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+          </svg>
+          Voltar ao Tabuleiro
+      </button>
       <style>{style}</style>
       <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#ffbd30] opacity-10 rounded-full blur-xl"></div>
       <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-[#69e8cb] opacity-10 rounded-full blur-xl"></div>

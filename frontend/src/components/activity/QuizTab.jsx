@@ -17,7 +17,7 @@ const isDebugMode = import.meta.env.VITE_DEBUG_MODE === 'true';
  * @param {Array} props.gameElements - Elementos de jogo ativos
  * @returns {JSX.Element} Interface de quiz interativo
  */
-const QuizTab = ({ content, onAnswerCorrect, onComplete }) => { 
+const QuizTab = ({ content, onAnswerCorrect, onComplete, isReplay }) => { 
   
   // Acessa as perguntas e elementos de dentro do objeto 'content'
   const { questions = [], step_id } = content; // Pega 'questions' e o 'step_id' do nível superior
@@ -92,10 +92,15 @@ const QuizTab = ({ content, onAnswerCorrect, onComplete }) => {
     const points = isCorrect ? questions[currentIndex].points : 0;
     const coins = isCorrect ? questions[currentIndex].coins : 0;
 
+    const feedbackMessage = isCorrect
+      ? (isReplay ? 'Resposta Correta!' : `+${points} Pontos!`)
+      : 'Resposta Incorreta!';
+
     setFeedback({
       type: isCorrect ? 'success' : 'error',
-      message: isCorrect ? `+${points} Pontos!` : 'Resposta Incorreta!'
+      message: feedbackMessage
     });
+    
     
     if (user?.role === 'aluno') {
       try {
@@ -117,7 +122,9 @@ const QuizTab = ({ content, onAnswerCorrect, onComplete }) => {
           console.error("Falha ao salvar a resposta no backend.");
         } else {
            // Chama a função onAnswerCorrect para atualizar a UI imediatamente
-           if (isCorrect) onAnswerCorrect(points);
+           if (isCorrect && !isReplay) {
+            onAnswerCorrect(points);
+        }
         }
       } catch (error) {
         console.error("Erro de rede ao salvar resposta:", error);
@@ -278,6 +285,11 @@ const QuizTab = ({ content, onAnswerCorrect, onComplete }) => {
         width: '90%',
         maxWidth: '1200px',
         }}>
+      {isReplay && (
+        <div className="mb-4 p-3 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-400/30 text-center">
+          <p><strong>Modo de Revisão:</strong> As recompensas para este desafio já foram coletadas.</p>
+        </div>
+      )}
       {/* Pop-up de feedback visual */}
       {feedback.message && (
         <div className={`absolute top-0 left-1/2 -translate-x-1/2 p-4 rounded-b-lg text-xl font-bold animate-bounce ${feedback.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>

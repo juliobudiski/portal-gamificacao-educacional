@@ -1,15 +1,17 @@
 import React from 'react';
 import { FaBullseye, FaExclamationCircle, FaCheckCircle } from 'react-icons/fa';
 import backgroundImage from '../../assets/mission-background.png';
-const MissionTab = ({ activity, onComplete }) => {
+const MissionTab = ({ activity, onComplete, onReturn }) => {
     if (!activity) return null;
 
     const { description, currentScenario, desiredScenario } = activity;
 
     return (
         
+        
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                
                 {/* Cenário Atual */}
                 <div className="bg-gray-700/50 p-6 rounded-xl border border-red-500/30">
                     <h3 className="text-xl font-semibold text-red-400 mb-3 flex items-center">

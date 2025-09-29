@@ -26,6 +26,7 @@ import useAnalytics from "../hooks/useAnalytics";
 import { cardsConfig } from '../components/activity/gameElementsConfig';
 import GameBoardViewer from '../components/activity/GameBoardViewer';
 import useAssetLoader from '../hooks/useAssetLoader'; // Importa nosso hook
+
 // IMPORTA AS CONFIGURAÇÕES DO NOVO ARQUIVO
 import { elementConfig, decorationConfig, decorationSpawnPoints, boardStructuralImages } from '../components/activity/GameBoardConfig';
 import ActivityViewOverlay from '../components/activity/ActivityViewOverlay';
@@ -83,6 +84,7 @@ function ActivityPage() {
   const [loadingSlotWinners, setLoadingSlotWinners] = useState(true);
   const [activeStepContent, setActiveStepContent] = useState(null);
   //const [initialAssetsLoaded, setInitialAssetsLoaded] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
 
   const handleStudentClick = useCallback((student) => {
@@ -102,9 +104,20 @@ function ActivityPage() {
       setShowStatsModal(true);
   }, []); // O array vazio [] garante que a função nunca será recriada
 
-  const handleHubIconClick = useCallback((view) => {
-      setCurrentView(view); // Atualiza o estado para a visão clicada (ex: 'store', 'ranking')
-  }, []);
+  const handleHubIconClick = (view) => {
+      debugLog("Aluno clicou no ícone do hub:", view);
+      setCurrentView(view);
+  };
+
+  const handleClosePanel = () => {
+    setIsPanelOpen(false);
+    // Damos um pequeno tempo para a animação de fechar antes de limpar o conteúdo
+    setTimeout(() => {
+      setCurrentView('board');
+      setActiveStepContent(null);
+    }, 400);
+  };
+
 
 
   
@@ -293,29 +306,28 @@ function ActivityPage() {
 
         let activityData = await response.json();
 
-        // --- CÓDIGO PARA FORÇAR A MISSÃO COMO PRIMEIRO PASSO ---
         const design = activityData.gamificationDesign;
-        // Encontra o elemento 'Missão' que está habilitado no hub
         const missionInHub = design?.hub_elements?.find(el => el.type === 'mission' && el.enabled);
 
-        // Se a Missão existir e estiver habilitada no hub...
         if (design?.progression_path && missionInHub) {
-            
-            // 1. Cria um objeto de passo para a Missão
+            // 1. Cria o objeto do passo da Missão com um ID FIXO e RECONHECÍVEL
             const missionStep = {
-                id: 'forced_mission_step', // Um ID único para a chave do React
+                id: 'mission_step_01', // ID especial
                 type: 'mission',
-                content: { title: 'Início' } 
+                content: { title: 'Sua Missão' } 
             };
             
-            // 2. Insere este passo no INÍCIO da array da trilha
+            // 2. Insere este passo no INÍCIO da trilha
             design.progression_path.unshift(missionStep);
 
             // 3. Desabilita a Missão no hub para não aparecer em dois lugares
             missionInHub.enabled = false;
         }
+
+        // Importante: NÃO definimos mais a view aqui.
         setActivity(activityData);
         debugLog('Atividade carregada:', activityData);
+
 
         const elements = activityData.gameElements?.selectedElements || [];
         const dataPromises = [];
@@ -488,6 +500,11 @@ function ActivityPage() {
         }
     };
 
+    const handleReturnToBoard = () => {
+        setCurrentView('board');
+        setActiveStepContent(null); // Limpa o conteúdo ativo para garantir um estado limpo
+    };
+
     // Função para deletar item (passada para o StoreTab)
     const handleDeleteItem = async (itemId) => {
         if (!window.confirm("Tem certeza que deseja remover este item da loja?")) return;
@@ -506,13 +523,8 @@ function ActivityPage() {
 
     const handleStepClick = (step) => {
         debugLog("Aluno clicou no passo:", step);
-        if (step.content) {
-            // --- CORREÇÃO APLICADA AQUI ---
-            // Nós combinamos o conteúdo do passo com o seu ID
-            setActiveStepContent({ 
-                ...step.content, 
-                step_id: step.id // Adiciona explicitamente o step_id
-            });
+        if (step.type === 'mission' || step.content) {
+            setActiveStepContent({ ...step.content, step_id: step.id });
             setCurrentView(step.type);
         } else {
             alert("Este passo da jornada ainda não tem conteúdo disponível!");
@@ -602,8 +614,17 @@ function ActivityPage() {
 
   // ---------- [RENDERIZAÇÃO DE CONTEÚDO] ----------
   const getCurrentViewDetails = () => {
+    // Para quiz ou narrativa, usamos o título do passo ativo
+    if ((currentView === 'quiz' || currentView === 'narrative') && activeStepContent) {
+      const config = elementConfig.path[currentView];
+      return {
+        title: activeStepContent.title || config.name,
+        backgroundImage: config.icon
+      }
+    }
+    
     if (currentView === 'board' || !elementConfig.hub[currentView]) {
-      return { title: '', backgroundImage: '' };
+      return { title: 'Tabuleiro da Atividade', backgroundImage: '' };
     }
     const config = elementConfig.hub[currentView];
     return {
@@ -612,25 +633,54 @@ function ActivityPage() {
     };
   };
 
+
   const viewDetails = getCurrentViewDetails();
 
   // Função que decide qual componente "Tab" renderizar dentro do overlay
-  const renderOverlayContent = () => {
+  const renderActiveContent = () => {
     switch (currentView) {
+      
+      case 'quiz': { // Usamos chaves {} para criar um escopo de bloco
+        // 1. Verificamos se o ID do passo atual já está na lista de passos concluídos.
+        const isStepCompleted = userProgress?.completed_steps?.includes(activeStepContent?.step_id);
+
+        // 2. Criamos um "manipulador de pontos" condicional.
+        // Se o passo já foi concluído, ele será uma função vazia.
+        // Se não, será a função real que concede pontos.
+        const pointsHandler = isStepCompleted ? () => {} : handlePointsEarned;
+
+        // 3. Renderizamos o QuizTab, passando o manipulador correto e um novo prop 'isReplay'.
+        return <QuizTab 
+                  content={activeStepContent} 
+                  onAnswerCorrect={pointsHandler} 
+                  onComplete={handleStepCompletion}
+                  isReplay={isStepCompleted} // Prop extra para o feedback visual
+               />;
+      }
+      case 'narrative':
+        return <NarrativeTab 
+                  content={activeStepContent} 
+                  onComplete={handleStepCompletion} 
+               />;
       case 'ranking':
-        return <LeaderboardTab leaderboardData={leaderboard} />;
-      case 'mission': return <MissionTab activity={activity} onComplete={() => handleStepCompletion('forced_mission_step')} 
-         />;
+        return <LeaderboardTab leaderboardData={leaderboard} onReturn={handleReturnToBoard} />;
+      case 'mission':
+        return <MissionTab 
+                    activity={activity} 
+                    // Ao completar, chamamos a função de conclusão com nosso ID especial
+                    onComplete={() => handleStepCompletion('mission_step_01')} 
+                    onReturn={handleReturnToBoard}
+               />;
       case 'store':
-        return <StoreTab userRole={user.role} items={storeItems} userPoints={userProgress?.points_earned || 0} onPurchase={handlePurchase} onAddItem={handleAddItem} onDeleteItem={handleDeleteItem} />;
+        return <StoreTab onReturn={handleReturnToBoard} userRole={user.role} items={storeItems} userPoints={userProgress?.points_earned || 0} onPurchase={handlePurchase} onAddItem={handleAddItem} onDeleteItem={handleDeleteItem} />;
       case 'roulette':
-        return <RouletteTab onPrizeWon={handlePointsEarned} />;
+        return <RouletteTab onReturn={handleReturnToBoard} onPrizeWon={handlePointsEarned} />;
       case 'slot_machine':
-        return <SlotMachineTab onPrizeWon={handlePointsEarned} onWin={fetchSlotWinners} winners={slotWinners} loadingWinners={loadingSlotWinners} userCoins={userProgress?.coins || 0} />;
+        return <SlotMachineTab onReturn={handleReturnToBoard} onPrizeWon={handlePointsEarned} onWin={fetchSlotWinners} winners={slotWinners} loadingWinners={loadingSlotWinners} userCoins={userProgress?.coins || 0} />;
       case 'badges':
-        return <AchievementsTab />;
+        return <AchievementsTab onReturn={handleReturnToBoard}/>;
       case 'chat':
-        return <ChatTab />;
+        return <ChatTab onReturn={handleReturnToBoard}/>;
       // Adicione outros casos aqui conforme necessário
       default:
         return null;
@@ -664,32 +714,44 @@ function ActivityPage() {
 
 
   return (
-    <div className="flex min-h-screen bg-gray-900 text-white">
-      {/* Sidebar */}
-      <aside className="w-1/4 bg-gray-800 p-4 border-r border-gray-700">
-        {user.role === 'aluno' && userProgress && (
-          <StudentSidebar 
-            progress={userProgress} 
-            onShowStats={handleShowStats}
-          />
-        )}
-        
-        {user.role === 'professor' && analytics && (
-          <ProfessorSidebar
-            analytics={analytics}
-            onStudentClick={handleStudentClick} // Agora usa a função que sempre existe
-            onOpenQuizEditor={handleOpenQuizEditor}
-            onOpenNarrativeEditor={handleOpenNarrativeEditor}
-          />
-        )}
-      </aside>
+    <div className="flex min-h-screen bg-gray-900 text-white relative">
+      {/* Botão para controlar a Sidebar */}
+      {user.role === 'aluno' && (
+        <button 
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          className="absolute top-4 left-4 z-20 p-2 bg-gray-800 rounded-full text-white hover:bg-yellow-500 transition-all"
+          aria-label="Mostrar/Esconder Progresso"
+        >
+          {/* Ícone muda com base no estado */}
+          {isSidebarOpen ? 
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/></svg> :
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path fillRule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/></svg>
+          }
+        </button>
+      )}
+      {/* Sidebar do Aluno com flex-shrink-0 */}
+      {user.role === 'aluno' && (
+          <aside className={`bg-gray-800 p-4 border-r border-gray-700 transition-all duration-300 ease-in-out transform flex-shrink-0 ${isSidebarOpen ? 'w-1/4 translate-x-0' : 'w-0 -translate-x-full'}`}>
+              <div className={`${isSidebarOpen ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200`}>
+                {userProgress && <StudentSidebar progress={userProgress} onShowStats={handleShowStats} />}
+              </div>
+          </aside>
+      )}
 
-      <main className="w-3/4 p-8">
+
+      {/* Sidebar do Professor - Continua como antes */}
+      {user.role === 'professor' && (
+          <aside className="w-1/4 bg-gray-800 p-4 border-r border-gray-700">
+              {analytics && <ProfessorSidebar analytics={analytics} onStudentClick={handleStudentClick} onOpenQuizEditor={handleOpenQuizEditor} onOpenNarrativeEditor={handleOpenNarrativeEditor} />}
+          </aside>
+      )}
+
+      {/* Conteúdo principal */}
+      <main className="flex-1 w-3/4 p-8">
         <h1 className="text-5xl font-extrabold mb-2">{activity.title}</h1>
         <p className="mb-8 text-lg text-gray-400">{activity.description}</p>
-        
-        {/* O Tabuleiro é renderizado incondicionalmente */}
-        {activity.gamificationDesign && (user.role === 'professor' || (user.role === 'aluno' && userProgress)) && (
+
+        {activity.gamificationDesign && (
           <GameBoardViewer
             gamificationDesign={activity.gamificationDesign}
             studentProgress={userProgress}
@@ -698,25 +760,11 @@ function ActivityPage() {
             userRole={user.role}
             renderedDecorations={renderedDecorations}
             generateStepCoordinates={generateStepCoordinates}
-          />
-        )}
-
-        {/* --- O OVERLAY MÁGICO --- */}
-        <ActivityViewOverlay
-          isOpen={currentView !== 'board' && currentView !== 'quiz' && currentView !== 'narrative'}
-          onClose={() => setCurrentView('board')}
-          title={viewDetails.title}
-          backgroundImage={viewDetails.backgroundImage}
-        >
-          {renderOverlayContent()}
-        </ActivityViewOverlay>
-
-        {/* Lógica para Quiz e Narrativa pode continuar separada se preferir, ou ser movida para o overlay */}
-        {currentView === 'quiz' && activeStepContent && (
-          <QuizTab content={activeStepContent} onAnswerCorrect={handlePointsEarned} onComplete={handleStepCompletion} />
-        )}
-        {currentView === 'narrative' && activeStepContent && (
-          <NarrativeTab content={activeStepContent} onComplete={handleStepCompletion} />
+            currentView={currentView}
+            onReturnToBoard={handleReturnToBoard}
+          >
+            {renderActiveContent()} {/* <-- Passa o conteúdo como filho */}
+          </GameBoardViewer>
         )}
       </main>
     </div>

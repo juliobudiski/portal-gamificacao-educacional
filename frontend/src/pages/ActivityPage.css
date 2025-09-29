@@ -1,0 +1,12 @@
+/* frontend/src/pages/ActivityPage.css */
+.activity-page-main-content {
+  display: flex;
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.game-board-container {
+  flex-grow: 1;
+  transition: width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  overflow-y: auto; /* Permite scroll no tabuleiro se necessário */
+}
