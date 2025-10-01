@@ -58,10 +58,14 @@ export const decorationSpawnPoints = [
       { x: '4%', y: '75%', size: 'small' }, { x: '1%', y: '85%', size: 'large' },
       
       // Laterais direitas - denso
-      { x: '98%', y: '20%', size: 'normal' }, { x: '96%', y: '30%', size: 'small' },
-      { x: '99%', y: '40%', size: 'large' }, { x: '97%', y: '50%', size: 'normal' },
-      { x: '95%', y: '60%', size: 'small' }, { x: '98%', y: '70%', size: 'normal' },
-      { x: '96%', y: '80%', size: 'small' }, { x: '99%', y: '90%', size: 'large' },
+      { x: '92%', y: '20%', size: 'normal' }, 
+      { x: '88%', y: '30%', size: 'small' },
+      { x: '91%', y: '40%', size: 'large' }, 
+      { x: '86%', y: '50%', size: 'normal' },
+      { x: '90%', y: '60%', size: 'small' }, 
+      { x: '87%', y: '70%', size: 'normal' },
+      { x: '90%', y: '80%', size: 'small' }, 
+      { x: '89%', y: '90%', size: 'large' },
       
       // Área central superior - poucas e pequenas
       { x: '25%', y: '20%', size: 'small' }, { x: '35%', y: '18%', size: 'small' },
@@ -88,5 +92,8 @@ export const decorationSpawnPoints = [
 
   // 4. Todas as IMAGENS ESTRUTURAIS fixas do tabuleiro
 export const boardStructuralImages = [
-    '/board/background_board.png'
+    '/board/background_board.png',
+    '/board/wood_border_hub.png',
+    '/board/wood_plank_bg.png',
+    '/board/tab_border.png'
 ];

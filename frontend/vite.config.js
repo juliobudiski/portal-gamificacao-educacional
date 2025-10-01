@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     host: true, // Garante que o servidor seja acessível na rede
     allowedHosts: [
-      'holmes-respect-bon-realistic.trycloudflare.com'
+      'stamp-karen-notebooks-venice.trycloudflare.com'
     ]
   }
 })

@@ -150,6 +150,8 @@ class ActivityProgress(db.Model):
     activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=False)
     class_id = db.Column(db.Integer, db.ForeignKey('class.id'), nullable=False)
     points_earned = db.Column(db.Integer, default=0)
+    equipped_title_id = db.Column(db.Integer, db.ForeignKey('title.id'), nullable=True)
+    equipped_title = db.relationship('Title')
     total_xp_earned = db.Column(db.Integer, default=0, nullable=False, server_default='0')
     coins = db.Column(db.Integer, nullable=False, default=0, server_default='0')
     status = db.Column(db.String(50), default='not_started')
@@ -327,3 +329,27 @@ class StoreItem(db.Model):
             'item_type': self.item_type,
             'effect_id': self.effect_id
         }
+
+
+class Title(db.Model):
+    __tablename__ = 'title'
+    id = db.Column(db.Integer, primary_key=True)
+    # ID único para referência interna (ex: TITLE_LUCKY, TITLE_MASTER)
+    effect_id = db.Column(db.String(100), unique=True, nullable=False)
+    # O texto que será exibido para o jogador (ex: "O Sortudo")
+    display_text = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(255), nullable=True)
+
+class UserUnlockedTitle(db.Model):
+    __tablename__ = 'user_unlocked_title'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=False)
+    title_id = db.Column(db.Integer, db.ForeignKey('title.id'), nullable=False)
+
+    user = db.relationship('User')
+    activity = db.relationship('Activity')
+    title = db.relationship('Title')
+    
+    # Garante que um usuário não possa desbloquear o mesmo título na mesma atividade várias vezes
+    __table_args__ = (db.UniqueConstraint('user_id', 'activity_id', 'title_id', name='_user_activity_title_uc'),)

@@ -1,7 +1,7 @@
 # backend/app/routes/progress.py
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from ..models import db, Purchase, StoreItem, User, ActivityProgress, Activity, StudentResponse, EventLog, RouletteWin, SlotWin
+from ..models import db, Title, UserUnlockedTitle, Purchase, StoreItem, User, ActivityProgress, Activity, StudentResponse, EventLog, RouletteWin, SlotWin
 from sqlalchemy.orm import joinedload
 from flask_cors import cross_origin 
 progress_bp = Blueprint('progress', __name__)
@@ -92,12 +92,13 @@ def get_leaderboard(activity_id):
     """Busca o ranking e enriquece com os efeitos cosméticos comprados pelos alunos."""
     
     leaderboard_data = db.session.query(
-        User.id,
-        User.name,
-        User.profile_picture,
-        ActivityProgress.total_xp_earned
+        User,
+        ActivityProgress,
+        Title.display_text
     ).join(
         ActivityProgress, User.id == ActivityProgress.student_id
+    ).outerjoin( # Usamos outerjoin caso o usuário não tenha nenhum título equipado
+        Title, ActivityProgress.equipped_title_id == Title.id
     ).filter(
         ActivityProgress.activity_id == activity_id
     ).order_by(
@@ -105,31 +106,30 @@ def get_leaderboard(activity_id):
     ).limit(10).all()
 
     leaderboard = []
-    for index, row in enumerate(leaderboard_data):
-        active_purchases = db.session.query(
-            StoreItem.effect_id
-        ).join(
+    for index, (user_obj, progress_obj, title_text) in enumerate(leaderboard_data):
+        
+        # A lógica para buscar outros efeitos (cores de nome) continua a mesma
+        active_purchases = db.session.query(StoreItem.effect_id).join(
             Purchase, Purchase.item_id == StoreItem.id
         ).filter(
-            Purchase.user_id == row.id,
+            Purchase.user_id == user_obj.id,
             Purchase.activity_id == activity_id,
             StoreItem.item_type == 'cosmetic',
-            # --- LÓGICA DE EXPIRAÇÃO ADICIONADA AQUI ---
-            # O efeito está ativo se:
-            # 1. Ele não foi consumido E
-            # 2. A data de expiração é NULA (permanente) OU está no futuro.
+            StoreItem.item_type != 'title', # <-- EXCLUI TÍTULOS DESTA BUSCA
             Purchase.is_consumed == False,
-            ( (Purchase.expires_at == None) | (Purchase.expires_at > datetime.utcnow()) )
+            ((Purchase.expires_at == None) | (Purchase.expires_at > datetime.utcnow()))
         ).all()
         
         active_effects = [effect[0] for effect in active_purchases if effect[0]]
         
         leaderboard.append({
+            "id": user_obj.id, # Importante para o frontend saber qual é o usuário logado
             "rank": index + 1,
-            "name": row.name,
-            "avatar": row.profile_picture or f"https://ui-avatars.com/api/?name={row.name.replace(' ', '+')}&background=random",
-            "points": row.total_xp_earned,
-            "active_effects": active_effects  # <-- A MÁGICA ACONTECE AQUI!
+            "name": user_obj.name,
+            "avatar": user_obj.profile_picture or f"https://ui-avatars.com/api/?name={user_obj.name.replace(' ', '+')}&background=random",
+            "points": progress_obj.total_xp_earned,
+            "active_effects": active_effects,
+            "title": title_text # <-- O TÍTULO JÁ VEM PRONTO!
         })
     
     return jsonify(leaderboard), 200
@@ -249,6 +249,19 @@ def purchase_store_item(activity_id):
             item_name=item.name,
             price_paid=item.price
         )
+
+        if item.item_type == 'title':
+            title_to_unlock = Title.query.filter_by(effect_id=item.effect_id).first()
+            if title_to_unlock:
+                existing_unlock = UserUnlockedTitle.query.filter_by(
+                    user_id=user.id, activity_id=activity_id, title_id=title_to_unlock.id).first()
+
+                if not existing_unlock:
+                    new_unlock = UserUnlockedTitle(user_id=user.id, activity_id=activity_id, title_id=title_to_unlock.id)
+                    db.session.add(new_unlock)
+
+                # Regra MVP: auto-equipa o título recém-comprado
+                progress.equipped_title_id = title_to_unlock.id
 
         duration_days = data.get('duration_days') # Recebe a duração do frontend
         if duration_days:
@@ -410,45 +423,71 @@ def spin_roulette_for_activity(activity_id):
         progress = ActivityProgress(student_id=user.id, activity_id=activity_id, class_id=activity.class_id)
         db.session.add(progress)
 
-    #if progress.last_spin_date:
-    #    if datetime.utcnow() < progress.last_spin_date + timedelta(days=1):
-    #        return jsonify({"message": "Você já girou a roleta hoje para esta atividade. Volte amanhã!"}), 403
-
     prizes = [
         {"type": "xp", "value": 50, "label": "50 XP"},
         {"type": "xp", "value": 100, "label": "100 XP"},
         {"type": "xp", "value": 200, "label": "200 XP"},
-        {"type": "title", "value": "Sortudo", "label": "Título: Sortudo"},
+        {"type": "title", "value": "TITLE_LUCKY", "label": "Título: O Sortudo"},
         {"type": "avatar", "value": "/avatars/avatar_special.png", "label": "Avatar Raro!"},
     ]
     prize = random.choice(prizes)
+    
+    # --- LOG DE DEPURAÇÃO 1 ---
+    current_app.logger.info(f"[SPIN_DEBUG] Usuário {user_id} sorteou o prêmio: {prize}")
 
     if prize['type'] == 'xp':
-        # --- INÍCIO DA CORREÇÃO ---
-        # Garante que, se os pontos forem None, usamos 0 como base
         current_points = progress.points_earned or 0
         progress.points_earned = current_points + prize['value']
         progress.total_xp_earned = (progress.total_xp_earned or 0) + prize['value']
-        # --- FIM DA CORREÇÃO ---
+
+    elif prize['type'] == 'title':
+        # --- LOG DE DEPURAÇÃO 2 ---
+        current_app.logger.info("[SPIN_DEBUG] Entrou no bloco de lógica para títulos.")
+        title_to_unlock = Title.query.filter_by(effect_id=prize['value']).first()
+        
+        # --- LOG DE DEPURAÇÃO 3 ---
+        current_app.logger.info(f"[SPIN_DEBUG] Buscando título com effect_id '{prize['value']}'. Resultado: {title_to_unlock}")
+        
+        if title_to_unlock:
+            existing_unlock = UserUnlockedTitle.query.filter_by(
+                user_id=user.id, activity_id=activity_id, title_id=title_to_unlock.id).first()
+            
+            # --- LOG DE DEPURAÇÃO 4 ---
+            current_app.logger.info(f"[SPIN_DEBUG] Verificando se o título já foi desbloqueado. Resultado: {existing_unlock}")
+
+            if not existing_unlock:
+                new_unlock = UserUnlockedTitle(user_id=user.id, activity_id=activity_id, title_id=title_to_unlock.id)
+                db.session.add(new_unlock)
+                # --- LOG DE DEPURAÇÃO 5 ---
+                current_app.logger.info(f"[SPIN_DEBUG] Criando novo registro de desbloqueio: {new_unlock}")
+
+            # --- LOG DE DEPURAÇÃO 6 (O MAIS IMPORTANTE) ---
+            current_app.logger.info(f"[SPIN_DEBUG] Título equipado ANTES da atribuição: {progress.equipped_title_id}")
+            progress.equipped_title_id = title_to_unlock.id
+            current_app.logger.info(f"[SPIN_DEBUG] Título equipado DEPOIS da atribuição: {progress.equipped_title_id}")
 
     progress.last_spin_date = datetime.utcnow()
     
-    # --- NOVO: Salvar o registro do prêmio ---
-    new_win = RouletteWin(
-        user_id=user.id,
-        activity_id=activity_id,
-        prize_label=prize['label']
-    )
+    new_win = RouletteWin(user_id=user.id, activity_id=activity_id, prize_label=prize['label'])
     db.session.add(new_win)
-    # ------------------------------------
+
+    # --- LOG DE DEPURAÇÃO 7 ---
+    # O .dirty verifica o que o SQLAlchemy marcou para UPDATE/INSERT
+    if progress in db.session.dirty:
+        current_app.logger.info("[SPIN_DEBUG] O objeto 'progress' está marcado como modificado (dirty) para o commit.")
+    else:
+        current_app.logger.warning("[SPIN_DEBUG] AVISO: O objeto 'progress' NÃO está marcado como modificado (dirty). A mudança pode não ser salva.")
+    
+    current_app.logger.info(f"[SPIN_DEBUG] Objetos a serem commitados (novos): {list(db.session.new)}")
+    current_app.logger.info(f"[SPIN_DEBUG] Objetos a serem commitados (modificados): {list(db.session.dirty)}")
 
     db.session.commit()
+    
+    # --- LOG DE DEPURAÇÃO 8 ---
+    current_app.logger.info("[SPIN_DEBUG] db.session.commit() foi executado.")
 
-    return jsonify({
-        "message": f"Você ganhou {prize['label']}!", 
-        "prize": prize,
-        "new_total_points": progress.points_earned
-    }), 200
+    return jsonify({"message": f"Você ganhou {prize['label']}!", "prize": prize, "new_total_points": progress.points_earned}), 200
+
 
 # --- NOVA ROTA PARA BUSCAR OS VENCEDORES ---
 @progress_bp.route('/<int:activity_id>/roulette-winners', methods=['GET'])

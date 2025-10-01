@@ -1,96 +1,65 @@
+// frontend/src/components/activity/LeaderboardTab.jsx
 import React from 'react';
-import { FaCrown } from 'react-icons/fa';
-import backgroundImage from '../../assets/leaderboard-background.png';
-import '../../styles/Leaderboard.css'; // Certifique-se que este caminho está correto
-import { useParams } from 'react-router-dom';
+import { FaSpinner, FaTrophy, FaExclamationCircle } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
-import useAnalytics from '../../hooks/useAnalytics';
-// --- NOVO SUBCOMPONENTE ---
-// Este componente é responsável por renderizar o nome com os efeitos corretos.
-const PlayerName = ({ name, effects = [] }) => { // Adicionado 'effects = []' como valor padrão
-    // Procura por um título nos efeitos
-    const titleEffect = effects.find(e => e && e.startsWith('RANKING_TITLE_'));
-    const title = titleEffect ? titleEffect.replace('RANKING_TITLE_', '').replace('_', ' ') : null;
+import RankingItem from './RankingItem'; // Importa o novo componente de item
 
-    // Procura por um efeito de cor
-    const hasGold = effects.includes('RANKING_COLOR_GOLD');
-    const hasRainbow = effects.includes('RANKING_GRADIENT_RAINBOW');
-    
-    // Define a classe CSS com base nos efeitos encontrados
-    let nameClass = "font-semibold text-lg transition-all";
-    if (hasRainbow) {
-        nameClass += " text-gradient-rainbow";
-    } else if (hasGold) {
-        nameClass += " text-gold";
+const LeaderboardTab = ({ leaderboardData, isLoading, onReturn }) => {
+    // Pega o usuário logado do contexto para poder destacá-lo
+    const { user } = useAuth();
+
+    // --- Componente para o Estado de Carregamento ---
+    if (isLoading) {
+        return (
+            <div className="w-full max-w-2xl mx-auto flex flex-col items-center justify-center p-8 text-white min-h-[400px]">
+                <FaSpinner className="text-4xl animate-spin text-gray-400 mb-4" />
+                <p className="text-lg text-gray-400">Carregando o Ranking...</p>
+            </div>
+        );
     }
 
+    // --- Componente para o Estado Vazio ---
+    if (!leaderboardData || leaderboardData.length === 0) {
+        return (
+            <div className="w-full max-w-2xl mx-auto flex flex-col items-center justify-center p-8 text-white min-h-[400px]">
+                 <button onClick={onReturn} className="absolute top-4 left-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200 transition-colors z-20">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/></svg>
+                    Voltar
+                </button>
+                <FaExclamationCircle className="text-5xl text-yellow-500 mb-4" />
+                <h2 className="text-2xl font-bold mb-2">Ranking Vazio</h2>
+                <p className="text-gray-400">Ainda não há pontuações registradas. Seja o primeiro a jogar!</p>
+            </div>
+        );
+    }
+
+    // --- Renderização Principal do Ranking ---
     return (
-        <div className="flex flex-col items-start">
-            <span className={nameClass}>{name}</span>
-            {title && <span className="text-xs font-bold text-purple-400 mt-1 animate-fadeIn">{title}</span>}
+        <div className="w-full max-w-3xl mx-auto p-4 text-white">
+            <button onClick={onReturn} className="absolute top-4 left-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200 transition-colors z-20">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/></svg>
+                Voltar
+            </button>
+            <header className="text-center mb-8 pt-8">
+                <h1 className="text-4xl font-bold text-yellow-300 flex items-center justify-center gap-3">
+                    <FaTrophy />
+                    Hall da Fama
+                </h1>
+            </header>
+            
+            {/* Usando uma lista ordenada <ol> para semântica correta */}
+            <ol className="space-y-4">
+                {leaderboardData.map(player => (
+                    <RankingItem 
+                        key={player.rank}
+                        player={player}
+                        // Verifica se o ID do jogador na lista é o mesmo do usuário logado
+                        isCurrentUser={player.id === user.id} 
+                    />
+                ))}
+            </ol>
         </div>
     );
-};
-
-
-const LeaderboardTab = ({ leaderboardData , onReturn}) => {
-    const { user } = useAuth();
-    const { activityId } = useParams();
-    
-    
-    useAnalytics("leaderboard", user.token, activityId);
-    return (
-    <div className="bg-gray-800 p-8 rounded-lg text-white" 
-        style={{
-            backgroundImage: `url(${backgroundImage})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-            minHeight: '600px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            padding: '2rem',
-            borderRadius: '1rem',
-            boxShadow: '0 5px 15px rgba(0, 0, 0, 0.5)',
-            color: 'white',
-            width: '90%',
-            maxWidth: '1200px',
-        }}
-    >
-        <button 
-            onClick={onReturn} 
-            className="mb-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200 transition-colors"
-        >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-            <path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
-            </svg>
-            Voltar ao Tabuleiro
-        </button>
-        <h2 className="text-3xl font-bold text-yellow-400 mb-6 text-center" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>
-            Ranking da Atividade
-        </h2>
-        <div className="space-y-4 w-full max-w-2xl">
-            {leaderboardData.map(player => (
-                <div 
-                    key={player.rank} 
-                    className={`p-4 rounded-lg flex items-center justify-between border-2 transition-all duration-300 ${player.name.includes('(Você)') ? 'border-yellow-400 bg-yellow-400/10' : 'border-transparent bg-gray-700/80 backdrop-blur-sm'}`}
-                >
-                    <div className="flex items-center">
-                        <span className="text-2xl font-bold w-10 text-center">{player.rank === 1 ? <FaCrown className="text-yellow-400" /> : player.rank}</span>
-                        <img src={player.avatar} alt={player.name} className="w-12 h-12 rounded-full mx-4" />
-                        
-                        {/* --- A MÁGICA ACONTECE AQUI --- */}
-                        {/* Usando o novo componente para renderizar o nome com os efeitos que vêm do backend */}
-                        <PlayerName name={player.name} effects={player.active_effects} />
-
-                    </div>
-                    <span className="font-bold text-xl text-yellow-400">{player.points} Pontos</span>
-                </div>
-            ))}
-        </div>
-    </div>
-    )
 };
 
 export default LeaderboardTab;

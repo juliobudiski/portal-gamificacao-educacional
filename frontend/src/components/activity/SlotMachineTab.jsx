@@ -1,173 +1,216 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { FaGem, FaStar, FaTrophy, FaGift, FaSyncAlt, FaSpinner } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { FaGem, FaStar, FaTrophy, FaGift, FaSyncAlt, FaSpinner, FaCoins } from 'react-icons/fa';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import '../../styles/SlotMachine.css'; // Criaremos este arquivo de CSS a seguir
-import backgroundImage from '../../assets/slot-background.png';
-import useAnalytics from '../../hooks/useAnalytics';
-// --- Configuração dos Símbolos e Prêmios ---
-// Adicione ou remova símbolos conforme desejar.
+
+// ====================================================================
+// 1. ESTILOS CSS PARA ANIMAÇÕES E LAYOUT 'CLEAN'
+//    (Pode ser movido para um arquivo .css se preferir)
+// ====================================================================
+const style = `
+  @keyframes spinAnimation {
+    from { transform: translateY(-75%); }
+    to { transform: translateY(0%); }
+  }
+
+  @keyframes prizeReveal {
+    0% { opacity: 0; transform: scale(0.5) translateY(50px); }
+    60% { opacity: 1; transform: scale(1.1) translateY(0); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  
+  @keyframes glow {
+    0%, 100% { box-shadow: 0 0 20px 5px rgba(251, 191, 36, 0.4); }
+    50% { box-shadow: 0 0 35px 12px rgba(251, 191, 36, 0.7); }
+  }
+
+  .reel-strip {
+    transition: transform 3s cubic-bezier(0.33, 1, 0.68, 1);
+  }
+  
+  .is-spinning .reel-strip {
+    transform: translateY(calc(-100% + 96px)); /* 96px é a altura de um item (h-24) */
+    animation: spinAnimation 0.5s linear infinite;
+  }
+
+  .result-win {
+    animation: glow 1.5s ease-in-out;
+  }
+`;
+
+// ====================================================================
+// 2. CONFIGURAÇÃO DE SÍMBOLOS
+// ====================================================================
 const symbols = [
-  { name: 'gem', icon: <FaGem className="text-blue-400" />, prize: 'Pequeno Bônus de XP', value: 25, type: 'xp' },
-  { name: 'star', icon: <FaStar className="text-yellow-400" />, prize: 'Bônus Médio de XP', value: 75, type: 'xp' },
-  { name: 'trophy', icon: <FaTrophy className="text-orange-500" />, prize: 'Grande Bônus de XP', value: 200, type: 'xp' },
-  { name: 'gift', icon: <FaGift className="text-red-500" />, prize: 'Prêmio Especial!', value: 1, type: 'special' },
+  { name: 'gem', icon: <FaGem className="text-blue-400" />, value: 25 },
+  { name: 'star', icon: <FaStar className="text-yellow-400" />, value: 75 },
+  { name: 'trophy', icon: <FaTrophy className="text-orange-500" />, value: 200 },
+  { name: 'gift', icon: <FaGift className="text-red-500" />, value: 1, type: 'special' },
 ];
 
-// O componente agora recebe tudo o que precisa via props
+// ====================================================================
+// 3. SUB-COMPONENTE 'REEL' PARA CADA COLUNA
+//    (Encapsula a lógica de animação de uma única coluna)
+// ====================================================================
+const Reel = ({ finalSymbol, isSpinning, delay }) => {
+  // Cria uma lista longa e embaralhada de símbolos para a animação de "blur"
+  const reelSymbols = React.useMemo(() => 
+    [...Array(10)].flatMap(() => [...symbols].sort(() => Math.random() - 0.5)), 
+  []);
+
+  return (
+    <div className="w-24 h-24 bg-gray-900/50 rounded-lg overflow-hidden flex items-center justify-center shadow-inner">
+      <div 
+        className={`reel-strip ${isSpinning ? 'is-spinning' : ''}`}
+        style={{ transitionDelay: isSpinning ? '0s' : delay }}
+      >
+        {isSpinning ? (
+          reelSymbols.map((s, i) => (
+            <div key={i} className="text-6xl h-24 flex-shrink-0 flex items-center justify-center">{s.icon}</div>
+          ))
+        ) : (
+          <div className="text-6xl h-24 flex-shrink-0 flex items-center justify-center">{finalSymbol.icon}</div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ====================================================================
+// 4. COMPONENTE PRINCIPAL 'SlotMachineTab' REFATORADO
+// ====================================================================
 const SlotMachineTab = ({ userCoins, onPrizeWon, winners, loadingWinners, onWin, onReturn }) => {
-  // Hooks são chamados aqui, no topo do componente.
   const { user } = useAuth();
   const { activityId } = useParams();
-  const [reels, setReels] = useState([symbols[0], symbols[0], symbols[0]]);
+
+  // --- Estados do Componente ---
+  const [reels, setReels] = useState([symbols[0], symbols[1], symbols[2]]);
   const [isSpinning, setIsSpinning] = useState(false);
-  const [message, setMessage] = useState('');
+  const [resultState, setResultState] = useState(null); // 'win', 'lose', ou null
+  const [prizeMessage, setPrizeMessage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const spinCost = 0; // Custo para girar
+  const spinCost = 0;
 
-  const { logEvent } = useAnalytics("slot_machine", user.token, activityId);
-
-  // Função para lidar com o clique no botão de girar
-  
+  // --- Lógica de Giro (Ação Principal) ---
   const handleSpinClick = async () => {
-    // NENHUM hook (useState, useEffect, etc.) pode ser chamado aqui dentro.
-    if (isSpinning || loading) return;
     if (userCoins < spinCost) {
-      setError(`Você precisa de pelo menos ${spinCost} moedas para jogar.`);
+      setError(`Moedas insuficientes. Custo: ${spinCost}`);
       return;
     }
 
-    setMessage('');
+    // Resetar estados para um novo giro
     setError('');
+    setPrizeMessage('');
+    setResultState(null);
     setLoading(true);
-    setIsSpinning(true);
-    logEvent("slot_machine_attempt");
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/progress/${activityId}/play-slot`,
-        { method: 'POST', headers: { Authorization: `Bearer ${user.token}` } }
-      );
-
+      // Simula a chamada à API (no seu caso, a chamada real)
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/progress/${activityId}/play-slot`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${user.token}` },
+      });
       const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.message || 'Não foi possível jogar.');
-      }
+      if (!response.ok) throw new Error(result.message || 'Não foi possível jogar.');
 
-      const finalSymbols = result.result.map(symbolName =>
-        symbols.find(s => s.name === symbolName)
-      );
+      // Inicia a animação visual
+      setIsSpinning(true);
+      setLoading(false); // A API respondeu, agora é só animação
 
+      const finalSymbols = result.result.map(symbolName => symbols.find(s => s.name === symbolName));
+
+      // Duração da animação + suspense
       setTimeout(() => {
         setReels(finalSymbols);
-        setIsSpinning(false);
+        setIsSpinning(false); // Para a animação de "blur" e mostra o resultado
 
         if (result.prize) {
-            setMessage(`Parabéns! Você ganhou: ${result.prize.description}`);
-            if(result.prize.type === 'xp') {
-                onPrizeWon(result.prize.value);
-            }
-            onWin(); // Avisa o componente pai para recarregar a lista de ganhadores
+          setResultState('win');
+          setPrizeMessage(result.prize.description);
+          if (result.prize.type === 'xp') {
+            onPrizeWon(result.prize.value);
+          }
+          onWin(); // Recarrega a lista de ganhadores
         } else {
-            setMessage("Não foi dessa vez! Tente novamente.");
+          setResultState('lose');
+          setPrizeMessage("Não foi dessa vez!");
         }
-      }, 3000);
+      }, 3000); // Duração total da animação
 
     } catch (err) {
       setError(err.message);
-      setIsSpinning(false);
-    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
-      <button 
-          onClick={onReturn} 
-          className="mb-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200 transition-colors"
-      >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-          <path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
-          </svg>
-          Voltar ao Tabuleiro
+    <div className="w-full flex flex-col items-center p-4 text-white">
+      <style>{style}</style>
+      <button onClick={onReturn} className="absolute top-4 left-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200 transition-colors z-20">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/></svg>
+        Voltar
       </button>
-      <p 
-        className="text-sm text-gray-200 mb-2 font-semibold" 
-        style={{ textShadow: '1px 1px 3px rgba(0, 0, 0, 0.8)' }}
-      >
-        Use suas moedas para tentar a sorte e ganhar prêmios!
-      </p>
-      
-      
-      {/* Contêiner de altura fixa para as mensagens */}
-      <div className="w-full max-w-lg mb-4 flex items-center justify-center" style={{ minHeight: '72px' }}>
-        { (error || message) && (
-            <div className={`w-full p-4 rounded-xl text-center ${error ? 'bg-red-900/30 text-red-300' : 'bg-green-900/30 text-green-300'}`}>
-              {error || message}
-            </div>
-        )}
-      </div>
-      
 
-      {/* A Máquina de Slot */}
-      <div className="flex justify-center items-center gap-4 bg-gray-900 p-6 rounded-xl border-4 border-gray-700 mb-6">
-        {reels.map((symbol, reelIndex) => (
-          <div key={reelIndex} className="w-24 h-24 bg-gray-700 rounded-lg overflow-hidden flex items-center justify-center">
-            <div className={`reel ${isSpinning ? 'spinning' : ''}`}>
-              {isSpinning ? (
-                [...symbols, ...symbols].map((s, i) => (
-                  <div key={i} className="text-6xl p-4 flex-shrink-0">{s.icon}</div>
-                ))
-              ) : (
-                <div className="text-6xl p-4">{symbol.icon}</div>
-              )}
+      {/* Layout principal com duas colunas em telas grandes */}
+      <div className="w-full flex flex-col lg:flex-row items-center lg:items-start justify-center gap-8">
+        
+        {/* Coluna Principal: A Máquina */}
+        <div className="flex flex-col items-center gap-6">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold">Caça-Níquel</h1>
+            <div className="mt-2 flex items-center justify-center gap-2 text-lg font-bold text-yellow-300 bg-yellow-400/10 px-4 py-2 rounded-full">
+              <FaCoins />
+              <span>Você tem: {userCoins} moedas</span>
             </div>
           </div>
-        ))}
-      </div>
+          
+          {/* A Máquina em si */}
+          <div className={`flex justify-center items-center gap-4 bg-gray-900 p-6 rounded-xl border-4 border-gray-700 transition-shadow ${resultState === 'win' ? 'result-win' : ''}`}>
+            {reels.map((symbol, i) => (
+              <Reel key={i} finalSymbol={symbol} isSpinning={isSpinning} delay={`${i * 0.2}s`} />
+            ))}
+          </div>
 
-      {/* Botão de Girar */}
-      <button
-        onClick={handleSpinClick}
-        disabled={isSpinning || loading || userCoins < spinCost}
-        className="py-3 px-8 rounded-xl text-lg font-semibold text-gray-900 bg-gradient-to-r from-[#ffbd30] to-[#69e8cb] hover:opacity-90 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed group shadow-lg mb-4" // Adicionado margin-bottom
-      >
-        <div className="flex items-center justify-center gap-2">
-          {isSpinning || loading ? (
-            <><FaSyncAlt className="animate-spin" /><span>Girando...</span></>
-          ) : (
-            `Girar (${spinCost} moedas)`
-          )}
-        </div>
-      </button>
-
-      {/* Contagem de Moedas (na nova posição) */}
-      <div className="text-lg font-bold text-yellow-300 bg-yellow-400/10 px-3 py-1 rounded-full" style={{ textShadow: '1px 1px 3px rgba(0, 0, 0, 0.8)' }}>
-        Você tem: {userCoins} moedas
-      </div>
-    <div className="w-full max-w-lg mt-12 bg-gray-900/50 p-4 rounded-2xl border border-gray-700 flex flex-col">
-          <h3 className="text-xl font-bold text-center mb-4 text-[#69e8cb]">Últimos Ganhadores</h3>
-          {loadingWinners ? (
-            <div className="flex-grow flex items-center justify-center py-8">
-                <FaSpinner className="animate-spin text-2xl text-gray-400" />
+          {/* Feedback de Resultado */}
+          <div className="h-10 text-center">
+            {prizeMessage && (
+              <div className={`text-2xl font-bold ${resultState === 'win' ? 'text-yellow-400' : 'text-gray-400'}`} style={{ animation: 'prizeReveal 0.5s ease-out' }}>
+                {prizeMessage}
+              </div>
+            )}
+            {error && <div className="text-lg text-red-400">{error}</div>}
+          </div>
+          
+          {/* Botão de Ação */}
+          <button
+            onClick={handleSpinClick}
+            disabled={isSpinning || loading || userCoins < spinCost}
+            className="w-full max-w-xs py-4 px-8 rounded-xl text-xl font-bold text-gray-900 bg-gradient-to-r from-[#ffbd30] to-[#69e8cb] hover:scale-105 active:scale-95 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg"
+          >
+            <div className="flex items-center justify-center gap-3">
+              {loading ? <FaSpinner className="animate-spin" /> : <FaSyncAlt />}
+              <span>{isSpinning || loading ? "Girando..." : `Girar (${spinCost} moedas)`}</span>
             </div>
+          </button>
+        </div>
+
+        {/* Coluna Secundária: Ganhadores */}
+        <div className="w-full max-w-sm bg-gray-800/50 backdrop-blur-sm p-4 rounded-2xl border border-gray-700 flex flex-col lg:mt-12">
+          <h3 className="text-xl font-bold text-center mb-4 text-[#69e8cb]">Últimos Ganhadores</h3>
+          {loadingWinners ? ( <div className="flex-grow flex items-center justify-center py-8"><FaSpinner className="animate-spin text-2xl" /></div>
           ) : winners.length > 0 ? (
-            <div className="space-y-3 overflow-y-auto max-h-[350px] pr-2">
+            <div className="space-y-3">
               {winners.map((winner, index) => (
                 <div key={index} className="bg-gray-700 p-3 rounded-lg flex justify-between items-center animate-fadeIn">
-                    <span className="font-semibold text-gray-200">{winner.userName}</span>
-                    <span className="font-bold text-yellow-400 px-2 py-1 bg-yellow-400/10 rounded-md text-sm">{winner.prize}</span>
+                  <span className="font-semibold text-gray-200">{winner.userName}</span>
+                  <span className="font-bold text-yellow-400 px-2 py-1 bg-yellow-400/10 rounded-md text-sm">{winner.prize}</span>
                 </div>
               ))}
             </div>
-          ) : (
-            <div className="flex-grow flex items-center justify-center py-8">
-                <p className="text-gray-500 italic">Nenhum prêmio ganho ainda.</p>
-            </div>
-          )}
+          ) : ( <p className="text-gray-500 text-center italic py-8">Ainda não houve ganhadores.</p> )}
         </div>
+      </div>
     </div>
   );
 };
