@@ -31,8 +31,8 @@ const StudentSidebar = ({ progress, onShowStats }) => {
   }
 
   // Calcula porcentagem de progresso para barra de XP
-  const xpPercentage = progress.xpForNextLevel > 0 ? 
-    (progress.xp / progress.xpForNextLevel) * 100 : 
+  const xpPercentage = progress.xpForNextLevel > 0 ?
+    (progress.xp / progress.xpForNextLevel) * 100 :
     0;
 
   // Log de dados de progresso
@@ -62,11 +62,11 @@ const StudentSidebar = ({ progress, onShowStats }) => {
           <FaLevelUpAlt className="mr-2" /> Nível
         </h4>
         <p className="text-2xl font-bold text-white">Nível {progress.level}</p>
-        
+
         {/* Barra de progresso de XP */}
         <div className="w-full bg-gray-700 rounded-full h-4 mt-2">
-          <div 
-            className="bg-green-500 h-4 rounded-full" 
+          <div
+            className="bg-green-500 h-4 rounded-full"
             style={{ width: `${xpPercentage}%` }}
           >
             {/* TODO: Adicionar tooltip com detalhes do progresso */}
@@ -79,14 +79,14 @@ const StudentSidebar = ({ progress, onShowStats }) => {
       </div>
 
       {/* Botão para exibir estatísticas */}
-      <button 
+      <button
         onClick={() => {
           // Log de interação do usuário
           if (isDebugMode) {
             console.log('[StudentSidebar] Botão "Ver Estatísticas" clicado');
           }
           onShowStats();
-        }} 
+        }}
         className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded-lg"
       >
         Ver Estatísticas

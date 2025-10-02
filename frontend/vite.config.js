@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     host: true, // Garante que o servidor seja acessível na rede
     allowedHosts: [
-      'stamp-karen-notebooks-venice.trycloudflare.com'
+      'laser-tent-supplemental-thu.trycloudflare.com'
     ]
   }
 })

@@ -26,7 +26,7 @@ function ActivityCard({ activity, isOwner, onCopy, onDelete, onSelect, isSelecte
             )}
             <div>
                 <h3 className="text-lg font-bold text-white mb-2">{activity.title}</h3>
-                
+
                 {activity.class_name && (
                     <div className="flex items-center text-xs text-yellow-300 bg-yellow-400/10 px-2 py-1 rounded-md mb-3">
                         <FaChalkboardTeacher className="mr-2" />
@@ -43,7 +43,7 @@ function ActivityCard({ activity, isOwner, onCopy, onDelete, onSelect, isSelecte
                         {activity.areaKnowledge || 'N/A'}
                     </span>
                     {activity.isPublic && (
-                         <span className="text-xs font-medium px-2 py-1 bg-green-500/20 text-green-400 rounded-full">
+                        <span className="text-xs font-medium px-2 py-1 bg-green-500/20 text-green-400 rounded-full">
                             Pública
                         </span>
                     )}
@@ -54,14 +54,14 @@ function ActivityCard({ activity, isOwner, onCopy, onDelete, onSelect, isSelecte
                 {isOwner ? (
                     <>
                         {/* 2. Botão "Atribuir Turma" adicionado aqui */}
-                        <button 
-                            onClick={() => navigate(`/assign-activity-to-class/${activity.id}`)} 
-                            className="p-2 bg-gray-700 hover:bg-accent-teal/30 rounded-full group" 
+                        <button
+                            onClick={() => navigate(`/assign-activity-to-class/${activity.id}`)}
+                            className="p-2 bg-gray-700 hover:bg-accent-teal/30 rounded-full group"
                             title="Atribuir à Turma"
                         >
                             <FaChalkboardTeacher className="text-gray-400 group-hover:text-accent-teal" />
                         </button>
-                        
+
                         {/* Botões existentes para o dono da atividade */}
                         <button onClick={() => navigate(`/professor/atividades/${activity.id}/edit`)} className="p-2 bg-gray-700 hover:bg-accent-yellow/30 rounded-full group" title="Editar">
                             <FaEdit className="text-gray-400 group-hover:text-accent-yellow" />
@@ -72,7 +72,7 @@ function ActivityCard({ activity, isOwner, onCopy, onDelete, onSelect, isSelecte
                     </>
                 ) : (
                     <>
-                         <button onClick={() => onCopy(activity.id)} className="p-2 bg-gray-700 hover:bg-accent-purple/30 rounded-full group" title="Copiar e Editar">
+                        <button onClick={() => onCopy(activity.id)} className="p-2 bg-gray-700 hover:bg-accent-purple/30 rounded-full group" title="Copiar e Editar">
                             <FaCopy className="text-gray-400 group-hover:text-accent-purple" />
                         </button>
                     </>

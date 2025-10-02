@@ -44,7 +44,7 @@ const RouletteTab = ({ onPrizeWon, onReturn }) => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/progress/${activityId}/roulette-winners`, { headers: { Authorization: `Bearer ${user.token}` } });
       if (response.ok) setWinners(await response.json());
-    } catch (err) { console.error("Erro ao buscar vencedores:", err); } 
+    } catch (err) { console.error("Erro ao buscar vencedores:", err); }
     finally { setLoadingWinners(false); }
   }, [activityId, user.token]);
 
@@ -64,7 +64,7 @@ const RouletteTab = ({ onPrizeWon, onReturn }) => {
         setApiPrize(result.prize);
         const prizeText = result.prize.label.trim();
         const prizeIndex = segments.findIndex(s => s.trim() === prizeText);
-        
+
         if (prizeIndex !== -1) {
           setIsSpinning(true);
           setWinningPrizeIndex(prizeIndex);
@@ -92,19 +92,19 @@ const RouletteTab = ({ onPrizeWon, onReturn }) => {
 
     // O objeto 'apiPrize' tem o formato: { type, value, label }
     setRevealedPrize(apiPrize); // Mostra o modal de prêmio
-    
+
     // Agora, tratamos o prêmio de XP aqui, com base na resposta da API
     if (apiPrize.type === "xp") {
       onPrizeWon?.(apiPrize.value);
     }
-    
+
     // Fecha o modal e atualiza a lista após alguns segundos
     setTimeout(() => {
-        setRevealedPrize(null);
-        setIsSpinning(false);
-        setWinningPrizeIndex(null);
-        setApiPrize(null);
-        fetchWinners();
+      setRevealedPrize(null);
+      setIsSpinning(false);
+      setWinningPrizeIndex(null);
+      setApiPrize(null);
+      fetchWinners();
     }, 3000);
   };
 
@@ -112,8 +112,8 @@ const RouletteTab = ({ onPrizeWon, onReturn }) => {
     <div className="w-full flex flex-col lg:flex-row items-center lg:items-start justify-center gap-8 p-4">
       <style>{style}</style>
       <button onClick={onReturn} className="absolute top-4 left-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200 transition-colors z-20">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/></svg>
-          Voltar
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" /></svg>
+        Voltar
       </button>
 
       {/* Coluna da Roleta */}
@@ -134,7 +134,7 @@ const RouletteTab = ({ onPrizeWon, onReturn }) => {
       {/* Coluna de Vencedores */}
       <div className="w-full max-w-sm bg-gray-800/50 p-4 rounded-2xl border border-gray-700 flex flex-col mt-8 lg:mt-16">
         <h3 className="text-xl font-bold text-center mb-4 text-[#69e8cb]">Últimos Ganhadores</h3>
-        {loadingWinners ? ( <div className="flex-grow flex items-center justify-center py-8"><FaSpinner className="animate-spin text-2xl" /></div>
+        {loadingWinners ? (<div className="flex-grow flex items-center justify-center py-8"><FaSpinner className="animate-spin text-2xl" /></div>
         ) : winners.length > 0 ? (
           <div className="space-y-3">
             {winners.map((winner, index) => (
@@ -144,17 +144,17 @@ const RouletteTab = ({ onPrizeWon, onReturn }) => {
               </div>
             ))}
           </div>
-        ) : ( <p className="text-gray-500 text-center italic py-8">Seja o primeiro a ganhar!</p> )}
+        ) : (<p className="text-gray-500 text-center italic py-8">Seja o primeiro a ganhar!</p>)}
       </div>
 
       {/* Modal de Revelação de Prêmio */}
       {revealedPrize && (
-          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 animate-fadeIn">
-              <div className="bg-gray-800 border-2 border-yellow-400 p-8 rounded-xl shadow-2xl text-center prize-reveal-box">
-                  <h2 className="text-2xl font-light text-gray-300 mb-2">Você ganhou:</h2>
-                  <p className="text-4xl font-bold text-yellow-400">{revealedPrize.label}</p>
-              </div>
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 animate-fadeIn">
+          <div className="bg-gray-800 border-2 border-yellow-400 p-8 rounded-xl shadow-2xl text-center prize-reveal-box">
+            <h2 className="text-2xl font-light text-gray-300 mb-2">Você ganhou:</h2>
+            <p className="text-4xl font-bold text-yellow-400">{revealedPrize.label}</p>
           </div>
+        </div>
       )}
     </div>
   );

@@ -1,9 +1,9 @@
 // frontend/src/components/steps/Step1_InitialDetails.jsx
 import React from 'react';
-import { 
-  FaCode, FaTools, FaUsers, FaFrown, FaTasks, FaHeadSideVirus, 
-  FaRocket, FaComments, FaBalanceScale, FaHeartbeat, FaCogs, 
-  FaBriefcase, FaCalendarTimes 
+import {
+  FaCode, FaTools, FaUsers, FaFrown, FaTasks, FaHeadSideVirus,
+  FaRocket, FaComments, FaBalanceScale, FaHeartbeat, FaCogs,
+  FaBriefcase, FaCalendarTimes
 } from 'react-icons/fa';
 
 /**

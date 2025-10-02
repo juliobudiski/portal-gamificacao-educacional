@@ -22,7 +22,7 @@ function Step5_GameElements({ activityData, handleInputChange, setActivityData, 
   // Lógica para determinar elementos recomendados com base nos perfis de jogador selecionados na etapa anterior.
   const recommendedElements = new Set();
   console.log("%cLOG 4: PROPS RECEBIDAS EM 'Step5_GameElements'", "color: orange; font-weight: bold;", activityData.gamificationDesign);
-  
+
   if (activityData.playerProfile.selectedProfiles.includes("Competitivo")) { ["Níveis", "Sistema de pontuação", "Estatísticas (métricas de progresso)", "Reconhecimento", "Competição", "Progressão baseada em habilidade", "Sistema de classificação e ranking"].forEach(el => recommendedElements.add(el)); }
   if (activityData.playerProfile.selectedProfiles.includes("Cooperativo")) { ["Cooperação", "Chat ou sistema de mensagens", "Interação social com outros jogadores"].forEach(el => recommendedElements.add(el)); }
   if (activityData.playerProfile.selectedProfiles.includes("Imersivo")) { ["Narrativas envolventes", "Storytelling", "Sensação (imersão, experiência sensorial)", "Customização de personagem", "Customização de equipamento"].forEach(el => recommendedElements.add(el)); }
@@ -127,24 +127,24 @@ function Step5_GameElements({ activityData, handleInputChange, setActivityData, 
           );
         })}
       </div>
-      
+
       {/* SEÇÃO 3: Campo Aberto */}
       <div className="pt-4">
         <label htmlFor="gameElements.otherElement" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
           Outro elemento não listado? (Opcional)
         </label>
-        <input 
-          type="text" 
-          id="gameElements.otherElement" 
-          name="gameElements.otherElement" 
-          value={activityData.gameElements.otherElement} 
-          onChange={handleInputChange} 
+        <input
+          type="text"
+          id="gameElements.otherElement"
+          name="gameElements.otherElement"
+          value={activityData.gameElements.otherElement}
+          onChange={handleInputChange}
           className="mt-1 block w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
-          placeholder="Descreva um elemento de jogo personalizado" 
+          placeholder="Descreva um elemento de jogo personalizado"
         />
       </div>
-      
-      <GameBoardEditor 
+
+      <GameBoardEditor
         gamificationDesign={activityData.gamificationDesign}
         setActivityData={setActivityData}
         onEditContent={onEditContent}

@@ -31,7 +31,7 @@ const WinwheelWrapper = forwardRef(({ segments }, ref) => {
       if (!wheelRef.current) return;
 
       const wheel = wheelRef.current;
-      
+
       // Calcula o ângulo para parar no prêmio correto
       const segmentAngle = 360 / wheel.numSegments;
       // Adiciona um pouco de variação para não parar sempre no mesmo ponto
@@ -39,10 +39,10 @@ const WinwheelWrapper = forwardRef(({ segments }, ref) => {
       const stopAtAngle = (prizeIndex * segmentAngle) + randomOffset;
 
       wheel.animation.stopAngle = stopAtAngle;
-      
+
       // Define a função a ser chamada quando a animação terminar
       wheel.animation.callbackFinished = () => onFinishedCallback(wheel.getIndicatedSegment());
-      
+
       // Reseta e inicia a animação
       wheel.stopAnimation(false);
       wheel.rotationAngle = 0;
@@ -53,13 +53,13 @@ const WinwheelWrapper = forwardRef(({ segments }, ref) => {
 
   // O componente renderiza apenas o elemento <canvas> que a Winwheel.js usará
   return (
-    <canvas 
-        ref={canvasRef}
-        id="winwheel-canvas" 
-        width="450" 
-        height="450"
+    <canvas
+      ref={canvasRef}
+      id="winwheel-canvas"
+      width="450"
+      height="450"
     >
-        Canvas not supported, use another browser.
+      Canvas not supported, use another browser.
     </canvas>
   );
 });

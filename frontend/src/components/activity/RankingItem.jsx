@@ -4,7 +4,11 @@ import { FaMedal } from 'react-icons/fa';
 
 // Componente para um único jogador no ranking
 const RankingItem = ({ player, isCurrentUser }) => {
-
+  console.log(`[RankingItem] Renderizando para: ${player.name}`, {
+    isCurrentUser,
+    receivedTitle: player.title,
+    receivedEffects: player.active_effects
+  });
   // --- Lógica para Estilo do Pódio (Top 3) ---
   const getPodiumStyle = (rank) => {
     switch (rank) {
@@ -31,44 +35,54 @@ const RankingItem = ({ player, isCurrentUser }) => {
     }
   };
 
-  // --- Lógica para aplicar os efeitos cosméticos comprados na loja ---
-  const parsePlayerEffects = (name, effects = [], title) => {
-    // A lógica de cores continua a mesma, lendo de 'effects'
-    const hasGold = effects.includes('RANKING_COLOR_GOLD');
-    const hasRainbow = effects.includes('RANKING_GRADIENT_RAINBOW');
-    
-    let nameClass = "font-semibold text-lg transition-all text-white";
-    if (hasRainbow) {
-      nameClass = "font-semibold text-lg transition-all bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent";
-    } else if (hasGold) {
-      nameClass = "font-semibold text-lg transition-all text-yellow-400";
+  // --- LÓGICA DE EFEITOS ATUALIZADA ---
+  const generateVisuals = (effects = []) => {
+    const visualStyle = {};
+    let baseClass = "font-semibold text-lg transition-all";
+
+    const cosmeticEffect = effects.find(e => typeof e === 'object' && e !== null && e.type === 'color');
+
+    if (cosmeticEffect) {
+      visualStyle.color = cosmeticEffect.color;
+      if (cosmeticEffect.effect === 'neon') {
+        visualStyle.textShadow = `0 0 5px ${cosmeticEffect.color}, 0 0 7px ${cosmeticEffect.color}`;
+      }
+    } else {
+      baseClass += " text-white"; // Cor padrão se não houver efeito
     }
 
-    return (
-      <div className="flex flex-col items-start">
-        <span className={nameClass}>{name}</span>
-        {/* A MUDANÇA CRÍTICA: Apenas exibe o 'title' se ele vier da API.
-            Removemos a lógica antiga que tentava adivinhar o título a partir de 'effects'. */}
-        {title && <span className="text-xs font-bold text-purple-300 mt-1">{title}</span>}
-      </div>
-    );
+    // Retorna o objeto de estilo e a classe base
+    return { style: visualStyle, className: baseClass };
   };
-  
+
   const podiumStyle = getPodiumStyle(player.rank);
-  const playerNameWithEffects = parsePlayerEffects(player.name, player.active_effects, player.title);
+  const visuals = generateVisuals(player.active_effects);
 
   // Define a classe base e adiciona classes de destaque condicionalmente
-  let baseClasses = `p-4 rounded-lg flex items-center justify-between border-2 transition-all duration-300 backdrop-blur-sm ${podiumStyle.bgClass} ${podiumStyle.borderClass}`;
+  let containerClasses = `p-4 rounded-lg flex items-center justify-between border-2 transition-all duration-300 backdrop-blur-sm ${podiumStyle.bgClass} ${podiumStyle.borderClass}`;
   if (isCurrentUser) {
-    baseClasses += ' scale-105 border-blue-400 ring-4 ring-blue-500/50'; // Destaque para o usuário logado
+    containerClasses += ' scale-105 border-blue-400 ring-4 ring-blue-500/50';
   }
 
   return (
-    <li className={baseClasses}>
+    <li className={containerClasses}>
       <div className="flex items-center">
         <span className="text-2xl font-bold w-12 text-center flex justify-center items-center">{podiumStyle.icon}</span>
         <img src={player.avatar} alt={player.name} className="w-12 h-12 rounded-full mx-4" />
-        {playerNameWithEffects}
+
+        {/* Nome e Título agora usam o mesmo objeto de estilo 'visuals' */}
+        <div className="flex flex-col items-start">
+          <span style={visuals.style} className={visuals.className}>{player.name}</span>
+          {player.title && (
+            <span
+              style={visuals.style} // <-- APLICA O MESMO ESTILO AQUI
+              className="text-xs font-bold mt-1" // <-- Classe base para o título
+            >
+              {player.title}
+            </span>
+          )}
+        </div>
+
       </div>
       <span className="font-bold text-xl text-yellow-300">{player.points} Pontos</span>
     </li>

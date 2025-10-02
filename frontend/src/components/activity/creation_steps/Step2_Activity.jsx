@@ -1,14 +1,14 @@
 // frontend/src/components/steps/Step2_DesiredScenario.jsx
 import React from 'react';
-import { 
-  FaGamepad, 
-  FaBullseye, 
-  FaBrain, 
-  FaLightbulb, 
-  FaGraduationCap, 
-  FaStar, 
-  FaUsers, 
-  FaProjectDiagram 
+import {
+  FaGamepad,
+  FaBullseye,
+  FaBrain,
+  FaLightbulb,
+  FaGraduationCap,
+  FaStar,
+  FaUsers,
+  FaProjectDiagram
 } from 'react-icons/fa';
 
 /**
@@ -44,7 +44,7 @@ function Step2_DesiredScenario({ activityData, handleInputChange, setActivityDat
     const newObjectives = currentObjectives.includes(objectiveText)
       ? currentObjectives.filter(o => o !== objectiveText)
       : [...currentObjectives, objectiveText];
-    
+
     // Utiliza setActivityData para atualizar o estado aninhado de forma segura.
     // Esta abordagem é mais explícita e menos propensa a erros do que simular um evento.
     setActivityData(prevData => ({
@@ -100,22 +100,22 @@ function Step2_DesiredScenario({ activityData, handleInputChange, setActivityDat
         <label htmlFor="desiredScenario.otherObjective" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
           Outro objetivo em mente? (Opcional)
         </label>
-        <input 
-          type="text" 
-          id="desiredScenario.otherObjective" 
-          name="desiredScenario.otherObjective" 
-          value={activityData.desiredScenario.otherObjective} 
-          onChange={handleInputChange} 
+        <input
+          type="text"
+          id="desiredScenario.otherObjective"
+          name="desiredScenario.otherObjective"
+          value={activityData.desiredScenario.otherObjective}
+          onChange={handleInputChange}
           className="mt-1 block w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
-          placeholder="Descreva um objetivo personalizado" 
+          placeholder="Descreva um objetivo personalizado"
         />
       </div>
-      
-       <button 
-        onClick={() => openHelpModal("Ajuda - Cenário Desejado", `Definir objetivos claros e específicos requer algumas etapas...`)} 
+
+      <button
+        onClick={() => openHelpModal("Ajuda - Cenário Desejado", `Definir objetivos claros e específicos requer algumas etapas...`)}
         className="mt-4 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
         Ajuda
-      </button> 
+      </button>
     </div>
   );
 }

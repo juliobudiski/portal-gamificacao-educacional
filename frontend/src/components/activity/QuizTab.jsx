@@ -17,8 +17,8 @@ const isDebugMode = import.meta.env.VITE_DEBUG_MODE === 'true';
  * @param {Array} props.gameElements - Elementos de jogo ativos
  * @returns {JSX.Element} Interface de quiz interativo
  */
-const QuizTab = ({ content, onAnswerCorrect, onComplete, isReplay }) => { 
-  
+const QuizTab = ({ content, onAnswerCorrect, onComplete, isReplay }) => {
+
   // Acessa as perguntas e elementos de dentro do objeto 'content'
   const { questions = [], step_id } = content; // Pega 'questions' e o 'step_id' do nível superior
   const gameElements = content.gameElements || []; // Pode ser útil se precisar no futuro
@@ -49,14 +49,14 @@ const QuizTab = ({ content, onAnswerCorrect, onComplete, isReplay }) => {
   const isTimed = gameElements.includes("Pressão de tempo");
 
   const handleFinishQuiz = () => {
-      setIsFinished(true);
-      // Esta função agora vai funcionar, pois 'content.step_id' existirá.
-      console.log(`[QuizTab] Quiz finalizado. Chamando onComplete com o step_id: ${content.step_id}`);
-      onComplete(content.step_id); 
+    setIsFinished(true);
+    // Esta função agora vai funcionar, pois 'content.step_id' existirá.
+    console.log(`[QuizTab] Quiz finalizado. Chamando onComplete com o step_id: ${content.step_id}`);
+    onComplete(content.step_id);
   };
 
 
-  
+
 
   /**
    * @function handleSubmit
@@ -76,16 +76,16 @@ const QuizTab = ({ content, onAnswerCorrect, onComplete, isReplay }) => {
     console.log('%c[DEBUG 2] Dentro de handleSubmit. Valor de `content`:', 'color: orange;', content);
 
     //  Logar o evento de submissão da resposta com o tempo de hesitação
-    const hesitationTime = firstClickTimestamp.current 
-        ? (submitTimestamp - firstClickTimestamp.current) / 1000
-        : (submitTimestamp - questionStartTime.current) / 1000; // Tempo total se não houve clique
+    const hesitationTime = firstClickTimestamp.current
+      ? (submitTimestamp - firstClickTimestamp.current) / 1000
+      : (submitTimestamp - questionStartTime.current) / 1000; // Tempo total se não houve clique
 
     logEvent("quiz_answer_submit", {
-        question_id: currentIndex, // ou um ID único da pergunta se tiver
-        question_text: currentQuestion.text,
-        selected_option: answer,
-        is_correct: answer === currentQuestion.correct_option,
-        hesitation_time: hesitationTime
+      question_id: currentIndex, // ou um ID único da pergunta se tiver
+      question_text: currentQuestion.text,
+      selected_option: answer,
+      is_correct: answer === currentQuestion.correct_option,
+      hesitation_time: hesitationTime
     });
 
     const isCorrect = answer === questions[currentIndex].correct_option;
@@ -100,8 +100,8 @@ const QuizTab = ({ content, onAnswerCorrect, onComplete, isReplay }) => {
       type: isCorrect ? 'success' : 'error',
       message: feedbackMessage
     });
-    
-    
+
+
     if (user?.role === 'aluno') {
       try {
         const response = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${activityId}/submit_answer`, {
@@ -121,10 +121,10 @@ const QuizTab = ({ content, onAnswerCorrect, onComplete, isReplay }) => {
         if (!response.ok) {
           console.error("Falha ao salvar a resposta no backend.");
         } else {
-           // Chama a função onAnswerCorrect para atualizar a UI imediatamente
-           if (isCorrect && !isReplay) {
+          // Chama a função onAnswerCorrect para atualizar a UI imediatamente
+          if (isCorrect && !isReplay) {
             onAnswerCorrect(points);
-        }
+          }
         }
       } catch (error) {
         console.error("Erro de rede ao salvar resposta:", error);
@@ -139,7 +139,7 @@ const QuizTab = ({ content, onAnswerCorrect, onComplete, isReplay }) => {
     setTimeout(() => {
       setFeedback({ type: '', message: '' });
       setSelectedAnswer(null);
-      
+
       // Lógica de transição para próxima pergunta ou finalização
       if (currentIndex < questions.length - 1) {
         if (isDebugMode) {
@@ -151,7 +151,7 @@ const QuizTab = ({ content, onAnswerCorrect, onComplete, isReplay }) => {
           console.log('[QuizTab] Quiz finalizado. Exibindo tela de conclusão');
         }
         logEvent("quiz_complete", {
-            total_questions: questions.length
+          total_questions: questions.length
         });
         handleFinishQuiz();
       }
@@ -166,7 +166,7 @@ const QuizTab = ({ content, onAnswerCorrect, onComplete, isReplay }) => {
     if (isDebugMode) {
       console.log(`[QuizTab] useEffect timer ativado | currentIndex: ${currentIndex} | isTimed: ${isTimed}`);
     }
-    
+
     // O timer só será ativado se 'isTimed' for verdadeiro
     if (isFinished || !questions || !questions[currentIndex] || !isTimed) {
       // Log de condições que impedem o timer
@@ -182,7 +182,7 @@ const QuizTab = ({ content, onAnswerCorrect, onComplete, isReplay }) => {
     // Configura tempo limite específico da pergunta ou padrão
     const timeLimit = questions[currentIndex].timeLimit || 30;
     setTimeLeft(timeLimit);
-    
+
     if (isDebugMode) {
       console.log(`[QuizTab] Iniciando timer: ${timeLimit}s para pergunta ${currentIndex + 1}`);
     }
@@ -191,19 +191,19 @@ const QuizTab = ({ content, onAnswerCorrect, onComplete, isReplay }) => {
       setTimeLeft(prev => {
         if (prev <= 1) {
           clearInterval(timer);
-          
+
           // Log de tempo esgotado
           if (isDebugMode) {
             console.log(`[QuizTab] Tempo esgotado na pergunta ${currentIndex + 1}`);
           }
-          
+
           handleSubmit(null);
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
-    
+
     return () => {
       clearInterval(timer);
       if (isDebugMode) {
@@ -222,9 +222,9 @@ const QuizTab = ({ content, onAnswerCorrect, onComplete, isReplay }) => {
     return () => {
       // Se o componente for desmontado antes de o quiz terminar, registra o abandono
       if (!isFinished) {
-        logEvent("quiz_abandon", { 
-            question_index: currentIndex,
-            time_spent_on_question: (Date.now() - questionStartTime.current) / 1000
+        logEvent("quiz_abandon", {
+          question_index: currentIndex,
+          time_spent_on_question: (Date.now() - questionStartTime.current) / 1000
         });
       }
     };
@@ -241,7 +241,7 @@ const QuizTab = ({ content, onAnswerCorrect, onComplete, isReplay }) => {
       </div>
     );
   }
-  
+
   // Fallback para quando não há perguntas
   if (!questions || questions.length === 0) {
     if (isDebugMode) {
@@ -251,7 +251,7 @@ const QuizTab = ({ content, onAnswerCorrect, onComplete, isReplay }) => {
   }
 
   const currentQuestion = questions[currentIndex];
-  
+
   // Proteção adicional para perguntas indefinidas
   if (!currentQuestion) {
     const errorMsg = "Tentativa de renderizar pergunta indefinida";
@@ -269,7 +269,7 @@ const QuizTab = ({ content, onAnswerCorrect, onComplete, isReplay }) => {
 
   return (
     <div className="bg-gray-800 p-8 rounded-lg text-white relative"
-    style={{
+      style={{
         backgroundImage: `url(${backgroundImage})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
@@ -284,7 +284,7 @@ const QuizTab = ({ content, onAnswerCorrect, onComplete, isReplay }) => {
         color: 'white',
         width: '90%',
         maxWidth: '1200px',
-        }}>
+      }}>
       {isReplay && (
         <div className="mb-4 p-3 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-400/30 text-center">
           <p><strong>Modo de Revisão:</strong> As recompensas para este desafio já foram coletadas.</p>
@@ -296,28 +296,28 @@ const QuizTab = ({ content, onAnswerCorrect, onComplete, isReplay }) => {
           {feedback.message}
         </div>
       )}
-      
+
       {/* Temporizador (apenas quando ativo) */}
       {isTimed && currentQuestion.timeLimit && (
         <div className="absolute top-4 right-4 text-2xl font-bold flex items-center">
           <FaClock className="mr-2" /> {timeLeft}s
         </div>
       )}
-      
+
       <h3 className="text-2xl mb-6">Pergunta {currentIndex + 1}/{questions.length}</h3>
       <p className="text-xl mb-8">{currentQuestion.text}</p>
-      
+
       {/* Grid de opções de resposta */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {currentQuestion.options.map(option => (
-          <button 
-            key={option} 
+          <button
+            key={option}
             onClick={() => {
               // 7. Captura o timestamp do primeiro clique em uma opção
               if (!firstClickTimestamp.current) {
-                  firstClickTimestamp.current = Date.now();
+                firstClickTimestamp.current = Date.now();
               }
-              
+
               setSelectedAnswer(option);
               if (isDebugMode) {
                 console.log(`[QuizTab] Opção selecionada: ${option}`);
@@ -328,9 +328,9 @@ const QuizTab = ({ content, onAnswerCorrect, onComplete, isReplay }) => {
           </button>
         ))}
       </div>
-      
-      <button 
-        onClick={() => handleSubmit(selectedAnswer)} 
+
+      <button
+        onClick={() => handleSubmit(selectedAnswer)}
         disabled={!selectedAnswer}
         className="mt-8 w-full py-3 px-6 bg-blue-600 hover:bg-blue-700 rounded-lg text-xl font-bold disabled:bg-gray-500 disabled:cursor-not-allowed">
         Confirmar Resposta

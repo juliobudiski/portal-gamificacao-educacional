@@ -54,13 +54,13 @@ const symbols = [
 // ====================================================================
 const Reel = ({ finalSymbol, isSpinning, delay }) => {
   // Cria uma lista longa e embaralhada de símbolos para a animação de "blur"
-  const reelSymbols = React.useMemo(() => 
-    [...Array(10)].flatMap(() => [...symbols].sort(() => Math.random() - 0.5)), 
-  []);
+  const reelSymbols = React.useMemo(() =>
+    [...Array(10)].flatMap(() => [...symbols].sort(() => Math.random() - 0.5)),
+    []);
 
   return (
     <div className="w-24 h-24 bg-gray-900/50 rounded-lg overflow-hidden flex items-center justify-center shadow-inner">
-      <div 
+      <div
         className={`reel-strip ${isSpinning ? 'is-spinning' : ''}`}
         style={{ transitionDelay: isSpinning ? '0s' : delay }}
       >
@@ -148,13 +148,13 @@ const SlotMachineTab = ({ userCoins, onPrizeWon, winners, loadingWinners, onWin,
     <div className="w-full flex flex-col items-center p-4 text-white">
       <style>{style}</style>
       <button onClick={onReturn} className="absolute top-4 left-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200 transition-colors z-20">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" /></svg>
         Voltar
       </button>
 
       {/* Layout principal com duas colunas em telas grandes */}
       <div className="w-full flex flex-col lg:flex-row items-center lg:items-start justify-center gap-8">
-        
+
         {/* Coluna Principal: A Máquina */}
         <div className="flex flex-col items-center gap-6">
           <div className="text-center">
@@ -164,7 +164,7 @@ const SlotMachineTab = ({ userCoins, onPrizeWon, winners, loadingWinners, onWin,
               <span>Você tem: {userCoins} moedas</span>
             </div>
           </div>
-          
+
           {/* A Máquina em si */}
           <div className={`flex justify-center items-center gap-4 bg-gray-900 p-6 rounded-xl border-4 border-gray-700 transition-shadow ${resultState === 'win' ? 'result-win' : ''}`}>
             {reels.map((symbol, i) => (
@@ -181,7 +181,7 @@ const SlotMachineTab = ({ userCoins, onPrizeWon, winners, loadingWinners, onWin,
             )}
             {error && <div className="text-lg text-red-400">{error}</div>}
           </div>
-          
+
           {/* Botão de Ação */}
           <button
             onClick={handleSpinClick}
@@ -198,7 +198,7 @@ const SlotMachineTab = ({ userCoins, onPrizeWon, winners, loadingWinners, onWin,
         {/* Coluna Secundária: Ganhadores */}
         <div className="w-full max-w-sm bg-gray-800/50 backdrop-blur-sm p-4 rounded-2xl border border-gray-700 flex flex-col lg:mt-12">
           <h3 className="text-xl font-bold text-center mb-4 text-[#69e8cb]">Últimos Ganhadores</h3>
-          {loadingWinners ? ( <div className="flex-grow flex items-center justify-center py-8"><FaSpinner className="animate-spin text-2xl" /></div>
+          {loadingWinners ? (<div className="flex-grow flex items-center justify-center py-8"><FaSpinner className="animate-spin text-2xl" /></div>
           ) : winners.length > 0 ? (
             <div className="space-y-3">
               {winners.map((winner, index) => (
@@ -208,7 +208,7 @@ const SlotMachineTab = ({ userCoins, onPrizeWon, winners, loadingWinners, onWin,
                 </div>
               ))}
             </div>
-          ) : ( <p className="text-gray-500 text-center italic py-8">Ainda não houve ganhadores.</p> )}
+          ) : (<p className="text-gray-500 text-center italic py-8">Ainda não houve ganhadores.</p>)}
         </div>
       </div>
     </div>

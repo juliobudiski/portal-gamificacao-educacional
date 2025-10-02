@@ -1,11 +1,11 @@
 // frontend/src/components/steps/Step4_PlayerProfile.jsx
 import React from 'react';
-import { 
-  FaTrophy, 
-  FaUsers, 
-  FaBookOpen, 
-  FaAward, 
-  FaComments 
+import {
+  FaTrophy,
+  FaUsers,
+  FaBookOpen,
+  FaAward,
+  FaComments
 } from 'react-icons/fa';
 
 /**
@@ -19,30 +19,30 @@ import {
 function Step4_PlayerProfile({ activityData, setActivityData, openHelpModal }) {
   // Array de objetos para os perfis de jogadores com descrições e ícones.
   const playerProfiles = [
-    { 
-      name: "Competitivo", 
-      description: "Motivado por desafios, rankings e por ser o melhor.", 
-      icon: <FaTrophy /> 
+    {
+      name: "Competitivo",
+      description: "Motivado por desafios, rankings e por ser o melhor.",
+      icon: <FaTrophy />
     },
-    { 
-      name: "Cooperativo", 
-      description: "Gosta de trabalhar em equipe para alcançar objetivos comuns.", 
-      icon: <FaUsers /> 
+    {
+      name: "Cooperativo",
+      description: "Gosta de trabalhar em equipe para alcançar objetivos comuns.",
+      icon: <FaUsers />
     },
-    { 
-      name: "Imersivo", 
-      description: "Busca se aprofundar na história e no universo da atividade.", 
-      icon: <FaBookOpen /> 
+    {
+      name: "Imersivo",
+      description: "Busca se aprofundar na história e no universo da atividade.",
+      icon: <FaBookOpen />
     },
-    { 
-      name: "Realizador", 
-      description: "Focado em completar tarefas, coletar itens e alcançar metas.", 
-      icon: <FaAward /> 
+    {
+      name: "Realizador",
+      description: "Focado em completar tarefas, coletar itens e alcançar metas.",
+      icon: <FaAward />
     },
-    { 
-      name: "Social", 
-      description: "Valoriza a interação, a comunicação e a conexão com outros.", 
-      icon: <FaComments /> 
+    {
+      name: "Social",
+      description: "Valoriza a interação, a comunicação e a conexão com outros.",
+      icon: <FaComments />
     },
   ];
 
@@ -57,7 +57,7 @@ function Step4_PlayerProfile({ activityData, setActivityData, openHelpModal }) {
       const newProfiles = currentProfiles.includes(profileName)
         ? currentProfiles.filter(p => p !== profileName)
         : [...currentProfiles, profileName];
-      
+
       return {
         ...prevData,
         playerProfile: {
@@ -109,14 +109,14 @@ function Step4_PlayerProfile({ activityData, setActivityData, openHelpModal }) {
           );
         })}
       </div>
-      
+
       {/* SEÇÃO 3: Botão de Ajuda */}
       <div className="pt-4 text-center">
-        <button 
-          onClick={() => openHelpModal("Ajuda - Perfil do Jogador", `A seguir, listo alguns dos elementos de jogos ideais...`)} 
+        <button
+          onClick={() => openHelpModal("Ajuda - Perfil do Jogador", `A seguir, listo alguns dos elementos de jogos ideais...`)}
           className="py-2 px-5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
           Precisa de ajuda para escolher?
-        </button> 
+        </button>
       </div>
     </div>
   );

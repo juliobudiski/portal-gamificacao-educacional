@@ -8,7 +8,7 @@ progress_bp = Blueprint('progress', __name__)
 from datetime import datetime, timedelta # Adicione timedelta
 import random # Adicione random
 from sqlalchemy.orm.attributes import flag_modified
-
+import json
 def xp_for_next_level(level):
     """Calcula o XP necessário para o próximo nível com base no nível atual."""
     # Nível 1 -> 100, Nível 2 -> 150, Nível 3 -> 200, etc.
@@ -89,7 +89,7 @@ def get_activity_progress(activity_id):
 @jwt_required()
 @cross_origin()
 def get_leaderboard(activity_id):
-    """Busca o ranking e enriquece com os efeitos cosméticos comprados pelos alunos."""
+    """Busca o ranking e enriquece com o título equipado e outros efeitos cosméticos."""
     
     leaderboard_data = db.session.query(
         User,
@@ -97,7 +97,7 @@ def get_leaderboard(activity_id):
         Title.display_text
     ).join(
         ActivityProgress, User.id == ActivityProgress.student_id
-    ).outerjoin( # Usamos outerjoin caso o usuário não tenha nenhum título equipado
+    ).outerjoin(
         Title, ActivityProgress.equipped_title_id == Title.id
     ).filter(
         ActivityProgress.activity_id == activity_id
@@ -108,28 +108,41 @@ def get_leaderboard(activity_id):
     leaderboard = []
     for index, (user_obj, progress_obj, title_text) in enumerate(leaderboard_data):
         
-        # A lógica para buscar outros efeitos (cores de nome) continua a mesma
+        # --- CÓDIGO CORRIGIDO AQUI ---
+        # Query completa para buscar os efeitos cosméticos ativos (exceto títulos)
         active_purchases = db.session.query(StoreItem.effect_id).join(
             Purchase, Purchase.item_id == StoreItem.id
         ).filter(
             Purchase.user_id == user_obj.id,
             Purchase.activity_id == activity_id,
             StoreItem.item_type == 'cosmetic',
-            StoreItem.item_type != 'title', # <-- EXCLUI TÍTULOS DESTA BUSCA
+            # A linha abaixo foi removida na última versão, mas é bom garantir que não está mais aí
+            # StoreItem.item_type != 'title', 
             Purchase.is_consumed == False,
             ((Purchase.expires_at == None) | (Purchase.expires_at > datetime.utcnow()))
-        ).all()
+        ).order_by(Purchase.purchase_date.desc()).all()
+        # --- FIM DA CORREÇÃO ---
         
-        active_effects = [effect[0] for effect in active_purchases if effect[0]]
+        raw_effects = [effect[0] for effect in active_purchases if effect[0]]
+        
+        active_effects = []
+        for effect in raw_effects:
+            if isinstance(effect, str):
+                try:
+                    active_effects.append(json.loads(effect))
+                except json.JSONDecodeError:
+                    active_effects.append(effect)
+            else:
+                active_effects.append(effect)
         
         leaderboard.append({
-            "id": user_obj.id, # Importante para o frontend saber qual é o usuário logado
+            "id": user_obj.id,
             "rank": index + 1,
             "name": user_obj.name,
             "avatar": user_obj.profile_picture or f"https://ui-avatars.com/api/?name={user_obj.name.replace(' ', '+')}&background=random",
             "points": progress_obj.total_xp_earned,
             "active_effects": active_effects,
-            "title": title_text # <-- O TÍTULO JÁ VEM PRONTO!
+            "title": title_text
         })
     
     return jsonify(leaderboard), 200
@@ -251,7 +264,10 @@ def purchase_store_item(activity_id):
         )
 
         if item.item_type == 'title':
-            title_to_unlock = Title.query.filter_by(effect_id=item.effect_id).first()
+            clean_effect_id = item.effect_id.strip('"') if isinstance(item.effect_id, str) else item.effect_id
+            
+            title_to_unlock = Title.query.filter_by(effect_id=clean_effect_id).first()
+           
             if title_to_unlock:
                 existing_unlock = UserUnlockedTitle.query.filter_by(
                     user_id=user.id, activity_id=activity_id, title_id=title_to_unlock.id).first()
@@ -295,10 +311,8 @@ def get_store_items(activity_id):
 @jwt_required()
 @cross_origin()
 def add_store_item(activity_id):
-    """Adiciona um novo item à loja de uma atividade."""
     user_id = get_jwt_identity()
     user = User.query.get(user_id)
-
     if not user or user.role != 'professor':
         return jsonify({"message": "Acesso negado."}), 403
 
@@ -307,17 +321,46 @@ def add_store_item(activity_id):
         return jsonify({"message": "Atividade não encontrada ou você não tem permissão."}), 404
 
     data = request.get_json()
+    item_type = data.get('item_type', 'utility')
+    
+    # Esta variável irá armazenar o effect_id final e correto
+    final_effect_id = data.get('effect_id')
+
+    if item_type == 'title':
+        title_display_text = data.get('name')
+        if not title_display_text:
+            return jsonify({"message": "O nome do título não pode ser vazio."}), 400
+
+        safe_name = ''.join(e for e in title_display_text if e.isalnum()).upper()
+        effect_id = f"TITLE_CUSTOM_{safe_name}"
+
+        existing_title = Title.query.filter_by(display_text=title_display_text).first()
+
+        if not existing_title:
+            new_title = Title(
+                effect_id=effect_id,
+                display_text=title_display_text,
+                description=data.get('description', 'Título personalizado.')
+            )
+            db.session.add(new_title)
+        else:
+            effect_id = existing_title.effect_id
+        
+        # A CORREÇÃO: Garante que o effect_id do StoreItem seja a string limpa que geramos.
+        final_effect_id = effect_id
+
     new_item = StoreItem(
         activity_id=activity_id,
         name=data.get('name'),
         description=data.get('description'),
         price=int(data.get('price', 50)),
-        icon=data.get('icon', '💡'),
-        item_type=data.get('item_type', 'utility'), # Salva o tipo do item
-        effect_id=data.get('effect_id')             # Salva o ID do efeito
+        icon=data.get('icon', '👑'),
+        item_type=item_type,
+        effect_id=final_effect_id # Usa a variável final que contém o effect_id correto
     )
     db.session.add(new_item)
     db.session.commit()
+    
     return jsonify(new_item.to_dict()), 201
 
 # ROTA PARA PROFESSOR DELETAR UM ITEM
@@ -691,3 +734,66 @@ def complete_activity_step(activity_id):
         db.session.rollback()
         current_app.logger.error(f"Erro ao completar passo {step_id_to_complete} para user {current_user_id}: {str(e)}")
         return jsonify({"message": "Erro interno ao salvar a conclusão do passo."}), 500
+    
+# --- ROTA NOVA E DEDICADA PARA A CONCLUSÃO DA ATIVIDADE ---
+@progress_bp.route('/<int:activity_id>/collect-final-reward', methods=['POST'])
+@jwt_required()
+def collect_final_reward(activity_id):
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user or user.role != 'aluno':
+        return jsonify({"message": "Acesso negado."}), 403
+
+    activity = Activity.query.get(activity_id)
+    progress = ActivityProgress.query.filter_by(student_id=user.id, activity_id=activity_id).first()
+    if progress and progress.status == 'completed':
+        return jsonify({"message": "Esta recompensa final já foi coletada."}), 400 # 400 Bad Request
+
+    if not activity or not progress:
+        return jsonify({"message": "Atividade ou progresso não encontrado."}), 404
+
+    # 1. VALIDAÇÃO: Garante que o aluno completou todos os passos
+    progression_path = activity.gamification_design.get('progression_path', [])
+    completed_steps = set(progress.completed_steps or [])
+    
+    required_step_ids = {step['id'] for step in progression_path}
+
+    if not required_step_ids.issubset(completed_steps):
+        return jsonify({"message": "Você ainda não completou todos os passos da trilha para coletar a recompensa final."}), 403
+
+    # 2. CONCESSÃO DA RECOMPENSA
+    final_reward_config = activity.gamification_design.get('finalReward')
+    if final_reward_config:
+        reward_type = final_reward_config.get('rewardType')
+        value = final_reward_config.get('value')
+
+        if reward_type == 'xp':
+            progress.total_xp_earned = (progress.total_xp_earned or 0) + int(value)
+        
+        elif reward_type == 'title':
+            title_to_unlock = Title.query.filter_by(effect_id=value).first()
+            if title_to_unlock:
+                existing_unlock = UserUnlockedTitle.query.filter_by(user_id=user.id, activity_id=activity_id, title_id=title_to_unlock.id).first()
+                if not existing_unlock:
+                    new_unlock = UserUnlockedTitle(user_id=user.id, activity_id=activity_id, title_id=title_to_unlock.id)
+                    db.session.add(new_unlock)
+                # Equipa o título final
+                progress.equipped_title_id = title_to_unlock.id
+    
+    # 3. ATUALIZAÇÃO DE STATUS
+    progress.status = 'completed'
+    progress.completed_at = datetime.utcnow()
+
+    # 4. REGISTRO DO EVENTO (se você tiver o modelo EventLog)
+    completion_event = EventLog(
+        user_id=user.id,
+        activity_id=activity_id,
+        section='activity',
+        action='activity_completed',
+        details={'final_reward_collected': final_reward_config}
+    )
+    db.session.add(completion_event)
+
+    db.session.commit()
+
+    return jsonify({"message": "Atividade concluída e recompensa coletada com sucesso!"}), 200

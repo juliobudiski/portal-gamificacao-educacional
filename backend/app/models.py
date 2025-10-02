@@ -314,7 +314,7 @@ class StoreItem(db.Model):
     # Para identificar o tipo de item (cosmético, utilitário)
     item_type = db.Column(db.String(50), nullable=False, default='utility') 
     # Um identificador único para o efeito (ex: 'RANKING_COLOR_GOLD')
-    effect_id = db.Column(db.String(100), nullable=True) 
+    effect_id = db.Column(JSONB, nullable=True) 
 
     activity = db.relationship('Activity', backref=db.backref('store_items', cascade="all, delete-orphan"))
 

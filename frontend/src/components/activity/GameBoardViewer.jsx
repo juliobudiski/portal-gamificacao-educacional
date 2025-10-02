@@ -40,7 +40,7 @@ const LoadingScreen = ({ progress, etr }) => (
 
 
 
-function GameBoardViewer({ onHubIconClick, gamificationDesign, studentProgress, onStepClick, userRole, renderedDecorations, generateStepCoordinates, currentView, children }) {    
+function GameBoardViewer({ onFinalRewardClick, onHubIconClick, gamificationDesign, studentProgress, onStepClick, userRole, renderedDecorations, stepCoordinates, currentView, children }) {
     // A lógica de progresso, coordenadas e SVG permanece aqui.
     const completedStepsSet = userRole === 'aluno' ? new Set(studentProgress?.completed_steps || []) : new Set();
     const boardRef = useRef(null); // Cria uma referência para a div do tabuleiro
@@ -81,13 +81,13 @@ function GameBoardViewer({ onHubIconClick, gamificationDesign, studentProgress, 
         return 'locked';
     };
 
-    const stepCoordinates = generateStepCoordinates(gamificationDesign.progression_path?.length || 0);
+
 
 
     const generateSvgPath = () => {
         const pathPoints = stepCoordinates;
         if (pathPoints.length < 2) return '';
-        
+
         // Substitui os valores fixos pelos valores do nosso estado
         const boardWidth = boardSize.width;
         const boardHeight = boardSize.height;
@@ -106,6 +106,29 @@ function GameBoardViewer({ onHubIconClick, gamificationDesign, studentProgress, 
         }
         return pathString;
     };
+
+    const activityStatus = studentProgress?.status;
+
+    const allStepsCompleted = userRole === 'aluno' &&
+        gamificationDesign.progression_path?.length > 0 &&
+        gamificationDesign.progression_path.every(step => completedStepsSet.has(step.id));
+
+    // O status do baú final depende diretamente da variável acima
+    let finalRewardStatus;
+    if (activityStatus === 'completed') {
+        finalRewardStatus = 'completed'; // Se a atividade JÁ está completa, mostra o check
+    } else if (allStepsCompleted) {
+        finalRewardStatus = 'active'; // Se todos os passos estão feitos, mas a recompensa não foi coletada, fica ativa
+    } else {
+        finalRewardStatus = 'locked'; // Senão, fica bloqueada
+    }
+    const finalRewardConfig = elementConfig.path.final_reward;
+    const lastStepPosition = stepCoordinates.length > 0 ? stepCoordinates[stepCoordinates.length - 1] : { x: '50%', y: '80%' };
+    // Calcula uma posição ligeiramente deslocada para o baú
+    const finalRewardPosition = stepCoordinates.length > gamificationDesign.progression_path.length
+        ? stepCoordinates[stepCoordinates.length - 1]
+        : { x: '50%', y: '90%' };
+
 
     // O return agora é direto, sem tela de carregamento.
     return (
@@ -137,6 +160,23 @@ function GameBoardViewer({ onHubIconClick, gamificationDesign, studentProgress, 
                                 </div>
                             );
                         })}
+                        {/* --- RENDERIZAÇÃO DA CASA DE RECOMPENSA FINAL --- */}
+                        {gamificationDesign?.finalReward && (
+                            <div
+                                className="path-node-wrapper"
+                                style={{ top: finalRewardPosition.y, left: finalRewardPosition.x }}
+                                // Adiciona a verificação para não ser clicável quando 'completed'
+                                onClick={() => finalRewardStatus === 'active' && onFinalRewardClick()}
+                            >
+                                <div className={`path-node path-node--${finalRewardStatus}`}>
+                                    <img className="path-node-image" src={finalRewardConfig.icon} alt={finalRewardConfig.name} />
+                                    {/* Adicionamos um 'check' visual aqui, similar aos outros passos */}
+                                    {finalRewardStatus === 'completed' && <div className="path-node-completed-check">✔</div>}
+                                </div>
+                                <div className="path-label">{finalRewardConfig.name}</div>
+                            </div>
+                        )}
+                        {/* --- FIM DA RENDERIZAÇÃO DA CASA FINAL --- */}
                     </div>
                     <div className="hub-village">
                         {(gamificationDesign.hub_elements || []).map(hubElement => {

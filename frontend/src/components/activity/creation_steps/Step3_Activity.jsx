@@ -1,16 +1,16 @@
 // frontend/src/components/steps/Step3_ActivityPlanning.jsx
 import React from 'react';
-import { 
-  FaChalkboardTeacher, 
-  FaLaptop, 
-  FaUser, 
-  FaUsers, 
-  FaTools, 
-  FaClipboardCheck, 
-  FaFileSignature, 
-  FaCodeBranch, 
-  FaCloud, 
-  FaTrophy 
+import {
+  FaChalkboardTeacher,
+  FaLaptop,
+  FaUser,
+  FaUsers,
+  FaTools,
+  FaClipboardCheck,
+  FaFileSignature,
+  FaCodeBranch,
+  FaCloud,
+  FaTrophy
 } from 'react-icons/fa';
 
 /**
@@ -48,7 +48,7 @@ function Step3_ActivityPlanning({ activityData, handleInputChange, setActivityDa
       const newChars = currentChars.includes(charText)
         ? currentChars.filter(c => c !== charText)
         : [...currentChars, charText];
-      
+
       return {
         ...prevData,
         activityPlanning: {
@@ -141,7 +141,7 @@ function Step3_ActivityPlanning({ activityData, handleInputChange, setActivityDa
           </div>
         </div>
       </div>
-      
+
       {/* Exemplo do botão de ajuda mantido, caso necessário */}
       {/* <button 
         onClick={() => openHelpModal("Sugestões e exemplos...", `Desafios de programação...`)} 

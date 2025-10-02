@@ -1,8 +1,8 @@
 // src/components/activity/gameElementsConfig.js
 import React from 'react';
-import { 
-    FaBookOpen, FaQuestionCircle, FaTrophy, FaComments, FaStore, 
-    FaBullseye, FaMedal, FaDice, FaGamepad
+import {
+  FaBookOpen, FaQuestionCircle, FaTrophy, FaComments, FaStore,
+  FaBullseye, FaMedal, FaDice, FaGamepad
 } from 'react-icons/fa';
 
 /**
@@ -78,8 +78,8 @@ export const cardsConfig = [
     icon: <FaMedal className="text-3xl text-orange-400" />,
     color: "orange",
     // Habilita para sistemas de recompensas/reconhecimento
-    isEnabled: (elements) => 
-      elements.includes("Conquistas digitais para metas alcançadas") || 
+    isEnabled: (elements) =>
+      elements.includes("Conquistas digitais para metas alcançadas") ||
       elements.includes("Reconhecimento") ||
       elements.includes("Recompensas atraentes")
   },

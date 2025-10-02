@@ -6,25 +6,25 @@ const StatsModal = ({ stats, onClose }) => (
             <h3 className="text-2xl font-bold mb-6 text-center text-yellow-400">Minhas Estatísticas</h3>
             <div className="space-y-4">
                 <p className="text-lg">
-                    Pontuação Obtida: 
+                    Pontuação Obtida:
                     <span className="font-bold text-xl ml-2 text-green-400">
                         {stats.scoreAchieved} / {stats.totalPossibleScore} Pontos
                     </span>
                 </p>
                 <p className="text-lg">
-                    Total de Questões: 
+                    Total de Questões:
                     <span className="font-bold text-xl ml-2 text-blue-400">
                         {stats.totalQuestions}
                     </span>
                 </p>
                 <p className="text-lg">
-                    Tempo Médio: 
+                    Tempo Médio:
                     <span className="font-bold text-xl ml-2 text-purple-400">
                         {stats.averageTime}s / pergunta
                     </span>
                 </p>
                 <p className="text-lg">
-                    Conquistas Desbloqueadas: 
+                    Conquistas Desbloqueadas:
                     <span className="font-bold text-xl ml-2 text-pink-400">
                         {stats.achievements}
                     </span>

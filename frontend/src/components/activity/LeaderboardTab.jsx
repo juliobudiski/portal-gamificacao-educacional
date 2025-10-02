@@ -22,8 +22,8 @@ const LeaderboardTab = ({ leaderboardData, isLoading, onReturn }) => {
     if (!leaderboardData || leaderboardData.length === 0) {
         return (
             <div className="w-full max-w-2xl mx-auto flex flex-col items-center justify-center p-8 text-white min-h-[400px]">
-                 <button onClick={onReturn} className="absolute top-4 left-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200 transition-colors z-20">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/></svg>
+                <button onClick={onReturn} className="absolute top-4 left-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200 transition-colors z-20">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" /></svg>
                     Voltar
                 </button>
                 <FaExclamationCircle className="text-5xl text-yellow-500 mb-4" />
@@ -37,7 +37,7 @@ const LeaderboardTab = ({ leaderboardData, isLoading, onReturn }) => {
     return (
         <div className="w-full max-w-3xl mx-auto p-4 text-white">
             <button onClick={onReturn} className="absolute top-4 left-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200 transition-colors z-20">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" /></svg>
                 Voltar
             </button>
             <header className="text-center mb-8 pt-8">
@@ -46,15 +46,15 @@ const LeaderboardTab = ({ leaderboardData, isLoading, onReturn }) => {
                     Hall da Fama
                 </h1>
             </header>
-            
+
             {/* Usando uma lista ordenada <ol> para semântica correta */}
             <ol className="space-y-4">
                 {leaderboardData.map(player => (
-                    <RankingItem 
+                    <RankingItem
                         key={player.rank}
                         player={player}
                         // Verifica se o ID do jogador na lista é o mesmo do usuário logado
-                        isCurrentUser={player.id === user.id} 
+                        isCurrentUser={player.id === user.id}
                     />
                 ))}
             </ol>

@@ -7,13 +7,13 @@ import PropTypes from 'prop-types'; // Import adicionado para validação de pro
 const isDebugMode = import.meta.env.VITE_DEBUG_MODE === 'true';
 
 const StatLine = ({ icon, label, value, colorClass }) => (
-    <div className="flex justify-between items-center text-sm">
-        <div className={`flex items-center ${colorClass}`}>
-            {icon}
-            <span className="ml-2">{label}</span>
-        </div>
-        <span className="font-bold">{value}</span>
+  <div className="flex justify-between items-center text-sm">
+    <div className={`flex items-center ${colorClass}`}>
+      {icon}
+      <span className="ml-2">{label}</span>
     </div>
+    <span className="font-bold">{value}</span>
+  </div>
 );
 
 /**
@@ -27,10 +27,10 @@ const StatLine = ({ icon, label, value, colorClass }) => (
  * @returns {JSX.Element} Interface de gerenciamento para professores
  */
 const ProfessorSidebar = ({ analytics, onStudentClick, onOpenQuizEditor, onOpenNarrativeEditor }) => {
-  
+
   const [expandedStudentId, setExpandedStudentId] = useState(null); // Estado para controlar a expansão
   const toggleStudent = (studentId) => {
-      setExpandedStudentId(prevId => (prevId === studentId ? null : studentId));
+    setExpandedStudentId(prevId => (prevId === studentId ? null : studentId));
   };
 
   // Log de renderização do componente
@@ -59,38 +59,38 @@ const ProfessorSidebar = ({ analytics, onStudentClick, onOpenQuizEditor, onOpenN
         </h4>
         <ul className="mt-2 space-y-2 max-h-[40vh] overflow-y-auto pr-2">
           {analytics.students.map(student => (
-            <li 
-              key={student.id} 
+            <li
+              key={student.id}
               className="bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-all duration-200"
             >
-              <div 
+              <div
                 onClick={() => toggleStudent(student.id)}
                 className="flex justify-between items-center p-2"
               >
                 <span className="text-white font-medium">{student.name}</span>
                 <div className="flex items-center gap-2">
-                    {/* NOVO: Exibição do Nível do Aluno */}
-                    <span className="text-xs font-bold text-yellow-300 bg-yellow-400/10 px-2 py-1 rounded-md flex items-center">
-                        <FaLevelUpAlt className="mr-1" />
-                        {student.level}
-                    </span>
-                    <span className={`text-xs px-2 py-1 rounded-full ${student.status === 'completed' ? 'bg-green-500' : student.status === 'in_progress' ? 'bg-yellow-500' : 'bg-red-500'}`}>
-                        {student.status.replace('_', ' ')}
-                    </span>
+                  {/* NOVO: Exibição do Nível do Aluno */}
+                  <span className="text-xs font-bold text-yellow-300 bg-yellow-400/10 px-2 py-1 rounded-md flex items-center">
+                    <FaLevelUpAlt className="mr-1" />
+                    {student.level}
+                  </span>
+                  <span className={`text-xs px-2 py-1 rounded-full ${student.status === 'completed' ? 'bg-green-500' : student.status === 'in_progress' ? 'bg-yellow-500' : 'bg-red-500'}`}>
+                    {student.status.replace('_', ' ')}
+                  </span>
                 </div>
               </div>
-              
+
               {/* Seção Expansível com as novas estatísticas */}
               {expandedStudentId === student.id && (
-                  <div className="p-3 border-t border-gray-600 space-y-1 animate-fade-in">
-                      <StatLine icon={<FaEye/>} label="Narrativa vista" value={`${student.narrative_views}x`} colorClass="text-blue-300" />
-                      <StatLine icon={<FaComments/>} label="Msg no Chat" value={`${student.chat_messages}x`} colorClass="text-purple-300" />
-                      <StatLine icon={<FaQuestionCircle/>} label="Respostas" value={student.total_answers} colorClass="text-gray-300" />
-                      <StatLine icon={<FaCheck/>} label="Acertos" value={student.correct_answers} colorClass="text-green-300" />
-                      <StatLine icon={<FaTimes/>} label="Erros" value={student.wrong_answers} colorClass="text-red-300" />
-                      {/* NOVO: Taxa de Acerto */}
-                      <StatLine icon={<FaChartBar/>} label="Aproveitamento" value={`${student.accuracy.toFixed(0)}%`} colorClass="text-yellow-300" />
-                  </div>
+                <div className="p-3 border-t border-gray-600 space-y-1 animate-fade-in">
+                  <StatLine icon={<FaEye />} label="Narrativa vista" value={`${student.narrative_views}x`} colorClass="text-blue-300" />
+                  <StatLine icon={<FaComments />} label="Msg no Chat" value={`${student.chat_messages}x`} colorClass="text-purple-300" />
+                  <StatLine icon={<FaQuestionCircle />} label="Respostas" value={student.total_answers} colorClass="text-gray-300" />
+                  <StatLine icon={<FaCheck />} label="Acertos" value={student.correct_answers} colorClass="text-green-300" />
+                  <StatLine icon={<FaTimes />} label="Erros" value={student.wrong_answers} colorClass="text-red-300" />
+                  {/* NOVO: Taxa de Acerto */}
+                  <StatLine icon={<FaChartBar />} label="Aproveitamento" value={`${student.accuracy.toFixed(0)}%`} colorClass="text-yellow-300" />
+                </div>
               )}
             </li>
           ))}
@@ -99,15 +99,15 @@ const ProfessorSidebar = ({ analytics, onStudentClick, onOpenQuizEditor, onOpenN
 
       {/* Controles de Gerenciamento */}
       <div className="space-y-3 pt-3 border-t border-gray-700">
-        <button 
-          onClick={onOpenQuizEditor} 
+        <button
+          onClick={onOpenQuizEditor}
           className="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 rounded-lg flex items-center justify-center transition-colors"
         >
           <FaPlusCircle className="mr-2" /> Gerenciar Quiz
         </button>
-        
-        <button 
-          onClick={onOpenNarrativeEditor} 
+
+        <button
+          onClick={onOpenNarrativeEditor}
           className="w-full py-2 px-4 bg-yellow-600 hover:bg-yellow-700 rounded-lg flex items-center justify-center transition-colors"
         >
           <FaBookOpen className="mr-2" /> Gerenciar Narrativa

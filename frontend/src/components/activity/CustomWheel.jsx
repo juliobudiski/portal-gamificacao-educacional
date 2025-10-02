@@ -14,7 +14,7 @@ const CustomWheel = ({ segments, winningSegmentIndex, onFinished, onSpin, isSpin
       const segmentAngle = 360 / segments.length;
       const fullSpins = 10; // Para um giro longo e satisfatório
       const stopAngle = (360 * fullSpins) - (winningSegmentIndex * segmentAngle) - (segmentAngle / 2);
-      
+
       setRotation(stopAngle);
       setInternalSpin(true); // Usa o estado interno para controlar a transição
     }
@@ -23,7 +23,7 @@ const CustomWheel = ({ segments, winningSegmentIndex, onFinished, onSpin, isSpin
   const handleTransitionEnd = () => {
     setInternalSpin(false);
     if (typeof onFinished === 'function') {
-        onFinished(segments[winningSegmentIndex]);
+      onFinished(segments[winningSegmentIndex]);
     }
     // "Normaliza" a rotação para evitar números gigantes, mantendo a posição final
     const finalRotation = rotation % 360;
@@ -77,46 +77,46 @@ const CustomWheel = ({ segments, winningSegmentIndex, onFinished, onSpin, isSpin
       >
         {/* Textos dos Segmentos */}
         {segments.map((segment, index) => {
-            const angle = (360 / segments.length) * index + (360 / segments.length / 2);
-            return (
-                <div key={index} style={{
-                    position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-                    transform: `rotate(${angle}deg)`,
-                }}>
-                    <span style={{
-                        display: 'block', color: 'white', fontWeight: 'bold', fontSize: '16px',
-                        position: 'absolute', top: '25px', left: '50%',
-                        transform: 'translateX(-50%)',
-                        textShadow: '1px 1px 2px rgba(0,0,0,0.7)'
-                    }}>
-                        {segment.toUpperCase()}
-                    </span>
-                </div>
-            );
+          const angle = (360 / segments.length) * index + (360 / segments.length / 2);
+          return (
+            <div key={index} style={{
+              position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+              transform: `rotate(${angle}deg)`,
+            }}>
+              <span style={{
+                display: 'block', color: 'white', fontWeight: 'bold', fontSize: '16px',
+                position: 'absolute', top: '25px', left: '50%',
+                transform: 'translateX(-50%)',
+                textShadow: '1px 1px 2px rgba(0,0,0,0.7)'
+              }}>
+                {segment.toUpperCase()}
+              </span>
+            </div>
+          );
         })}
       </div>
 
       {/* Botão de Giro Central */}
       <div style={{
-          position: 'absolute', width: '100px', height: '100px',
-          borderRadius: '50%', background: '#111827',
-          border: '5px solid #ffbd30',
-          boxShadow: '0 0 15px #ffbd30, inset 0 0 10px rgba(0,0,0,0.5)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 5
+        position: 'absolute', width: '100px', height: '100px',
+        borderRadius: '50%', background: '#111827',
+        border: '5px solid #ffbd30',
+        boxShadow: '0 0 15px #ffbd30, inset 0 0 10px rgba(0,0,0,0.5)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        zIndex: 5
       }}>
         <button
-            onClick={onSpin}
-            disabled={isSpinning || isLoading}
-            style={{
-                width: '80px', height: '80px', borderRadius: '50%',
-                background: '#374151', border: 'none', color: 'white',
-                cursor: 'pointer', transition: 'all 0.2s',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '1.2rem'
-            }}
+          onClick={onSpin}
+          disabled={isSpinning || isLoading}
+          style={{
+            width: '80px', height: '80px', borderRadius: '50%',
+            background: '#374151', border: 'none', color: 'white',
+            cursor: 'pointer', transition: 'all 0.2s',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '1.2rem'
+          }}
         >
-            <FaDice />
+          <FaDice />
         </button>
       </div>
     </div>

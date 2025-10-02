@@ -103,20 +103,20 @@ function Step7_RewardedActions({ activityData, handleInputChange, setActivityDat
           );
         })}
       </div>
-      
+
       {/* SEÇÃO 3: Campo Aberto */}
       <div className="pt-4">
         <label htmlFor="rewardedActions.otherAction" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
           Outra ação a ser recompensada? (Opcional)
         </label>
-        <input 
-          type="text" 
-          id="rewardedActions.otherAction" 
-          name="rewardedActions.otherAction" 
-          value={activityData.rewardedActions.otherAction} 
-          onChange={handleInputChange} 
+        <input
+          type="text"
+          id="rewardedActions.otherAction"
+          name="rewardedActions.otherAction"
+          value={activityData.rewardedActions.otherAction}
+          onChange={handleInputChange}
           className="mt-1 block w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
-          placeholder="Descreva uma ação personalizada" 
+          placeholder="Descreva uma ação personalizada"
         />
       </div>
     </div>

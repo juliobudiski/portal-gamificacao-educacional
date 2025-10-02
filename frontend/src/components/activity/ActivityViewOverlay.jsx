@@ -117,7 +117,7 @@ const ActivityViewOverlay = ({ isOpen, onClose, title, backgroundImage, children
                 <p className="mt-1 text-sm text-gray-300/80">GamificaEdu Portal</p>
               </div>
 
-              
+
             </header>
 
             {/* Body container — keep existing children and layout intact */}

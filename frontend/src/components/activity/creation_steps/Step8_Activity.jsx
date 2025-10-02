@@ -102,24 +102,24 @@ function Step8_RulesAndSharing({ activityData, handleInputChange, setActivityDat
           })}
         </div>
       </div>
-      
+
       {/* SEÇÃO 3: Regras Específicas e Compartilhamento */}
       <div className="pt-4 space-y-6">
         <div>
           <label htmlFor="gamificationRules.specificRules" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Regras específicas da sua atividade (Opcional)
           </label>
-          <textarea 
-            id="gamificationRules.specificRules" 
-            name="gamificationRules.specificRules" 
-            value={activityData.gamificationRules.specificRules} 
-            onChange={handleInputChange} 
-            rows="4" 
-            className="mt-1 block w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm" 
+          <textarea
+            id="gamificationRules.specificRules"
+            name="gamificationRules.specificRules"
+            value={activityData.gamificationRules.specificRules}
+            onChange={handleInputChange}
+            rows="4"
+            className="mt-1 block w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
             placeholder="Ex: Não é permitido usar o celular durante o desafio. A entrega do projeto deve conter no mínimo 3 commits."
           ></textarea>
         </div>
-        
+
         <div className="relative flex items-start">
           <div className="flex h-6 items-center">
             <input
