@@ -16,6 +16,7 @@ export const elementConfig = {
         badges: { icon: '/board/badges_board.png', name: 'Medalhas' },
         chat: { icon: '/board/chat_board.png', name: 'Chat' },
         store: { icon: '/board/store_board.png', name: 'Loja' },
+        avatar_customization: { icon: '/board/meuestilo_board.png', name: 'Meu Estilo' },
 
     }
 };

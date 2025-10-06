@@ -1,5 +1,5 @@
 // frontend/src/components/activity/GameBoardViewer.jsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 
 // Importa apenas a configuração de ícones, pois é o que ele precisa para renderizar os nomes e imagens dos passos.
 import { elementConfig } from './GameBoardConfig';
@@ -129,7 +129,24 @@ function GameBoardViewer({ onFinalRewardClick, onHubIconClick, gamificationDesig
         ? stepCoordinates[stepCoordinates.length - 1]
         : { x: '50%', y: '90%' };
 
+    const hubElementsToRender = useMemo(() => {
+        const baseElements = gamificationDesign.hub_elements || [];
 
+        // Verifica se o ícone de customização já não veio do banco de dados
+        const hasCustomizationIcon = baseElements.some(el => el.type === 'avatar_customization');
+
+        // Adiciona o ícone se o usuário for aluno OU professor E o ícone ainda não existir na lista
+        if ((userRole === 'aluno' || userRole === 'professor') && !hasCustomizationIcon) {
+            // Retorna uma NOVA lista com os elementos base + o nosso ícone
+            return [
+                ...baseElements,
+                { id: 'hub_avatar_customization', type: 'avatar_customization', enabled: true }
+            ];
+        }
+
+        // Se a condição não for atendida, apenas retorna a lista original
+        return baseElements;
+    }, [gamificationDesign.hub_elements, userRole]);
     // O return agora é direto, sem tela de carregamento.
     return (
         // A moldura principal do tabuleiro agora envolve a lógica de troca
@@ -179,7 +196,7 @@ function GameBoardViewer({ onFinalRewardClick, onHubIconClick, gamificationDesig
                         {/* --- FIM DA RENDERIZAÇÃO DA CASA FINAL --- */}
                     </div>
                     <div className="hub-village">
-                        {(gamificationDesign.hub_elements || []).map(hubElement => {
+                        {hubElementsToRender.map(hubElement => {
                             if (!hubElement.enabled) return null;
                             const config = elementConfig.hub[hubElement.type];
                             if (!config) return null;

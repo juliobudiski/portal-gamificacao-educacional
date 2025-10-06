@@ -12,7 +12,7 @@ class User(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     google_id = db.Column(db.String(120), unique=True, nullable=True)
     name = db.Column(db.String(100), nullable=True)
-    profile_picture = db.Column(db.String(255), nullable=True)
+    profile_picture = db.Column(db.String(255), nullable=True) # Este é o Avatar Global EQUIPADO
     role = db.Column(db.String(50), default='aluno', nullable=False)
     age = db.Column(db.Integer, nullable=True)
     gender = db.Column(db.String(50), nullable=True)
@@ -20,6 +20,12 @@ class User(db.Model):
     learning_preferences = db.Column(db.String(500), nullable=True)
     institution_name = db.Column(db.String(255), nullable=True)
     discipline = db.Column(db.String(100), nullable=True)
+    
+    # --- NOVO CAMPO PARA AVATARES GLOBAIS ---
+    # Guarda a lista de avatares "promovidos" que o usuário pode usar globalmente.
+    # Ex: [{'url': '/avatars/t-rex.png', 'name': 'T-Rex Feroz'}]
+    unlocked_global_avatars = db.Column(JSONB, nullable=True, server_default='[]')
+    # --- FIM DO NOVO CAMPO ---
 
     def to_dict(self):
         return {
@@ -31,6 +37,7 @@ class User(db.Model):
             'discipline': self.discipline,
             'profile_picture': self.profile_picture
         }
+
 
 class Activity(db.Model):
     __tablename__ = 'activity'
@@ -158,6 +165,15 @@ class ActivityProgress(db.Model):
     completed_at = db.Column(db.DateTime, nullable=True)
     attempts = db.Column(db.Integer, default=0)
     last_spin_date = db.Column(db.DateTime, nullable=True)
+    
+    # --- NOVOS CAMPOS PARA AVATARES DE ATIVIDADE ---
+    # Guarda a URL do avatar que o aluno EQUIPOU para esta atividade.
+    equipped_activity_avatar_url = db.Column(db.String(255), nullable=True)
+    # Guarda uma lista de objetos de avatares que o aluno DESBLOQUEOU nesta atividade.
+    # Ex: [{'url': '/avatars/t-rex.png', 'name': 'T-Rex Feroz', 'promotable': false}]
+    unlocked_activity_avatars = db.Column(JSONB, nullable=True, server_default='[]')
+    # --- FIM DOS NOVOS CAMPOS ---
+    
     student = db.relationship('User', backref='activity_progresses', lazy=True)
     activity = db.relationship('Activity', backref=db.backref('progresses', cascade="all, delete-orphan"))
     class_obj = db.relationship('Class', backref='activity_progresses', lazy=True)

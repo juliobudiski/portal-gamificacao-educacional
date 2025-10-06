@@ -81,7 +81,9 @@ def get_activity_progress(activity_id):
         "xp": level_info["xpEarnedForCurrentLevel"],
         "xpForNextLevel": level_info["xpForNextLevel"],
         "stats": stats,
-        "completed_steps": progress.completed_steps if progress else [] 
+        "completed_steps": progress.completed_steps if progress else [], 
+        "unlocked_activity_avatars": progress.unlocked_activity_avatars if progress else [],
+        "equipped_activity_avatar_url": progress.equipped_activity_avatar_url if progress else None
     }), 200
 
 
@@ -135,11 +137,15 @@ def get_leaderboard(activity_id):
             else:
                 active_effects.append(effect)
         
+        display_avatar = progress_obj.equipped_activity_avatar_url or \
+                         user_obj.profile_picture or \
+                         '/avatars/default_avatar.png'
+                         
         leaderboard.append({
             "id": user_obj.id,
             "rank": index + 1,
             "name": user_obj.name,
-            "avatar": user_obj.profile_picture or f"https://ui-avatars.com/api/?name={user_obj.name.replace(' ', '+')}&background=random",
+            "avatar": display_avatar,
             "points": progress_obj.total_xp_earned,
             "active_effects": active_effects,
             "title": title_text
@@ -234,34 +240,36 @@ def purchase_store_item(activity_id):
     if not item_id:
         return jsonify({"message": "O ID do item é obrigatório."}), 400
 
-    # 1. Validação
     item = StoreItem.query.get(item_id)
     progress = ActivityProgress.query.filter_by(student_id=user_id, activity_id=activity_id).first()
 
-    if not item:
-        return jsonify({"message": "Item não encontrado na loja."}), 404
-    if not progress:
-        return jsonify({"message": "Progresso do aluno não encontrado."}), 404
+    if not item or not progress:
+        return jsonify({"message": "Item ou progresso não encontrado."}), 404
     
-    # Garante que os pontos não sejam nulos
     current_points = progress.points_earned if progress.points_earned is not None else 0
 
     if current_points < item.price:
-        return jsonify({"message": "Pontos insuficientes para realizar esta compra."}), 400
+        return jsonify({"message": "Pontos insuficientes."}), 400
 
     try:
-        # 2. Lógica da Transação
-        # Subtrai o custo do item dos pontos do aluno
         progress.points_earned = current_points - item.price
         
-        # Cria um registro da compra
         new_purchase = Purchase(
-            user_id=user_id,
-            activity_id=activity_id,
-            item_id=item.id,
-            item_name=item.name,
-            price_paid=item.price
+            user_id=user_id, activity_id=activity_id, item_id=item.id,
+            item_name=item.name, price_paid=item.price
         )
+
+        if item.item_type == 'avatar':
+            avatar_to_unlock = item.effect_id
+            if isinstance(avatar_to_unlock, str):
+                avatar_to_unlock = json.loads(avatar_to_unlock)
+            
+            if progress.unlocked_activity_avatars is None:
+                progress.unlocked_activity_avatars = []
+            
+            if not any(avatar['url'] == avatar_to_unlock['url'] for avatar in progress.unlocked_activity_avatars):
+                progress.unlocked_activity_avatars.append(avatar_to_unlock)
+                flag_modified(progress, "unlocked_activity_avatars")
 
         if item.item_type == 'title':
             clean_effect_id = item.effect_id.strip('"') if isinstance(item.effect_id, str) else item.effect_id
@@ -278,18 +286,12 @@ def purchase_store_item(activity_id):
 
                 # Regra MVP: auto-equipa o título recém-comprado
                 progress.equipped_title_id = title_to_unlock.id
-
-        duration_days = data.get('duration_days') # Recebe a duração do frontend
-        if duration_days:
-            new_purchase.expires_at = datetime.utcnow() + timedelta(days=int(duration_days))
-        
         db.session.add(new_purchase)
         db.session.commit()
         
         return jsonify({
             "message": "Compra realizada com sucesso!",
             "new_total_points": progress.points_earned,
-            "purchase": new_purchase.to_dict()
         }), 200
 
     except Exception as e:
@@ -458,30 +460,45 @@ def spin_roulette_for_activity(activity_id):
         return jsonify({"message": "Apenas alunos podem girar a roleta."}), 403
 
     progress = ActivityProgress.query.filter_by(student_id=user.id, activity_id=activity_id).first()
-
     if not progress:
         activity = Activity.query.get(activity_id)
-        if not activity:
-            return jsonify({"message": "Atividade não encontrada."}), 404
+        if not activity: return jsonify({"message": "Atividade não encontrada."}), 404
         progress = ActivityProgress(student_id=user.id, activity_id=activity_id, class_id=activity.class_id)
         db.session.add(progress)
 
     prizes = [
         {"type": "xp", "value": 50, "label": "50 XP"},
         {"type": "xp", "value": 100, "label": "100 XP"},
-        {"type": "xp", "value": 200, "label": "200 XP"},
+        {"type": "xp", "value": 150, "label": "150 XP"},
         {"type": "title", "value": "TITLE_LUCKY", "label": "Título: O Sortudo"},
-        {"type": "avatar", "value": "/avatars/avatar_special.png", "label": "Avatar Raro!"},
+        {"type": "avatar", "value": {"url": "/avatars/wizard_cat.png", "name": "Gato Mago", "promotable": True}, "label": "Avatar Raro!"},
     ]
-    prize = random.choice(prizes)
+
+    unlocked_avatar_urls = [avatar['url'] for avatar in (progress.unlocked_activity_avatars or []) if isinstance(avatar, dict)]
     
-    # --- LOG DE DEPURAÇÃO 1 ---
-    current_app.logger.info(f"[SPIN_DEBUG] Usuário {user_id} sorteou o prêmio: {prize}")
+    prize = None
+    attempts = 0
+    while attempts < 20:
+        selected_prize = random.choice(prizes)
+        if selected_prize['type'] != 'avatar':
+            prize = selected_prize
+            break
+        if selected_prize['value']['url'] not in unlocked_avatar_urls:
+            prize = selected_prize
+            break
+        attempts += 1
+    
+    if prize is None:
+        prize = {"type": "xp", "value": 50, "label": "50 XP"}
 
     if prize['type'] == 'xp':
-        current_points = progress.points_earned or 0
-        progress.points_earned = current_points + prize['value']
         progress.total_xp_earned = (progress.total_xp_earned or 0) + prize['value']
+    elif prize['type'] == 'avatar':
+        avatar_to_unlock = prize['value']
+        if progress.unlocked_activity_avatars is None:
+            progress.unlocked_activity_avatars = []
+        progress.unlocked_activity_avatars.append(avatar_to_unlock)
+        flag_modified(progress, "unlocked_activity_avatars")
 
     elif prize['type'] == 'title':
         # --- LOG DE DEPURAÇÃO 2 ---
@@ -508,7 +525,8 @@ def spin_roulette_for_activity(activity_id):
             current_app.logger.info(f"[SPIN_DEBUG] Título equipado ANTES da atribuição: {progress.equipped_title_id}")
             progress.equipped_title_id = title_to_unlock.id
             current_app.logger.info(f"[SPIN_DEBUG] Título equipado DEPOIS da atribuição: {progress.equipped_title_id}")
-
+    
+        
     progress.last_spin_date = datetime.utcnow()
     
     new_win = RouletteWin(user_id=user.id, activity_id=activity_id, prize_label=prize['label'])
@@ -797,3 +815,62 @@ def collect_final_reward(activity_id):
     db.session.commit()
 
     return jsonify({"message": "Atividade concluída e recompensa coletada com sucesso!"}), 200
+
+@progress_bp.route('/<int:activity_id>/avatar', methods=['PUT'])
+@jwt_required()
+def equip_activity_avatar(activity_id):
+    """Equipa um avatar específico para uma atividade."""
+    user_id = get_jwt_identity()
+    data = request.get_json()
+    avatar_url_to_equip = data.get('avatar_url')
+
+    if not avatar_url_to_equip:
+        return jsonify({"message": "A URL do avatar é obrigatória."}), 400
+
+    progress = ActivityProgress.query.filter_by(student_id=user_id, activity_id=activity_id).first()
+
+    if not progress:
+        return jsonify({"message": "Progresso na atividade não encontrado."}), 404
+
+    # Verifica se o avatar está na lista de desbloqueados
+    unlocked_urls = [avatar['url'] for avatar in (progress.unlocked_activity_avatars or [])]
+    if avatar_url_to_equip not in unlocked_urls:
+        return jsonify({"message": "Você não desbloqueou este avatar ainda."}), 403
+
+    progress.equipped_activity_avatar_url = avatar_url_to_equip
+    db.session.commit()
+
+    return jsonify({
+        "message": "Avatar equipado com sucesso!",
+        "equipped_avatar": progress.equipped_activity_avatar_url
+    }), 200
+
+
+# Esta rota poderia ficar em um `users.py`, mas por simplicidade vamos mantê-la aqui.
+@progress_bp.route('/user/avatars/promote', methods=['POST'])
+@jwt_required()
+def promote_avatar_to_global():
+    """Promove um avatar de atividade para a lista de avatares globais do usuário."""
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    data = request.get_json()
+    avatar_to_promote = data.get('avatar') # Espera um objeto {'url': '...', 'name': '...'}
+
+    if not avatar_to_promote or 'url' not in avatar_to_promote or 'name' not in avatar_to_promote:
+        return jsonify({"message": "Objeto de avatar inválido."}), 400
+
+    if user.unlocked_global_avatars is None:
+        user.unlocked_global_avatars = []
+    
+    # Evita duplicatas
+    if any(avatar['url'] == avatar_to_promote['url'] for avatar in user.unlocked_global_avatars):
+        return jsonify({"message": "Este avatar já está na sua lista global."}), 200
+
+    user.unlocked_global_avatars.append(avatar_to_promote)
+    flag_modified(user, "unlocked_global_avatars")
+    db.session.commit()
+    
+    return jsonify({
+        "message": "Avatar promovido com sucesso para seu perfil!",
+        "unlocked_global_avatars": user.unlocked_global_avatars
+    }), 200

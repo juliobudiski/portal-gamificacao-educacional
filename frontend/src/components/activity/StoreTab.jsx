@@ -23,6 +23,25 @@ const PREDEFINED_COSMETICS = [
     }
 ];
 
+const PREDEFINED_AVATARS = [
+    {
+        name: 'Gato Mago',
+        description: 'Um companheiro místico para suas aventuras.',
+        price: 300,
+        icon: '😺',
+        item_type: 'avatar',
+        effect_id: { url: '/avatars/wizard_cat.png', name: 'Gato Mago', promotable: true }
+    },
+    {
+        name: 'Robô Futurista',
+        description: 'Tecnologia de ponta para o aluno moderno.',
+        price: 300,
+        icon: '🤖',
+        item_type: 'avatar',
+        effect_id: { url: '/avatars/robot.png', name: 'Robô Futurista', promotable: false }
+    }
+];
+
 const PREDEFINED_TITLES = [
     {
         name: 'O Grande Comprador',
@@ -251,6 +270,31 @@ const StoreTab = ({ items, userPoints, onPurchase, onAddItem, onDeleteItem, onRe
                                             }
                                         >
                                             {isAlreadyAdded ? 'Já Adicionado' : '+ Adicionar à Loja'}
+                                        </button>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-300 mt-4 mb-2">Avatares</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {PREDEFINED_AVATARS.map(preset => {
+                                // Lógica para verificar se já foi adicionado
+                                const isAlreadyAdded = items.some(item => item.name === preset.name);
+                                return (
+                                    <div key={preset.name} className="bg-gray-800 p-4 rounded-lg flex flex-col">
+                                        <div className="flex items-start gap-4">
+                                            <img src={preset.effect_id.url} alt={preset.name} className="w-12 h-12 rounded-full bg-gray-700" />
+                                            <div>
+                                                <h3 className="font-bold text-lg">{preset.name}</h3>
+                                                <p className="text-sm text-gray-400 flex-grow my-1">{preset.description}</p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => onAddItem(preset)}
+                                            disabled={isAlreadyAdded}
+                                            className={`mt-auto w-full py-2 px-4 rounded font-bold text-sm transition-all mt-4 ${isAlreadyAdded ? 'bg-gray-600 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-500'}`}
+                                        >
+                                            {isAlreadyAdded ? 'Já Adicionado' : `+ Adicionar por ${preset.price} pts`}
                                         </button>
                                     </div>
                                 );

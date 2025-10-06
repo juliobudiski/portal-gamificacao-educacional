@@ -17,6 +17,7 @@ const style = `
 `;
 
 const basePrizes = [
+  //{"type": "avatar", "value": {"url": "/images/avatars/wizard_cat.png", "name": "Gato Mago", "promotable": True}, "label": "Avatar Raro: Gato Mago!"},
   { id: "prize-1", text: "50 XP", icon: FaTrophy, type: "xp", value: 50 },
   { id: "prize-2", text: "200 XP", icon: FaTrophy, type: "xp", value: 200 },
   { id: "prize-3", text: "Título: O Sortudo", icon: FaGift, type: "title" },
@@ -81,6 +82,8 @@ const RouletteTab = ({ onPrizeWon, onReturn }) => {
     }
   };
 
+
+
   const handleWheelStop = () => {
     // A Causa Raiz nº 2 está aqui: Em vez de buscar em um array local,
     // usamos o estado 'apiPrize', que contém a resposta exata do servidor.
@@ -107,6 +110,7 @@ const RouletteTab = ({ onPrizeWon, onReturn }) => {
       fetchWinners();
     }, 3000);
   };
+
 
   return (
     <div className="w-full flex flex-col lg:flex-row items-center lg:items-start justify-center gap-8 p-4">

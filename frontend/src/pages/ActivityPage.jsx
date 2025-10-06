@@ -1,6 +1,6 @@
 // ==== [HEADER] ====  
 // Arquivo: ActivityPage.jsx  
-// Última revisão: 23-09-25
+// Última revisão: 06-10-25 (Correção de escopo da função fetchAllData)
 // Debug: DEBUG_MODE=true para logs detalhados  
 // ==================  
 
@@ -27,7 +27,7 @@ import { cardsConfig } from '../components/activity/gameElementsConfig';
 import GameBoardViewer from '../components/activity/GameBoardViewer';
 import useAssetLoader from '../hooks/useAssetLoader'; // Importa nosso hook
 import FinalRewardTab from '../components/activity/FinalRewardTab';
-// IMPORTA AS CONFIGURAÇÕES DO NOVO ARQUIVO
+import AvatarCustomizationTab from '../components/activity/AvatarCustomizationTab';
 import { elementConfig, decorationConfig, decorationSpawnPoints, boardStructuralImages } from '../components/activity/GameBoardConfig';
 import ActivityViewOverlay from '../components/activity/ActivityViewOverlay';
 // Função auxiliar para embaralhar uma array
@@ -114,8 +114,152 @@ function ActivityPage() {
     setCurrentView('final_reward');
   };
 
-  // --- NOVA FUNÇÃO PARA COLETAR A RECOMPENSA E FINALIZAR ---
-  const handleCollectFinalReward = async () => {
+  const handleClosePanel = () => {
+    setIsPanelOpen(false);
+    // Damos um pequeno tempo para a animação de fechar antes de limpar o conteúdo
+    setTimeout(() => {
+      setCurrentView('board');
+      setActiveStepContent(null);
+    }, 400);
+  };
+
+  // Função utilitária para logging
+  const debugLog = useCallback((message, ...optionalParams) => {
+    if (DEBUG_MODE) {
+      console.debug(`[ActivityPage] ${message}`, ...optionalParams);
+    }
+  }, []);
+
+  /**
+   * @desc Busca dados de API com tratamento de erros
+   * @param {string} url - Endpoint da API
+   * @param {function} setter - Função set do state
+   * @throws {Error} Quando falha a requisição
+   */
+  const fetchData = useCallback(async (url, setter) => {
+    debugLog(`Iniciando fetchData para: ${url}`);
+
+    if (!user?.token) {
+      const errorMsg = 'Usuário não autenticado.';
+      debugLog(errorMsg);
+      setError(errorMsg);
+      return;
+    }
+
+    try {
+      const API_BASE = import.meta.env.VITE_API_URL;
+      const response = await fetch(`${API_BASE}${url}`, {
+        headers: { 'Authorization': `Bearer ${user.token}` }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Erro HTTP: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setter(data);
+      debugLog(`Dados recebidos de ${url}:`, data);
+
+    } catch (err) {
+      const errorMsg = `Falha ao buscar ${url}: ${err.message}`;
+      debugLog(errorMsg, err);
+      setError(prev => `${prev}\n${errorMsg}`);
+    }
+  }, [user?.token, debugLog]);
+
+  const fetchSlotWinners = useCallback(async () => {
+    setLoadingSlotWinners(true);
+    // Usamos a função fetchData que já existe para buscar os dados
+    await fetchData(`/api/progress/${activityId}/slot-winners`, setSlotWinners);
+    setLoadingSlotWinners(false);
+  }, [activityId, fetchData]);
+
+  // --- INÍCIO DA CORREÇÃO ---
+  // 1. A função `fetchAllData` é movida para fora do `useEffect` e envolvida em um `useCallback`.
+  //    Isso a torna estável e acessível em todo o escopo do componente.
+  const fetchAllData = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    debugLog('Iniciando fetchAllData');
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/activities/${activityId}`,
+        { headers: { 'Authorization': `Bearer ${user.token}` } }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Status não-OK ao carregar atividade");
+      }
+
+      let activityData = await response.json();
+
+      if (activityData.gamificationDesign && !activityData.gamificationDesign.finalReward) {
+        console.warn("[TESTE] Adicionando objeto 'finalReward' que não veio da API.");
+        activityData.gamificationDesign.finalReward = {
+          rewardType: "xp",
+          value: 1000,
+          displayText: "Recompensa Final",
+          celebrationText: "Parabéns por concluir a jornada!"
+        };
+      }
+
+      const design = activityData.gamificationDesign;
+      const missionInHub = design?.hub_elements?.find(el => el.type === 'mission' && el.enabled);
+
+      if (design?.progression_path && missionInHub) {
+        const missionStep = {
+          id: 'mission_step_01',
+          type: 'mission',
+          content: { title: 'Sua Missão' }
+        };
+        design.progression_path.unshift(missionStep);
+        missionInHub.enabled = false;
+      }
+
+      setActivity(activityData);
+      debugLog('Atividade carregada:', activityData);
+
+      const elements = activityData.gameElements?.selectedElements || [];
+      const dataPromises = [];
+      debugLog('Elementos de jogo detectados:', elements);
+
+      if (user.role === 'aluno') {
+        dataPromises.push(fetchData(`/api/progress/${activityId}`, setUserProgress));
+      } else if (user.role === 'professor') {
+        dataPromises.push(fetchData(`/api/progress/${activityId}/analytics`, setAnalytics));
+      }
+
+      if (elements.includes("Sistema de classificação e ranking")) {
+        debugLog('Carregando leaderboard...');
+        dataPromises.push(fetchData(`/api/progress/${activityId}/leaderboard`, setLeaderboard));
+      }
+      if (elements.includes("Economia (sistema monetário)")) {
+        debugLog('Carregando itens da loja...');
+        dataPromises.push(fetchData(`/api/progress/${activityId}/store-items`, setStoreItems));
+      }
+      if (elements.includes("Chance (sorte e probabilidade)")) {
+        dataPromises.push(fetchSlotWinners());
+      }
+
+      await Promise.all(dataPromises);
+      debugLog('Todos os dados complementares carregados');
+
+    } catch (err) {
+      const errorMsg = `Erro no fetchAllData: ${err.message}`;
+      debugLog(errorMsg, err);
+      setError(errorMsg);
+    } finally {
+      setLoading(false);
+      debugLog('Finalizado fetchAllData');
+    }
+  }, [activityId, user, fetchData, debugLog, fetchSlotWinners]);
+
+
+  // 2. `handleCollectFinalReward` também é envolvida em `useCallback` e agora pode acessar `fetchAllData`.
+  const handleCollectFinalReward = useCallback(async () => {
     debugLog("Coletando recompensa final...");
     try {
       const API_BASE = import.meta.env.VITE_API_URL;
@@ -129,37 +273,19 @@ function ActivityPage() {
         throw new Error(errorData.message || "Falha ao coletar recompensa final.");
       }
 
-      // Sucesso!
       alert("Parabéns! Recompensa coletada e atividade finalizada!");
 
-      // --- CORREÇÃO APLICADA AQUI ---
-
-      // 1. Primeiro, busca os dados mais recentes do servidor.
-      //    Isso garantirá que o 'studentProgress.status' seja 'completed'.
+      // A chamada agora funciona, pois `fetchAllData` está no escopo correto.
       await fetchAllData();
 
-      // 2. Depois, retorna para a visão do tabuleiro.
-      //    O GameBoardViewer receberá os dados atualizados e mostrará o "check".
       setCurrentView('board');
 
     } catch (err) {
       setError(`Erro: ${err.message}`);
       debugLog("Erro ao coletar recompensa final:", err);
     }
-  };
-
-
-  const handleClosePanel = () => {
-    setIsPanelOpen(false);
-    // Damos um pequeno tempo para a animação de fechar antes de limpar o conteúdo
-    setTimeout(() => {
-      setCurrentView('board');
-      setActiveStepContent(null);
-    }, 400);
-  };
-
-
-
+  }, [activityId, user.token, debugLog, fetchAllData]); // fetchAllData é adicionada como dependência
+  // --- FIM DA CORREÇÃO ---
 
 
   // --- LÓGICA DE PRELOADING DE ASSETS ---
@@ -254,63 +380,8 @@ function ActivityPage() {
     // Adiciona 'stepCoordinates' ao array de dependências
   }, [activity, stepCoordinates]);
 
-  // Função utilitária para logging
-  const debugLog = useCallback((message, ...optionalParams) => {
-    if (DEBUG_MODE) {
-      console.debug(`[ActivityPage] ${message}`, ...optionalParams);
-    }
-  }, []);
-
-  /**
-   * @desc Busca dados de API com tratamento de erros
-   * @param {string} url - Endpoint da API
-   * @param {function} setter - Função set do state
-   * @throws {Error} Quando falha a requisição
-   */
-  const fetchData = useCallback(async (url, setter) => {
-    debugLog(`Iniciando fetchData para: ${url}`);
-
-    if (!user?.token) {
-      const errorMsg = 'Usuário não autenticado.';
-      debugLog(errorMsg);
-      setError(errorMsg);
-      return;
-    }
-
-    try {
-      const API_BASE = import.meta.env.VITE_API_URL;
-      const response = await fetch(`${API_BASE}${url}`, {
-        headers: { 'Authorization': `Bearer ${user.token}` }
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `Erro HTTP: ${response.status}`);
-      }
-
-      const data = await response.json();
-      setter(data);
-      debugLog(`Dados recebidos de ${url}:`, data);
-
-    } catch (err) {
-      const errorMsg = `Falha ao buscar ${url}: ${err.message}`;
-      debugLog(errorMsg, err);
-      setError(prev => `${prev}\n${errorMsg}`);
-    }
-  }, [user?.token, debugLog]);
-
-  const fetchSlotWinners = useCallback(async () => {
-    setLoadingSlotWinners(true);
-    // Usamos a função fetchData que já existe para buscar os dados
-    await fetchData(`/api/progress/${activityId}/slot-winners`, setSlotWinners);
-    setLoadingSlotWinners(false);
-  }, [activityId, fetchData]);
-
-
-
-
-
-  // Busca todos os dados necessários ao carregar a página
+  // 3. O `useEffect` principal agora simplesmente chama a função `fetchAllData`.
+  //    As dependências `activityId` e `user` são gerenciadas pelo `useCallback` de `fetchAllData`.
   useEffect(() => {
     debugLog('Iniciando carregamento da atividade', { activityId });
 
@@ -326,101 +397,9 @@ function ActivityPage() {
       return;
     }
 
-    const fetchAllData = async () => {
-      setLoading(true);
-      setError('');
-      debugLog('Iniciando fetchAllData');
-
-      try {
-        const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/activities/${activityId}`,
-          { headers: { 'Authorization': `Bearer ${user.token}` } }
-        );
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || "Status não-OK ao carregar atividade");
-        }
-
-        let activityData = await response.json();
-
-        // --- CÓDIGO DE TESTE TEMPORÁRIO ---
-        // Se o objeto finalReward não existir, adiciona um para fins de teste.
-        if (activityData.gamificationDesign && !activityData.gamificationDesign.finalReward) {
-          console.warn("[TESTE] Adicionando objeto 'finalReward' que não veio da API.");
-          activityData.gamificationDesign.finalReward = {
-            rewardType: "xp",
-            value: 1000,
-            displayText: "Recompensa Final",
-            celebrationText: "Parabéns por concluir a jornada!"
-          };
-        }
-        // --- FIM DO CÓDIGO DE TESTE ---
-
-        const design = activityData.gamificationDesign;
-        const missionInHub = design?.hub_elements?.find(el => el.type === 'mission' && el.enabled);
-
-        if (design?.progression_path && missionInHub) {
-          // 1. Cria o objeto do passo da Missão com um ID FIXO e RECONHECÍVEL
-          const missionStep = {
-            id: 'mission_step_01', // ID especial
-            type: 'mission',
-            content: { title: 'Sua Missão' }
-          };
-
-          // 2. Insere este passo no INÍCIO da trilha
-          design.progression_path.unshift(missionStep);
-
-          // 3. Desabilita a Missão no hub para não aparecer em dois lugares
-          missionInHub.enabled = false;
-        }
-
-        // Importante: NÃO definimos mais a view aqui.
-        setActivity(activityData);
-        debugLog('Atividade carregada:', activityData);
-
-
-        const elements = activityData.gameElements?.selectedElements || [];
-        const dataPromises = [];
-        debugLog('Elementos de jogo detectados:', elements);
-
-        // Lógica de busca de dados específica para cada perfil
-        if (user.role === 'aluno') {
-          dataPromises.push(fetchData(`/api/progress/${activityId}`, setUserProgress));
-        } else if (user.role === 'professor') {
-          dataPromises.push(fetchData(`/api/progress/${activityId}/analytics`, setAnalytics));
-        }
-
-        // Lógica de busca de dados compartilhada
-        if (elements.includes("Sistema de classificação e ranking")) {
-          debugLog('Carregando leaderboard...');
-          dataPromises.push(fetchData(`/api/progress/${activityId}/leaderboard`, setLeaderboard));
-        }
-        if (elements.includes("Economia (sistema monetário)")) {
-          debugLog('Carregando itens da loja para aluno ou professor...');
-          dataPromises.push(fetchData(`/api/progress/${activityId}/store-items`, setStoreItems));
-        }
-        if (elements.includes("Chance (sorte e probabilidade)")) {
-          dataPromises.push(fetchSlotWinners());
-        }
-
-        // Aguarda todas as promessas
-
-        await Promise.all(dataPromises);
-        debugLog('Todos os dados complementares carregados');
-
-      } catch (err) {
-        const errorMsg = `Erro no fetchAllData: ${err.message}`;
-        debugLog(errorMsg, err);
-        setError(errorMsg);
-      } finally {
-        setLoading(false);
-        debugLog('Finalizado fetchAllData, fetchSlotWinners');
-      }
-    };
-
     fetchAllData();
-  }, [activityId, user, fetchData, debugLog, fetchSlotWinners]);
+  }, [activityId, user, fetchAllData]); // `fetchAllData` é adicionada como dependência para garantir que a função mais recente seja usada se suas próprias dependências mudarem.
+
 
   // --- LÓGICA DE NÍVEL E XP (CLIENT-SIDE PARA FEEDBACK IMEDIATO) ---
   const xpForNextLevel = useCallback((level) => 100 + (level - 1) * 50, []);
@@ -509,20 +488,22 @@ function ActivityPage() {
         points_earned: data.new_total_points
       }));
 
-      // 2. A MÁGICA: Busca os dados do ranking novamente
-      // Isso garante que o componente receba a lista com os novos 'active_effects'.
-      debugLog('Compra bem-sucedida, atualizando o ranking para exibir os novos efeitos...');
+      debugLog('Compra bem-sucedida, atualizando o progresso do usuário...');
+      await fetchData(`/api/progress/${activityId}`, setUserProgress);
+      // --- FIM DA CORREÇÃO ---
+
+      // Também podemos continuar atualizando o ranking, como já estava fazendo.
+      debugLog('Atualizando o ranking para exibir os novos efeitos...');
       await fetchData(`/api/progress/${activityId}/leaderboard`, setLeaderboard);
 
-      //alert(`"${item.name}" comprado com sucesso!`);
-      debugLog('Ranking atualizado.');
+      debugLog('Progresso e ranking atualizados.');
 
     } catch (err) {
       debugLog("Erro na compra:", err);
       setError(`Erro na compra: ${err.message}`);
       setTimeout(() => setError(''), 5000);
     }
-  }, [activityId, user?.token, debugLog, fetchData, setLeaderboard]);
+  }, [activityId, user?.token, debugLog, fetchData, setLeaderboard, logEvent]);
 
   // --- NOVA FUNÇÃO PARA SELEÇÃO DE VIEW COM ATUALIZAÇÃO DE DADOS ---
   const handleSelectView = useCallback(async (view) => {
@@ -619,6 +600,15 @@ function ActivityPage() {
 
   }, [activityId, user?.token, debugLog]);
 
+  const onAvatarChange = useCallback((newAvatarUrl) => {
+    // Atualiza o estado local para refletir a mudança imediatamente
+    setUserProgress(prevProgress => ({
+      ...prevProgress,
+      equipped_activity_avatar_url: newAvatarUrl
+    }));
+    // Opcional: Atualizar o leaderboard para refletir a mudança também
+    // fetchAllData(); // Pode ser pesado, a atualização local já melhora a UX
+  }, []);
 
 
   // ---------- [COMPONENTE INTERNO: DASHBOARD] ----------
@@ -737,6 +727,15 @@ function ActivityPage() {
           <FinalRewardTab
             reward={activity?.gamificationDesign?.finalReward}
             onCollect={handleCollectFinalReward}
+          />
+        );
+      case 'avatar_customization':
+        return (
+          <AvatarCustomizationTab
+            activityId={activityId}
+            userProgress={userProgress}
+            onReturn={handleReturnToBoard}
+            onAvatarChange={onAvatarChange}
           />
         );
       // Adicione outros casos aqui conforme necessário

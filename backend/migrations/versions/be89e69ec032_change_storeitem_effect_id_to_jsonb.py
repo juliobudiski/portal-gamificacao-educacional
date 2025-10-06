@@ -22,7 +22,9 @@ def upgrade():
         batch_op.alter_column('effect_id',
                existing_type=sa.VARCHAR(length=100),
                type_=postgresql.JSONB(astext_type=sa.Text()),
-               existing_nullable=True)
+               existing_nullable=True,
+               # ADICIONE ESTA LINHA:
+               postgresql_using='effect_id::jsonb')
 
     # ### end Alembic commands ###
 
@@ -33,6 +35,8 @@ def downgrade():
         batch_op.alter_column('effect_id',
                existing_type=postgresql.JSONB(astext_type=sa.Text()),
                type_=sa.VARCHAR(length=100),
-               existing_nullable=True)
+               existing_nullable=True,
+               # ADICIONE ESTA LINHA (PARA GARANTIR A REVERSÃO):
+               postgresql_using='effect_id::text')
 
     # ### end Alembic commands ###

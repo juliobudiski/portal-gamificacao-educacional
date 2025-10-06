@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     host: true, // Garante que o servidor seja acessível na rede
     allowedHosts: [
-      'laser-tent-supplemental-thu.trycloudflare.com'
+      'greatly-december-constructed-conflict.trycloudflare.com'
     ]
   }
 })
