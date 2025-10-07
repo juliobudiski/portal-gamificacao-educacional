@@ -157,28 +157,36 @@ class ActivityProgress(db.Model):
     activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=False)
     class_id = db.Column(db.Integer, db.ForeignKey('class.id'), nullable=False)
     points_earned = db.Column(db.Integer, default=0)
-    equipped_title_id = db.Column(db.Integer, db.ForeignKey('title.id'), nullable=True)
-    equipped_title = db.relationship('Title')
     total_xp_earned = db.Column(db.Integer, default=0, nullable=False, server_default='0')
     coins = db.Column(db.Integer, nullable=False, default=0, server_default='0')
     status = db.Column(db.String(50), default='not_started')
     completed_at = db.Column(db.DateTime, nullable=True)
     attempts = db.Column(db.Integer, default=0)
     last_spin_date = db.Column(db.DateTime, nullable=True)
-    
-    # --- NOVOS CAMPOS PARA AVATARES DE ATIVIDADE ---
-    # Guarda a URL do avatar que o aluno EQUIPOU para esta atividade.
+    completed_steps = db.Column(JSONB, nullable=True, server_default='[]')
+
+    # --- Campos de Customização ---
     equipped_activity_avatar_url = db.Column(db.String(255), nullable=True)
-    # Guarda uma lista de objetos de avatares que o aluno DESBLOQUEOU nesta atividade.
-    # Ex: [{'url': '/avatars/t-rex.png', 'name': 'T-Rex Feroz', 'promotable': false}]
-    unlocked_activity_avatars = db.Column(JSONB, nullable=True, server_default='[]')
-    # --- FIM DOS NOVOS CAMPOS ---
+    equipped_title_id = db.Column(db.Integer, db.ForeignKey('title.id'), nullable=True)
     
+    # NOVOS CAMPOS: Armazenam o ID do item da loja (StoreItem) que é o cosmético
+    equipped_name_cosmetic_id = db.Column(db.Integer, db.ForeignKey('store_item.id'), nullable=True)
+    equipped_title_cosmetic_id = db.Column(db.Integer, db.ForeignKey('store_item.id'), nullable=True)
+
+    # --- Campos de Itens Desbloqueados ---
+    unlocked_activity_avatars = db.Column(JSONB, nullable=True, server_default='[]')
+    
+    # --- Relações (Relationships) ---
     student = db.relationship('User', backref='activity_progresses', lazy=True)
     activity = db.relationship('Activity', backref=db.backref('progresses', cascade="all, delete-orphan"))
     class_obj = db.relationship('Class', backref='activity_progresses', lazy=True)
+    
+    equipped_title = db.relationship('Title')
+    # NOVAS RELAÇÕES: Usamos foreign_keys para resolver a ambiguidade de múltiplas FKs para a mesma tabela
+    equipped_name_cosmetic = db.relationship('StoreItem', foreign_keys=[equipped_name_cosmetic_id])
+    equipped_title_cosmetic = db.relationship('StoreItem', foreign_keys=[equipped_title_cosmetic_id])
+
     __table_args__ = (db.UniqueConstraint('student_id', 'activity_id', name='_student_activity_uc'),)
-    completed_steps = db.Column(JSONB, nullable=True, server_default='[]')
 
 
 class EventLog(db.Model):
@@ -369,3 +377,34 @@ class UserUnlockedTitle(db.Model):
     
     # Garante que um usuário não possa desbloquear o mesmo título na mesma atividade várias vezes
     __table_args__ = (db.UniqueConstraint('user_id', 'activity_id', 'title_id', name='_user_activity_title_uc'),)
+class Medal(db.Model):
+    __tablename__ = 'medal'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    description = db.Column(db.String(255), nullable=False) # Como obter
+    image_url = db.Column(db.String(255), nullable=False)
+    # Tipo: 'PLATFORM' para automáticas, 'ACTIVITY' para as do professor
+    type = db.Column(db.String(50), nullable=False, default='PLATFORM')
+    # Notas extras, como o propósito pedagógico
+    notes = db.Column(db.Text, nullable=True)
+
+class UserUnlockedMedal(db.Model):
+    __tablename__ = 'user_unlocked_medal'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    medal_id = db.Column(db.Integer, db.ForeignKey('medal.id'), nullable=False)
+    unlocked_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    # Opcional: em qual atividade a medalha foi ganha (se aplicável)
+    activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=True)
+
+    # Relações
+    user = db.relationship('User', backref='unlocked_medals')
+    medal = db.relationship('Medal')
+    activity = db.relationship('Activity')
+
+    # Garante que um usuário não ganhe a mesma medalha mais de uma vez
+    __table_args__ = (db.UniqueConstraint('user_id', 'medal_id', name='_user_medal_uc'),)
+
+

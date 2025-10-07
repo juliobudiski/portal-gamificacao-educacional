@@ -27,7 +27,7 @@ import { cardsConfig } from '../components/activity/gameElementsConfig';
 import GameBoardViewer from '../components/activity/GameBoardViewer';
 import useAssetLoader from '../hooks/useAssetLoader'; // Importa nosso hook
 import FinalRewardTab from '../components/activity/FinalRewardTab';
-import AvatarCustomizationTab from '../components/activity/AvatarCustomizationTab';
+import AvatarCustomizationTab from '../components/activity/CustomizationTab';
 import { elementConfig, decorationConfig, decorationSpawnPoints, boardStructuralImages } from '../components/activity/GameBoardConfig';
 import ActivityViewOverlay from '../components/activity/ActivityViewOverlay';
 // Função auxiliar para embaralhar uma array
@@ -104,10 +104,7 @@ function ActivityPage() {
     setShowStatsModal(true);
   }, []); // O array vazio [] garante que a função nunca será recriada
 
-  const handleHubIconClick = (view) => {
-    debugLog("Aluno clicou no ícone do hub:", view);
-    setCurrentView(view);
-  };
+
 
   const handleFinalRewardClick = () => {
     debugLog("Aluno clicou na Recompensa Final.");
@@ -257,6 +254,20 @@ function ActivityPage() {
     }
   }, [activityId, user, fetchData, debugLog, fetchSlotWinners]);
 
+  const handleHubIconClick = useCallback(async (view) => {
+    debugLog("Aluno clicou no ícone do hub:", view);
+
+    // Se o usuário quer ver o ranking, atualizamos os dados primeiro
+    if (view === 'ranking') {
+      debugLog('Atualizando leaderboard antes de exibir...');
+      // Usamos 'await' para garantir que a busca termine antes de mudar a tela,
+      // embora a mudança de tela seja quase instantânea.
+      await fetchData(`/api/progress/${activityId}/leaderboard`, setLeaderboard);
+    }
+
+    setCurrentView(view);
+  }, [activityId, debugLog, fetchData]);
+
 
   // 2. `handleCollectFinalReward` também é envolvida em `useCallback` e agora pode acessar `fetchAllData`.
   const handleCollectFinalReward = useCallback(async () => {
@@ -403,7 +414,11 @@ function ActivityPage() {
 
   // --- LÓGICA DE NÍVEL E XP (CLIENT-SIDE PARA FEEDBACK IMEDIATO) ---
   const xpForNextLevel = useCallback((level) => 100 + (level - 1) * 50, []);
-
+  const handlePrizeUnlocked = useCallback(() => {
+    // Esta função simplesmente diz para a ActivityPage buscar os dados de progresso mais recentes.
+    debugLog('Um prêmio foi ganho, atualizando o progresso do usuário...');
+    fetchData(`/api/progress/${activityId}`, setUserProgress);
+  }, [activityId, fetchData, debugLog]);
   const handlePointsEarned = useCallback(async (points) => {
     const numericPoints = parseInt(points, 10);
     if (isNaN(numericPoints) || numericPoints === 0) return;
@@ -715,7 +730,7 @@ function ActivityPage() {
       case 'store':
         return <StoreTab onReturn={handleReturnToBoard} userRole={user.role} items={storeItems} userPoints={userProgress?.points_earned || 0} onPurchase={handlePurchase} onAddItem={handleAddItem} onDeleteItem={handleDeleteItem} />;
       case 'roulette':
-        return <RouletteTab onReturn={handleReturnToBoard} onPrizeWon={handlePointsEarned} />;
+        return <RouletteTab onReturn={handleReturnToBoard} onPrizeWon={handlePointsEarned} onPrizeUnlocked={handlePrizeUnlocked} />;
       case 'slot_machine':
         return <SlotMachineTab onReturn={handleReturnToBoard} onPrizeWon={handlePointsEarned} onWin={fetchSlotWinners} winners={slotWinners} loadingWinners={loadingSlotWinners} userCoins={userProgress?.coins || 0} />;
       case 'badges':

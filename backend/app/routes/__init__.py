@@ -9,6 +9,8 @@ from .student import student_bp
 from .log import log_bp
 from .rankings import rankings_bp
 from .content_editor import content_editor_bp
+from .medals import medals_bp
+
 
 def register_blueprints(app):
     """
@@ -24,3 +26,4 @@ def register_blueprints(app):
     app.register_blueprint(log_bp, url_prefix='/api/log')
     app.register_blueprint(rankings_bp, url_prefix='/api/rankings')
     app.register_blueprint(content_editor_bp, url_prefix='/api/content_editor')
+    app.register_blueprint(medals_bp, url_prefix='/api/medals')

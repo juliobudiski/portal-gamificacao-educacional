@@ -54,7 +54,16 @@ const RankingItem = ({ player, isCurrentUser }) => {
     // Retorna o objeto de estilo e a classe base
     return { style: visualStyle, className: baseClass };
   };
-
+  const applyCosmetic = (cosmetic) => {
+    const style = {};
+    if (cosmetic?.type === 'color') {
+      style.color = cosmetic.color;
+      if (cosmetic.effect === 'neon') {
+        style.textShadow = `0 0 5px ${cosmetic.color}, 0 0 7px ${cosmetic.color}`;
+      }
+    }
+    return style;
+  };
   const podiumStyle = getPodiumStyle(player.rank);
   const visuals = generateVisuals(player.active_effects);
 
@@ -72,12 +81,11 @@ const RankingItem = ({ player, isCurrentUser }) => {
 
         {/* Nome e Título agora usam o mesmo objeto de estilo 'visuals' */}
         <div className="flex flex-col items-start">
-          <span style={visuals.style} className={visuals.className}>{player.name}</span>
+          <span style={applyCosmetic(player.name_cosmetic)} className="font-semibold text-lg text-white">
+            {player.name}
+          </span>
           {player.title && (
-            <span
-              style={visuals.style} // <-- APLICA O MESMO ESTILO AQUI
-              className="text-xs font-bold mt-1" // <-- Classe base para o título
-            >
+            <span style={applyCosmetic(player.title_cosmetic)} className="text-xs font-bold mt-1 text-gray-300">
               {player.title}
             </span>
           )}

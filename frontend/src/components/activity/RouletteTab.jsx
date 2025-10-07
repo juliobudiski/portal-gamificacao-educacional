@@ -26,7 +26,7 @@ const basePrizes = [
   { id: "prize-6", text: "150 XP", icon: FaTrophy, type: "xp", value: 150 },
 ];
 
-const RouletteTab = ({ onPrizeWon, onReturn }) => {
+const RouletteTab = ({ onPrizeWon, onReturn, onPrizeUnlocked }) => {
   const { user } = useAuth();
   const { activityId } = useParams();
 
@@ -107,6 +107,7 @@ const RouletteTab = ({ onPrizeWon, onReturn }) => {
       setIsSpinning(false);
       setWinningPrizeIndex(null);
       setApiPrize(null);
+      onPrizeUnlocked?.();
       fetchWinners();
     }, 3000);
   };

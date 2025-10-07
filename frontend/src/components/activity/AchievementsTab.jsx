@@ -1,21 +1,90 @@
-import React from 'react';
-import { FaMedal } from 'react-icons/fa';
+// frontend/src/components/activity/AchievementsTab.jsx
+import React, { useState, useEffect, useMemo } from 'react';
+import { useAuth } from '../../context/AuthContext';
+import { FaMedal, FaSpinner, FaArrowLeft } from 'react-icons/fa';
+import MedalDetailModal from './MedalDetailModal'; // Importa o novo modal
 
 const AchievementsTab = ({ onReturn }) => {
+    const { user } = useAuth();
+    const [allMedals, setAllMedals] = useState([]);
+    const [unlockedMedalIds, setUnlockedMedalIds] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [selectedMedal, setSelectedMedal] = useState(null);
+
+    useEffect(() => {
+        const fetchMedalData = async () => {
+            setIsLoading(true);
+            try {
+                const fetchApi = (endpoint) => fetch(`${import.meta.env.VITE_API_URL}${endpoint}`, { headers: { 'Authorization': `Bearer ${user.token}` } }).then(res => res.json());
+
+                const [medalsData, unlockedData] = await Promise.all([
+                    fetchApi('/api/medals'),
+                    fetchApi('/api/medals/my-unlocked')
+                ]);
+
+                setAllMedals(medalsData);
+                setUnlockedMedalIds(unlockedData);
+            } catch (err) {
+                setError('Não foi possível carregar as medalhas.');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchMedalData();
+    }, [user.token]);
+
+    // Usar um Set é muito mais rápido para verificar se uma medalha foi desbloqueada
+    const unlockedIdsSet = useMemo(() => new Set(unlockedMedalIds), [unlockedMedalIds]);
+
+    if (isLoading) {
+        return <div className="flex justify-center items-center h-96"><FaSpinner className="animate-spin text-4xl text-yellow-400" /></div>;
+    }
+
+    if (error) {
+        return <div className="text-center text-red-400">{error}</div>;
+    }
+
     return (
-        <div className="bg-gray-800 p-8 rounded-lg text-white text-center">
-            <button
-                onClick={onReturn}
-                className="mb-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200 transition-colors"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                    <path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" />
-                </svg>
-                Voltar ao Tabuleiro
+        <div className="w-full max-w-5xl mx-auto p-4 text-white">
+            <button onClick={onReturn} className="absolute top-4 left-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200">
+                <FaArrowLeft /> Voltar
             </button>
-            <FaMedal className="text-6xl text-orange-400 mx-auto mb-4" />
-            <h2 className="text-3xl font-bold text-orange-400">Painel de Conquistas</h2>
-            <p className="mt-2 text-gray-400">Em breve, suas medalhas e insígnias aparecerão aqui!</p>
+            <header className="text-center mb-8 pt-8">
+                <h1 className="text-4xl font-bold text-yellow-300 flex items-center justify-center gap-3">
+                    <FaMedal />
+                    Mural de Conquistas
+                </h1>
+            </header>
+
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-6">
+                {allMedals.map(medal => {
+                    const isUnlocked = unlockedIdsSet.has(medal.id);
+                    return (
+                        <div
+                            key={medal.id}
+                            className="flex flex-col items-center text-center cursor-pointer transition-transform transform hover:scale-110"
+                            onClick={() => setSelectedMedal(medal)}
+                        >
+                            <img
+                                src={medal.imageUrl}
+                                alt={medal.name}
+                                className={`w-24 h-24 transition-all duration-300 ${isUnlocked ? '' : 'filter grayscale opacity-60'}`}
+                            />
+                            <p className={`mt-2 font-semibold text-sm ${isUnlocked ? 'text-white' : 'text-gray-400'}`}>
+                                {medal.name}
+                            </p>
+                        </div>
+                    );
+                })}
+            </div>
+
+            <MedalDetailModal
+                medal={selectedMedal}
+                isUnlocked={selectedMedal ? unlockedIdsSet.has(selectedMedal.id) : false}
+                onClose={() => setSelectedMedal(null)}
+            />
         </div>
     );
 };

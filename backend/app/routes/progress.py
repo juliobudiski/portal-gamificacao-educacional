@@ -8,6 +8,7 @@ progress_bp = Blueprint('progress', __name__)
 from datetime import datetime, timedelta # Adicione timedelta
 import random # Adicione random
 from sqlalchemy.orm.attributes import flag_modified
+from .medals import check_and_award_medals
 import json
 def xp_for_next_level(level):
     """Calcula o XP necessário para o próximo nível com base no nível atual."""
@@ -148,7 +149,9 @@ def get_leaderboard(activity_id):
             "avatar": display_avatar,
             "points": progress_obj.total_xp_earned,
             "active_effects": active_effects,
-            "title": title_text
+            "title": progress_obj.equipped_title.display_text if progress_obj.equipped_title else None,
+            "name_cosmetic": progress_obj.equipped_name_cosmetic.effect_id if progress_obj.equipped_name_cosmetic else None,
+            "title_cosmetic": progress_obj.equipped_title_cosmetic.effect_id if progress_obj.equipped_title_cosmetic else None,
         })
     
     return jsonify(leaderboard), 200
@@ -471,7 +474,7 @@ def spin_roulette_for_activity(activity_id):
         {"type": "xp", "value": 100, "label": "100 XP"},
         {"type": "xp", "value": 150, "label": "150 XP"},
         {"type": "title", "value": "TITLE_LUCKY", "label": "Título: O Sortudo"},
-        {"type": "avatar", "value": {"url": "/avatars/wizard_cat.png", "name": "Gato Mago", "promotable": True}, "label": "Avatar Raro!"},
+        {"type": "avatar", "value": {"url": "/avatars/avatar_special.png", "name": "Sortudo", "promotable": True}, "label": "Avatar Raro!"},
     ]
 
     unlocked_avatar_urls = [avatar['url'] for avatar in (progress.unlocked_activity_avatars or []) if isinstance(avatar, dict)]
@@ -812,6 +815,13 @@ def collect_final_reward(activity_id):
     )
     db.session.add(completion_event)
 
+    try:
+        check_and_award_medals(user_id=user_id, activity_id=activity_id, event_type='activity_completed')
+    except Exception as e:
+        # Usamos um log de erro para não quebrar a funcionalidade principal se o sistema de medalhas falhar
+        current_app.logger.error(f"Erro ao verificar medalhas para user {user_id} na atividade {activity_id}: {str(e)}")
+    
+
     db.session.commit()
 
     return jsonify({"message": "Atividade concluída e recompensa coletada com sucesso!"}), 200
@@ -874,3 +884,98 @@ def promote_avatar_to_global():
         "message": "Avatar promovido com sucesso para seu perfil!",
         "unlocked_global_avatars": user.unlocked_global_avatars
     }), 200
+  
+@progress_bp.route('/<int:activity_id>/unlocked-cosmetics', methods=['GET'])
+@jwt_required()
+def get_unlocked_cosmetics(activity_id):
+    """Retorna todos os itens cosméticos que um usuário comprou em uma atividade."""
+    user_id = get_jwt_identity()
+    
+    # Busca todas as compras do usuário na atividade que são do tipo 'cosmetic'
+    purchased_cosmetics = db.session.query(StoreItem).join(Purchase).filter(
+        Purchase.user_id == user_id,
+        Purchase.activity_id == activity_id,
+        StoreItem.item_type == 'cosmetic'
+    ).all()
+    
+    # Converte os itens para um formato de dicionário seguro para JSON
+    cosmetics_data = [item.to_dict() for item in purchased_cosmetics]
+    
+    return jsonify(cosmetics_data), 200
+    
+@progress_bp.route('/<int:activity_id>/unlocked-titles', methods=['GET'])
+@jwt_required()
+def get_unlocked_titles(activity_id):
+    """Retorna todos os títulos que um usuário desbloqueou em uma atividade."""
+    user_id = get_jwt_identity()
+    unlocked_entries = UserUnlockedTitle.query.options(joinedload(UserUnlockedTitle.title)).filter_by(user_id=user_id, activity_id=activity_id).all()
+    
+    titles = [{
+        "id": entry.title.id,
+        "displayText": entry.title.display_text,
+        "description": entry.title.description
+    } for entry in unlocked_entries]
+    
+    return jsonify(titles), 200
+
+@progress_bp.route('/<int:activity_id>/equip-title', methods=['PUT'])
+@jwt_required()
+def equip_title(activity_id):
+    """Equipa um título que o usuário já desbloqueou."""
+    user_id = get_jwt_identity()
+    data = request.get_json()
+    title_id_to_equip = data.get('title_id') # Espera o ID do título ou None para desequipar
+
+    progress = ActivityProgress.query.filter_by(student_id=user_id, activity_id=activity_id).first()
+    if not progress:
+        return jsonify({"message": "Progresso não encontrado."}), 404
+
+    # Se o ID for None, desequipa
+    if title_id_to_equip is None:
+        progress.equipped_title_id = None
+        db.session.commit()
+        return jsonify({"message": "Título desequipado."}), 200
+
+    # Verifica se o usuário realmente desbloqueou este título
+    is_unlocked = UserUnlockedTitle.query.filter_by(user_id=user_id, activity_id=activity_id, title_id=title_id_to_equip).first()
+    if not is_unlocked:
+        return jsonify({"message": "Você não possui este título."}), 403
+
+    progress.equipped_title_id = title_id_to_equip
+    db.session.commit()
+    return jsonify({"message": "Título equipado com sucesso!"}), 200
+
+@progress_bp.route('/<int:activity_id>/equip-cosmetic', methods=['PUT'])
+@jwt_required()
+def equip_cosmetic(activity_id):
+    """Equipa um efeito cosmético em um 'slot' (nome ou título)."""
+    user_id = get_jwt_identity()
+    data = request.get_json()
+    item_id = data.get('item_id') # ID do StoreItem ou None para desequipar
+    slot = data.get('slot') # 'name' ou 'title'
+
+    if slot not in ['name', 'title']:
+        return jsonify({"message": "O 'slot' deve ser 'name' ou 'title'."}), 400
+
+    progress = ActivityProgress.query.filter_by(student_id=user_id, activity_id=activity_id).first()
+    if not progress:
+        return jsonify({"message": "Progresso não encontrado."}), 404
+
+    # Verifica se o usuário possui o item (se não estiver desequipando)
+    if item_id is not None:
+        purchase = Purchase.query.join(StoreItem).filter(
+            Purchase.user_id == user_id,
+            Purchase.activity_id == activity_id,
+            Purchase.item_id == item_id,
+            StoreItem.item_type == 'cosmetic'
+        ).first()
+        if not purchase:
+            return jsonify({"message": "Você não possui este item cosmético."}), 403
+
+    if slot == 'name':
+        progress.equipped_name_cosmetic_id = item_id
+    elif slot == 'title':
+        progress.equipped_title_cosmetic_id = item_id
+    
+    db.session.commit()
+    return jsonify({"message": f"Cosmético equipado no slot '{slot}' com sucesso!"}), 200

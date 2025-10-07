@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     host: true, // Garante que o servidor seja acessível na rede
     allowedHosts: [
-      'greatly-december-constructed-conflict.trycloudflare.com'
+      'canyon-receptors-makes-years.trycloudflare.com'
     ]
   }
 })
