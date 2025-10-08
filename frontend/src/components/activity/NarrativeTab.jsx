@@ -49,7 +49,7 @@ const NarrativeTab = ({ content, onComplete }) => {
         <h2 className="text-2xl font-bold text-yellow-400 mb-4">Missão</h2>
         <p className="text-gray-400">A narrativa para esta atividade ainda não foi configurada.</p>
         <button
-          onClick={onStart}
+          onClick={handleCompleteNarrative}
           className="mt-8 py-3 px-6 bg-green-600 hover:bg-green-700 rounded-lg text-xl font-bold flex items-center justify-center mx-auto"
         >
           <FaPlay className="mr-2" /> Ir para o Desafio

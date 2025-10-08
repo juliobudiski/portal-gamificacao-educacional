@@ -180,37 +180,37 @@ function ClassListPage() {
             ) : classes.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {classes.map((cls) => (
-                        <div 
-                            key={cls.id} 
+                        <div
+                            key={cls.id}
                             className="bg-[#343a40] p-6 rounded-xl shadow-lg border-t-4 border-[#ffbd30] transition-all duration-300 hover:shadow-2xl hover:-translate-y-1.5 hover:border-[#69e8cb]"
                         >
                             <h2 className="text-xl font-bold mb-3 text-white">
-                                <Link 
-                                    to={`/classes/${cls.id}`} 
+                                <Link
+                                    to={`/classes/${cls.id}`}
                                     className="text-[#69e8cb] hover:text-[#ffbd30] transition-colors duration-200"
                                 >
                                     {cls.name}
                                 </Link>
                             </h2>
                             <p className="text-[#e9ecef] text-sm mb-4">{cls.description}</p>
-                            
+
                             {user?.role === 'professor' && (
                                 <>
                                     <p className="text-[#e9ecef] text-sm mb-4">
-                                        Código de Inscrição: 
+                                        Código de Inscrição:
                                         <span className="font-mono bg-[#2c3135] p-1.5 rounded-md text-[#ffbd30] block mt-1.5">
                                             {cls.enrollment_code}
                                         </span>
                                     </p>
                                     <div className="flex space-x-3 mt-5">
-                                        <Link 
-                                            to={`/classes/${cls.id}/edit`} 
+                                        <Link
+                                            to={`/classes/${cls.id}/edit`}
                                             className="flex-1 bg-gradient-to-r from-[#ffbd30] to-[#ffa000] hover:from-[#ffcc5c] hover:to-[#ffb140] text-[#2c3135] font-bold py-2 px-4 rounded-lg text-center text-sm transition-all duration-200 shadow-md hover:shadow-lg"
                                         >
                                             Editar
                                         </Link>
-                                        <button 
-                                            onClick={() => handleDeleteClass(cls.id)} 
+                                        <button
+                                            onClick={() => handleDeleteClass(cls.id)}
                                             className="flex-1 bg-gradient-to-r from-[#ff416c] to-[#ff4b2b] hover:from-[#ff557c] hover:to-[#ff6340] text-white font-bold py-2 px-4 rounded-lg text-sm transition-all duration-200 shadow-md hover:shadow-lg"
                                         >
                                             Deletar
@@ -218,11 +218,11 @@ function ClassListPage() {
                                     </div>
                                 </>
                             )}
-                            
+
                             {user?.role === 'aluno' && (
                                 <div className="mt-5">
-                                    <button 
-                                        onClick={() => handleLeaveClass(cls.id)} 
+                                    <button
+                                        onClick={() => handleLeaveClass(cls.id)}
                                         className="w-full bg-gradient-to-r from-[#ff416c] to-[#ff4b2b] hover:from-[#ff557c] hover:to-[#ff6340] text-white font-bold py-2 px-4 rounded-lg text-sm transition-all duration-200 shadow-md hover:shadow-lg"
                                     >
                                         Sair da Turma

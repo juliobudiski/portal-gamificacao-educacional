@@ -6,13 +6,13 @@ import { Link } from 'react-router-dom';
 // NOVO: Ícones para Lattes e Orcid (adicionados como componentes SVG)
 const LattesIcon = () => (
   <svg width="24" height="24" viewBox="0 0 512 512" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-    <path d="M43.25 216.744h65.378V502H43.25zM76.213 43.25c27.56,0 49.333,21.773 49.333,48.553 0,27.56 -21.773,48.553 -49.333,48.553 -26.78,0 -48.553,-20.993 -48.553,-48.553 0,-26.78 21.773,-48.553 48.553,-48.553zM153.29 216.744h65.378v29.313h.818c9.692,-17.447 32.843,-35.813 65.378,-35.813 69.873,0 82.888,45.858 82.888,104.513v122.245h-65.378v-109c0,-26.78 -1.637,-52.74 -39.29,-52.74 -40.108,0 -45.858,30.95 -45.858,51.1v110.64h-65.378V216.744zM364.57 216.744h67.013v29.313h.818c9.692,-17.447 32.843,-35.813 65.378,-35.813 69.873,0 82.888,45.858 82.888,104.513v122.245h-65.378v-109c0,-26.78 -1.637,-52.74 -39.29,-52.74 -40.108,0 -45.858,30.95 -45.858,51.1v110.64h-65.378V216.744z" transform="scale(0.8) translate(40, -30)"/>
+    <path d="M43.25 216.744h65.378V502H43.25zM76.213 43.25c27.56,0 49.333,21.773 49.333,48.553 0,27.56 -21.773,48.553 -49.333,48.553 -26.78,0 -48.553,-20.993 -48.553,-48.553 0,-26.78 21.773,-48.553 48.553,-48.553zM153.29 216.744h65.378v29.313h.818c9.692,-17.447 32.843,-35.813 65.378,-35.813 69.873,0 82.888,45.858 82.888,104.513v122.245h-65.378v-109c0,-26.78 -1.637,-52.74 -39.29,-52.74 -40.108,0 -45.858,30.95 -45.858,51.1v110.64h-65.378V216.744zM364.57 216.744h67.013v29.313h.818c9.692,-17.447 32.843,-35.813 65.378,-35.813 69.873,0 82.888,45.858 82.888,104.513v122.245h-65.378v-109c0,-26.78 -1.637,-52.74 -39.29,-52.74 -40.108,0 -45.858,30.95 -45.858,51.1v110.64h-65.378V216.744z" transform="scale(0.8) translate(40, -30)" />
   </svg>
 );
 
 const OrcidIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 0C5.372 0 0 5.372 0 12s5.372 12 12 12 12-5.372 12-12S18.628 0 12 0zM7.363 4.312h2.91v10.59H7.363V4.312zM8.818 16.53c-1.05 0-1.902.85-1.902 1.9s.852 1.9 1.902 1.9 1.902-.85 1.902-1.9-.853-1.9-1.902-1.9zM16.637 6.41v1.562h-2.91v8.627h2.91V8.03h1.455V6.41h-4.365z"/>
+    <path d="M12 0C5.372 0 0 5.372 0 12s5.372 12 12 12 12-5.372 12-12S18.628 0 12 0zM7.363 4.312h2.91v10.59H7.363V4.312zM8.818 16.53c-1.05 0-1.902.85-1.902 1.9s.852 1.9 1.902 1.9 1.902-.85 1.902-1.9-.853-1.9-1.902-1.9zM16.637 6.41v1.562h-2.91v8.627h2.91V8.03h1.455V6.41h-4.365z" />
   </svg>
 );
 
@@ -30,37 +30,37 @@ function AboutUsPage() {
 
   // Estrutura de dados da equipe com mais detalhes
   const teamMembers = [
-    { 
-      name: "Júlio Budiski Herculani", 
-      role: "Pesquisador & Idealizador", 
-      photo: "/team/julio.jpeg", 
+    {
+      name: "Júlio Budiski Herculani",
+      role: "Pesquisador & Idealizador",
+      photo: "/team/julio.jpeg",
       bio: "Licenciado em Computação pela UEMS, Mestre em Ciência da Computação pela UEM e atualmente doutorando no mesmo programa. Com trajetória em computação embarcada, robótica, MOOCs, e Gamificação, seu foco de pesquisa é a aplicação da Gamificação na educação em Engenharia de Software para tornar o aprendizado mais atrativo e efetivo.",
       lattes: "http://lattes.cnpq.br/5242549943501681",
-      orcid: "https://orcid.org/0000-0003-1947-0101" 
+      orcid: "https://orcid.org/0000-0003-1947-0101"
     },
-    { 
-      name: "Aline M. M. M. Amaral", 
-      role: "Orientadora", 
-      photo: "/team/aline.jpeg", 
+    {
+      name: "Aline M. M. M. Amaral",
+      role: "Orientadora",
+      photo: "/team/aline.jpeg",
       bio: "Graduada em Ciência da Computação pela UEM, com mestrado pela USP e doutorado em Informática pela PUCPR. É professora Adjunta na UEM, com experiência em Engenharia de Software e Computação Forense, atuando principalmente em desenvolvimento de sistemas, engenharia de software e identificação de autoria em manuscritos.",
-      lattes: "http://lattes.cnpq.br/6738366464597912", 
-      orcid: "https://orcid.org/0000-0001-8884-3966" 
+      lattes: "http://lattes.cnpq.br/6738366464597912",
+      orcid: "https://orcid.org/0000-0001-8884-3966"
     },
-    { 
-      name: "Jorge Marques Prates", 
-      role: "Coorientador", 
-      photo: "/team/jorge.jpeg", 
+    {
+      name: "Jorge Marques Prates",
+      role: "Coorientador",
+      photo: "/team/jorge.jpeg",
       bio: "Graduado em Física e Ciência da Computação pela UNESP, com mestrado pela UNESP e doutorado pela USP. Atualmente é professor adjunto na UEMS. Seus interesses de pesquisa incluem Engenharia de Software Aplicada, Computação Aplicada à Educação (Pensamento Computacional, MOOCs) e Visualização de Informação.",
-      lattes: "http://lattes.cnpq.br/8890226324601605", 
-      orcid: "https://orcid.org/0000-0002-6798-7263" 
+      lattes: "http://lattes.cnpq.br/8890226324601605",
+      orcid: "https://orcid.org/0000-0002-6798-7263"
     },
-    { 
-      name: "Armando Maciel Toda", 
-      role: "Pesquisador Colaborador", 
-      photo: "/team/armando.jpeg", 
+    {
+      name: "Armando Maciel Toda",
+      role: "Pesquisador Colaborador",
+      photo: "/team/armando.jpeg",
       bio: "Graduado em Ciências da Computação, com mestrado pela UEL e doutorado pela USP, incluindo um período na Universidade de Durham, Reino Unido. Atua como pesquisador assistente na Universidade de Durham e no NEES-UFAL. Sua experiência abrange jogos digitais, informática na educação, gamificação e interação humano-computador.",
       lattes: "http://lattes.cnpq.br/5262287389812766",
-      orcid: "https://orcid.org/0000-0003-2681-8698" 
+      orcid: "https://orcid.org/0000-0003-2681-8698"
     }
   ];
 
@@ -90,21 +90,21 @@ function AboutUsPage() {
           </div>
         </div>
       </div>
-      
+
       {/* Seção da Equipe com Novo Layout */}
       <div className="mb-16">
         <h2 className="text-3xl font-bold text-center mb-12 dark:text-white">Conheça Nossa Equipe</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {teamMembers.map((member, index) => (
             <div key={index} className="bg-white dark:bg-[#343a40] p-6 rounded-2xl shadow-lg border border-[#9570d9]/20 flex flex-col items-center text-center transition-all duration-300 hover:shadow-xl hover:border-[#ffbd30]/50">
-              <img 
-                src={member.photo} 
+              <img
+                src={member.photo}
                 alt={`Foto de ${member.name}`}
                 className="w-32 h-32 rounded-full object-cover mb-4 border-4 border-[#69e8cb]"
               />
               <h3 className="text-2xl font-bold mb-1 dark:text-white">{member.name}</h3>
               <p className="text-[#ffbd30] font-semibold mb-4">{member.role}</p>
-              
+
               <div className="text-gray-600 dark:text-gray-300 text-left mb-4">
                 <p>
                   {expandedIndex === index ? member.bio : `${member.bio.substring(0, 150)}...`}
@@ -152,7 +152,7 @@ function AboutUsPage() {
             ))}
           </ul>
         </div>
-        
+
         <div className="bg-white dark:bg-[#343a40] p-6 rounded-2xl shadow-lg border-t-4 border-[#9570d9]">
           <h3 className="text-2xl font-bold mb-4 dark:text-white flex items-center">
             <Award className="w-6 h-6 text-[#9570d9] mr-2" />
@@ -176,12 +176,12 @@ function AboutUsPage() {
           </ul>
         </div>
       </div>
-      
+
       <div className="mb-16">
         <h2 className="text-3xl font-bold text-center mb-12 dark:text-white">Nossos Valores Fundamentais</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {values.map((value, index) => (
-            <div 
+            <div
               key={index}
               className="bg-white dark:bg-[#343a40] p-6 rounded-xl shadow-lg border border-[#69e8cb]/20 hover:shadow-xl transition-all duration-300"
             >

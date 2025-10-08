@@ -27,9 +27,9 @@ function AdminPage() {
   // Renderiza um estado de carregamento ou nulo enquanto a verificação acontece
   if (!isAuthenticated || user?.role !== 'admin') {
     return (
-        <div className="flex justify-center items-center min-h-screen text-white bg-dark-background">
-            <p>Verificando permissões...</p>
-        </div>
+      <div className="flex justify-center items-center min-h-screen text-white bg-dark-background">
+        <p>Verificando permissões...</p>
+      </div>
     );
   }
 
@@ -42,7 +42,7 @@ function AdminPage() {
       {/* Área de Conteúdo Principal */}
       <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
         {/* O React Router renderizará a página aninhada correspondente aqui */}
-        <Outlet /> 
+        <Outlet />
       </main>
     </div>
   );

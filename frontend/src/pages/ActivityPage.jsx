@@ -29,7 +29,7 @@ import useAssetLoader from '../hooks/useAssetLoader'; // Importa nosso hook
 import FinalRewardTab from '../components/activity/FinalRewardTab';
 import AvatarCustomizationTab from '../components/activity/CustomizationTab';
 import { elementConfig, decorationConfig, decorationSpawnPoints, boardStructuralImages } from '../components/activity/GameBoardConfig';
-import ActivityViewOverlay from '../components/activity/ActivityViewOverlay';
+import ForumTab from '../components/activity/ForumTab';
 // Função auxiliar para embaralhar uma array
 const shuffleArray = (array) => {
   let currentIndex = array.length, randomIndex;
@@ -734,7 +734,7 @@ function ActivityPage() {
       case 'slot_machine':
         return <SlotMachineTab onReturn={handleReturnToBoard} onPrizeWon={handlePointsEarned} onWin={fetchSlotWinners} winners={slotWinners} loadingWinners={loadingSlotWinners} userCoins={userProgress?.coins || 0} />;
       case 'badges':
-        return <AchievementsTab onReturn={handleReturnToBoard} />;
+        return <AchievementsTab onReturn={handleReturnToBoard} activityId={activityId} />;
       case 'chat':
         return <ChatTab onReturn={handleReturnToBoard} />;
       case 'final_reward':
@@ -744,6 +744,8 @@ function ActivityPage() {
             onCollect={handleCollectFinalReward}
           />
         );
+      case 'forum':
+        return <ForumTab onReturn={handleReturnToBoard} />;
       case 'avatar_customization':
         return (
           <AvatarCustomizationTab

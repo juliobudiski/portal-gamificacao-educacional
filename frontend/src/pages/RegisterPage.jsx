@@ -80,8 +80,8 @@ function RegisterPage() {
             } else {
               navigate('/perfil'); // Redirecionamento padrão
             }
-          }, 2000); 
-          } else {
+          }, 2000);
+        } else {
           console.error("handleGoogleSignInCallback: Erro na resposta do backend:", data.message);
           setError(data.message || 'Erro ao fazer login com Google. Tente novamente.');
         }
@@ -95,42 +95,42 @@ function RegisterPage() {
     }
   }, [navigate, login, selectedRole]); // Dependências da função de callback
 
-  
 
-  
+
+
   const { performAuthRequest } = useAuthOperations();
   const handleRegister = async (e) => {
-  e.preventDefault();
-  setError('');
-  setSuccess('');
+    e.preventDefault();
+    setError('');
+    setSuccess('');
 
-  if (password !== confirmPassword) {
-    setError('As senhas não coincidem!');
-    return;
-  }
-  // Validação dos termos de uso
-  if (!termsAccepted) {
-    setError('Você deve aceitar os Termos de Uso para continuar.');
-    return;
-  }
+    if (password !== confirmPassword) {
+      setError('As senhas não coincidem!');
+      return;
+    }
+    // Validação dos termos de uso
+    if (!termsAccepted) {
+      setError('Você deve aceitar os Termos de Uso para continuar.');
+      return;
+    }
 
-  const registrationData = { name, email, password, role: selectedRole };
-  
-  const result = await performAuthRequest(
-    `${import.meta.env.VITE_API_URL}/api/auth/register`,
-    'POST',
-    registrationData
-  );
+    const registrationData = { name, email, password, role: selectedRole };
 
-  if (result.success) {
-    setSuccess('Cadastro realizado com sucesso! Redirecionando para o perfil...');
-  } else {
-    setError(result.message || 'Erro ao cadastrar. Tente novamente.');
-    console.error("[RegisterPage] Falha na requisição. Objeto de resultado:", result);
-  }
-};
+    const result = await performAuthRequest(
+      `${import.meta.env.VITE_API_URL}/api/auth/register`,
+      'POST',
+      registrationData
+    );
 
-// Texto dos termos de uso (você pode colocar seu texto aqui)
+    if (result.success) {
+      setSuccess('Cadastro realizado com sucesso! Redirecionando para o perfil...');
+    } else {
+      setError(result.message || 'Erro ao cadastrar. Tente novamente.');
+      console.error("[RegisterPage] Falha na requisição. Objeto de resultado:", result);
+    }
+  };
+
+  // Texto dos termos de uso (você pode colocar seu texto aqui)
   const termsTextContent = `
 Termos e Condições de Uso do Portal Colaborativo de Gamificação Educacional
 
@@ -215,7 +215,7 @@ Professora Orientadora: Prof.ª Dr.ª Aline Maria Malachini Miotto Amaral - ammm
 
   // --- Renderização do Componente ---
   // Retorna o JSX que compõe a página de cadastro.
-  
+
   return (
     <>
       {isTermsModalOpen && (
@@ -262,7 +262,7 @@ Professora Orientadora: Prof.ª Dr.ª Aline Maria Malachini Miotto Amaral - ammm
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-300 mb-3">Eu sou um...</label>
                 <div className="grid grid-cols-2 gap-4">
-                  <div 
+                  <div
                     className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 ${selectedRole === 'aluno' ? 'border-[#69e8cb] bg-[#69e8cb]/10 shadow-lg' : 'border-[#3e4a52] hover:border-[#69e8cb]/50'}`}
                     onClick={() => setSelectedRole('aluno')}
                   >
@@ -274,7 +274,7 @@ Professora Orientadora: Prof.ª Dr.ª Aline Maria Malachini Miotto Amaral - ammm
                     </div>
                     {selectedRole === 'aluno' && (<div className="absolute top-2 right-2"><svg className="w-5 h-5 text-[#69e8cb]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>)}
                   </div>
-                  <div 
+                  <div
                     className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 ${selectedRole === 'professor' ? 'border-[#ffbd30] bg-[#ffbd30]/10 shadow-lg' : 'border-[#3e4a52] hover:border-[#ffbd30]/50'}`}
                     onClick={() => setSelectedRole('professor')}
                   >
@@ -311,7 +311,7 @@ Professora Orientadora: Prof.ª Dr.ª Aline Maria Malachini Miotto Amaral - ammm
               {/* 3. Botão do Google */}
               <div className="text-center">
                 <p className="text-gray-400 text-sm mb-2">Ou cadastre-se rapidamente com o Google:</p>
-                <div ref={googleButtonRef} className="w-full flex justify-center bg-white rounded-xl overflow-hidden hover:shadow-lg transition-shadow duration-300"/>
+                <div ref={googleButtonRef} className="w-full flex justify-center bg-white rounded-xl overflow-hidden hover:shadow-lg transition-shadow duration-300" />
                 {!googleLoaded && (<button className="w-full py-3 px-4 bg-gray-200 rounded-xl animate-pulse"><div className="h-6 bg-gray-300 rounded w-3/4 mx-auto"></div></button>)}
               </div>
             </div>
@@ -324,11 +324,11 @@ Professora Orientadora: Prof.ª Dr.ª Aline Maria Malachini Miotto Amaral - ammm
             <form onSubmit={handleRegister} className="space-y-6">
               <div className="space-y-2">
                 <label htmlFor="name" className="block text-sm font-medium text-gray-300">Nome Completo</label>
-                <div className="relative"><input type="text" id="name" name="name" required value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-3 bg-[#2c3135] border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30] text-white placeholder-gray-500 transition-all duration-200" placeholder="Seu nome completo"/><div className="absolute inset-y-0 right-0 flex items-center pr-3"><svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg></div></div>
+                <div className="relative"><input type="text" id="name" name="name" required value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-3 bg-[#2c3135] border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30] text-white placeholder-gray-500 transition-all duration-200" placeholder="Seu nome completo" /><div className="absolute inset-y-0 right-0 flex items-center pr-3"><svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg></div></div>
               </div>
               <div className="space-y-2">
                 <label htmlFor="email" className="block text-sm font-medium text-gray-300">Email</label>
-                <div className="relative"><input type="email" id="email" name="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-3 bg-[#2c3135] border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30] text-white placeholder-gray-500 transition-all duration-200" placeholder="seu@email.com"/><div className="absolute inset-y-0 right-0 flex items-center pr-3"><svg className="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" /><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" /></svg></div></div>
+                <div className="relative"><input type="email" id="email" name="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-3 bg-[#2c3135] border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30] text-white placeholder-gray-500 transition-all duration-200" placeholder="seu@email.com" /><div className="absolute inset-y-0 right-0 flex items-center pr-3"><svg className="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" /><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" /></svg></div></div>
               </div>
               <div className="space-y-2">
                 <label htmlFor="password" className="block text-sm font-medium text-gray-300">Senha</label>
@@ -350,7 +350,7 @@ Professora Orientadora: Prof.ª Dr.ª Aline Maria Malachini Miotto Amaral - ammm
                   </div>
                 </div>
               </div>
-              
+
               {/* --- CAMPO CONFIRME A SENHA MODIFICADO --- */}
               <div className="space-y-2">
                 <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-300">Confirme a Senha</label>
@@ -389,7 +389,7 @@ Professora Orientadora: Prof.ª Dr.ª Aline Maria Malachini Miotto Amaral - ammm
               </p>
             </div>
           </div>
-          
+
           <div className="bg-[#2c3135] p-4 text-center border-t border-[#3e4a52]">
             <p className="text-xs text-gray-500">© {new Date().getFullYear()} Portal de Gamificação Educacional. Todos os direitos reservados.</p>
           </div>

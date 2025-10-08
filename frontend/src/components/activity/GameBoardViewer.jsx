@@ -130,23 +130,33 @@ function GameBoardViewer({ onFinalRewardClick, onHubIconClick, gamificationDesig
         : { x: '50%', y: '90%' };
 
     const hubElementsToRender = useMemo(() => {
+        // Começa com os elementos que vêm do banco de dados
         const baseElements = gamificationDesign.hub_elements || [];
+        // Cria uma cópia para podermos modificá-la
+        let finalElements = [...baseElements];
 
-        // Verifica se o ícone de customização já não veio do banco de dados
-        const hasCustomizationIcon = baseElements.some(el => el.type === 'avatar_customization');
+        // --- INÍCIO DA VERSÃO MELHORADA ---
+        // Lista de ícones que devem aparecer por padrão
+        const defaultIcons = [
+            { type: 'avatar_customization', roles: ['aluno', 'professor'] },
+            { type: 'forum', roles: ['aluno', 'professor'] }
+            // No futuro, pode adicionar mais ícones padrão aqui
+        ];
 
-        // Adiciona o ícone se o usuário for aluno OU professor E o ícone ainda não existir na lista
-        if ((userRole === 'aluno' || userRole === 'professor') && !hasCustomizationIcon) {
-            // Retorna uma NOVA lista com os elementos base + o nosso ícone
-            return [
-                ...baseElements,
-                { id: 'hub_avatar_customization', type: 'avatar_customization', enabled: true }
-            ];
-        }
+        defaultIcons.forEach(icon => {
+            const alreadyExists = finalElements.some(el => el.type === icon.type);
+            const roleIsAllowed = !icon.roles || icon.roles.includes(userRole);
 
-        // Se a condição não for atendida, apenas retorna a lista original
-        return baseElements;
+            // Adiciona o ícone se ele não existir e o papel do utilizador for permitido
+            if (roleIsAllowed && !alreadyExists) {
+                finalElements.push({ id: `hub_${icon.type}`, type: icon.type, enabled: true });
+            }
+        });
+        // --- FIM DA VERSÃO MELHORADA ---
+
+        return finalElements;
     }, [gamificationDesign.hub_elements, userRole]);
+
     // O return agora é direto, sem tela de carregamento.
     return (
         // A moldura principal do tabuleiro agora envolve a lógica de troca

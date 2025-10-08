@@ -19,13 +19,13 @@ import Step8_RulesAndSharing from '../components/activity/creation_steps/Step8_A
 
 
 const hubElementCardMap = {
-    "Chance (sorte e probabilidade)": ["roulette", "slot_machine"],
-    "Competição": ["ranking"],
-    "Sistema de classificação e ranking": ["ranking"],
-    "Chat ou sistema de mensagens": ["chat"],
-    "Conquistas digitais para metas alcançadas": ["badges"],
-    "Economia (sistema monetário)": ["store"],
-    "Objetivo (missão, meta do jogo)": ["mission"],
+  "Chance (sorte e probabilidade)": ["roulette", "slot_machine"],
+  "Competição": ["ranking"],
+  "Sistema de classificação e ranking": ["ranking"],
+  "Chat ou sistema de mensagens": ["chat"],
+  "Conquistas digitais para metas alcançadas": ["badges"],
+  "Economia (sistema monetário)": ["store"],
+  "Objetivo (missão, meta do jogo)": ["mission"],
 };
 
 /**
@@ -49,7 +49,7 @@ function ActivityCreationPage({ existingActivity }) {
   const [templates, setTemplates] = useState([]);
   const [loadingTemplates, setLoadingTemplates] = useState(true);
   const [templateError, setTemplateError] = useState(null);
-  
+
   const [activityData, setActivityData] = useState({
     title: '',
     description: '',
@@ -74,7 +74,7 @@ function ActivityCreationPage({ existingActivity }) {
   const [helpContent, setHelpContent] = useState({ title: '', text: '' });
 
   // (Todos os useEffects e handlers como handleNext, handlePrevious, handleInputChange, etc. são mantidos)
-  
+
   useEffect(() => {
     // ... (lógica de rastreamento de tempo mantida)
   }, [currentStep, logEvent]);
@@ -92,7 +92,7 @@ function ActivityCreationPage({ existingActivity }) {
     // Executa apenas quando o usuário chega na etapa 5
     if (currentStep === 5) {
       console.log("ActivityCreationPage: Etapa 5 alcançada. Calculando e mesclando elementos de jogo recomendados.");
-      
+
       const recommendedElements = new Set();
       if (activityData.playerProfile.selectedProfiles.includes("Competitivo")) { ["Níveis", "Sistema de pontuação", "Estatísticas (métricas de progresso)", "Reconhecimento", "Competição", "Progressão baseada em habilidade", "Sistema de classificação e ranking"].forEach(el => recommendedElements.add(el)); }
       if (activityData.playerProfile.selectedProfiles.includes("Cooperativo")) { ["Cooperação", "Chat ou sistema de mensagens", "Interação social com outros jogadores"].forEach(el => recommendedElements.add(el)); }
@@ -103,7 +103,7 @@ function ActivityCreationPage({ existingActivity }) {
       setActivityData(prevData => {
         // Combina os elementos já selecionados com os novos recomendados, evitando duplicatas.
         const mergedElements = new Set([...prevData.gameElements.selectedElements, ...recommendedElements]);
-        
+
         console.log("ActivityCreationPage: Elementos mesclados para salvar no estado:", Array.from(mergedElements));
 
         return {
@@ -120,12 +120,12 @@ function ActivityCreationPage({ existingActivity }) {
   const location = useLocation();
 
   useEffect(() => {
-      // Verifica se recebemos um "recado" para ir para uma etapa específica
-      const targetStep = location.state?.fromStep;
-      if (targetStep) {
-          console.log(`[ActivityCreationPage] Navegação recebida com lembrete para ir para a etapa: ${targetStep}`);
-          setCurrentStep(targetStep);
-      }
+    // Verifica se recebemos um "recado" para ir para uma etapa específica
+    const targetStep = location.state?.fromStep;
+    if (targetStep) {
+      console.log(`[ActivityCreationPage] Navegação recebida com lembrete para ir para a etapa: ${targetStep}`);
+      setCurrentStep(targetStep);
+    }
   }, []);
 
   useEffect(() => {
@@ -137,32 +137,32 @@ function ActivityCreationPage({ existingActivity }) {
       navigate('/login');
     }
   }, [user, navigate]);
-  
+
   useEffect(() => {
     const fetchActivityDataForBoard = async () => {
-        if (activityId && user?.token) {
-            console.log(`[ActivityCreationPage] useEffect detectou um activityId (${activityId}). BUSCANDO DADOS ATUALIZADOS da atividade.`);
-            try {
-                const response = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${activityId}`, {
-                    headers: { 'Authorization': `Bearer ${user.token}` }
-                });
-                const data = await response.json();
-                console.log("%cLOG 1: DADOS BRUTOS RECEBIDOS DA API", "color: blue; font-weight: bold;", data);
-                console.log("--> O objeto acima tem a chave 'gamification_design' (com underline)?", data.hasOwnProperty('gamification_design'));
+      if (activityId && user?.token) {
+        console.log(`[ActivityCreationPage] useEffect detectou um activityId (${activityId}). BUSCANDO DADOS ATUALIZADOS da atividade.`);
+        try {
+          const response = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${activityId}`, {
+            headers: { 'Authorization': `Bearer ${user.token}` }
+          });
+          const data = await response.json();
+          console.log("%cLOG 1: DADOS BRUTOS RECEBIDOS DA API", "color: blue; font-weight: bold;", data);
+          console.log("--> O objeto acima tem a chave 'gamification_design' (com underline)?", data.hasOwnProperty('gamification_design'));
 
-                if (response.ok) {
-                    console.log('[ActivityCreationPage] DADOS FRESCOS RECEBIDOS DO BACKEND:', data);
-                    // Aqui é onde o estado deveria ser atualizado com os novos dados
-                    setActivityData(prev => ({ ...prev, ...data }));
-                } else {
-                    console.error('[ActivityCreationPage] Erro ao buscar dados frescos:', data.message);
-                }
-            } catch (error) {
-                console.error('[ActivityCreationPage] Erro de rede ao buscar dados frescos:', error);
-            }
-        } else {
-            console.log('[ActivityCreationPage] useEffect de recarregamento executado, mas sem activityId ou token para agir.');
+          if (response.ok) {
+            console.log('[ActivityCreationPage] DADOS FRESCOS RECEBIDOS DO BACKEND:', data);
+            // Aqui é onde o estado deveria ser atualizado com os novos dados
+            setActivityData(prev => ({ ...prev, ...data }));
+          } else {
+            console.error('[ActivityCreationPage] Erro ao buscar dados frescos:', data.message);
+          }
+        } catch (error) {
+          console.error('[ActivityCreationPage] Erro de rede ao buscar dados frescos:', error);
         }
+      } else {
+        console.log('[ActivityCreationPage] useEffect de recarregamento executado, mas sem activityId ou token para agir.');
+      }
     };
 
     fetchActivityDataForBoard();
@@ -175,41 +175,41 @@ function ActivityCreationPage({ existingActivity }) {
     console.log("%c[Auto-Save] Salvando estrutura da trilha...", "color: #007acc;");
 
     try {
-        await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${activityIdToSave}/structure`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${user.token}`
-            },
-            body: JSON.stringify({ gamificationDesign: newGamificationDesign }),
-        });
+      await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${activityIdToSave}/structure`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.token}`
+        },
+        body: JSON.stringify({ gamificationDesign: newGamificationDesign }),
+      });
     } catch (error) {
-        console.error("[Auto-Save] Falha ao salvar a estrutura:", error);
+      console.error("[Auto-Save] Falha ao salvar a estrutura:", error);
     }
-}, [activityId, existingActivity, user]);
-  
+  }, [activityId, existingActivity, user]);
+
   useEffect(() => {
     if (isEditMode && existingActivity) {
-          setActivityData({
-              title: existingActivity.title || '',
-              description: existingActivity.description || '',
-              areaKnowledge: existingActivity.areaKnowledge || '',
-              isPublic: existingActivity.isPublic == null ? true : existingActivity.isPublic,
-              currentScenario: existingActivity.currentScenario || { problems: [], otherProblem: '' },
-              desiredScenario: existingActivity.desiredScenario || { objectives: [], otherObjective: '' },
-              activityPlanning: existingActivity.activityPlanning || { characteristics: [], participantsQuantity: '', expectedDuration: '', location: '', otherInfo: '' },
-              playerProfile: existingActivity.playerProfile || { selectedProfiles: [] },
-              gameElements: existingActivity.gameElements || { selectedElements: [], otherElement: '' },
-              // Esta linha garante que o objeto sempre exista.
-              gamificationDesign: existingActivity.gamificationDesign || { theme: 'vila_da_aventura', progression_path: [], hub_elements: [] },
-              rewardsOffered: existingActivity.rewardsOffered || { selectedRewards: [], otherReward: '' },
-              rewardedActions: existingActivity.rewardedActions || { selectedActions: [], otherAction: '' },
-              gamificationRules: existingActivity.gamificationRules || { generalRules: [], specificRules: '' },
-          });
+      setActivityData({
+        title: existingActivity.title || '',
+        description: existingActivity.description || '',
+        areaKnowledge: existingActivity.areaKnowledge || '',
+        isPublic: existingActivity.isPublic == null ? true : existingActivity.isPublic,
+        currentScenario: existingActivity.currentScenario || { problems: [], otherProblem: '' },
+        desiredScenario: existingActivity.desiredScenario || { objectives: [], otherObjective: '' },
+        activityPlanning: existingActivity.activityPlanning || { characteristics: [], participantsQuantity: '', expectedDuration: '', location: '', otherInfo: '' },
+        playerProfile: existingActivity.playerProfile || { selectedProfiles: [] },
+        gameElements: existingActivity.gameElements || { selectedElements: [], otherElement: '' },
+        // Esta linha garante que o objeto sempre exista.
+        gamificationDesign: existingActivity.gamificationDesign || { theme: 'vila_da_aventura', progression_path: [], hub_elements: [] },
+        rewardsOffered: existingActivity.rewardsOffered || { selectedRewards: [], otherReward: '' },
+        rewardedActions: existingActivity.rewardedActions || { selectedActions: [], otherAction: '' },
+        gamificationRules: existingActivity.gamificationRules || { generalRules: [], specificRules: '' },
+      });
       setShowInitialSelection(false); // Garante que o formulário seja exibido diretamente
     }
   }, [isEditMode, existingActivity]);
-  
+
   useEffect(() => {
     const fetchTemplates = async () => {
       if (!user || !user.token) {
@@ -247,42 +247,42 @@ function ActivityCreationPage({ existingActivity }) {
 
     fetchTemplates();
   }, [user]);
-  
+
   useEffect(() => {
     const selectedCards = activityData.gameElements.selectedElements;
-        const currentHubElements = activityData.gamificationDesign?.hub_elements || [];
-        
-        // Usamos um Set para garantir que cada tipo de hub apareça apenas uma vez
-        const targetHubTypes = new Set();
-        selectedCards.forEach(cardName => {
-            const types = hubElementCardMap[cardName];
-            if (types) {
-                types.forEach(type => targetHubTypes.add(type));
-            }
-        });
+    const currentHubElements = activityData.gamificationDesign?.hub_elements || [];
 
-        const newHubElements = Array.from(targetHubTypes).map(type => {
-            const existingElement = currentHubElements.find(el => el.type === type);
-            return {
-                id: `hub_${type}`,
-                type: type,
-                enabled: existingElement ? existingElement.enabled : true,
-                config: existingElement ? existingElement.config : {},
-            };
-        });
+    // Usamos um Set para garantir que cada tipo de hub apareça apenas uma vez
+    const targetHubTypes = new Set();
+    selectedCards.forEach(cardName => {
+      const types = hubElementCardMap[cardName];
+      if (types) {
+        types.forEach(type => targetHubTypes.add(type));
+      }
+    });
 
-        if (JSON.stringify(newHubElements) !== JSON.stringify(currentHubElements)) {
-            setActivityData(prev => ({
-                ...prev,
-                gamificationDesign: {
-                    ...(prev.gamificationDesign || {}),
-                    hub_elements: newHubElements,
-                }
-            }));
+    const newHubElements = Array.from(targetHubTypes).map(type => {
+      const existingElement = currentHubElements.find(el => el.type === type);
+      return {
+        id: `hub_${type}`,
+        type: type,
+        enabled: existingElement ? existingElement.enabled : true,
+        config: existingElement ? existingElement.config : {},
+      };
+    });
+
+    if (JSON.stringify(newHubElements) !== JSON.stringify(currentHubElements)) {
+      setActivityData(prev => ({
+        ...prev,
+        gamificationDesign: {
+          ...(prev.gamificationDesign || {}),
+          hub_elements: newHubElements,
         }
+      }));
+    }
   }, [activityData.gameElements.selectedElements]);
 
-  
+
   /**
    * handleSelectTemplate: Preenche o formulário com os dados do template selecionado
    * e muda para a tela de criação da atividade.
@@ -329,7 +329,7 @@ function ActivityCreationPage({ existingActivity }) {
     setShowTemplateList(true); // Mostra a lista de templates
   };
 
-  
+
   /**
    * handleBackToInitialSelection: Volta para a tela inicial de seleção (Iniciar do Zero / Escolher Template).
    */
@@ -339,23 +339,23 @@ function ActivityCreationPage({ existingActivity }) {
     setShowTemplateList(false);
   };
 
-  
+
   const handleOpenContentEditor = (step) => {
-        const effectiveActivityId = activityId || existingActivity?.id;
-        
-        if (!effectiveActivityId) {
-            alert("Você precisa salvar a atividade pelo menos uma vez antes de poder editar o conteúdo.");
-            return;
-        }
-        
-        // --- ADICIONE ESTA LINHA ---
-        console.log(`Tentando navegar para: /professor/atividades/${effectiveActivityId}/${step.type}/${step.id}/edit`);
+    const effectiveActivityId = activityId || existingActivity?.id;
 
-        // A linha original de navegação
-        navigate(`/professor/atividades/${effectiveActivityId}/${step.type}/${step.id}/edit`);
-    };
+    if (!effectiveActivityId) {
+      alert("Você precisa salvar a atividade pelo menos uma vez antes de poder editar o conteúdo.");
+      return;
+    }
 
-  
+    // --- ADICIONE ESTA LINHA ---
+    console.log(`Tentando navegar para: /professor/atividades/${effectiveActivityId}/${step.type}/${step.id}/edit`);
+
+    // A linha original de navegação
+    navigate(`/professor/atividades/${effectiveActivityId}/${step.type}/${step.id}/edit`);
+  };
+
+
   /**
    * handleNext: Avança para a próxima etapa ou submete o formulário.
    * Se não for a última etapa, incrementa `currentStep`.
@@ -368,7 +368,7 @@ function ActivityCreationPage({ existingActivity }) {
       setCurrentStep(prevStep => prevStep + 1);
     } else {
       console.log("%c[handleNext] CONDIÇÃO DE SALVAMENTO ATINGIDA. INICIANDO REQUISIÇÃO PUT...", "background: #28a745; color: white;");
-    
+
       const finalStepDuration = Math.round((Date.now() - stepStartTimeRef.current) / 1000);
       if (finalStepDuration > 0) {
         console.log(`Logando duração da Etapa FINAL ${currentStep}: ${finalStepDuration}s`);
@@ -380,12 +380,12 @@ function ActivityCreationPage({ existingActivity }) {
       const url = isEditMode
         ? `${import.meta.env.VITE_API_URL}/api/activities/${activityId}`
         : `${import.meta.env.VITE_API_URL}/api/activities`;
-      
+
       const method = isEditMode ? 'PUT' : 'POST';
       isSubmittingRef.current = true;
       console.log(`Submetendo formulário em modo de ${isEditMode ? 'EDIÇÃO' : 'CRIAÇÃO'}`);
       console.log(`URL: ${method} ${url}`);
-      
+
       try {
         const response = await fetch(url, {
           method: method,
@@ -417,9 +417,9 @@ function ActivityCreationPage({ existingActivity }) {
   const handlePrevious = () => {
     console.log(`handlePrevious: Retornando da etapa ${currentStep}.`);
     if (currentStep > 1) {
-      logEvent("previous_button_click", { 
-        from_step: currentStep, 
-        to_step: currentStep - 1 
+      logEvent("previous_button_click", {
+        from_step: currentStep,
+        to_step: currentStep - 1
       });
       setCurrentStep(prevStep => prevStep - 1);
     }
@@ -490,7 +490,7 @@ function ActivityCreationPage({ existingActivity }) {
     setShowHelpModal(false);
     setHelpContent({ title: '', text: '' });
   };
-  
+
   /**
    * renderStep (Refatorado): Renderiza o componente filho apropriado para a etapa atual.
    * O JSX de cada etapa foi movido para seu próprio componente.
@@ -499,7 +499,7 @@ function ActivityCreationPage({ existingActivity }) {
     if (!user || !user.token || user.role !== 'professor') {
       return null;
     }
-    
+
     // Props comuns a serem passadas para a maioria dos componentes de etapa
     const commonStepProps = {
       activityData,
@@ -614,7 +614,7 @@ function ActivityCreationPage({ existingActivity }) {
                 <h4 className="text-xl font-bold text-center mb-6 bg-gradient-to-r from-accent-purple to-accent-yellow bg-clip-text text-transparent">
                   Templates Predefinidos
                 </h4>
-                
+
                 {loadingTemplates ? (
                   <div className="text-center py-10">
                     <div className="inline-block animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-accent-teal"></div>
@@ -631,8 +631,8 @@ function ActivityCreationPage({ existingActivity }) {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {templates.map(template => (
-                      <div 
-                        key={template.id} 
+                      <div
+                        key={template.id}
                         className="relative bg-gradient-to-br from-[#3a4046] to-[#2c3135] rounded-2xl shadow-xl p-6 border border-[#4a525a] hover:border-accent-teal/50 transition-all duration-300 group overflow-hidden"
                       >
                         <div className="absolute inset-0 bg-gradient-to-r from-accent-purple/5 to-accent-yellow/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -657,7 +657,7 @@ function ActivityCreationPage({ existingActivity }) {
                     ))}
                   </div>
                 )}
-                
+
                 <div className="mt-8 text-center">
                   <button
                     onClick={handleBackToInitialSelection}

@@ -37,14 +37,14 @@ const TeacherRankingList = ({ title, rankingData, isLoading, error }) => {
           if (teacher.rank === 3) rankColor = 'text-yellow-600';
 
           return (
-            <li 
-              key={index} 
+            <li
+              key={index}
               className={`flex items-center p-3 rounded-lg transition-all duration-300 ${isCurrentUser ? 'bg-[#ffbd30]/20 border-l-4 border-[#ffbd30]' : 'bg-[#495057]'} ${teacher.rank <= 3 ? 'font-bold' : ''}`}
             >
               <span className={`text-xl font-bold w-12 text-center ${rankColor}`}>{teacher.rank}°</span>
-              <img 
+              <img
                 src={teacher.avatar_url || `/avatars/avatar1.png`} // Caminho para um avatar padrão
-                alt={`Avatar de ${teacher.name}`} 
+                alt={`Avatar de ${teacher.name}`}
                 className="w-12 h-12 rounded-full mr-4 border-2 border-gray-600 object-cover"
               />
               <span className="flex-1 text-lg text-gray-200">{teacher.name} {isCurrentUser && "(Você)"}</span>

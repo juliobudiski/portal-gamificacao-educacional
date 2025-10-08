@@ -17,6 +17,7 @@ export const elementConfig = {
         chat: { icon: '/board/chat_board.png', name: 'Chat' },
         store: { icon: '/board/store_board.png', name: 'Loja' },
         avatar_customization: { icon: '/board/meuestilo_board.png', name: 'Meu Estilo' },
+        forum: { icon: '/board/fox_board.png', name: 'Fórum' },
 
     }
 };

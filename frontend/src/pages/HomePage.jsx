@@ -8,7 +8,7 @@ function Homepage() {
       {/* Elementos decorativos */}
       <div className="absolute -top-20 -right-20 w-96 h-96 rounded-full bg-[#ffbd30]/10 blur-3xl"></div>
       <div className="absolute bottom-10 left-0 w-80 h-80 rounded-full bg-[#69e8cb]/10 blur-3xl"></div>
-      
+
       {/* Conteúdo principal */}
       <div className="z-10 max-w-4xl w-full space-y-12">
         {/* Cabeçalho */}
@@ -18,7 +18,7 @@ function Homepage() {
               Portal de Gamificação Educacional
             </span>
           </h1>
-          
+
           <p className="text-xl md:text-2xl max-w-3xl mx-auto opacity-90 text-gray-300 leading-relaxed">
             Transforme a educação em uma jornada envolvente e interativa. Crie, compartilhe e participe de atividades gamificadas que <span className="text-[#ffbd30]">inspiram o aprendizado</span> e o <span className="text-[#69e8cb]">engajamento</span>.
           </p>
@@ -35,7 +35,7 @@ function Homepage() {
             </span>
             <div className="absolute inset-0 bg-[#69e8cb]/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           </Link>
-          
+
           <Link
             to="/cadastro"
             className="relative group bg-gradient-to-br from-[#ffbd30] to-[#ffa000] px-8 py-4 rounded-xl shadow-2xl hover:shadow-[0_0_25px_rgba(255,189,48,0.4)] transition-all duration-300"
@@ -52,7 +52,7 @@ function Homepage() {
           <h3 className="text-3xl font-bold mb-8 text-center text-[#ffbd30]">
             Por que Gamificar a Educação?
           </h3>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="flex items-start space-x-4 p-4 bg-[#2c3135]/50 rounded-xl hover:bg-[#2c3135] transition-colors">
               <div className="bg-[#ffbd30]/10 p-3 rounded-full">
@@ -65,7 +65,7 @@ function Homepage() {
                 <p className="text-gray-300">Elementos de jogos motivam alunos, aumentando a participação e o interesse.</p>
               </div>
             </div>
-            
+
             <div className="flex items-start space-x-4 p-4 bg-[#2c3135]/50 rounded-xl hover:bg-[#2c3135] transition-colors">
               <div className="bg-[#69e8cb]/10 p-3 rounded-full">
                 <svg className="w-6 h-6 text-[#69e8cb]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -77,7 +77,7 @@ function Homepage() {
                 <p className="text-gray-300">Ambientes gamificados incentivam trabalho em equipe e competição saudável.</p>
               </div>
             </div>
-            
+
             <div className="flex items-start space-x-4 p-4 bg-[#2c3135]/50 rounded-xl hover:bg-[#2c3135] transition-colors">
               <div className="bg-[#9570d9]/10 p-3 rounded-full">
                 <svg className="w-6 h-6 text-[#9570d9]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -89,7 +89,7 @@ function Homepage() {
                 <p className="text-gray-300">Sistemas de pontos e conquistas fornecem feedback contínuo sobre o progresso.</p>
               </div>
             </div>
-            
+
             <div className="flex items-start space-x-4 p-4 bg-[#2c3135]/50 rounded-xl hover:bg-[#2c3135] transition-colors">
               <div className="bg-gradient-to-br from-[#ffbd30]/10 to-[#9570d9]/10 p-3 rounded-full">
                 <svg className="w-6 h-6 text-gradient-to-r from-[#ffbd30] to-[#9570d9]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -102,10 +102,10 @@ function Homepage() {
               </div>
             </div>
           </div>
-          
+
           <div className="mt-10 text-center">
-            <Link 
-              to="/sobre-nos" 
+            <Link
+              to="/sobre-nos"
               className="inline-flex items-center text-[#69e8cb] hover:text-[#ffbd30] transition-colors font-semibold"
             >
               Saiba mais sobre gamificação
@@ -116,7 +116,7 @@ function Homepage() {
           </div>
         </div>
       </div>
-      
+
       {/* Rodapé */}
       <div className="mt-16 text-center text-gray-400 text-sm">
         <p>Transformando a educação através da gamificação • Para professores e alunos</p>

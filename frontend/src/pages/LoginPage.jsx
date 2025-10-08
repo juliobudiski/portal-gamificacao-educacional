@@ -42,10 +42,10 @@ function LoginPage() {
         if (backendResponse.ok) {
           setSuccess('Login com Google bem-sucedido! Redirecionando para o perfil...');
           console.log('[Google Callback] Login bem-sucedido. Token de acesso:', data.access_token);
-          
+
           // CORREÇÃO AQUI: Passe o objeto 'data' completo, não apenas o token.
           login(data); // Agora está correto para o AuthContext
-          
+
           const userRole = data.user?.role;
           setTimeout(() => {
             if (userRole === 'professor') {
@@ -91,19 +91,19 @@ function LoginPage() {
       });
 
       console.log('[Login Padrão] Resposta bruta do backend:', response);
-      
+
       // CORREÇÃO AQUI: Use 'responseData' consistentemente após ler o JSON
-      const responseData = await response.json(); 
+      const responseData = await response.json();
       console.log('[Login Padrão] Dados recebidos do backend:', responseData); // Corrigido de 'data' para 'responseData'
 
       if (response.ok) {
         setSuccess('Login bem-sucedido! Redirecionando para o perfil...');
         console.log('[Login Padrão] Login bem-sucedido. Token de acesso:', responseData.access_token);
-        
+
         // Esta chamada já estava correta, pois 'responseData' é o objeto completo
-        login(responseData); 
-        
-          const userRole = responseData.user?.role;
+        login(responseData);
+
+        const userRole = responseData.user?.role;
         setTimeout(() => {
           if (userRole === 'professor') {
             navigate('/professor/dashboard');
@@ -113,8 +113,7 @@ function LoginPage() {
             navigate('/perfil'); // Redirecionamento padrão
           }
         }, 2000);
-      }   else
-      {
+      } else {
         // Se houver um erro, use os 'responseData' que já foram lidos.
         setError(responseData.message || 'Credenciais inválidas. Tente novamente.');
         console.error('[Login Padrão] Erro do backend:', responseData.message);
@@ -130,7 +129,7 @@ function LoginPage() {
   // Efeito para carregar o Google Sign-In (atualizado)
   useEffect(() => {
     console.log('[useEffect] Montando o componente e carregando o script do Google.');
-    
+
     const initGoogleSignIn = () => {
       if (window.google && window.google.accounts && googleButtonRef.current) {
         console.log('[useEffect] Inicializando o Google Identity Services (GSI).');
@@ -144,15 +143,15 @@ function LoginPage() {
         console.log('[useEffect] Renderizando o botão de login do Google.');
         window.google.accounts.id.renderButton(
           googleButtonRef.current,
-          { 
-            theme: 'outline', 
-            size: 'large', 
+          {
+            theme: 'outline',
+            size: 'large',
             text: 'signin_with',
             width: '360',
             logo_alignment: 'left'
           }
         );
-        
+
         setGoogleLoaded(true);
       }
     };
@@ -215,7 +214,7 @@ function LoginPage() {
               </div>
             </div>
           )}
-          
+
           {success && (
             <div className="bg-green-900/50 border border-green-600 text-green-100 px-4 py-3 rounded-xl mb-6 flex items-start" role="alert">
               <svg className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -232,11 +231,11 @@ function LoginPage() {
           <div className="mb-6">
             <div className="text-center mb-4">
               <p className="text-gray-300 mb-2">Faça login rapidamente com sua conta Google:</p>
-              <div 
-                ref={googleButtonRef} 
+              <div
+                ref={googleButtonRef}
                 className="w-full flex justify-center bg-white rounded-xl overflow-hidden hover:shadow-lg transition-shadow duration-300"
               />
-              
+
               {/* Placeholder enquanto o botão carrega */}
               {!googleLoaded && (
                 <button className="w-full py-3 px-4 bg-gray-200 rounded-xl animate-pulse">
@@ -282,7 +281,7 @@ function LoginPage() {
                 </div>
               </div>
             </div>
-            
+
             {/* Campo Senha */}
             <div className="space-y-2">
               <label htmlFor="password" className="block text-sm font-medium text-gray-300">
@@ -306,7 +305,7 @@ function LoginPage() {
                 </div>
               </div>
             </div>
-            
+
             {/* Botão de Entrar */}
             <button
               type="submit"
@@ -323,16 +322,16 @@ function LoginPage() {
           <div className="mt-8 text-center space-y-3">
             <p className="text-sm text-gray-400">
               Não tem uma conta?{' '}
-              <Link 
-                to="/cadastro" 
+              <Link
+                to="/cadastro"
                 className="font-medium text-[#69e8cb] hover:text-[#ffbd30] transition-colors duration-200"
               >
                 Cadastre-se aqui
               </Link>
             </p>
             <p className="text-sm text-gray-400">
-              <Link 
-                to="/recuperar-senha" 
+              <Link
+                to="/recuperar-senha"
                 className="font-medium text-[#69e8cb] hover:text-[#ffbd30] transition-colors duration-200"
               >
                 Esqueceu sua senha?
@@ -340,7 +339,7 @@ function LoginPage() {
             </p>
           </div>
         </div>
-        
+
         {/* Rodapé */}
         <div className="bg-[#2c3135] p-4 text-center border-t border-[#3e4a52]">
           <p className="text-xs text-gray-500">

@@ -36,7 +36,7 @@ function AssignActivityToClass({ onAssignSuccess }) {
             if (isDebugMode) {
                 console.log('[AssignActivityToClass] Buscando turmas disponíveis...');
             }
-            
+
             const token = user?.token;
             if (user?.role !== 'professor' || !token) {
                 setMessage('Apenas professores podem atribuir atividades.');
@@ -64,7 +64,7 @@ function AssignActivityToClass({ onAssignSuccess }) {
                 }
 
                 const data = await response.json();
-                
+
                 if (isDebugMode && response.ok) {
                     console.log(`[AssignActivityToClass] ${data.length} turma(s) carregada(s)`);
                 }
@@ -95,7 +95,7 @@ function AssignActivityToClass({ onAssignSuccess }) {
                 setIsLoading(false);
             }
         };
-        
+
         fetchAvailableClasses();
     }, [user, user?.token]);
 
@@ -123,7 +123,7 @@ function AssignActivityToClass({ onAssignSuccess }) {
             setIsLoading(false);
             return;
         }
-        
+
         if (!activityId) {
             const errorMsg = 'ID da atividade não fornecido';
             setMessage(errorMsg);
@@ -149,7 +149,7 @@ function AssignActivityToClass({ onAssignSuccess }) {
             }
 
             const data = await response.json();
-            
+
             if (response.ok) {
                 const successMsg = 'Atividade atribuída com sucesso à turma!';
                 setMessage(successMsg);
@@ -188,7 +188,7 @@ function AssignActivityToClass({ onAssignSuccess }) {
                 </div>
             );
         }
-        
+
         if (availableClasses.length === 0) {
             return (
                 <div className="bg-blue-900/30 p-4 rounded-xl flex items-center">
@@ -199,7 +199,7 @@ function AssignActivityToClass({ onAssignSuccess }) {
                 </div>
             );
         }
-        
+
         return (
             <div className="flex flex-col sm:flex-row items-center gap-4">
                 <div className="relative w-full">
@@ -220,7 +220,7 @@ function AssignActivityToClass({ onAssignSuccess }) {
                         ))}
                     </select>
                 </div>
-                
+
                 <button
                     onClick={handleAssign}
                     className="relative w-full sm:w-auto bg-gradient-to-r from-accent-yellow to-accent-teal text-gray-900 font-bold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl hover:from-accent-yellow/90 hover:to-accent-teal/90 transform hover:-translate-y-0.5 transition-all duration-300 ease-out disabled:opacity-70 disabled:cursor-not-allowed group"
@@ -270,17 +270,16 @@ function AssignActivityToClass({ onAssignSuccess }) {
                         Atribuir Atividade a uma Turma
                     </h3>
                 </div>
-                
+
                 {message && (
-                    <div className={`mb-4 p-3 rounded-xl ${
-                        message.includes('sucesso') 
-                            ? 'bg-green-900/30 text-green-400' 
+                    <div className={`mb-4 p-3 rounded-xl ${message.includes('sucesso')
+                            ? 'bg-green-900/30 text-green-400'
                             : 'bg-red-900/30 text-red-400'
-                    } transition-all duration-300`}>
+                        } transition-all duration-300`}>
                         <p className="text-sm font-medium">{message}</p>
                     </div>
                 )}
-                
+
                 {renderContent()}
             </div>
         </div>

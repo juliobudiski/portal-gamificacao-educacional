@@ -39,8 +39,8 @@ function NarrativeEditorPage() {
     const [error, setError] = useState('');
     const [message, setMessage] = useState('');
 
-    
-        const fetchContent = useCallback(async () => {
+
+    const fetchContent = useCallback(async () => {
         if (!activityId || !stepId || !user.token) {
             setLoading(false);
             setError("IDs de atividade ou passo ausentes.");
@@ -54,16 +54,16 @@ function NarrativeEditorPage() {
             });
             const activityData = await activityResponse.json();
             if (!activityResponse.ok) throw new Error(`Erro ao buscar atividade: ${activityData.message}`);
-            
+
             setActivityTitle(activityData.title);
 
             // 2. Busca o conteúdo específico deste passo (a narrativa já existente)
             const contentResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/content_editor/activity/${activityId}/step/${stepId}/content?type=narrative`, {
-                 headers: { 'Authorization': `Bearer ${user.token}` },
+                headers: { 'Authorization': `Bearer ${user.token}` },
             });
             const contentData = await contentResponse.json();
             if (!contentResponse.ok) throw new Error(`Erro ao buscar conteúdo da narrativa: ${contentData.message}`);
-            
+
             // 3. Preenche o estado com a configuração da narrativa existente
             if (contentData) {
                 setNarrativeConfig({
@@ -79,10 +79,10 @@ function NarrativeEditorPage() {
             setLoading(false);
         }
     }, [activityId, stepId, user.token]);
-    
-        useEffect(() => {
-            fetchContent();
-        }, [fetchContent]);
+
+    useEffect(() => {
+        fetchContent();
+    }, [fetchContent]);
 
     // --- Handlers para as mudanças no formulário ---
 
@@ -102,15 +102,15 @@ function NarrativeEditorPage() {
             if (isSelected) {
                 return { ...prev, characters: prev.characters.filter(c => c.image !== charUrl) };
             } else {
-                const newCharacter = { 
-                    role: `Personagem ${prev.characters.length + 1}`, 
-                    image: charUrl 
+                const newCharacter = {
+                    role: `Personagem ${prev.characters.length + 1}`,
+                    image: charUrl
                 };
                 return { ...prev, characters: [...prev.characters, newCharacter] };
             }
         });
     };
-    
+
     const handleRoleChange = (index, newRole) => {
         if (isDebugMode) {
             console.log(`[NarrativeEditorPage] Alterando papel do personagem ${index} para: ${newRole}`);
@@ -155,57 +155,57 @@ function NarrativeEditorPage() {
 
     // --- Handler para Salvar ---
     const handleSaveChanges = async () => {
-    setLoading(true);
-    setMessage('');
-    setError('');
-    
-    if (isDebugMode) {
-        console.log('[NarrativeEditorPage] Iniciando salvamento...');
-        console.log('[NarrativeEditorPage] Dados a serem enviados:', narrativeConfig);
-        console.log('[NarrativeEditorPage] IDs:', { activityId, stepId });
-    }
-    const apiUrl = `${import.meta.env.VITE_API_URL}/api/content_editor/activity/${activityId}/step/${stepId}/content`;
-    console.log(`[NarrativeEditorPage] URL de salvamento que será usada: ${apiUrl}`);
-
-
-    try {
-        const payload = {
-            type: 'narrative', // Adiciona o tipo explicitamente
-            ...narrativeConfig // Usa o spread operator para incluir scenario, characters e dialogue
-        };
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/content_editor/activity/${activityId}/step/${stepId}/content`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${user.token}`
-            },
-            body: JSON.stringify(payload)
-        });
-
-        const data = await response.json();
+        setLoading(true);
+        setMessage('');
+        setError('');
 
         if (isDebugMode) {
-            console.log(`[NarrativeEditorPage] Resposta do servidor - Status: ${response.status}`);
-            console.log('[NarrativeEditorPage] Dados recebidos:', data);
+            console.log('[NarrativeEditorPage] Iniciando salvamento...');
+            console.log('[NarrativeEditorPage] Dados a serem enviados:', narrativeConfig);
+            console.log('[NarrativeEditorPage] IDs:', { activityId, stepId });
         }
+        const apiUrl = `${import.meta.env.VITE_API_URL}/api/content_editor/activity/${activityId}/step/${stepId}/content`;
+        console.log(`[NarrativeEditorPage] URL de salvamento que será usada: ${apiUrl}`);
 
-        if (!response.ok) {
-            throw new Error(data.message || `Erro HTTP: ${response.status}`);
-        }
 
-        if (isDebugMode) {
-            console.log('[NarrativeEditorPage] Salvamento realizado com sucesso');
-        }
-        
-        setMessage('Narrativa salva com sucesso!');
-        setTimeout(() => navigate(`/professor/atividades/${activityId}/edit`, { state: { fromStep: 5 } }), 2000);
-        
+        try {
+            const payload = {
+                type: 'narrative', // Adiciona o tipo explicitamente
+                ...narrativeConfig // Usa o spread operator para incluir scenario, characters e dialogue
+            };
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/content_editor/activity/${activityId}/step/${stepId}/content`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+
+            if (isDebugMode) {
+                console.log(`[NarrativeEditorPage] Resposta do servidor - Status: ${response.status}`);
+                console.log('[NarrativeEditorPage] Dados recebidos:', data);
+            }
+
+            if (!response.ok) {
+                throw new Error(data.message || `Erro HTTP: ${response.status}`);
+            }
+
+            if (isDebugMode) {
+                console.log('[NarrativeEditorPage] Salvamento realizado com sucesso');
+            }
+
+            setMessage('Narrativa salva com sucesso!');
+            setTimeout(() => navigate(`/professor/atividades/${activityId}/edit`, { state: { fromStep: 5 } }), 2000);
+
         } catch (err) {
             if (isDebugMode) {
                 console.error('[NarrativeEditorPage] Erro no salvamento:', err);
                 console.error('[NarrativeEditorPage] Stack trace:', err.stack);
             }
-            
+
             setError(err.message || 'Erro ao salvar narrativa. Verifique o console para mais detalhes.');
         } finally {
             setLoading(false);
@@ -220,11 +220,11 @@ function NarrativeEditorPage() {
         if (loading) {
             return <div className="text-center text-white p-10">Carregando editor de narrativa...</div>;
         }
-        
+
         if (error) {
             return <div className="text-center text-red-500 p-10">Erro: {error}</div>;
         }
-        
+
         return (
             <>
                 {/* Seção de Cenário */}
@@ -255,7 +255,7 @@ function NarrativeEditorPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-gray-700 pt-4">
                             {narrativeConfig.characters.map((char, index) => (
                                 <div key={index} className="flex items-center gap-3">
-                                    <img src={char.image} alt="" className="w-16 h-16 rounded-full bg-gray-700"/>
+                                    <img src={char.image} alt="" className="w-16 h-16 rounded-full bg-gray-700" />
                                     <input
                                         type="text"
                                         value={char.role}
@@ -281,7 +281,7 @@ function NarrativeEditorPage() {
                                     className="p-2 bg-gray-600 rounded-xl border border-gray-500 w-1/4"
                                 >
                                     <option value="">Selecione...</option>
-                                    {narrativeConfig.characters.map(c => 
+                                    {narrativeConfig.characters.map(c =>
                                         <option key={c.role} value={c.role}>{c.role}</option>
                                     )}
                                 </select>
@@ -292,19 +292,19 @@ function NarrativeEditorPage() {
                                     placeholder="Escreva a fala do personagem aqui..."
                                     className="w-full p-2 bg-gray-600 rounded-xl border border-gray-500"
                                 />
-                                <button onClick={() => handleRemoveDialogueLine(index)} 
+                                <button onClick={() => handleRemoveDialogueLine(index)}
                                     className="p-2 bg-red-600 hover:bg-red-700 rounded-full">
                                     <FaTrash />
                                 </button>
                             </div>
                         ))}
                     </div>
-                    <button onClick={handleAddDialogueLine} 
+                    <button onClick={handleAddDialogueLine}
                         className="mt-4 flex items-center gap-2 py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded-lg">
                         <FaPlus /> Adicionar Fala
                     </button>
                 </div>
-                
+
                 {/* Salvar */}
                 <div className="mt-8 pt-4 border-t border-gray-700">
                     <button onClick={handleSaveChanges} disabled={loading}

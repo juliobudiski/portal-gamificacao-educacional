@@ -20,11 +20,11 @@ function ActivityBankPage() {
     // --- FUNÇÃO PARA BUSCAR ATIVIDADES (AGORA REUTILIZÁVEL) ---
     const fetchActivities = useCallback(async (currentSearchTerm) => {
         if (!user?.token) return;
-        
+
         // Define o estado de carregamento apropriado
         if (currentSearchTerm) setIsSearching(true);
         else setLoading(true);
-        
+
         setMessage('');
         try {
             const headers = { 'Authorization': `Bearer ${user.token}` };
@@ -64,7 +64,7 @@ function ActivityBankPage() {
 
         return () => clearTimeout(delayDebounceFn);
     }, [searchTerm, fetchActivities]); // Roda quando o termo de busca ou a função de fetch mudam
-    
+
     const handleCopyActivity = async (activityId) => {
         if (!window.confirm("Tem certeza que deseja criar uma cópia editável desta atividade?")) return;
         setMessage('Copiando atividade...');
@@ -147,7 +147,7 @@ function ActivityBankPage() {
         if (count === 0) return;
 
         if (!window.confirm(`Tem certeza que deseja deletar ${count} atividades? Esta ação é irreversível.`)) return;
-        
+
         setMessage('Deletando atividades selecionadas...');
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/bulk-delete`, {
@@ -194,7 +194,7 @@ function ActivityBankPage() {
 
                 {/* --- BARRA DE PESQUISA ADICIONADA AQUI --- */}
                 <div className="relative mb-6">
-                    <input 
+                    <input
                         type="text"
                         placeholder="Pesquisar por título..."
                         value={searchTerm}
@@ -226,7 +226,7 @@ function ActivityBankPage() {
                             <>
                                 {/* ===== 3. BOTÕES DE FILTRO ADICIONADOS AQUI ===== */}
                                 <div className="flex flex-wrap justify-center items-center gap-4 mb-8 bg-[#3a4046] p-3 rounded-xl">
-                                    <span className="font-semibold text-gray-300 mr-2 flex items-center"><FaFilter className="mr-2"/>Filtrar por:</span>
+                                    <span className="font-semibold text-gray-300 mr-2 flex items-center"><FaFilter className="mr-2" />Filtrar por:</span>
                                     <button onClick={() => setAssignmentFilter('all')} className={`py-2 px-4 rounded-lg text-sm font-bold transition-all ${assignmentFilter === 'all' ? 'bg-accent-yellow text-gray-900 shadow-lg' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'}`}>
                                         Todas
                                     </button>
@@ -251,7 +251,7 @@ function ActivityBankPage() {
                                     </div>
                                 </div>
 
-                                
+
                                 {/* BARRA DE AÇÕES FLUTUANTE */}
                                 {selectedActivities.length > 0 && (
                                     <div className="sticky top-4 z-20 bg-blue-900/80 backdrop-blur-sm border border-blue-500 text-white rounded-xl shadow-lg p-4 mb-6 flex justify-between items-center animate-fadeIn">
@@ -266,10 +266,10 @@ function ActivityBankPage() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {filteredMyActivities.length > 0 ? (
                                         filteredMyActivities.map(activity => (
-                                            <ActivityCard 
-                                                key={activity.id} 
-                                                activity={activity} 
-                                                isOwner={true} 
+                                            <ActivityCard
+                                                key={activity.id}
+                                                activity={activity}
+                                                isOwner={true}
                                                 onDelete={handleDeleteActivity}
                                                 // ===== 5. PASSANDO PROPS DE SELEÇÃO =====
                                                 isSelected={selectedActivities.includes(activity.id)}

@@ -2,15 +2,15 @@ import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
-import { 
-  FaChalkboardTeacher, 
-  FaBook, 
-  FaMedal, 
-  FaTrophy, 
-  FaInfoCircle, 
-  FaUserGraduate,
-  FaChevronDown,
-  FaChevronUp
+import {
+    FaChalkboardTeacher,
+    FaBook,
+    FaMedal,
+    FaTrophy,
+    FaInfoCircle,
+    FaUserGraduate,
+    FaChevronDown,
+    FaChevronUp
 } from "react-icons/fa";
 
 // --- COMPONENTE INTERNO PARA O CARD DA ATIVIDADE ---
@@ -30,13 +30,13 @@ function ActivityCard({ activity }) {
     const hasRewards = activity.rewardsOffered && activity.rewardsOffered.selectedRewards?.length > 0;
 
     return (
-        <div 
-            key={activity.id} 
+        <div
+            key={activity.id}
             className="bg-[#3a4046] p-6 rounded-2xl shadow-2xl border border-[#4a525a] transition-all duration-300 hover:shadow-[0_10px_30px_rgba(105,232,203,0.15)] hover:border-[#69e8cb]/50 relative overflow-hidden flex flex-col"
         >
             {/* Decoração no topo do card */}
             <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#ffbd30] to-[#9570d9]"></div>
-            
+
             <div className="flex-grow">
                 <h3 className="text-xl font-bold text-white mb-3 flex items-center">
                     <span className="w-6 h-6 rounded-full bg-[#ffbd30] flex items-center justify-center mr-2 flex-shrink-0">
@@ -44,7 +44,7 @@ function ActivityCard({ activity }) {
                     </span>
                     {activity.title}
                 </h3>
-                
+
                 {activity.areaKnowledge && (
                     <div className="flex items-center mb-3">
                         <span className="text-xs font-semibold px-2 py-1 bg-[#69e8cb]/20 text-[#69e8cb] rounded-full">
@@ -54,7 +54,7 @@ function ActivityCard({ activity }) {
                 )}
 
                 {/* Seção de Descrição Expansível */}
-                <div 
+                <div
                     className="text-gray-300 text-sm mb-4 pl-2 border-l-2 border-[#69e8cb] cursor-pointer"
                     onClick={() => toggleSection('description')}
                 >
@@ -72,7 +72,7 @@ function ActivityCard({ activity }) {
                 {/* Seção de Elementos de Jogo Expansível */}
                 {hasGameElements && (
                     <div className="mt-4 mb-4">
-                        <div 
+                        <div
                             className="flex items-center justify-between mb-2 cursor-pointer"
                             onClick={() => toggleSection('gameElements')}
                         >
@@ -93,11 +93,11 @@ function ActivityCard({ activity }) {
                         )}
                     </div>
                 )}
-                
+
                 {/* Seção de Recompensas Expansível */}
                 {hasRewards && (
                     <div className="mt-4 mb-4">
-                        <div 
+                        <div
                             className="flex items-center justify-between mb-2 cursor-pointer"
                             onClick={() => toggleSection('rewards')}
                         >
@@ -119,10 +119,10 @@ function ActivityCard({ activity }) {
                     </div>
                 )}
             </div>
-            
+
             <div className="mt-6 text-right border-t border-gray-700 pt-4">
-                <Link 
-                    to={`/activities/${activity.id}`} 
+                <Link
+                    to={`/activities/${activity.id}`}
                     className="inline-block bg-gradient-to-r from-[#69e8cb] to-[#4dd1b3] hover:from-[#4dd1b3] hover:to-[#69e8cb] text-[#2c3135] font-bold py-2 px-4 rounded-xl text-sm transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg"
                 >
                     Ver Atividade
@@ -141,7 +141,7 @@ function ClassDetailsPage() {
     const [message, setMessage] = useState('');
     const [error, setError] = useState(''); // Estado para o erro
     const [isLoading, setIsLoading] = useState(true);
-    
+
     useEffect(() => {
         const fetchClassData = async () => {
             const token = user?.token;
@@ -167,7 +167,7 @@ function ClassDetailsPage() {
 
                 const classData = await classResponse.json();
                 if (!classResponse.ok) throw new Error(classData.message || 'Erro ao carregar detalhes da turma.');
-                
+
                 const activitiesData = await activitiesResponse.json();
                 if (!activitiesResponse.ok) throw new Error(activitiesData.message || 'Erro ao carregar atividades.');
 
@@ -221,23 +221,23 @@ function ClassDetailsPage() {
                                     Informações da Turma
                                 </h2>
                             </div>
-                            
+
                             <p className="text-gray-200 mb-4 flex items-start">
                                 <span className="w-8 h-8 rounded-full bg-[#69e8cb]/20 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">
                                     <FaBook className="text-[#69e8cb] text-sm" />
                                 </span>
-                                <strong className="text-[#69e8cb] mr-2">Descrição:</strong> 
+                                <strong className="text-[#69e8cb] mr-2">Descrição:</strong>
                                 <span className="text-gray-300">{classDetails.description}</span>
                             </p>
-                            
+
                             <p className="text-gray-200 mb-4 flex items-start">
                                 <span className="w-8 h-8 rounded-full bg-[#9570d9]/20 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">
                                     <FaChalkboardTeacher className="text-[#9570d9] text-sm" />
                                 </span>
-                                <strong className="text-[#ffbd30] mr-2">Professor:</strong> 
+                                <strong className="text-[#ffbd30] mr-2">Professor:</strong>
                                 <span className="text-gray-300">{classDetails.professor_name}</span>
                             </p>
-                            
+
                             {user?.role === 'professor' && (
                                 <div className="bg-[#2c3135]/50 p-4 rounded-xl border border-[#4a525a] mt-5">
                                     <p className="text-gray-200 flex items-center">
@@ -254,7 +254,7 @@ function ClassDetailsPage() {
                                 </div>
                             )}
                         </div>
-                        
+
                         <div className="flex-1 flex items-center justify-center">
                             <div className="relative w-full max-w-xs">
                                 <div className="absolute inset-0 bg-gradient-to-br from-[#ffbd30]/20 to-[#9570d9]/20 rounded-2xl blur-xl opacity-70"></div>
@@ -281,7 +281,7 @@ function ClassDetailsPage() {
                             Atividades da Turma
                         </h2>
                     </div>
-                    
+
                     {activities.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {activities.map((activity) => (
@@ -304,11 +304,10 @@ function ClassDetailsPage() {
                         </div>
                     )}
                 </div>
-                
+
                 {message && (
-                    <div className={`p-4 rounded-2xl text-center mb-8 ${
-                        message.includes('Erro') ? 'bg-red-500/20 border border-red-500 text-red-300' : 'bg-blue-500/20 border border-blue-500 text-blue-300'
-                    }`}>
+                    <div className={`p-4 rounded-2xl text-center mb-8 ${message.includes('Erro') ? 'bg-red-500/20 border border-red-500 text-red-300' : 'bg-blue-500/20 border border-blue-500 text-blue-300'
+                        }`}>
                         {message}
                     </div>
                 )}

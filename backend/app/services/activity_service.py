@@ -3,7 +3,7 @@ from ..models import Activity, ActivityRevision, Tag, EventLog, ActivityProgress
 from flask import jsonify
 import logging
 from flask_jwt_extended import jwt_required, current_user, get_jwt_identity
-from ..models import db, Activity, Tag, activity_tag, ActivityRevision, User, Class, Enrollment, Purchase, StoreItem, SlotWin, RouletteWin, StudentResponse, QuizContent, NarrativeContent
+from ..models import UserUnlockedMedal, db, Activity, Tag, activity_tag, ActivityRevision, User, Class, Enrollment, Purchase, StoreItem, SlotWin, RouletteWin, StudentResponse, QuizContent, NarrativeContent
 from sqlalchemy.orm import noload
 from copy import deepcopy
 from sqlalchemy import or_
@@ -272,40 +272,67 @@ def get_public_activities(current_user_id, search_term=None):
 
 
 def copy_activity(user, activity_id):
-    """Copia uma atividade pública para o professor logado."""
+    """Copia uma atividade pública para o professor logado, incluindo sua trilha e itens da loja."""
     original_activity = Activity.query.get(activity_id)
 
     if not original_activity:
         return {"message": "Atividade original não encontrada"}, 404
     
-    if not original_activity.is_public:
-        return {"message": "Só é possível copiar atividades públicas."}, 403
+    if not original_activity.is_public and original_activity.professor_id != user.id:
+        return {"message": "Só é possível copiar atividades públicas ou as suas próprias atividades."}, 403
 
     try:
-        # Clona os dados da atividade original
-        new_activity_data = original_activity.to_dict()
-        original_activity.copy_count += 1
-
+        # --- INÍCIO DA CORREÇÃO ---
+        
+        # 1. Cria a nova atividade com todos os campos, incluindo o gamification_design
         copied_activity = Activity(
-            professor_id=user.id, # Novo dono
-            title=f"Cópia de: {new_activity_data['title']}", # Adiciona "Cópia de:" ao título
-            description=new_activity_data['description'],
-            current_scenario=new_activity_data['currentScenario'],
-            desired_scenario=new_activity_data['desiredScenario'],
-            activity_planning=new_activity_data['activityPlanning'],
-            player_profile=new_activity_data['playerProfile'],
-            game_elements=new_activity_data['gameElements'],
-            rewards_offered=new_activity_data['rewardsOffered'],
-            rewarded_actions=new_activity_data['rewardedActions'],
-            gamification_rules=new_activity_data['gamificationRules'],
-            area_knowledge=new_activity_data['areaKnowledge'],
-            is_public=False,  # A cópia começa como privada
-            class_id=None # A cópia não é atribuída a nenhuma turma
+            professor_id=user.id,
+            title=f"Cópia de: {original_activity.title}",
+            description=original_activity.description,
+            # É crucial usar deepcopy para JSONs para evitar que as alterações na cópia afetem o original
+            current_scenario=deepcopy(original_activity.current_scenario),
+            desired_scenario=deepcopy(original_activity.desired_scenario),
+            activity_planning=deepcopy(original_activity.activity_planning),
+            player_profile=deepcopy(original_activity.player_profile),
+            game_elements=deepcopy(original_activity.game_elements),
+            rewards_offered=deepcopy(original_activity.rewards_offered),
+            rewarded_actions=deepcopy(original_activity.rewarded_actions),
+            gamification_rules=deepcopy(original_activity.gamification_rules),
+            gamification_design=deepcopy(original_activity.gamification_design), # <-- CAMPO QUE FALTAVA
+            area_knowledge=original_activity.area_knowledge,
+            is_public=False,
+            class_id=None
         )
 
+        # Atualiza o contador de cópias da atividade original
+        original_activity.copy_count += 1
+        
         db.session.add(original_activity)
         db.session.add(copied_activity)
-        db.session.commit()
+
+        # USA-SE O FLUSH PARA OBTER O ID DA NOVA ATIVIDADE ANTES DO COMMIT
+        # Isto é necessário para que possamos associar os novos itens da loja a ela.
+        db.session.flush()
+
+        # 2. COPIA OS ITENS DA LOJA ASSOCIADOS À ATIVIDADE ORIGINAL
+        original_items = StoreItem.query.filter_by(activity_id=original_activity.id).all()
+        for item in original_items:
+            # Cria uma nova instância de StoreItem para a atividade copiada
+            new_item = StoreItem(
+                activity_id=copied_activity.id, # Associa ao ID da nova atividade
+                name=item.name,
+                description=item.description,
+                price=item.price,
+                icon=item.icon,
+                item_type=item.item_type,
+                effect_id=deepcopy(item.effect_id)
+            )
+            db.session.add(new_item)
+
+        # --- FIM DA CORREÇÃO ---
+
+        db.session.commit() # Salva tudo (nova atividade e novos itens da loja) na base de dados
+
         _log_system_event(
             user_id=user.id,
             action='activity_copied',
@@ -336,13 +363,9 @@ def bulk_delete_activities(user, activity_ids):
     ids_to_delete = [act.id for act in activities_to_delete]
 
     try:
-        # --- CORREÇÃO: Deletar registros dependentes ANTES de deletar a atividade ---
         # A ordem é importante para respeitar as chaves estrangeiras.
+        # Apagamos todos os registos "filhos" primeiro.
         
-        # Deleta de tabelas que dependem de outras tabelas primeiro (se houver)
-        # Ex: ManualFeedback depende de StudentResponse
-        
-        # Agora deleta de tabelas que dependem diretamente da Atividade
         Purchase.query.filter(Purchase.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
         StoreItem.query.filter(StoreItem.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
         SlotWin.query.filter(SlotWin.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
@@ -352,7 +375,10 @@ def bulk_delete_activities(user, activity_ids):
         EventLog.query.filter(EventLog.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
         ActivityRevision.query.filter(ActivityRevision.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
         
-        # Finalmente, deleta as atividades
+        # --- CORREÇÃO: Adicionar a exclusão de medalhas desbloqueadas ---
+        UserUnlockedMedal.query.filter(UserUnlockedMedal.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
+        
+        # Finalmente, apaga as atividades "mães"
         for activity in activities_to_delete:
             db.session.delete(activity)
 

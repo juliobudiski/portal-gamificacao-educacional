@@ -9,7 +9,7 @@ function CreateClassPage() {
     const [message, setMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
-    
+
     useEffect(() => {
         console.log('[CreateClassPage] Componente montado.');
         return () => {
@@ -32,7 +32,7 @@ function CreateClassPage() {
         setIsLoading(true);
 
         // Acessa o token via user.token
-        const token = user?.token; 
+        const token = user?.token;
         console.log('[CreateClassPage] Token de autenticação sendo enviado:', token); // Log do token
 
         if (user?.role !== 'professor') {
@@ -55,7 +55,7 @@ function CreateClassPage() {
         }
 
         console.log('[CreateClassPage] Dados do formulário:', { name, description });
-        
+
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/classes`, {
                 method: 'POST',
@@ -129,7 +129,7 @@ function CreateClassPage() {
                                     disabled={isLoading}
                                 />
                             </div>
-                            
+
                             <div className="mb-8">
                                 <label htmlFor="description" className="block text-accent-teal font-medium mb-2 flex items-center">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -149,7 +149,7 @@ function CreateClassPage() {
                                     disabled={isLoading}
                                 ></textarea>
                             </div>
-                            
+
                             <div className="flex flex-col sm:flex-row items-center justify-between">
                                 <button
                                     type="submit"
@@ -176,7 +176,7 @@ function CreateClassPage() {
                                         )}
                                     </span>
                                 </button>
-                                
+
                                 {message && (
                                     <div className={`mt-4 sm:mt-0 sm:ml-4 py-2 px-4 rounded-xl ${message.includes('sucesso') ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'} transition-all duration-300 max-w-xs`}>
                                         <p className="text-sm font-medium">{message}</p>
@@ -186,7 +186,7 @@ function CreateClassPage() {
                         </form>
                     </div>
                 </div>
-                
+
                 <div className="mt-8 text-center text-gray-500 text-sm">
                     <p>Preencha todos os campos obrigatórios para criar uma nova turma</p>
                 </div>

@@ -23,7 +23,7 @@ const PrivateRoute = ({ allowedRoles }) => {
   // Se allowedRoles não for fornecido, significa que qualquer usuário autenticado pode acessar
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     // Redireciona para uma página de "acesso negado" ou para a homepage
-    return <Navigate to="/" replace />; 
+    return <Navigate to="/" replace />;
   }
 
   // Se o usuário estiver logado e tiver o papel correto, renderiza o componente filho

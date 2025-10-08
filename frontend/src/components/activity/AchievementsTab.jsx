@@ -2,9 +2,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { FaMedal, FaSpinner, FaArrowLeft } from 'react-icons/fa';
-import MedalDetailModal from './MedalDetailModal'; // Importa o novo modal
+import MedalDetailModal from './MedalDetailModal';
 
-const AchievementsTab = ({ onReturn }) => {
+const AchievementsTab = ({ onReturn, activityId }) => {
     const { user } = useAuth();
     const [allMedals, setAllMedals] = useState([]);
     const [unlockedMedalIds, setUnlockedMedalIds] = useState([]);
@@ -16,26 +16,34 @@ const AchievementsTab = ({ onReturn }) => {
         const fetchMedalData = async () => {
             setIsLoading(true);
             try {
+                // Se o activityId não for passado, não faz nada para evitar erros.
+                if (!activityId) {
+                    throw new Error("ID da Atividade não foi fornecido.");
+                }
+
                 const fetchApi = (endpoint) => fetch(`${import.meta.env.VITE_API_URL}${endpoint}`, { headers: { 'Authorization': `Bearer ${user.token}` } }).then(res => res.json());
 
                 const [medalsData, unlockedData] = await Promise.all([
                     fetchApi('/api/medals'),
-                    fetchApi('/api/medals/my-unlocked')
+                    // A variável 'activityId' agora existe e pode ser usada com segurança
+                    fetchApi(`/api/medals/my-unlocked?activity_id=${activityId}`)
                 ]);
 
                 setAllMedals(medalsData);
                 setUnlockedMedalIds(unlockedData);
             } catch (err) {
                 setError('Não foi possível carregar as medalhas.');
+                console.error(err); // Adiciona um log do erro real para facilitar a depuração
             } finally {
                 setIsLoading(false);
             }
         };
 
         fetchMedalData();
-    }, [user.token]);
+        // --- CORREÇÃO 2: Adiciona activityId ao array de dependências do useEffect ---
+        // Isso garante que a busca de dados seja refeita se o componente for reutilizado noutra atividade.
+    }, [user.token, activityId]);
 
-    // Usar um Set é muito mais rápido para verificar se uma medalha foi desbloqueada
     const unlockedIdsSet = useMemo(() => new Set(unlockedMedalIds), [unlockedMedalIds]);
 
     if (isLoading) {
@@ -43,7 +51,7 @@ const AchievementsTab = ({ onReturn }) => {
     }
 
     if (error) {
-        return <div className="text-center text-red-400">{error}</div>;
+        return <div className="text-center text-red-400 p-8">{error}</div>;
     }
 
     return (

@@ -440,7 +440,20 @@ def update_activity_progress(activity_id):
             progress.total_xp_earned = (progress.total_xp_earned or 0) + points_to_add
         
         db.session.commit()
-        
+        # --- INÍCIO DA INTEGRAÇÃO DO GATILHO DE MEDALHAS "FÊNIX" ---
+        try:
+            # Passamos o contexto extra (se a resposta foi correta e o texto da pergunta)
+            # para a função de verificação através de kwargs.
+            check_and_award_medals(
+                user_id=current_user_id,
+                activity_id=activity_id,
+                event_type='quiz_answer_submitted',
+                is_correct=data.get('is_correct', False),
+                question_text=data.get('question_text')
+            )
+        except Exception as e:
+            current_app.logger.error(f"Erro ao verificar medalhas 'on_submit' para user {current_user_id}: {str(e)}")
+        # --- FIM DA INTEGRAÇÃO ---
         return jsonify({
             "message": "Progresso atualizado com sucesso.",
             "new_total_points": progress.points_earned,

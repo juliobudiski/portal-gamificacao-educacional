@@ -101,8 +101,8 @@ function JoinClassPage() {
                     </p>
                 </div>
 
-                <form 
-                    onSubmit={handleSubmit} 
+                <form
+                    onSubmit={handleSubmit}
                     className="bg-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-700 transform transition-all duration-300 hover:shadow-[0_10px_30px_-5px_rgba(105,232,203,0.15)]"
                 >
                     <div className="mb-6">
@@ -155,16 +155,14 @@ function JoinClassPage() {
                         </button>
 
                         {message && (
-                            <div className={`mt-4 p-3 rounded-xl border ${
-                                message.includes('sucesso') 
-                                    ? 'bg-green-900/30 border-green-600' 
+                            <div className={`mt-4 p-3 rounded-xl border ${message.includes('sucesso')
+                                    ? 'bg-green-900/30 border-green-600'
                                     : 'bg-red-900/30 border-red-600'
-                            } transition-all duration-300`}>
-                                <p className={`text-center font-medium ${
-                                    message.includes('sucesso') 
-                                        ? 'text-green-400' 
+                                } transition-all duration-300`}>
+                                <p className={`text-center font-medium ${message.includes('sucesso')
+                                        ? 'text-green-400'
                                         : 'text-red-400'
-                                }`}>
+                                    }`}>
                                     {message}
                                 </p>
                             </div>

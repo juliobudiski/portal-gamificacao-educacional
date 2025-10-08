@@ -21,11 +21,12 @@ class User(db.Model):
     institution_name = db.Column(db.String(255), nullable=True)
     discipline = db.Column(db.String(100), nullable=True)
     
-    # --- NOVO CAMPO PARA AVATARES GLOBAIS ---
-    # Guarda a lista de avatares "promovidos" que o usuário pode usar globalmente.
-    # Ex: [{'url': '/avatars/t-rex.png', 'name': 'T-Rex Feroz'}]
     unlocked_global_avatars = db.Column(JSONB, nullable=True, server_default='[]')
-    # --- FIM DO NOVO CAMPO ---
+    
+    forum_topics = db.relationship('ForumTopic', backref='author', lazy=True, foreign_keys='ForumTopic.author_id')
+    forum_posts = db.relationship('ForumPost', backref='author', lazy=True, foreign_keys='ForumPost.author_id')
+
+    
 
     def to_dict(self):
         return {
@@ -64,6 +65,7 @@ class Activity(db.Model):
     professor = db.relationship('User', backref='activities', lazy=True)
     class_obj = db.relationship('Class', backref='assigned_activities', lazy=True)
     gamification_design = db.Column(JSONB, nullable=True)
+    forum_topics = db.relationship('ForumTopic', backref='activity', lazy=True, cascade="all, delete-orphan")
 
     def to_dict(self):
         return {
@@ -408,3 +410,78 @@ class UserUnlockedMedal(db.Model):
     __table_args__ = (db.UniqueConstraint('user_id', 'medal_id', name='_user_medal_uc'),)
 
 
+class ForumTopic(db.Model):
+    __tablename__ = 'forum_topic'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255), nullable=False)
+    body = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    category_id = db.Column(db.Integer, db.ForeignKey('forum_category.id', ondelete="CASCADE"), nullable=False)
+
+    activity_id = db.Column(db.Integer, db.ForeignKey('activity.id', ondelete="CASCADE"), nullable=False)
+    author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    best_answer_id = db.Column(db.Integer, db.ForeignKey('forum_post.id', use_alter=True), nullable=True)
+
+    # --- ADICIONE ESTA LINHA ---
+    is_pinned = db.Column(db.Boolean, default=False, nullable=False, server_default='f')
+
+    posts = db.relationship('ForumPost', backref='topic', lazy='dynamic', foreign_keys='ForumPost.topic_id', cascade="all, delete-orphan")
+    best_answer = db.relationship('ForumPost', foreign_keys=[best_answer_id])
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "body": self.body,
+            "created_at": self.created_at.isoformat(),
+            "activity_id": self.activity_id,
+            "author_id": self.author_id,
+            "author_name": self.author.name,
+            "best_answer_id": self.best_answer_id,
+            "post_count": self.posts.count(),
+            # --- ADICIONE ESTA LINHA ---
+            "is_pinned": self.is_pinned
+        }
+
+class ForumPost(db.Model):
+    __tablename__ = 'forum_post'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    
+    # Chaves estrangeiras que conectam a resposta
+    topic_id = db.Column(db.Integer, db.ForeignKey('forum_topic.id', ondelete="CASCADE"), nullable=False)
+    author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "body": self.body,
+            "created_at": self.created_at.isoformat(),
+            "topic_id": self.topic_id,
+            "author_id": self.author_id,
+            "author_name": self.author.name
+        }
+
+class ForumCategory(db.Model):
+    __tablename__ = 'forum_category'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    activity_id = db.Column(db.Integer, db.ForeignKey('activity.id', ondelete="CASCADE"), nullable=False)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(255), nullable=True)
+    # Futuramente, podemos adicionar um 'is_locked' para o professor fechar uma categoria
+    
+    # Relação com os tópicos que pertencem a esta categoria
+    topics = db.relationship('ForumTopic', backref='category', lazy=True, cascade="all, delete-orphan")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "activity_id": self.activity_id,
+            "title": self.title,
+            "description": self.description,
+            "topic_count": len(self.topics) # Conta os tópicos
+        }

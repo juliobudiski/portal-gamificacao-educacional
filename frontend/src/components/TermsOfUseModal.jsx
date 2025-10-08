@@ -47,16 +47,15 @@ const TermsOfUseModal = ({ onClose, onAccept, termsText }) => {
             onClick={onAccept}
             disabled={!hasScrolledToEnd}
             className={`w-full sm:w-auto py-2 px-6 rounded-xl font-semibold shadow-md transition-all flex items-center justify-center gap-2
-              ${
-                hasScrolledToEnd
-                  ? "bg-gradient-to-r from-accent-teal to-accent-purple text-black hover:opacity-90 focus:ring-2 focus:ring-accent-yellow"
-                  : "bg-gray-600 text-gray-300 cursor-not-allowed"
+              ${hasScrolledToEnd
+                ? "bg-gradient-to-r from-accent-teal to-accent-purple text-black hover:opacity-90 focus:ring-2 focus:ring-accent-yellow"
+                : "bg-gray-600 text-gray-300 cursor-not-allowed"
               }`}
           >
             <FaCheckCircle />
             Li e Aceito os Termos
           </button>
-        </div>
+        </div>s
       </div>
     </div>
   );

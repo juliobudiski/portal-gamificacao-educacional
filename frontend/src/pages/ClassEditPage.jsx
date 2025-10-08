@@ -15,7 +15,7 @@ function ClassEditPage() {
     const [students, setStudents] = useState([]);
     const [assignedActivities, setAssignedActivities] = useState([]);
     const [availableActivities, setAvailableActivities] = useState([]);
-    
+
     // Estados para os campos de adição
     const [studentEmail, setStudentEmail] = useState('');
     const [activityToAdd, setActivityToAdd] = useState('');
@@ -40,7 +40,7 @@ function ClassEditPage() {
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data.message || 'Erro ao carregar dados da turma.');
-            
+
             // Preenche todos os estados com os dados recebidos
             setClassDetails(data.details);
             setStudents(data.students);
@@ -78,7 +78,7 @@ function ClassEditPage() {
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data.message || 'Ocorreu um erro na operação.');
-            
+
             setMessage(successMessage);
             fetchManagementData(); // Recarrega todos os dados da página para refletir a mudança
             return true;
@@ -92,20 +92,20 @@ function ClassEditPage() {
     const handleUpdateDetails = (e) => {
         e.preventDefault();
         handleApiCall(
-            `${import.meta.env.VITE_API_URL}/api/classes/${class_id}`, 
-            'PUT', 
-            { name: classDetails.name, description: classDetails.description }, 
+            `${import.meta.env.VITE_API_URL}/api/classes/${class_id}`,
+            'PUT',
+            { name: classDetails.name, description: classDetails.description },
             'Detalhes da turma atualizados com sucesso!'
         );
     };
-    
+
     // Handler para adicionar um novo aluno via e-mail
     const handleAddStudent = () => {
         if (!studentEmail.trim()) return setError("Por favor, insira um e-mail válido.");
         handleApiCall(
-            `${import.meta.env.VITE_API_URL}/api/classes/${class_id}/students`, 
-            'POST', 
-            { email: studentEmail }, 
+            `${import.meta.env.VITE_API_URL}/api/classes/${class_id}/students`,
+            'POST',
+            { email: studentEmail },
             'Aluno adicionado com sucesso!'
         ).then(success => {
             if (success) setStudentEmail(''); // Limpa o campo apenas se a operação for bem-sucedida
@@ -116,32 +116,32 @@ function ClassEditPage() {
     const handleRemoveStudent = (studentId) => {
         if (window.confirm("Tem certeza que deseja remover este aluno da turma?")) {
             handleApiCall(
-                `${import.meta.env.VITE_API_URL}/api/classes/${class_id}/students/${studentId}`, 
-                'DELETE', 
-                null, 
+                `${import.meta.env.VITE_API_URL}/api/classes/${class_id}/students/${studentId}`,
+                'DELETE',
+                null,
                 'Aluno removido com sucesso!'
             );
         }
     };
-    
+
     // Handler para associar uma atividade existente à turma
     const handleAddActivity = () => {
         if (!activityToAdd) return setError("Por favor, selecione uma atividade para associar.");
         handleApiCall(
-            `${import.meta.env.VITE_API_URL}/api/classes/${class_id}/activities`, 
-            'POST', 
+            `${import.meta.env.VITE_API_URL}/api/classes/${class_id}/activities`,
+            'POST',
             { activity_id: parseInt(activityToAdd) }, // Garante que o ID é um número
             'Atividade associada com sucesso!'
         );
     };
-    
+
     // Handler para desassociar uma atividade da turma
     const handleRemoveActivity = (activityId) => {
         if (window.confirm("Tem certeza que deseja desassociar esta atividade? Ela não será excluída, apenas removida desta turma.")) {
             handleApiCall(
-                `${import.meta.env.VITE_API_URL}/api/classes/${class_id}/activities/${activityId}`, 
-                'DELETE', 
-                null, 
+                `${import.meta.env.VITE_API_URL}/api/classes/${class_id}/activities/${activityId}`,
+                'DELETE',
+                null,
                 'Atividade desassociada com sucesso!'
             );
         }
@@ -159,7 +159,7 @@ function ClassEditPage() {
             </div>
         );
     }
-    
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#2c3135] to-[#1e2226] p-4 text-white">
             <div className="max-w-4xl mx-auto">
@@ -183,7 +183,7 @@ function ClassEditPage() {
                         <input
                             type="text" id="editName"
                             value={classDetails.name}
-                            onChange={(e) => setClassDetails({...classDetails, name: e.target.value})}
+                            onChange={(e) => setClassDetails({ ...classDetails, name: e.target.value })}
                             className="w-full px-4 py-3 bg-[#2c3135] border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30] text-white"
                             required
                         />
@@ -193,13 +193,13 @@ function ClassEditPage() {
                         <textarea
                             id="editDescription"
                             value={classDetails.description}
-                            onChange={(e) => setClassDetails({...classDetails, description: e.target.value})}
+                            onChange={(e) => setClassDetails({ ...classDetails, description: e.target.value })}
                             className="w-full px-4 py-3 bg-[#2c3135] border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30] text-white h-32"
                         ></textarea>
                     </div>
                     <div className="flex justify-between items-center">
-                         <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg flex items-center"><FaSave className="mr-2" /> Salvar Detalhes</button>
-                         <button type="button" onClick={() => navigate('/professor/gerenciar-turmas')} className="text-gray-300 hover:text-white">Cancelar</button>
+                        <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg flex items-center"><FaSave className="mr-2" /> Salvar Detalhes</button>
+                        <button type="button" onClick={() => navigate('/professor/gerenciar-turmas')} className="text-gray-300 hover:text-white">Cancelar</button>
                     </div>
                 </form>
 

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  FaHome, 
-  FaSearch, 
-  FaExclamationTriangle, 
-  FaRobot, 
-  FaRocket, 
+import {
+  FaHome,
+  FaSearch,
+  FaExclamationTriangle,
+  FaRobot,
+  FaRocket,
   FaGamepad,
   FaRegSadTear
 } from 'react-icons/fa';
@@ -48,7 +48,7 @@ function NotFoundPage() {
         >
           {/* Ícone animado */}
           <motion.div
-            animate={{ 
+            animate={{
               rotate: [0, 10, -10, 10, 0],
               y: [0, -15, 0]
             }}
@@ -59,7 +59,7 @@ function NotFoundPage() {
           </motion.div>
 
           {/* Número 404 com efeito */}
-          <motion.h1 
+          <motion.h1
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.7 }}
@@ -69,7 +69,7 @@ function NotFoundPage() {
           </motion.h1>
 
           {/* Mensagem principal */}
-          <motion.h2 
+          <motion.h2
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.7 }}
@@ -79,7 +79,7 @@ function NotFoundPage() {
           </motion.h2>
 
           {/* Mensagem explicativa */}
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.7 }}
@@ -121,7 +121,7 @@ function NotFoundPage() {
           </div>
 
           {/* Botões de ação */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8, duration: 0.7 }}
@@ -139,7 +139,7 @@ function NotFoundPage() {
                 Voltar ao Início
               </motion.button>
             </Link>
-            
+
             <button
               onClick={() => window.history.back()}
               className="flex items-center justify-center px-6 py-3 bg-gray-700 rounded-lg font-semibold hover:bg-gray-600 transition-colors duration-300"
@@ -150,7 +150,7 @@ function NotFoundPage() {
           </motion.div>
 
           {/* Mensagem extra */}
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1, duration: 0.7 }}
@@ -175,7 +175,7 @@ function NotFoundPage() {
         )}
       </div>
 
-      
+
     </div>
   );
 }

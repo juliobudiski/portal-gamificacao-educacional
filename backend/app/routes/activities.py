@@ -7,7 +7,7 @@ import logging
 from ..models import db, Activity, Tag, activity_tag, ActivityRevision, User, Class, ActivityProgress, StudentResponse, EventLog
 from ..services import activity_service
 from ..utils.logging import _log_system_event
-
+from .medals import check_and_award_medals
 
 activity_bp = Blueprint('activities', __name__)
 logger = logging.getLogger(__name__)
@@ -170,42 +170,49 @@ def submit_answer(activity_id):
     data = request.get_json()
     
     try:
-        # --- INÍCIO DA CORREÇÃO ---
-        # Converte o valor recebido para um inteiro. Se não vier nada, assume 0.
+        # --- CORREÇÃO APLICADA AQUI ---
+        # Extraímos todas as variáveis necessárias do 'data' no início do bloco try.
         points_earned = int(data.get('points_earned', 0))
+        is_correct = data.get('is_correct', False)
+        question_text = data.get('question_text')
         # --- FIM DA CORREÇÃO ---
 
-        # Busca ou cria o registro de progresso
         progress = ActivityProgress.query.filter_by(student_id=user.id, activity_id=activity_id).first()
         activity = Activity.query.get(activity_id)
 
         if not progress:
             progress = ActivityProgress(
-                student_id=user.id,
-                activity_id=activity_id,
-                class_id=activity.class_id,
-                points_earned=0,
-                attempts=0,
-                status='in_progress'
+                student_id=user.id, activity_id=activity_id,
+                class_id=activity.class_id, status='in_progress'
             )
             db.session.add(progress)
             db.session.flush()
 
-        # Registra a resposta detalhada
         new_response = StudentResponse(
             student_id=user.id,
             activity_id=activity_id,
-            response_data={'question': data.get('question_text'), 'answer': data.get('selected_option')},
-            is_correct=data.get('is_correct', False),
+            response_data={'question': question_text, 'answer': data.get('selected_option')},
+            is_correct=is_correct,
             score=points_earned
         )
         db.session.add(new_response)
 
-        # Atualiza os contadores de progresso
-        progress.points_earned += points_earned
+        progress.points_earned = (progress.points_earned or 0) + points_earned
         progress.total_xp_earned = (progress.total_xp_earned or 0) + points_earned
-        progress.attempts += 1
+        progress.attempts = (progress.attempts or 0) + 1
         
+        # O gatilho agora tem acesso às variáveis 'is_correct' and 'question_text'
+        try:
+            check_and_award_medals(
+                user_id=current_user_id,
+                activity_id=activity_id,
+                event_type='quiz_answer_submitted',
+                is_correct=is_correct,
+                question_text=question_text
+            )
+        except Exception as e:
+            current_app.logger.error(f"Erro ao verificar medalhas 'on_submit' para user {current_user_id}: {str(e)}")
+
         db.session.commit()
         return jsonify({"message": "Resposta registrada e progresso atualizado.", "new_total_points": progress.points_earned}), 200
 
