@@ -1,9 +1,9 @@
 # backend/app/models.py
 from . import db # Importa a instância do db do __init__.py
 from sqlalchemy.dialects.postgresql import JSONB
-
+from flask_socketio import SocketIO
 # --- Modelos de Banco de Dados (SQLAlchemy) ---
-
+socketio = SocketIO(cors_allowed_origins="*")
 class User(db.Model):
     __tablename__ = 'user'
 
@@ -428,7 +428,7 @@ class ForumTopic(db.Model):
 
     posts = db.relationship('ForumPost', backref='topic', lazy='dynamic', foreign_keys='ForumPost.topic_id', cascade="all, delete-orphan")
     best_answer = db.relationship('ForumPost', foreign_keys=[best_answer_id])
-
+    likes = db.relationship('TopicLike', backref='topic', lazy=True, cascade="all, delete-orphan")
     def to_dict(self):
         return {
             "id": self.id,
@@ -440,7 +440,7 @@ class ForumTopic(db.Model):
             "author_name": self.author.name,
             "best_answer_id": self.best_answer_id,
             "post_count": self.posts.count(),
-            # --- ADICIONE ESTA LINHA ---
+            "likes_count": len(self.likes),
             "is_pinned": self.is_pinned
         }
 
@@ -454,6 +454,7 @@ class ForumPost(db.Model):
     # Chaves estrangeiras que conectam a resposta
     topic_id = db.Column(db.Integer, db.ForeignKey('forum_topic.id', ondelete="CASCADE"), nullable=False)
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    likes = db.relationship('PostLike', backref='post', lazy=True, cascade="all, delete-orphan")
     
     def to_dict(self):
         return {
@@ -462,7 +463,8 @@ class ForumPost(db.Model):
             "created_at": self.created_at.isoformat(),
             "topic_id": self.topic_id,
             "author_id": self.author_id,
-            "author_name": self.author.name
+            "author_name": self.author.name,
+            "likes_count": len(self.likes)
         }
 
 class ForumCategory(db.Model):
@@ -484,4 +486,64 @@ class ForumCategory(db.Model):
             "title": self.title,
             "description": self.description,
             "topic_count": len(self.topics) # Conta os tópicos
+        }
+        
+class TopicLike(db.Model):
+    __tablename__ = 'topic_like'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
+    topic_id = db.Column(db.Integer, db.ForeignKey('forum_topic.id', ondelete="CASCADE"), nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    __table_args__ = (db.UniqueConstraint('user_id', 'topic_id', name='_user_topic_like_uc'),)
+
+class PostLike(db.Model):
+    __tablename__ = 'post_like'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('forum_post.id', ondelete="CASCADE"), nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    __table_args__ = (db.UniqueConstraint('user_id', 'post_id', name='_user_post_like_uc'),)
+
+
+# Tabela de associação para os participantes da conversa
+conversation_participants = db.Table('conversation_participants',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('conversation_id', db.Integer, db.ForeignKey('conversation.id'), primary_key=True)
+)
+
+class Conversation(db.Model):
+    __tablename__ = 'conversation'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    # 'group' para chats de atividade, 'direct' para mensagens diretas
+    type = db.Column(db.String(50), nullable=False, default='group')
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    
+    # Opcional: Se for um chat de grupo, pode estar associado a uma atividade
+    activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=True, unique=True)
+    
+    # Relação muitos-para-muitos com os usuários (participantes)
+    participants = db.relationship('User', secondary=conversation_participants, lazy='subquery',
+                                   backref=db.backref('conversations', lazy=True))
+    messages = db.relationship('ChatMessage', backref='conversation', lazy=True, cascade="all, delete-orphan")
+
+class ChatMessage(db.Model):
+    __tablename__ = 'chat_message'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    conversation_id = db.Column(db.Integer, db.ForeignKey('conversation.id'), nullable=False)
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    
+    sender = db.relationship('User', backref='sent_chat_messages')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'conversation_id': self.conversation_id,
+            'sender_id': self.sender_id,
+            'sender_name': self.sender.name,
+            'content': self.content,
+            'created_at': self.created_at.isoformat()
         }

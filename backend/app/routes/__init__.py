@@ -11,6 +11,7 @@ from .rankings import rankings_bp
 from .content_editor import content_editor_bp
 from .medals import medals_bp
 from .forum import forum_bp
+from .chat import chat_bp
 
 def register_blueprints(app):
     """
@@ -28,3 +29,4 @@ def register_blueprints(app):
     app.register_blueprint(content_editor_bp, url_prefix='/api/content_editor')
     app.register_blueprint(medals_bp, url_prefix='/api/medals')
     app.register_blueprint(forum_bp, url_prefix='/api/forum')
+    app.register_blueprint(chat_bp, url_prefix='/api/chat')

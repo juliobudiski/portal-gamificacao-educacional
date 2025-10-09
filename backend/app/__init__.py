@@ -4,8 +4,9 @@ from flask import Flask
 from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
-
+from flask_socketio import SocketIO
 # 1. Crie as instâncias das extensões FORA da função, sem associá-las a um app
+socketio = SocketIO(cors_allowed_origins="*")
 db = SQLAlchemy()
 migrate = Migrate()
 
@@ -23,7 +24,7 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     CORS(app, resources={r"/api/*": {"origins": "*"}}) # Habilita o CORS globalmente
-
+    socketio.init_app(app)
     # Importa e configura o JWT
     from .utils.auth_utils import configure_jwt
     configure_jwt(app)
@@ -116,28 +117,28 @@ def create_app():
         # Lista COMPLETA de todas as medalhas com os nomes de ficheiro corretos
         medals_data = [
             # --- Medalhas de Atividade (Adaptadas ou Nativas) ---
-            {'name': 'Medalha do Inspetor', 'description': 'Atingir 100% de acerto em todos os questionários e tarefas de uma atividade na primeira tentativa.', 'image_url': '/medals/MedalhaInspetor.png', 'type': 'ACTIVITY_TEMPLATE', 'notes': 'Incentivar a atenção ao detalhe e a busca pela perfeição.'},
-            {'name': 'Medalha do Explorador', 'description': 'Completar todos os módulos e atividades de uma trilha de aprendizagem.', 'image_url': '/medals/MedalhaExplorador.png', 'type': 'ACTIVITY_TEMPLATE', 'notes': 'Celebrar a finalização completa de uma jornada de aprendizagem.'},
-            {'name': 'Medalha do Velocista', 'description': 'Estar entre os 3 primeiros a concluir esta atividade.', 'image_url': '/medals/MedalhaVelocista.png', 'type': 'ACTIVITY_TEMPLATE', 'notes': 'Recompensar a agilidade e a rapidez na conclusão.'},
-            {'name': 'Medalha "Fênix"', 'description': 'Refazer um módulo com baixo desempenho dentro da atividade e alcançar uma nota de excelência.', 'image_url': '/medals/MedalhaFenix.png', 'type': 'ACTIVITY_TEMPLATE', 'notes': 'Promover a resiliência e a mentalidade de crescimento.'},
-            {'name': 'Medalha "Peça-Chave"', 'description': 'Resolver um desafio ou problema "bloqueador" dentro de uma atividade.', 'image_url': '/medals/MedalhaPecaChave.png', 'type': 'ACTIVITY_TEMPLATE', 'notes': 'Recompensar o pensamento crítico e a resolução de problemas complexos.'},
-            {'name': 'Medalha "Arquiteto do Conhecimento"', 'description': 'Completar um módulo dentro da atividade que seja marcado como "fundamental".', 'image_url': '/medals/MedalhaArquiteto.png', 'type': 'ACTIVITY_TEMPLATE', 'notes': 'Reforçar a importância de dominar os fundamentos.'},
-            {'name': 'Medalha do Mestre', 'description': 'Concluir a atividade de nível mais avançado ("especialista" ou "masterclass") numa área.', 'image_url': '/medals/MedalhaMestre.png', 'type': 'ACTIVITY_TEMPLATE', 'notes': 'Reconhecer o mais alto nível de especialização numa atividade.'},
-            {'name': 'Medalha do Inovador', 'description': 'Submeter um projeto que receba nota máxima no critério de "Criatividade e Originalidade".', 'image_url': '/medals/MedalhaInovador.png', 'type': 'ACTIVITY_TEMPLATE', 'notes': 'Estimular o pensamento criativo e a experimentação.'},
+            {'name': 'Medalha do Inspetor', 'description': 'Atingir 100% de acerto em todos os questionários e tarefas de uma atividade na primeira tentativa.', 'image_url': '/medals/MedalhaInspetor.webp', 'type': 'ACTIVITY_TEMPLATE', 'notes': 'Incentivar a atenção ao detalhe e a busca pela perfeição.'},
+            {'name': 'Medalha do Explorador', 'description': 'Completar todos os módulos e atividades de uma trilha de aprendizagem.', 'image_url': '/medals/MedalhaExplorador.webp', 'type': 'ACTIVITY_TEMPLATE', 'notes': 'Celebrar a finalização completa de uma jornada de aprendizagem.'},
+            {'name': 'Medalha do Velocista', 'description': 'Estar entre os 3 primeiros a concluir esta atividade.', 'image_url': '/medals/MedalhaVelocista.webp', 'type': 'ACTIVITY_TEMPLATE', 'notes': 'Recompensar a agilidade e a rapidez na conclusão.'},
+            {'name': 'Medalha "Fênix"', 'description': 'Refazer um módulo com baixo desempenho dentro da atividade e alcançar uma nota de excelência.', 'image_url': '/medals/MedalhaFenix.webp', 'type': 'ACTIVITY_TEMPLATE', 'notes': 'Promover a resiliência e a mentalidade de crescimento.'},
+            {'name': 'Medalha "Peça-Chave"', 'description': 'Resolver um desafio ou problema "bloqueador" dentro de uma atividade.', 'image_url': '/medals/MedalhaPecaChave.webp', 'type': 'ACTIVITY_TEMPLATE', 'notes': 'Recompensar o pensamento crítico e a resolução de problemas complexos.'},
+            {'name': 'Medalha "Arquiteto do Conhecimento"', 'description': 'Completar um módulo dentro da atividade que seja marcado como "fundamental".', 'image_url': '/medals/MedalhaArquiteto.webp', 'type': 'ACTIVITY_TEMPLATE', 'notes': 'Reforçar a importância de dominar os fundamentos.'},
+            {'name': 'Medalha do Mestre', 'description': 'Concluir a atividade de nível mais avançado ("especialista" ou "masterclass") numa área.', 'image_url': '/medals/MedalhaMestre.webp', 'type': 'ACTIVITY_TEMPLATE', 'notes': 'Reconhecer o mais alto nível de especialização numa atividade.'},
+            {'name': 'Medalha do Inovador', 'description': 'Submeter um projeto que receba nota máxima no critério de "Criatividade e Originalidade".', 'image_url': '/medals/MedalhaInovador.webp', 'type': 'ACTIVITY_TEMPLATE', 'notes': 'Estimular o pensamento criativo e a experimentação.'},
 
             # --- Medalhas de Plataforma (Globais - Implementação Futura) ---
-            {'name': 'Medalha "Diamante de Excelência"', 'description': 'Atingir o nível máximo de maestria, completando 100% de todos os cursos, trilhas e desafios disponíveis.', 'image_url': '/medals/MedalhaDiamante.png', 'type': 'PLATFORM', 'notes': 'Servir como o objetivo final e a maior honra da plataforma.'},
-            {'name': 'Medalha do Maratonista', 'description': 'Manter uma sequência de estudos diária por 7, 15 ou 30 dias consecutivos.', 'image_url': '/medals/MedalhaMaratonista.png', 'type': 'PLATFORM', 'notes': 'Fomentar o hábito e a disciplina da aprendizagem contínua.'},
-            {'name': 'Medalha "Espírito de Equipe"', 'description': 'Concluir com sucesso um projeto em grupo com avaliações positivas dos colegas.', 'image_url': '/medals/MedalhaEquipe.png', 'type': 'PLATFORM', 'notes': 'Valorizar a colaboração, a comunicação e o trabalho em equipa.'},
-            {'name': 'Medalha "Semeador do Saber"', 'description': 'Atuar como mentor ou ter 5 respostas marcadas como "melhor solução" nos fóruns.', 'image_url': '/medals/MedalhaSemearSaber.png', 'type': 'PLATFORM', 'notes': 'Incentivar a partilha de conhecimento e o ensino entre pares.'},
-            {'name': 'Medalha do Conector', 'description': 'Convidar 3 ou mais novos utilizadores para a plataforma que completem o primeiro módulo.', 'image_url': '/medals/MedalhaConector.png', 'type': 'PLATFORM', 'notes': 'Recompensar a advocacia da plataforma e o crescimento da comunidade.'},
-            {'name': 'Medalha do Embaixador', 'description': 'Partilhar uma conquista significativa numa rede social com a hashtag oficial da plataforma.', 'image_url': '/medals/MedalhaEmbaixador.png', 'type': 'PLATFORM', 'notes': 'Encorajar a partilha de sucessos e aumentar a visibilidade da plataforma.'},
-            {'name': 'Medalha do Polímata', 'description': 'Concluir cursos completos de 3 ou mais áreas de conhecimento distintas.', 'image_url': '/medals/MedalhaPolimata.png', 'type': 'PLATFORM', 'notes': 'Incentivar a aprendizagem diversificada e a curiosidade intelectual.'},
-            {'name': 'Medalha do Pioneiro', 'description': 'Estar entre os primeiros 10 utilizadores a concluir um curso recém-lançado.', 'image_url': '/medals/MedalhaPioneiro.png', 'type': 'PLATFORM', 'notes': 'Recompensar os "early adopters" e o engajamento com novos conteúdos.'},
-            {'name': 'Medalha do Curioso', 'description': 'Fazer 10 ou mais perguntas pertinentes e bem formuladas nos fóruns.', 'image_url': '/medals/MedalhaCurioso.png', 'type': 'PLATFORM', 'notes': 'Incentivar a curiosidade e a coragem de perguntar.'},
-            {'name': 'Medalha do Veterano', 'description': 'Comemorar 1 ano de atividade contínua na plataforma.', 'image_url': '/medals/MedalhaVeterano.png', 'type': 'PLATFORM', 'notes': 'Celebrar a lealdade e o compromisso a longo prazo.'},
-            {'name': 'Medalha do Caçador de Tesouros', 'description': 'Encontrar e interagir com um conteúdo secreto ("easter egg") na plataforma.', 'image_url': '/medals/MedalhaCacador.png', 'type': 'PLATFORM', 'notes': 'Recompensar a exploração e a curiosidade que vão além do caminho definido.'},
-            {'name': 'Medalha "Sinergia"', 'description': 'Resolver um problema que exija a aplicação de conhecimentos de, pelo menos, duas áreas distintas.', 'image_url': '/medals/MedalhaSinergia.png', 'type': 'PLATFORM', 'notes': 'Promover o pensamento interdisciplinar e a capacidade de sintetizar informações.'},
+            {'name': 'Medalha "Diamante de Excelência"', 'description': 'Atingir o nível máximo de maestria, completando 100% de todos os cursos, trilhas e desafios disponíveis.', 'image_url': '/medals/MedalhaDiamante.webp', 'type': 'PLATFORM', 'notes': 'Servir como o objetivo final e a maior honra da plataforma.'},
+            {'name': 'Medalha do Maratonista', 'description': 'Manter uma sequência de estudos diária por 7, 15 ou 30 dias consecutivos.', 'image_url': '/medals/MedalhaMaratonista.webp', 'type': 'PLATFORM', 'notes': 'Fomentar o hábito e a disciplina da aprendizagem contínua.'},
+            {'name': 'Medalha "Espírito de Equipe"', 'description': 'Concluir com sucesso um projeto em grupo com avaliações positivas dos colegas.', 'image_url': '/medals/MedalhaEquipe.webp', 'type': 'PLATFORM', 'notes': 'Valorizar a colaboração, a comunicação e o trabalho em equipa.'},
+            {'name': 'Medalha "Semeador do Saber"', 'description': 'Atuar como mentor ou ter 5 respostas marcadas como "melhor solução" nos fóruns.', 'image_url': '/medals/MedalhaSemearSaber.webp', 'type': 'PLATFORM', 'notes': 'Incentivar a partilha de conhecimento e o ensino entre pares.'},
+            {'name': 'Medalha do Conector', 'description': 'Convidar 3 ou mais novos utilizadores para a plataforma que completem o primeiro módulo.', 'image_url': '/medals/MedalhaConector.webp', 'type': 'PLATFORM', 'notes': 'Recompensar a advocacia da plataforma e o crescimento da comunidade.'},
+            {'name': 'Medalha do Embaixador', 'description': 'Partilhar uma conquista significativa numa rede social com a hashtag oficial da plataforma.', 'image_url': '/medals/MedalhaEmbaixador.webp', 'type': 'PLATFORM', 'notes': 'Encorajar a partilha de sucessos e aumentar a visibilidade da plataforma.'},
+            {'name': 'Medalha do Polímata', 'description': 'Concluir cursos completos de 3 ou mais áreas de conhecimento distintas.', 'image_url': '/medals/MedalhaPolimata.webp', 'type': 'PLATFORM', 'notes': 'Incentivar a aprendizagem diversificada e a curiosidade intelectual.'},
+            {'name': 'Medalha do Pioneiro', 'description': 'Estar entre os primeiros 10 utilizadores a concluir um curso recém-lançado.', 'image_url': '/medals/MedalhaPioneiro.webp', 'type': 'PLATFORM', 'notes': 'Recompensar os "early adopters" e o engajamento com novos conteúdos.'},
+            {'name': 'Medalha do Curioso', 'description': 'Fazer 10 ou mais perguntas pertinentes e bem formuladas nos fóruns.', 'image_url': '/medals/MedalhaCurioso.webp', 'type': 'PLATFORM', 'notes': 'Incentivar a curiosidade e a coragem de perguntar.'},
+            {'name': 'Medalha do Veterano', 'description': 'Comemorar 1 ano de atividade contínua na plataforma.', 'image_url': '/medals/MedalhaVeterano.webp', 'type': 'PLATFORM', 'notes': 'Celebrar a lealdade e o compromisso a longo prazo.'},
+            {'name': 'Medalha do Caçador de Tesouros', 'description': 'Encontrar e interagir com um conteúdo secreto ("easter egg") na plataforma.', 'image_url': '/medals/MedalhaCacador.webp', 'type': 'PLATFORM', 'notes': 'Recompensar a exploração e a curiosidade que vão além do caminho definido.'},
+            {'name': 'Medalha "Sinergia"', 'description': 'Resolver um problema que exija a aplicação de conhecimentos de, pelo menos, duas áreas distintas.', 'image_url': '/medals/MedalhaSinergia.webp', 'type': 'PLATFORM', 'notes': 'Promover o pensamento interdisciplinar e a capacidade de sintetizar informações.'},
         ]
 
 

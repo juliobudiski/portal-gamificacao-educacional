@@ -1,162 +1,107 @@
 // frontend/src/components/activity/ChatTab.jsx
-import React, { useState, useEffect, useCallback } from 'react';
-import { FaArrowLeft, FaComments, FaQuestionCircle, FaPlus, FaTrophy, FaPaperPlane } from 'react-icons/fa';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useParams } from 'react-router-dom';
-
-// Componente para um único Tópico na lista
-const TopicListItem = ({ topic, onSelect }) => (
-  <button onClick={() => onSelect(topic.id)} className="w-full text-left p-4 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors flex justify-between items-center">
-    <div>
-      <h3 className="font-bold text-white">{topic.title}</h3>
-      <p className="text-sm text-gray-400">por {topic.author_name} - {topic.post_count} respostas</p>
-    </div>
-    {topic.best_answer_id && <FaTrophy className="text-yellow-400 text-xl flex-shrink-0" title="Resolvido" />}
-  </button>
-);
-
-// Componente para uma única Resposta dentro de um tópico
-const PostItem = ({ post, isTopicAuthor, onMarkBest }) => {
-  const { user } = useAuth();
-  return (
-    <div className="p-4 bg-gray-900 rounded-lg border border-gray-700">
-      <div className="flex justify-between items-start">
-        <p className="font-bold text-teal-300">{post.author_name}</p>
-        {isTopicAuthor && (
-          <button onClick={() => onMarkBest(post.id)} className="text-xs flex items-center gap-1 text-yellow-400 hover:text-white">
-            <FaTrophy /> Marcar como Melhor
-          </button>
-        )}
-      </div>
-      <p className="text-gray-300 mt-2">{post.body}</p>
-    </div>
-  );
-};
-
+import { io } from 'socket.io-client';
+import { FaArrowLeft } from 'react-icons/fa';
 
 const ChatTab = ({ onReturn }) => {
   const { user } = useAuth();
   const { activityId } = useParams();
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState('');
+  const socketRef = useRef(null);
+  const messagesEndRef = useRef(null);
 
-  const [view, setView] = useState('list'); // 'list', 'topic', 'create'
-  const [topics, setTopics] = useState([]);
-  const [selectedTopic, setSelectedTopic] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  // --- LÓGICA DE BUSCA DE DADOS ---
-  const fetchTopics = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${activityId}/forum`, {
-        headers: { 'Authorization': `Bearer ${user.token}` },
-      });
-      if (!response.ok) throw new Error("Não foi possível carregar os tópicos.");
-      const data = await response.json();
-      setTopics(data);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [activityId, user.token]);
-
-  const fetchTopicDetails = async (topicId) => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/forum/topics/${topicId}`, {
-        headers: { 'Authorization': `Bearer ${user.token}` },
-      });
-      if (!response.ok) throw new Error("Não foi possível carregar o tópico.");
-      const data = await response.json();
-      setSelectedTopic(data);
-      setView('topic');
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Efeito para rolar para a última mensagem
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   useEffect(() => {
-    if (view === 'list') {
-      fetchTopics();
-    }
-  }, [view, fetchTopics]);
+    // 1. Buscar histórico de mensagens
+    const fetchHistory = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/chat/activity/${activityId}/messages`, {
+          headers: { 'Authorization': `Bearer ${user.token}` }
+        });
+        const history = await response.json();
+        setMessages(history);
+      } catch (error) {
+        console.error("Erro ao buscar histórico do chat:", error);
+      }
+    };
+    fetchHistory();
 
-  // --- LÓGICA DE ENVIO DE DADOS ---
-  const handleCreatePost = async (topicId, body) => {
-    // Lógica para enviar uma nova resposta
-  };
+    // 2. Conectar ao WebSocket
+    const socket = io(import.meta.env.VITE_API_URL);
+    socketRef.current = socket;
 
-  const handleMarkBest = async (postId) => {
-    // Lógica para marcar a melhor resposta
-  };
+    // 3. Entrar na sala específica da atividade
+    socket.on('connect', () => {
+      console.log('Conectado ao servidor de chat!');
+      socket.emit('join', { user_id: user.id, activity_id: activityId });
+    });
 
+    // 4. Ouvir por novas mensagens
+    socket.on('new_message', (message) => {
+      setMessages(prevMessages => [...prevMessages, message]);
+    });
 
-  // --- RENDERIZAÇÃO ---
-  const renderContent = () => {
-    if (isLoading) return <div>Carregando...</div>;
-    if (error) return <div className="text-red-400">{error}</div>;
+    // 5. Limpeza: desconectar ao sair do componente
+    return () => {
+      socket.disconnect();
+    };
+  }, [activityId, user.token, user.id]);
 
-    switch (view) {
-      case 'topic':
-        return (
-          <div className="flex flex-col h-full">
-            <button onClick={() => setView('list')} className="mb-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200">
-              <FaArrowLeft /> Voltar para a lista de tópicos
-            </button>
-            <div className="bg-gray-700 p-4 rounded-lg mb-4">
-              <h2 className="text-2xl font-bold text-white">{selectedTopic.title}</h2>
-              <p className="text-sm text-gray-400">por {selectedTopic.author_name}</p>
-              <p className="text-gray-200 mt-4">{selectedTopic.body}</p>
-            </div>
-            <h3 className="font-bold mb-2">Respostas</h3>
-            <div className="flex-grow space-y-4 overflow-y-auto pr-2">
-              {selectedTopic.posts.map(post => (
-                <PostItem
-                  key={post.id}
-                  post={post}
-                  isTopicAuthor={user.id === selectedTopic.author_id}
-                  onMarkBest={handleMarkBest}
-                />
-              ))}
-            </div>
-            {/* Formulário de Nova Resposta */}
-            <div className="mt-4 flex">
-              <input type="text" placeholder="Escreva a sua resposta..." className="flex-grow bg-gray-700 p-2 rounded-l-lg focus:outline-none" />
-              <button className="bg-teal-600 p-3 rounded-r-lg"><FaPaperPlane /></button>
-            </div>
-          </div>
-        );
-
-      // Adicione a view 'create' aqui se desejar um formulário em tela cheia
-
-      default: // 'list'
-        return (
-          <>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold text-teal-400 flex items-center gap-2"><FaComments /> Fórum da Atividade</h2>
-              <button className="bg-blue-600 py-2 px-3 rounded-lg flex items-center gap-2 font-bold"><FaPlus /> Criar Tópico</button>
-            </div>
-            <div className="space-y-3">
-              {topics.map(topic => (
-                <TopicListItem key={topic.id} topic={topic} onSelect={fetchTopicDetails} />
-              ))}
-            </div>
-          </>
-        );
+  const handleSendMessage = (e) => {
+    e.preventDefault();
+    if (newMessage.trim() && socketRef.current) {
+      const messagePayload = {
+        activity_id: activityId,
+        sender_id: user.id,
+        content: newMessage.trim(),
+      };
+      socketRef.current.emit('send_message', messagePayload);
+      setNewMessage('');
     }
   };
 
   return (
-    <div className="bg-gray-800 p-6 rounded-lg text-white flex flex-col" style={{ height: '80vh', maxHeight: '700px' }}>
-      <button onClick={onReturn} className="absolute top-4 left-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200 transition-colors z-20">
-        <FaArrowLeft /> Voltar ao Tabuleiro
-      </button>
-      <div className="flex-grow relative mt-8">
-        {renderContent()}
+    <div className="flex flex-col h-full bg-gray-800 p-4 text-white rounded-lg" style={{ height: '80vh', maxHeight: '700px' }}>
+
+      <div className='flex-shrink-0'>
+        <button onClick={onReturn} className="absolute top-4 left-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200 transition-colors z-20">
+          <FaArrowLeft /> Voltar ao Tabuleiro
+        </button>
       </div>
+      <h2 className="text-xl font-bold mb-4 flex-shrink-0">Chat da Atividade</h2>
+
+      {/* Área de Mensagens */}
+      <div className="flex-grow overflow-y-auto mb-4 pr-2 space-y-4">
+        {messages.map((msg) => (
+          <div key={msg.id} className={`flex ${Number(msg.sender_id) === Number(user.id) ? 'justify-end' : 'justify-start'}`}>
+            <div className={`max-w-xs lg:max-w-md p-3 rounded-lg ${Number(msg.sender_id) === Number(user.id) ? 'bg-teal-600' : 'bg-gray-600'}`}>
+              {Number(msg.sender_id) !== Number(user.id) && <p className="font-bold text-xs text-cyan-300">{msg.sender_name}</p>}
+              <p className="text-white">{msg.content}</p>
+              <p className="text-right text-xs text-gray-400 mt-1">{new Date(msg.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
+            </div>
+          </div>
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Área de Input */}
+      <form onSubmit={handleSendMessage} className="flex-shrink-0 flex gap-2">
+        <input
+          type="text"
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
+          placeholder="Digite sua mensagem..."
+          className="flex-grow bg-gray-700 p-2 rounded-lg focus:outline-none"
+        />
+        <button type="submit" className="bg-teal-600 px-4 py-2 rounded-lg font-bold">Enviar</button>
+      </form>
     </div>
   );
 };

@@ -4,20 +4,20 @@
 // 1. Configuração dos ÍCONES para os passos da trilha e elementos do hub
 export const elementConfig = {
     path: {
-        mission: { icon: '/board/mission_character_board.png', name: 'Missão' },
-        narrative: { icon: '/board/narrative_board.png', name: 'Narrativa' },
-        quiz: { icon: '/board/quiz_board.png', name: 'Quiz' },
-        final_reward: { icon: '/board/end_board.png', name: 'Recompensa Final' }
+        mission: { icon: '../../public/board/mission_character_board.webp', name: 'Missão' },
+        narrative: { icon: '../../public/board/narrative_board.webp', name: 'Narrativa' },
+        quiz: { icon: '../../public/board/quiz_board.webp', name: 'Quiz' },
+        final_reward: { icon: '../../public/board/end_board.webp', name: 'Recompensa Final' }
     },
     hub: {
-        roulette: { icon: '/board/roleta_board.png', name: 'Roleta' },
-        slot_machine: { icon: '/board/slotmachine_board.png', name: 'Caça-níquel' },
-        ranking: { icon: '/board/ranking_board.png', name: 'Ranking' },
-        badges: { icon: '/board/badges_board.png', name: 'Medalhas' },
-        chat: { icon: '/board/chat_board.png', name: 'Chat' },
-        store: { icon: '/board/store_board.png', name: 'Loja' },
-        avatar_customization: { icon: '/board/meuestilo_board.png', name: 'Meu Estilo' },
-        forum: { icon: '/board/fox_board.png', name: 'Fórum' },
+        roulette: { icon: '../../public/board/roleta_board.webp', name: 'Roleta' },
+        slot_machine: { icon: '../../public/board/slotmachine_board.webp', name: 'Caça-níquel' },
+        ranking: { icon: '../../public/board/ranking_board.webp', name: 'Ranking' },
+        badges: { icon: '../../public/board/badges_board.webp', name: 'Medalhas' },
+        chat: { icon: '../../public/board/chat_board.webp', name: 'Chat' },
+        store: { icon: '../../public/board/store_board.webp', name: 'Loja' },
+        avatar_customization: { icon: '../../public/board/meuestilo_board.webp', name: 'Meu Estilo' },
+        forum: { icon: '../../public/board/fox_board.webp', name: 'Fórum' },
 
     }
 };
@@ -25,20 +25,20 @@ export const elementConfig = {
 // 2. Lista de todas as DECORAÇÕES disponíveis para o mapa
 export const decorationConfig = [
     // Árvores (agora com mais variedade)
-    { id: 'tree1', src: '/board/tree_board.png', className: 'decoration-tree', weight: 3 },
-    { id: 'tree2', src: '/board/tree_board_2.png', className: 'decoration-tree', weight: 3 },
-    { id: 'tree3', src: '/board/tree_board_3.png', className: 'decoration-tree', weight: 2 },
-    { id: 'tree4', src: '/board/tree_board_4.png', className: 'decoration-tree', weight: 2 },
-    { id: 'tree5', src: '/board/tree_board_5.png', className: 'decoration-tree', weight: 1 },
-    { id: 'tree6', src: '/board/tree_board_6.png', className: 'decoration-tree', weight: 1 },
-    { id: 'tree7', src: '/board/tree_board_7.png', className: 'decoration-tree', weight: 1 },
+    { id: 'tree1', src: '../../public/board/tree_board.webp', className: 'decoration-tree', weight: 3 },
+    { id: 'tree2', src: '../../public/board/tree_board_2.webp', className: 'decoration-tree', weight: 3 },
+    { id: 'tree3', src: '../../public/board/tree_board_3.webp', className: 'decoration-tree', weight: 2 },
+    { id: 'tree4', src: '../../public/board/tree_board_4.webp', className: 'decoration-tree', weight: 2 },
+    { id: 'tree5', src: '../../public/board/tree_board_5.webp', className: 'decoration-tree', weight: 1 },
+    { id: 'tree6', src: '../../public/board/tree_board_6.webp', className: 'decoration-tree', weight: 1 },
+    { id: 'tree7', src: '../../public/board/tree_board_7.webp', className: 'decoration-tree', weight: 1 },
 
     // Rochas (expandida)
-    { id: 'rock1', src: '/board/rock_board.png', className: 'decoration-rock', weight: 3 },
-    { id: 'rock2', src: '/board/rock_board_2.png', className: 'decoration-rock', weight: 3 },
-    { id: 'rock3', src: '/board/rock_board_3.png', className: 'decoration-rock', weight: 2 },
-    { id: 'rock4', src: '/board/rock_board_4.png', className: 'decoration-rock', weight: 2 },
-    { id: 'rock5', src: '/board/rock_board_5.png', className: 'decoration-rock', weight: 1 },
+    { id: 'rock1', src: '../../public/board/rock_board.webp', className: 'decoration-rock', weight: 3 },
+    { id: 'rock2', src: '../../public/board/rock_board_2.webp', className: 'decoration-rock', weight: 3 },
+    { id: 'rock3', src: '../../public/board/rock_board_3.webp', className: 'decoration-rock', weight: 2 },
+    { id: 'rock4', src: '../../public/board/rock_board_4.webp', className: 'decoration-rock', weight: 2 },
+    { id: 'rock5', src: '../../public/board/rock_board_5.webp', className: 'decoration-rock', weight: 1 },
 ];
 
 // PONTOS DE APARIÇÃO OTIMIZADOS - Evitando a área inferior do hub
@@ -95,8 +95,8 @@ export const decorationSpawnPoints = [
 
 // 4. Todas as IMAGENS ESTRUTURAIS fixas do tabuleiro
 export const boardStructuralImages = [
-    '/board/background_board.png',
-    '/board/wood_border_hub.png',
-    '/board/wood_plank_bg.png',
-    '/board/tab_border.png'
+    '../../public/board/background_board.webp',
+    '../../public/board/wood_border_hub.webp',
+    '../../public/board/wood_plank_bg.webp',
+    '../../public/board/tab_border.webp'
 ];

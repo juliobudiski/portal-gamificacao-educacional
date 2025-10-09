@@ -140,7 +140,7 @@ def get_leaderboard(activity_id):
         
         display_avatar = progress_obj.equipped_activity_avatar_url or \
                          user_obj.profile_picture or \
-                         '/avatars/default_avatar.png'
+                         '/avatars/default_avatar.webp'
                          
         leaderboard.append({
             "id": user_obj.id,
@@ -487,7 +487,7 @@ def spin_roulette_for_activity(activity_id):
         {"type": "xp", "value": 100, "label": "100 XP"},
         {"type": "xp", "value": 150, "label": "150 XP"},
         {"type": "title", "value": "TITLE_LUCKY", "label": "Título: O Sortudo"},
-        {"type": "avatar", "value": {"url": "/avatars/avatar_special.png", "name": "Sortudo", "promotable": True}, "label": "Avatar Raro!"},
+        {"type": "avatar", "value": {"url": "/avatars/avatar_special.webp", "name": "Sortudo", "promotable": True}, "label": "Avatar Raro!"},
     ]
 
     unlocked_avatar_urls = [avatar['url'] for avatar in (progress.unlocked_activity_avatars or []) if isinstance(avatar, dict)]

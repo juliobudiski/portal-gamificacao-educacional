@@ -3,7 +3,7 @@
 from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime
-from ..models import db, ForumTopic, ForumPost, User, Activity, ForumCategory
+from ..models import db, ForumTopic, ForumPost, User, Activity, ForumCategory, TopicLike, PostLike
 from sqlalchemy import case
 
 forum_bp = Blueprint('forum', __name__)
@@ -79,22 +79,25 @@ def create_topic_in_category(category_id):
 def get_topic_details(topic_id):
     """Obtém os detalhes de um tópico e todas as suas respostas."""
     if request.method == 'OPTIONS': return jsonify({'message': 'CORS preflight'}), 200
+    user_id = get_jwt_identity() # --- ADICIONE ESTA LINHA ---
     
     topic = ForumTopic.query.get_or_404(topic_id)
-
-    # --- INÍCIO DA CORREÇÃO DE ORDENAÇÃO ---
-    # Cria uma expressão 'case' para a ordenação.
-    # Se post.id for igual ao best_answer_id do tópico, ele recebe prioridade 0.
-    # Todos os outros recebem prioridade 1.
     best_answer_first = case((ForumPost.id == topic.best_answer_id, 0), else_=1)
-    
-    # Ordena primeiro pela prioridade (melhor resposta no topo) e depois pela data de criação.
     posts_query = topic.posts.order_by(best_answer_first, ForumPost.created_at.asc())
-    # --- FIM DA CORREÇÃO ---
 
-    posts = [post.to_dict() for post in posts_query.all()]
+    # --- MODIFIQUE ESTE BLOCO ---
+    posts = []
+    for post in posts_query.all():
+        post_dict = post.to_dict()
+        # Verifica se o usuário atual curtiu este post
+        post_dict['current_user_has_liked'] = PostLike.query.filter_by(user_id=user_id, post_id=post.id).first() is not None
+        posts.append(post_dict)
+
     topic_details = topic.to_dict()
+    # Verifica se o usuário atual curtiu o tópico principal (se necessário)
+    topic_details['current_user_has_liked'] = TopicLike.query.filter_by(user_id=user_id, topic_id=topic.id).first() is not None
     topic_details['posts'] = posts
+    # --- FIM DA MODIFICAÇÃO ---
     
     return jsonify(topic_details), 200
 
@@ -125,7 +128,7 @@ def set_best_answer(topic_id):
     data = request.get_json()
     post_id = data.get('post_id')
     topic = ForumTopic.query.get_or_404(topic_id)
-    if topic.author_id != user_id:
+    if int(topic.author_id) != int(user_id):
         return jsonify({"message": "Apenas o autor do tópico pode marcar a melhor resposta."}), 403
     if post_id is None:
         topic.best_answer_id = None
@@ -137,3 +140,27 @@ def set_best_answer(topic_id):
     topic.best_answer_id = post.id
     db.session.commit()
     return jsonify({"message": "Melhor resposta definida com sucesso!", "best_answer_id": post.id}), 200
+
+@forum_bp.route('/posts/<int:post_id>/like', methods=['POST', 'OPTIONS'])
+@jwt_required()
+def toggle_post_like(post_id):
+    """Adiciona ou remove um like de uma resposta."""
+    if request.method == 'OPTIONS': return jsonify({'message': 'CORS preflight'}), 200
+    user_id = get_jwt_identity()
+
+    # Verifica se já existe um like
+    existing_like = PostLike.query.filter_by(user_id=user_id, post_id=post_id).first()
+
+    if existing_like:
+        # Se existe, remove (descurtir)
+        db.session.delete(existing_like)
+        db.session.commit()
+        return jsonify({"message": "Like removido.", "liked": False}), 200
+    else:
+        # Se não existe, adiciona (curtir)
+        if not ForumPost.query.get(post_id):
+            return jsonify({"message": "Post não encontrado."}), 404
+        new_like = PostLike(user_id=user_id, post_id=post_id)
+        db.session.add(new_like)
+        db.session.commit()
+        return jsonify({"message": "Like adicionado.", "liked": True}), 201

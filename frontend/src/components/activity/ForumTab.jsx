@@ -1,11 +1,22 @@
 // frontend/src/components/activity/ForumTab.jsx
 import React, { useState, useEffect, useCallback } from 'react';
-import { FaArrowLeft, FaComments, FaPlus, FaTrophy, FaPaperPlane, FaThumbtack } from 'react-icons/fa';
+import { FaArrowLeft, FaComments, FaPlus, FaTrophy, FaPaperPlane, FaThumbtack, FaHeart, FaRegHeart } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { useParams } from 'react-router-dom';
 
 // --- Sub-componentes para manter o código organizado ---
-
+const formatDate = (isoString) => {
+    if (!isoString) return '';
+    const date = new Date(isoString);
+    // Formata para "dd/mm/aaaa hh:mm"
+    return date.toLocaleString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+};
 // Item da lista de CATEGORIAS
 const CategoryListItem = ({ category, onSelect }) => (
     <button onClick={() => onSelect(category)} className="w-full text-left p-4 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors">
@@ -30,10 +41,11 @@ const TopicListItem = ({ topic, onSelect }) => (
 );
 
 // Item de um POST (resposta)
-const PostItem = ({ post, isTopicAuthor, onMarkBest, isBestAnswer }) => (
+const PostItem = ({ post, isTopicAuthor, onMarkBest, isBestAnswer, onToggleLike }) => (
     <div className={`p-4 rounded-lg border ${isBestAnswer ? 'bg-yellow-900/30 border-yellow-500' : 'bg-gray-900 border-gray-700'}`}>
         <div className="flex justify-between items-start">
             <p className="font-bold text-teal-300">{post.author_name}</p>
+            <p className="text-xs text-gray-500">{formatDate(post.created_at)}</p>
             {isTopicAuthor && !isBestAnswer && (
                 <button onClick={() => onMarkBest(post.id)} className="text-xs flex items-center gap-1 text-yellow-400 hover:text-white">
                     <FaTrophy /> Marcar como Melhor
@@ -41,7 +53,20 @@ const PostItem = ({ post, isTopicAuthor, onMarkBest, isBestAnswer }) => (
             )}
         </div>
         <p className="text-gray-300 mt-2 whitespace-pre-wrap">{post.body}</p>
-        {isBestAnswer && <div className="mt-3 text-xs font-bold text-yellow-400 flex items-center gap-2"><FaTrophy /> MELHOR RESPOSTA</div>}
+        <div className="flex justify-between items-center mt-3">
+            {isBestAnswer
+                ? <div className="text-xs font-bold text-yellow-400 flex items-center gap-2"><FaTrophy /> MELHOR RESPOSTA</div>
+                : <div></div> // Espaçador para alinhar o botão de like
+            }
+
+            {/* --- BLOCO ADICIONADO: Botão e contagem de Likes --- */}
+            <div className="flex items-center gap-2 text-gray-400">
+                <span className="text-sm">{post.likes_count}</span>
+                <button onClick={() => onToggleLike(post.id, post.current_user_has_liked)} className="text-lg hover:text-red-500 transition-colors">
+                    {post.current_user_has_liked ? <FaHeart className="text-red-500" /> : <FaRegHeart />}
+                </button>
+            </div>
+        </div>
     </div>
 );
 
@@ -128,6 +153,34 @@ const ForumTab = ({ onReturn }) => {
     useEffect(() => { if (view === 'categories') { fetchCategories(); } }, [view, fetchCategories]);
 
     // --- LÓGICA DE CRIAÇÃO/ATUALIZAÇÃO ---
+    const handleToggleLike = async (postId) => {
+        // Não precisa de 'isSubmitting' para não bloquear a UI inteira por um like
+        try {
+            await fetch(`${import.meta.env.VITE_API_URL}/api/forum/posts/${postId}/like`, {
+                method: 'POST', // A mesma rota lida com adicionar e remover
+                headers: { 'Authorization': `Bearer ${user.token}` },
+            });
+
+            // Otimização: Atualiza o estado localmente para uma resposta visual instantânea
+            setSelectedTopic(prevTopic => ({
+                ...prevTopic,
+                posts: prevTopic.posts.map(p => {
+                    if (p.id === postId) {
+                        const hasLiked = !p.current_user_has_liked;
+                        const likeCount = hasLiked ? p.likes_count + 1 : p.likes_count - 1;
+                        return { ...p, current_user_has_liked: hasLiked, likes_count: likeCount };
+                    }
+                    return p;
+                })
+            }));
+
+            // Opcional, mas bom para consistência: Recarrega os dados do servidor em segundo plano
+            // await fetchTopicDetails(selectedTopic.id);
+
+        } catch (err) {
+            setError("Não foi possível registrar o like. Tente novamente.");
+        }
+    };
     const handleCreateTopic = async (title, body, isPinned) => {
         setIsSubmitting(true);
         try {
@@ -177,27 +230,52 @@ const ForumTab = ({ onReturn }) => {
                 return <CreateTopicForm onSubmit={handleCreateTopic} onCancel={() => setView('topics')} isSubmitting={isSubmitting} />;
 
             case 'topic_detail':
+                console.log('Comparando IDs:', {
+                    userId: user.id,
+                    typeUserId: typeof user.id,
+                    authorId: selectedTopic.author_id,
+                    typeAuthorId: typeof selectedTopic.author_id,
+                    saoIguais: user.id === selectedTopic.author_id
+                });
                 return (
+                    // MODIFICAÇÃO 1: O contêiner principal já tem as classes corretas (flex flex-col h-full)
+                    // Isso garante que ele tentará ocupar todo o espaço do seu pai.
                     <div className="flex flex-col h-full">
-                        <button onClick={() => setView('topics')} className="mb-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200">
-                            <FaArrowLeft /> Voltar para os tópicos
-                        </button>
-                        <div className="bg-gray-700 p-4 rounded-lg mb-4">
-                            <h2 className="text-2xl font-bold text-white">{selectedTopic.title}</h2>
-                            <p className="text-sm text-gray-400">por {selectedTopic.author_name}</p>
-                            <p className="text-gray-200 mt-4 whitespace-pre-wrap">{selectedTopic.body}</p>
+                        {/* --- SEÇÃO DO CABEÇALHO (Não rola) --- */}
+                        <div>
+                            <button onClick={() => setView('topics')} className="mb-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200">
+                                <FaArrowLeft /> Voltar para os tópicos
+                            </button>
+                            <div className="bg-gray-700 p-4 rounded-lg mb-4">
+                                <h2 className="text-2xl font-bold text-white">{selectedTopic.title}</h2>
+                                <p className="text-sm text-gray-400">por {selectedTopic.author_name}</p>
+                                <p className="text-gray-200 mt-4 whitespace-pre-wrap">{selectedTopic.body}</p>
+                            </div>
+                            <h3 className="font-bold mb-2">Respostas</h3>
                         </div>
-                        <h3 className="font-bold mb-2">Respostas</h3>
-                        <div className="flex-grow space-y-4 overflow-y-auto pr-2">
+
+                        {/* MODIFICAÇÃO 2: A MÁGICA ACONTECE AQUI */}
+                        {/* Este div agora é o contêiner de rolagem.
+                - 'flex-grow': Faz ele se expandir para preencher o espaço disponível.
+                - 'overflow-y-auto': Adiciona a barra de rolagem vertical APENAS quando necessário.
+                - 'min-h-0': Uma propriedade importante do flexbox para evitar que ele mesmo cause um overflow no pai.
+            */}
+                        <div className="flex-grow space-y-4 overflow-y-auto pr-2 min-h-0">
                             {selectedTopic.posts.map(post => (
                                 <PostItem key={post.id} post={post}
-                                    isTopicAuthor={user.id === selectedTopic.author_id}
+                                    isTopicAuthor={Number(user.id) === Number(selectedTopic.author_id)}
                                     onMarkBest={handleMarkBest}
                                     isBestAnswer={post.id === selectedTopic.best_answer_id}
+                                    onToggleLike={handleToggleLike}
                                 />
                             ))}
                         </div>
-                        <div className="mt-4">
+
+                        {/* --- SEÇÃO DO RODAPÉ / CAIXA DE RESPOSTA (Não rola) --- */}
+                        {/* MODIFICAÇÃO 3: Esta seção fica fixa na parte de baixo.
+                - 'flex-shrink-0': Garante que a caixa de resposta não encolha.
+            */}
+                        <div className="mt-4 flex-shrink-0">
                             <textarea value={newPostBody} onChange={e => setNewPostBody(e.target.value)} placeholder="Escreva a sua resposta..." className="w-full bg-gray-700 p-2 rounded-t-lg focus:outline-none resize-none h-20" />
                             <button onClick={handleCreatePost} disabled={isSubmitting} className="w-full bg-teal-600 p-2 rounded-b-lg disabled:bg-gray-500 font-bold flex items-center justify-center gap-2">
                                 <FaPaperPlane /> Publicar Resposta
@@ -205,6 +283,7 @@ const ForumTab = ({ onReturn }) => {
                         </div>
                     </div>
                 );
+
 
             case 'topics':
                 return (
@@ -239,11 +318,23 @@ const ForumTab = ({ onReturn }) => {
     };
 
     return (
+        // O contêiner principal continua com a altura fixa e agora é o nosso contêiner flex.
         <div className="bg-gray-800 p-6 rounded-lg text-white flex flex-col" style={{ height: '80vh', maxHeight: '700px' }}>
-            <button onClick={onReturn} className="absolute top-4 left-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200 transition-colors z-20">
-                <FaArrowLeft /> Voltar ao Tabuleiro
-            </button>
-            <div className="flex-grow relative mt-8">
+            {/* O botão "Voltar" agora é um filho direto do contêiner flex. 
+            Usamos 'flex-shrink-0' para garantir que ele não seja esmagado. */}
+            <div className='flex-shrink-0'>
+                <button onClick={onReturn} className="absolute top-4 left-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200 transition-colors z-20">
+                    <FaArrowLeft /> Voltar ao Tabuleiro
+                </button>
+            </div>
+
+            {/* O conteúdo renderizado agora ocupa o espaço restante.
+            'flex-grow': permite que ele cresça.
+            'relative': necessário se houver elementos posicionados absolutamente dentro.
+            'mt-8': a margem que estava no div anterior.
+            'min-h-0': crucial para evitar que o conteúdo flex cresça além do limite do pai.
+        */}
+            <div className="flex-grow relative mt-8 min-h-0">
                 {renderContent()}
             </div>
         </div>
