@@ -2,17 +2,17 @@
 import React, { memo } from 'react';
 
 // Lista de avatares. Adicione os caminhos para as suas imagens aqui.
-// Coloque as imagens na pasta `frontend/public/avatars/`
+
 const avatars = [
-  '/avatars/avatar1.png',
-  '/avatars/avatar2.png',
-  '/avatars/avatar3.png',
-  '/avatars/avatar4.png',
-  '/avatars/avatar5.png',
-  '/avatars/avatar6.png',
-  '/avatars/avatar7.png',
-  '/avatars/avatar8.png',
-  '/avatars/avatar9.png',
+  '/avatars/avatar1.webp',
+  '/avatars/avatar2.webp',
+  '/avatars/avatar3.webp',
+  '/avatars/avatar4.webp',
+  '/avatars/avatar5.webp',
+  '/avatars/avatar6.webp',
+  '/avatars/avatar7.webp',
+  '/avatars/avatar8.webp',
+  '/avatars/avatar9.webp',
 ];
 
 // Envolvemos o componente com React.memo para evitar re-renderizações

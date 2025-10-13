@@ -112,7 +112,7 @@ function App() {
             onClick={closeAllMenus}
           >
             <img 
-              src="/images/logotipo.png" 
+              src="/images/logotipo.webp" 
               alt="Logo GamificaEdu" 
               className="h-20 transition-transform duration-300 group-hover:scale-105" 
             />

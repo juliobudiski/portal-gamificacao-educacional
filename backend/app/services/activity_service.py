@@ -3,7 +3,7 @@ from ..models import Activity, ActivityRevision, Tag, EventLog, ActivityProgress
 from flask import jsonify
 import logging
 from flask_jwt_extended import jwt_required, current_user, get_jwt_identity
-from ..models import UserUnlockedMedal, db, Activity, Tag, activity_tag, ActivityRevision, User, Class, Enrollment, Purchase, StoreItem, SlotWin, RouletteWin, StudentResponse, QuizContent, NarrativeContent
+from ..models import UserUnlockedTitle, UserUnlockedMedal, db, Activity, Tag, activity_tag, ActivityRevision, User, Class, Enrollment, Purchase, StoreItem, SlotWin, RouletteWin, StudentResponse, QuizContent, NarrativeContent
 from sqlalchemy.orm import noload
 from copy import deepcopy
 from sqlalchemy import or_
@@ -363,22 +363,35 @@ def bulk_delete_activities(user, activity_ids):
     ids_to_delete = [act.id for act in activities_to_delete]
 
     try:
-        # A ordem é importante para respeitar as chaves estrangeiras.
-        # Apagamos todos os registos "filhos" primeiro.
+        # 1. "Desequipar" itens da loja para evitar erros de FK.
+        item_ids_to_delete = [item.id for item in StoreItem.query.filter(StoreItem.activity_id.in_(ids_to_delete)).all()]
         
+        if item_ids_to_delete:
+            ActivityProgress.query.filter(
+                ActivityProgress.equipped_name_cosmetic_id.in_(item_ids_to_delete)
+            ).update({'equipped_name_cosmetic_id': None}, synchronize_session=False)
+
+            ActivityProgress.query.filter(
+                ActivityProgress.equipped_title_cosmetic_id.in_(item_ids_to_delete)
+            ).update({'equipped_title_cosmetic_id': None}, synchronize_session=False)
+        
+        # 2. Agora deletamos todos os registros "filhos" na ordem correta.
         Purchase.query.filter(Purchase.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
         StoreItem.query.filter(StoreItem.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
         SlotWin.query.filter(SlotWin.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
         RouletteWin.query.filter(RouletteWin.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
         StudentResponse.query.filter(StudentResponse.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
+        
+        # --- NOVA LINHA ADICIONADA AQUI ---
+        # Deleta os registros de títulos desbloqueados associados às atividades.
+        UserUnlockedTitle.query.filter(UserUnlockedTitle.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
+        
         ActivityProgress.query.filter(ActivityProgress.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
         EventLog.query.filter(EventLog.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
         ActivityRevision.query.filter(ActivityRevision.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
-        
-        # --- CORREÇÃO: Adicionar a exclusão de medalhas desbloqueadas ---
         UserUnlockedMedal.query.filter(UserUnlockedMedal.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
         
-        # Finalmente, apaga as atividades "mães"
+        # 3. Finalmente, apaga as atividades "mães"
         for activity in activities_to_delete:
             db.session.delete(activity)
 

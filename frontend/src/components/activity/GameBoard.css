@@ -45,12 +45,12 @@
     margin: auto;
     padding: 1rem;
     font-family: var(--font-family-main);
-    background-image: url('../../public/board/background_board.webp');
+    background-image: url('/board/background_board.webp');
     background-size: cover;
     background-position: center;
     border-radius: 2rem;
     border: 30px solid;
-    border-image: url('../../public/board/tab_border.webp') 30 stretch;
+    border-image: url('/board/tab_border.webp') 30 stretch;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(0, 0, 0, 0.5);
     position: relative;
     display: flex;
@@ -187,13 +187,13 @@
     margin-top: 1rem;
 
     /* Fundo e Bordas para Efeito de Deck de Madeira */
-    background-image: url('../../public/board/wood_plank_bg.webp');
+    background-image: url('/board/wood_plank_bg.webp');
     background-size: cover;
     border-radius: 1.5rem;
 
     /* Borda de imagem para um visual mais rico */
     border: 15px solid;
-    border-image: url('../../public/board/wood_border_hub.webp') 20 stretch;
+    border-image: url('/board/wood_border_hub.webp') 20 stretch;
 
     /* Sombras para dar profundidade e destacar do tabuleiro */
     box-shadow:

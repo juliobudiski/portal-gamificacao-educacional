@@ -30,7 +30,7 @@ const PREDEFINED_AVATARS = [
         price: 300,
         icon: '😺',
         item_type: 'avatar',
-        effect_id: { url: '/avatars/wizard_cat.png', name: 'Gato Mago', promotable: true }
+        effect_id: { url: '/avatars/wizard_cat.webp', name: 'Gato Mago', promotable: true }
     },
     {
         name: 'Robô Futurista',
@@ -38,7 +38,7 @@ const PREDEFINED_AVATARS = [
         price: 300,
         icon: '🤖',
         item_type: 'avatar',
-        effect_id: { url: '/avatars/robot.png', name: 'Robô Futurista', promotable: false }
+        effect_id: { url: '/avatars/robot.webp', name: 'Robô Futurista', promotable: false }
     }
 ];
 

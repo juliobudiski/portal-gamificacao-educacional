@@ -17,7 +17,7 @@ const style = `
 `;
 
 const basePrizes = [
-  //{"type": "avatar", "value": {"url": "/images/avatars/wizard_cat.png", "name": "Gato Mago", "promotable": True}, "label": "Avatar Raro: Gato Mago!"},
+  //{"type": "avatar", "value": {"url": "/images/avatars/wizard_cat.webp", "name": "Gato Mago", "promotable": True}, "label": "Avatar Raro: Gato Mago!"},
   { id: "prize-1", text: "50 XP", icon: FaTrophy, type: "xp", value: 50 },
   { id: "prize-2", text: "200 XP", icon: FaTrophy, type: "xp", value: 200 },
   { id: "prize-3", text: "Título: O Sortudo", icon: FaGift, type: "title" },

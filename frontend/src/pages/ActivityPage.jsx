@@ -328,7 +328,7 @@ function ActivityPage() {
       });
     }
 
-    urls.add('/assets/quiz-background.png'); // Adiciona a imagem de fundo do quiz
+    urls.add('/assets/quiz-background.webp'); // Adiciona a imagem de fundo do quiz
 
     return Array.from(urls);
   }, [activity]);

@@ -4,17 +4,17 @@ import { FaPlus, FaTrash, FaPen, FaToggleOn, FaToggleOff, FaStar, FaRoute, FaCit
 // Configuração completa dos elementos do tabuleiro
 const elementConfig = {
     path: {
-        narrative: { icon: 'narrative_board.png', name: 'Narrativa' },
-        quiz: { icon: 'quiz_board.png', name: 'Quiz' },
+        narrative: { icon: 'narrative_board.webp', name: 'Narrativa' },
+        quiz: { icon: 'quiz_board.webp', name: 'Quiz' },
     },
     hub: {
-        roulette: { icon: 'roleta_board.png', name: 'Roleta' },
-        slot_machine: { icon: 'slotmachine_board.png', name: 'Caça-níquel' },
-        ranking: { icon: 'ranking_board.png', name: 'Ranking' },
-        badges: { icon: 'badges_board.png', name: 'Medalhas' },
-        chat: { icon: 'chat_board.png', name: 'Chat' },
-        store: { icon: 'store_board.png', name: 'Loja' },
-        mission: { icon: 'mission_character_board.png', name: 'Missão' },
+        roulette: { icon: 'roleta_board.webp', name: 'Roleta' },
+        slot_machine: { icon: 'slotmachine_board.webp', name: 'Caça-níquel' },
+        ranking: { icon: 'ranking_board.webp', name: 'Ranking' },
+        badges: { icon: 'badges_board.webp', name: 'Medalhas' },
+        chat: { icon: 'chat_board.webp', name: 'Chat' },
+        store: { icon: 'store_board.webp', name: 'Loja' },
+        mission: { icon: 'mission_character_board.webp', name: 'Missão' },
     }
 };
 

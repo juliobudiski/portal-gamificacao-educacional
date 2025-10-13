@@ -8,17 +8,17 @@ const isDebugMode = import.meta.env.VITE_DEBUG_MODE === 'true';
 
 // --- Listas de recursos visuais disponíveis ---
 const SCENARIOS = [
-    '/narrativa/cenarios/cenario1.png',
-    '/narrativa/cenarios/cenario2.png',
-    '/narrativa/cenarios/cenario3.png',
-    '/narrativa/cenarios/cenario4.png',
+    '/narrativa/cenarios/cenario1.webp',
+    '/narrativa/cenarios/cenario2.webp',
+    '/narrativa/cenarios/cenario3.webp',
+    '/narrativa/cenarios/cenario4.webp',
 ];
 
 const CHARACTERS = [
-    '/narrativa/personagens/instrutor1.png',
-    '/narrativa/personagens/instrutor2.png',
-    '/narrativa/personagens/aluno1.png',
-    '/narrativa/personagens/aluno2.png',
+    '/narrativa/personagens/instrutor1.webp',
+    '/narrativa/personagens/instrutor2.webp',
+    '/narrativa/personagens/aluno1.webp',
+    '/narrativa/personagens/aluno2.webp',
 ];
 
 /**

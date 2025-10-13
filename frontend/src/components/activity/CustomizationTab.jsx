@@ -128,7 +128,7 @@ const CustomizationTab = ({ activityId, onReturn, onCustomizationChange }) => {
                 <div className="lg:col-span-1 bg-gray-800/50 p-6 rounded-xl border border-gray-700 self-start">
                     <h2 className="text-2xl font-semibold mb-4 text-center">Preview no Ranking</h2>
                     <div className="bg-gray-900 p-4 rounded-lg flex items-center gap-4">
-                        <img src={equipped.avatarUrl || user.profile_picture || '/avatars/default_avatar.png'} alt="Avatar" className="w-16 h-16 rounded-full object-cover border-2 border-gray-600" />
+                        <img src={equipped.avatarUrl || user.profile_picture || '/avatars/default_avatar.webp'} alt="Avatar" className="w-16 h-16 rounded-full object-cover border-2 border-gray-600" />
                         {/* --- CORREÇÃO DE LAYOUT: Adicionado 'flex flex-col' para o título ficar abaixo do nome --- */}
                         <div className="flex flex-col">
                             <CosmeticPreview text={user.name} cosmetic={findCosmetic(equipped.nameCosmeticId)?.effect_id} defaultText="Seu Nome" className="text-lg font-bold" />

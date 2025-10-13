@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { FaTimes, FaRegLightbulb } from 'react-icons/fa';
-import boardBackground from '../../../public/board/background_board.png';
+import boardBackground from '/board/background_board.webp';
 
 const ActivityViewOverlay = ({ isOpen, onClose, title, backgroundImage, children }) => {
   const closeBtnRef = useRef(null);
