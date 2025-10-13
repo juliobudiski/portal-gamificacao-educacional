@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaBullseye, FaExclamationCircle, FaCheckCircle } from 'react-icons/fa';
-import backgroundImage from '../../assets/mission-background.png';
+import backgroundImage from '../../assets/mission-background.webp';
 const MissionTab = ({ activity, onComplete, onReturn }) => {
     if (!activity) return null;
 

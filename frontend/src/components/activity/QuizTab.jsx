@@ -3,7 +3,7 @@ import { FaClock, FaCheckCircle, FaArrowLeft } from 'react-icons/fa';
 import PropTypes from 'prop-types'; // Import adicionado para validação de props
 import { useAuth } from '../../context/AuthContext';
 import { useParams } from 'react-router-dom';
-import backgroundImage from '../../assets/quiz-background.png';
+import backgroundImage from '../../assets/quiz-background.webp';
 import useAnalytics from '../../hooks/useAnalytics';
 // Verifica se o modo debug está ativado
 const isDebugMode = import.meta.env.VITE_DEBUG_MODE === 'true';

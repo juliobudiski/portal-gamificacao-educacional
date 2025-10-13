@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     host: true, // Garante que o servidor seja acessível na rede
     allowedHosts: [
-      'absent-cultural-red-stable.trycloudflare.com'
+      'specified-celebrities-history-titles.trycloudflare.com'
     ]
   }
 })
