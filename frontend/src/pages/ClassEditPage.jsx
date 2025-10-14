@@ -94,7 +94,11 @@ function ClassEditPage() {
         handleApiCall(
             `${import.meta.env.VITE_API_URL}/api/classes/${class_id}`,
             'PUT',
-            { name: classDetails.name, description: classDetails.description },
+            {
+                name: classDetails.name,
+                description: classDetails.description,
+                is_enrollment_code_public: classDetails.is_enrollment_code_public // <-- ADICIONE ESTA LINHA
+            },
             'Detalhes da turma atualizados com sucesso!'
         );
     };
@@ -154,14 +158,14 @@ function ClassEditPage() {
             <div className="min-h-screen bg-gradient-to-br from-[#2c3135] to-[#1e2226] flex items-center justify-center p-4">
                 <div className="text-center">
                     <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-4 border-[#ffbd30] mb-4"></div>
-                    <p className="text-xl text-gray-300">Carregando dados da turma...</p>
+                    <p className="text-xl text-secondary-text">Carregando dados da turma...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-[#2c3135] to-[#1e2226] p-4 text-white">
+        <div className="min-h-screen bg-gradient-to-br from-[#2c3135] to-[#1e2226] p-4 text-primary-text">
             <div className="max-w-4xl mx-auto">
                 <header className="mb-8 text-center bg-gradient-to-r from-[#ffbd30] to-[#ffa000] p-6 rounded-2xl shadow-2xl border-b-4 border-[#ffcc5c]">
                     <h1 className="text-2xl md:text-3xl font-extrabold text-[#2c3135]">
@@ -176,46 +180,64 @@ function ClassEditPage() {
                 {message && <div className="bg-green-900/50 border border-green-600 text-green-100 p-3 mb-4 rounded-xl text-center" role="alert">{message}</div>}
 
                 {/* --- SEÇÃO 1: DETALHES DA TURMA --- */}
-                <form onSubmit={handleUpdateDetails} className="bg-[#343a40] p-6 md:p-8 rounded-2xl shadow-xl border border-[#3e4a52] mb-8">
+                <form onSubmit={handleUpdateDetails} className="bg-secondary-bg p-6 md:p-8 rounded-2xl shadow-xl border border-[#3e4a52] mb-8">
                     <h2 className="text-xl font-bold mb-4">Detalhes da Turma</h2>
                     <div className="mb-6">
-                        <label htmlFor="editName" className="block text-sm font-medium text-gray-300 mb-2">Nome da Turma</label>
+                        <label htmlFor="editName" className="block text-sm font-medium text-secondary-text mb-2">Nome da Turma</label>
                         <input
                             type="text" id="editName"
                             value={classDetails.name}
                             onChange={(e) => setClassDetails({ ...classDetails, name: e.target.value })}
-                            className="w-full px-4 py-3 bg-[#2c3135] border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30] text-white"
+                            className="w-full px-4 py-3 bg-primary-bg border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30] text-primary-text"
                             required
                         />
                     </div>
                     <div className="mb-6">
-                        <label htmlFor="editDescription" className="block text-sm font-medium text-gray-300 mb-2">Descrição</label>
+                        <label htmlFor="editDescription" className="block text-sm font-medium text-secondary-text mb-2">Descrição</label>
                         <textarea
                             id="editDescription"
                             value={classDetails.description}
                             onChange={(e) => setClassDetails({ ...classDetails, description: e.target.value })}
-                            className="w-full px-4 py-3 bg-[#2c3135] border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30] text-white h-32"
+                            className="w-full px-4 py-3 bg-primary-bg border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30] text-primary-text h-32"
                         ></textarea>
                     </div>
+                    <div className="mb-6">
+                        <label className="block text-sm font-medium text-secondary-text mb-2">Visibilidade do Código</label>
+                        <div className="flex items-center p-4 bg-primary-bg rounded-lg border border-[#3e4a52]">
+                            <span className="flex-grow text-secondary-text">
+                                {classDetails.is_enrollment_code_public ? 'Código Público (Visível para alunos)' : 'Código Privado (Apenas para você)'}
+                            </span>
+                            <label htmlFor="toggle-public" className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    id="toggle-public"
+                                    className="sr-only peer"
+                                    checked={classDetails.is_enrollment_code_public || false}
+                                    onChange={(e) => setClassDetails({ ...classDetails, is_enrollment_code_public: e.target.checked })}
+                                />
+                                <div className="w-11 h-6 bg-gray-600 rounded-full peer peer-focus:ring-2 peer-focus:ring-yellow-400 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-secondary-bg after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-500"></div>
+                            </label>
+                        </div>
+                    </div>
                     <div className="flex justify-between items-center">
-                        <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg flex items-center"><FaSave className="mr-2" /> Salvar Detalhes</button>
-                        <button type="button" onClick={() => navigate('/professor/gerenciar-turmas')} className="text-gray-300 hover:text-white">Cancelar</button>
+                        <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-primary-text font-bold py-2 px-4 rounded-lg flex items-center"><FaSave className="mr-2" /> Salvar Detalhes</button>
+                        <button type="button" onClick={() => navigate('/professor/gerenciar-turmas')} className="text-secondary-text hover:text-primary-text">Cancelar</button>
                     </div>
                 </form>
 
                 {/* --- SEÇÃO 2: GERENCIAR ALUNOS --- */}
-                <div className="bg-[#343a40] p-6 md:p-8 rounded-2xl shadow-xl border border-[#3e4a52] mb-8">
+                <div className="bg-secondary-bg p-6 md:p-8 rounded-2xl shadow-xl border border-[#3e4a52] mb-8">
                     <h2 className="text-xl font-bold mb-4 flex items-center"><FaUsers className="mr-3 text-[#69e8cb]" /> Gerenciar Alunos ({students.length})</h2>
                     <div className="mb-4 flex flex-col sm:flex-row gap-2">
-                        <input type="email" value={studentEmail} onChange={(e) => setStudentEmail(e.target.value)} placeholder="E-mail do aluno para adicionar" className="flex-grow px-4 py-3 bg-[#2c3135] border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30]" />
-                        <button onClick={handleAddStudent} className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center"><FaUserPlus className="mr-2" /> Adicionar Aluno</button>
+                        <input type="email" value={studentEmail} onChange={(e) => setStudentEmail(e.target.value)} placeholder="E-mail do aluno para adicionar" className="flex-grow px-4 py-3 bg-primary-bg border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30]" />
+                        <button onClick={handleAddStudent} className="bg-green-600 hover:bg-green-700 text-primary-text font-bold py-2 px-4 rounded-lg flex items-center justify-center"><FaUserPlus className="mr-2" /> Adicionar Aluno</button>
                     </div>
                     <ul className="space-y-2 max-h-60 overflow-y-auto pr-2">
                         {students.map(s => (
-                            <li key={s.id} className="flex justify-between items-center bg-[#2c3135] p-3 rounded-lg">
+                            <li key={s.id} className="flex justify-between items-center bg-primary-bg p-3 rounded-lg">
                                 <div>
                                     <p className="font-medium">{s.name}</p>
-                                    <p className="text-sm text-gray-400">{s.email}</p>
+                                    <p className="text-sm text-secondary-text">{s.email}</p>
                                 </div>
                                 <button onClick={() => handleRemoveStudent(s.id)} className="text-red-400 hover:text-red-600 p-2 rounded-full hover:bg-red-500/10"><FaTrash /></button>
                             </li>
@@ -224,20 +246,20 @@ function ClassEditPage() {
                 </div>
 
                 {/* --- SEÇÃO 3: GERENCIAR ATIVIDADES --- */}
-                <div className="bg-[#343a40] p-6 md:p-8 rounded-2xl shadow-xl border border-[#3e4a52]">
+                <div className="bg-secondary-bg p-6 md:p-8 rounded-2xl shadow-xl border border-[#3e4a52]">
                     <h2 className="text-xl font-bold mb-4 flex items-center"><FaTasks className="mr-3 text-[#9570d9]" /> Gerenciar Atividades ({assignedActivities.length})</h2>
                     <div className="mb-4 flex flex-col sm:flex-row gap-2">
-                        <select value={activityToAdd} onChange={(e) => setActivityToAdd(e.target.value)} className="flex-grow px-4 py-3 bg-[#2c3135] border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30]">
+                        <select value={activityToAdd} onChange={(e) => setActivityToAdd(e.target.value)} className="flex-grow px-4 py-3 bg-primary-bg border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30]">
                             <option value="" disabled>-- Selecione uma atividade para associar --</option>
                             {availableActivities.map(a => (
                                 <option key={a.id} value={a.id}>{a.title}</option>
                             ))}
                         </select>
-                        <button onClick={handleAddActivity} className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center"><FaPlusCircle className="mr-2" /> Associar Atividade</button>
+                        <button onClick={handleAddActivity} className="bg-green-600 hover:bg-green-700 text-primary-text font-bold py-2 px-4 rounded-lg flex items-center justify-center"><FaPlusCircle className="mr-2" /> Associar Atividade</button>
                     </div>
                     <ul className="space-y-2 max-h-60 overflow-y-auto pr-2">
                         {assignedActivities.map(a => (
-                            <li key={a.id} className="flex justify-between items-center bg-[#2c3135] p-3 rounded-lg">
+                            <li key={a.id} className="flex justify-between items-center bg-primary-bg p-3 rounded-lg">
                                 <p className="font-medium">{a.title}</p>
                                 <button onClick={() => handleRemoveActivity(a.id)} className="text-red-400 hover:text-red-600 p-2 rounded-full hover:bg-red-500/10"><FaTrash /></button>
                             </li>

@@ -10,18 +10,18 @@ import { LayoutDashboard, Users, BookCopy, BarChart4, LogOut, GraduationCap } fr
  */
 function Sidebar() {
   // Estilos base para os links de navegação
-  const baseLinkStyle = "flex items-center px-4 py-3 text-gray-300 rounded-lg transition-colors duration-200";
+  const baseLinkStyle = "flex items-center px-4 py-3 text-secondary-text rounded-lg transition-colors duration-200";
   // Estilos para o link ativo (página atual)
-  const activeLinkStyle = "bg-gradient-to-r from-accent-teal/20 to-accent-purple/20 text-white font-semibold shadow-inner";
+  const activeLinkStyle = "bg-gradient-to-r from-accent-teal/20 to-accent-purple/20 text-primary-text font-semibold shadow-inner";
   // Estilos para o link inativo (hover)
-  const inactiveLinkStyle = "hover:bg-gray-700 hover:text-white";
+  const inactiveLinkStyle = "hover:bg-gray-700 hover:text-primary-text";
 
   return (
     <aside className="w-64 bg-gray-800/50 backdrop-blur-sm flex-shrink-0 flex flex-col border-r border-gray-700">
       <div className="h-20 flex items-center justify-center border-b border-gray-700">
-        <div className="flex items-center text-white">
-            <GraduationCap size={32} className="text-accent-yellow mr-3" />
-            <span className="text-xl font-bold">Admin</span>
+        <div className="flex items-center text-primary-text">
+          <GraduationCap size={32} className="text-accent-yellow mr-3" />
+          <span className="text-xl font-bold">Admin</span>
         </div>
       </div>
 

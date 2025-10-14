@@ -145,7 +145,7 @@ const SlotMachineTab = ({ userCoins, onPrizeWon, winners, loadingWinners, onWin,
   };
 
   return (
-    <div className="w-full flex flex-col items-center p-4 text-white">
+    <div className="w-full flex flex-col items-center p-4 text-primary-text">
       <style>{style}</style>
       <button onClick={onReturn} className="absolute top-4 left-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200 transition-colors z-20">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" /></svg>
@@ -175,7 +175,7 @@ const SlotMachineTab = ({ userCoins, onPrizeWon, winners, loadingWinners, onWin,
           {/* Feedback de Resultado */}
           <div className="h-10 text-center">
             {prizeMessage && (
-              <div className={`text-2xl font-bold ${resultState === 'win' ? 'text-yellow-400' : 'text-gray-400'}`} style={{ animation: 'prizeReveal 0.5s ease-out' }}>
+              <div className={`text-2xl font-bold ${resultState === 'win' ? 'text-yellow-400' : 'text-secondary-text'}`} style={{ animation: 'prizeReveal 0.5s ease-out' }}>
                 {prizeMessage}
               </div>
             )}
@@ -186,7 +186,7 @@ const SlotMachineTab = ({ userCoins, onPrizeWon, winners, loadingWinners, onWin,
           <button
             onClick={handleSpinClick}
             disabled={isSpinning || loading || userCoins < spinCost}
-            className="w-full max-w-xs py-4 px-8 rounded-xl text-xl font-bold text-gray-900 bg-gradient-to-r from-[#ffbd30] to-[#69e8cb] hover:scale-105 active:scale-95 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg"
+            className="w-full max-w-xs py-4 px-8 rounded-xl text-xl font-bold text-primary-text bg-gradient-to-r from-[#ffbd30] to-[#69e8cb] hover:scale-105 active:scale-95 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg"
           >
             <div className="flex items-center justify-center gap-3">
               {loading ? <FaSpinner className="animate-spin" /> : <FaSyncAlt />}
@@ -208,7 +208,7 @@ const SlotMachineTab = ({ userCoins, onPrizeWon, winners, loadingWinners, onWin,
                 </div>
               ))}
             </div>
-          ) : (<p className="text-gray-500 text-center italic py-8">Ainda não houve ganhadores.</p>)}
+          ) : (<p className="text-secondary-text text-center italic py-8">Ainda não houve ganhadores.</p>)}
         </div>
       </div>
     </div>

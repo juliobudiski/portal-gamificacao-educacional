@@ -134,15 +134,15 @@ function QuizEditorPage() {
     };
 
 
-    if (loading) return <div className="text-center text-white p-10">Carregando editor de quiz...</div>;
+    if (loading) return <div className="text-center text-primary-text p-10">Carregando editor de quiz...</div>;
     if (error) return <div className="text-center text-red-500 p-10">Erro: {error}</div>;
 
     return (
-        <div className="min-h-screen bg-[#2c3135] text-white p-4 md:p-8">
+        <div className="min-h-screen bg-primary-bg text-primary-text p-4 md:p-8">
             <div className="max-w-4xl mx-auto">
                 <div className="flex items-center gap-3 mb-6">
                     <div className="bg-gradient-to-r from-[#ffbd30] to-[#ff9d00] p-3 rounded-xl">
-                        <FaQuestion className="text-xl text-gray-900" />
+                        <FaQuestion className="text-xl text-primary-text" />
                     </div>
                     <div>
                         <h1 className="text-2xl md:text-3xl font-bold">Editor de Quiz</h1>
@@ -158,7 +158,7 @@ function QuizEditorPage() {
 
                     <div className="space-y-5">
                         <div>
-                            <label className="block text-sm text-gray-400 mb-1 flex items-center gap-1">
+                            <label className="block text-sm text-secondary-text mb-1 flex items-center gap-1">
                                 <FaQuestion className="text-[#69e8cb]" /> Pergunta
                             </label>
                             <textarea
@@ -171,12 +171,12 @@ function QuizEditorPage() {
                         </div>
 
                         <div>
-                            <label className="block text-sm text-gray-400 mb-1 flex items-center gap-1">
+                            <label className="block text-sm text-secondary-text mb-1 flex items-center gap-1">
                                 <FaList className="text-[#69e8cb]" /> Opções de Resposta
                             </label>
                             {currentQuestion.options.map((option, index) => (
                                 <div key={index} className="flex items-center mb-2">
-                                    <div className="mr-3 text-gray-400">{index + 1}.</div>
+                                    <div className="mr-3 text-secondary-text">{index + 1}.</div>
                                     <input
                                         name="options"
                                         value={option}
@@ -190,7 +190,7 @@ function QuizEditorPage() {
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
-                                <label className="block text-sm text-gray-400 mb-1 flex items-center gap-1">
+                                <label className="block text-sm text-secondary-text mb-1 flex items-center gap-1">
                                     <FaCheck className="text-[#69e8cb]" /> Resposta Correta
                                 </label>
                                 <select
@@ -205,7 +205,7 @@ function QuizEditorPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm text-gray-400 mb-1 flex items-center gap-1">
+                                <label className="block text-sm text-secondary-text mb-1 flex items-center gap-1">
                                     <FaStar className="text-[#69e8cb]" /> Pontos
                                 </label>
                                 <input
@@ -219,7 +219,7 @@ function QuizEditorPage() {
 
                             {/* NOVO CAMPO PARA MOEDAS */}
                             <div>
-                                <label className="block text-sm text-gray-400 mb-1 flex items-center gap-1">
+                                <label className="block text-sm text-secondary-text mb-1 flex items-center gap-1">
                                     <FaGem className="text-[#ffbd30]" /> Moedas
                                 </label>
                                 <input
@@ -234,7 +234,7 @@ function QuizEditorPage() {
                             {/* ATUALIZADO: Renderização condicional do campo de tempo */}
                             {isTimed && (
                                 <div>
-                                    <label className="block text-sm text-gray-400 mb-1 flex items-center gap-1">
+                                    <label className="block text-sm text-secondary-text mb-1 flex items-center gap-1">
                                         <FaClock className="text-[#69e8cb]" /> Tempo Limite (s)
                                     </label>
                                     <input
@@ -251,7 +251,7 @@ function QuizEditorPage() {
                         <div className="pt-2">
                             <button
                                 onClick={handleAddOrUpdateQuestion}
-                                className="bg-gradient-to-r from-[#ffbd30] to-[#ff9d00] hover:from-[#ff9d00] hover:to-[#ffbd30] text-gray-900 font-bold py-3 px-6 rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 group"
+                                className="bg-gradient-to-r from-[#ffbd30] to-[#ff9d00] hover:from-[#ff9d00] hover:to-[#ffbd30] text-primary-text font-bold py-3 px-6 rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 group"
                             >
                                 <FaPlus className="mr-2 transform group-hover:scale-110 transition-transform" />
                                 {editingIndex !== null ? 'Atualizar Pergunta' : 'Adicionar Pergunta'}
@@ -311,14 +311,14 @@ function QuizEditorPage() {
                                             className="p-3 bg-[#9570d9] hover:bg-[#7a55c4] rounded-xl transition-colors duration-300"
                                             aria-label="Editar pergunta"
                                         >
-                                            <FaEdit className="text-white" />
+                                            <FaEdit className="text-primary-text" />
                                         </button>
                                         <button
                                             onClick={() => handleDeleteQuestion(index)}
                                             className="p-3 bg-red-600 hover:bg-red-700 rounded-xl transition-colors duration-300"
                                             aria-label="Excluir pergunta"
                                         >
-                                            <FaTrash className="text-white" />
+                                            <FaTrash className="text-primary-text" />
                                         </button>
                                     </div>
                                 </div>
@@ -332,7 +332,7 @@ function QuizEditorPage() {
                     <div className="mt-8 pt-4 border-t border-gray-700">
                         <button
                             onClick={handleSaveChanges}
-                            className="bg-gradient-to-r from-[#69e8cb] to-[#49d0b0] hover:from-[#49d0b0] hover:to-[#69e8cb] text-gray-900 font-bold text-lg py-3 px-6 rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 w-full md:w-auto group"
+                            className="bg-gradient-to-r from-[#69e8cb] to-[#49d0b0] hover:from-[#49d0b0] hover:to-[#69e8cb] text-primary-text font-bold text-lg py-3 px-6 rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 w-full md:w-auto group"
                             disabled={loading}
                         >
                             <FaSave className="mr-2 transform group-hover:scale-110 transition-transform" />

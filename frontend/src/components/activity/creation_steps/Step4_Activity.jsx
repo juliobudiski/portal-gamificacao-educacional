@@ -72,10 +72,10 @@ function Step4_PlayerProfile({ activityData, setActivityData, openHelpModal }) {
     <div className="space-y-8 animate-fade-in">
       {/* SEÇÃO 1: Título e Descrição */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+        <h2 className="text-2xl font-bold text-primary-text dark:text-primary-text">
           Qual perfil de jogador você quer engajar?
         </h2>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
+        <p className="mt-2 text-secondary-text dark:text-secondary-text">
           Selecionar os perfis corretos ajuda a definir os elementos de gamificação mais eficazes para a sua atividade.
         </p>
       </div>
@@ -92,17 +92,17 @@ function Step4_PlayerProfile({ activityData, setActivityData, openHelpModal }) {
                 group relative flex h-full cursor-pointer flex-col items-center justify-start space-y-3 rounded-xl border p-6 text-center transition-all duration-200
                 ${isSelected
                   ? 'border-2 border-teal-500 bg-teal-50 dark:bg-teal-900/40 ring-2 ring-teal-500/20'
-                  : 'border-gray-300 bg-white hover:border-teal-400 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:hover:border-teal-500'
+                  : 'border-gray-300 bg-secondary-bg hover:border-teal-400 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:hover:border-teal-500'
                 }
               `}
             >
-              <div className={`text-5xl mb-2 ${isSelected ? 'text-teal-500' : 'text-gray-400 group-hover:text-teal-500 dark:text-gray-500 dark:group-hover:text-teal-400'}`}>
+              <div className={`text-5xl mb-2 ${isSelected ? 'text-teal-500' : 'text-secondary-text group-hover:text-teal-500 dark:text-secondary-text dark:group-hover:text-teal-400'}`}>
                 {profile.icon}
               </div>
-              <h4 className={`text-base font-semibold ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-gray-800 dark:text-gray-200'}`}>
+              <h4 className={`text-base font-semibold ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-primary-text dark:text-gray-200'}`}>
                 {profile.name}
               </h4>
-              <p className={`text-xs ${isSelected ? 'text-teal-700 dark:text-teal-200' : 'text-gray-500 dark:text-gray-400'}`}>
+              <p className={`text-xs ${isSelected ? 'text-teal-700 dark:text-teal-200' : 'text-secondary-text dark:text-secondary-text'}`}>
                 {profile.description}
               </p>
             </div>
@@ -114,7 +114,7 @@ function Step4_PlayerProfile({ activityData, setActivityData, openHelpModal }) {
       <div className="pt-4 text-center">
         <button
           onClick={() => openHelpModal("Ajuda - Perfil do Jogador", `A seguir, listo alguns dos elementos de jogos ideais...`)}
-          className="py-2 px-5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          className="py-2 px-5 border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-text bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
           Precisa de ajuda para escolher?
         </button>
       </div>

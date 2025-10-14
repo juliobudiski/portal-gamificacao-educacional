@@ -30,7 +30,7 @@ function NotFoundPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white overflow-hidden relative">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-primary-text overflow-hidden relative">
       {/* Elementos de fundo decorativos */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-purple-500 rounded-full filter blur-3xl opacity-20 animate-pulse-slow" style={parallaxStyle}></div>
@@ -83,7 +83,7 @@ function NotFoundPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.7 }}
-            className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto"
+            className="text-xl text-secondary-text mb-8 max-w-2xl mx-auto"
           >
             Parece que você se perdeu no universo da gamificação. A página que você está procurando pode ter sido movida ou não existe mais.
           </motion.p>
@@ -154,7 +154,7 @@ function NotFoundPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1, duration: 0.7 }}
-            className="text-gray-400 mt-10 text-sm"
+            className="text-secondary-text mt-10 text-sm"
           >
             Se você acredita que isso é um erro, entre em contato com o suporte técnico.
           </motion.p>

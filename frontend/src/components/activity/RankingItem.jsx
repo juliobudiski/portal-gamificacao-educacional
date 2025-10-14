@@ -20,7 +20,7 @@ const RankingItem = ({ player, isCurrentUser }) => {
         };
       case 2:
         return {
-          icon: <FaMedal className="text-gray-300" />,
+          icon: <FaMedal className="text-secondary-text" />,
           borderClass: 'border-gray-400',
           bgClass: 'bg-gray-700/40',
         };
@@ -48,7 +48,7 @@ const RankingItem = ({ player, isCurrentUser }) => {
         visualStyle.textShadow = `0 0 5px ${cosmeticEffect.color}, 0 0 7px ${cosmeticEffect.color}`;
       }
     } else {
-      baseClass += " text-white"; // Cor padrão se não houver efeito
+      baseClass += " text-primary-text"; // Cor padrão se não houver efeito
     }
 
     // Retorna o objeto de estilo e a classe base
@@ -81,11 +81,11 @@ const RankingItem = ({ player, isCurrentUser }) => {
 
         {/* Nome e Título agora usam o mesmo objeto de estilo 'visuals' */}
         <div className="flex flex-col items-start">
-          <span style={applyCosmetic(player.name_cosmetic)} className="font-semibold text-lg text-white">
+          <span style={applyCosmetic(player.name_cosmetic)} className="font-semibold text-lg text-primary-text">
             {player.name}
           </span>
           {player.title && (
-            <span style={applyCosmetic(player.title_cosmetic)} className="text-xs font-bold mt-1 text-gray-300">
+            <span style={applyCosmetic(player.title_cosmetic)} className="text-xs font-bold mt-1 text-secondary-text">
               {player.title}
             </span>
           )}

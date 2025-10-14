@@ -102,14 +102,14 @@ function GameBoardEditor({ gamificationDesign = { theme: 'vila_da_aventura', pro
     return (
         <div className="mt-8 p-6 border border-teal-300 dark:border-teal-800 rounded-lg bg-teal-50 dark:bg-teal-900/20">
             <h3 className="text-xl font-bold text-teal-800 dark:text-teal-200 mb-2">Editor do Tabuleiro da Atividade</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">Construa a jornada do aluno e ative os pontos de interesse na vila.</p>
+            <p className="text-sm text-secondary-text dark:text-secondary-text mb-6">Construa a jornada do aluno e ative os pontos de interesse na vila.</p>
 
             <div className="mb-8">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tema Visual do Tabuleiro</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-secondary-text mb-2">Tema Visual do Tabuleiro</label>
                 <select
                     value={gamificationDesign.theme || 'vila_da_aventura'}
                     onChange={(e) => updateDesign('theme', e.target.value)}
-                    className="w-full md:w-1/3 p-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm"
+                    className="w-full md:w-1/3 p-2 bg-secondary-bg dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm"
                 >
                     <option value="fluxograma">Fluxograma Simples</option>
                     <option value="vila_da_aventura">Vila da Aventura (Imersivo)</option>
@@ -118,9 +118,9 @@ function GameBoardEditor({ gamificationDesign = { theme: 'vila_da_aventura', pro
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div>
-                    <h4 className="flex items-center text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200"><FaRoute className="mr-3 text-blue-500" /> Trilha de Progressão</h4>
-                    <div className="p-4 bg-white/50 dark:bg-gray-800/30 rounded-lg">
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">Adicione os passos sequenciais da atividade.</p>
+                    <h4 className="flex items-center text-lg font-semibold mb-4 text-primary-text dark:text-gray-200"><FaRoute className="mr-3 text-blue-500" /> Trilha de Progressão</h4>
+                    <div className="p-4 bg-secondary-bg/50 dark:bg-gray-800/30 rounded-lg">
+                        <p className="text-xs text-secondary-text dark:text-secondary-text mb-4">Adicione os passos sequenciais da atividade.</p>
                         <div className="flex flex-wrap gap-2 mb-4">
                             {Object.entries(elementConfig.path).map(([type, config]) => (
                                 <button key={type} onClick={() => addPathStep(type)} className="flex items-center p-2 text-sm bg-blue-100 dark:bg-blue-900/50 rounded-md hover:bg-blue-200 dark:hover:bg-blue-900">
@@ -130,15 +130,15 @@ function GameBoardEditor({ gamificationDesign = { theme: 'vila_da_aventura', pro
                         </div>
                         <div className="space-y-3">
                             {(gamificationDesign.progression_path || []).map((step, index) => (
-                                <div key={step.id} className="flex items-center p-2 bg-white dark:bg-gray-800 rounded-md shadow-sm">
-                                    <span className="font-bold text-gray-400 dark:text-gray-500 mr-3">{index + 1}</span>
+                                <div key={step.id} className="flex items-center p-2 bg-secondary-bg dark:bg-gray-800 rounded-md shadow-sm">
+                                    <span className="font-bold text-secondary-text dark:text-secondary-text mr-3">{index + 1}</span>
                                     <img src={`/board/${elementConfig.path[step.type]?.icon}`} alt="" className="w-8 h-8 mr-3" />
                                     <div className="flex-grow">
-                                        <p className="font-semibold text-gray-800 dark:text-gray-200">{elementConfig.path[step.type]?.name}</p>
+                                        <p className="font-semibold text-primary-text dark:text-gray-200">{elementConfig.path[step.type]?.name}</p>
                                         <p className={`text-xs font-bold ${step.isMandatory ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}`}>{step.isMandatory ? 'Obrigatório' : 'Opcional'}</p>
                                     </div>
                                     <button onClick={() => toggleMandatory(step.id)} title={step.isMandatory ? 'Marcar como opcional' : 'Marcar como obrigatório'}>
-                                        {step.isMandatory ? <FaToggleOn className="text-green-500 h-5 w-5" /> : <FaToggleOff className="text-gray-400 h-5 w-5" />}
+                                        {step.isMandatory ? <FaToggleOn className="text-green-500 h-5 w-5" /> : <FaToggleOff className="text-secondary-text h-5 w-5" />}
                                     </button>
                                     <button onClick={() => onEditContent(step)} className="ml-2 p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full" title="Editar conteúdo">
                                         <FaPen className="text-blue-500 h-4 w-4" />
@@ -146,28 +146,28 @@ function GameBoardEditor({ gamificationDesign = { theme: 'vila_da_aventura', pro
                                     <button onClick={() => removePathStep(step.id)} className="ml-2 p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full" title="Remover passo"><FaTrash className="text-red-500 h-4 w-4" /></button>
                                 </div>
                             ))}
-                            {(!gamificationDesign.progression_path || gamificationDesign.progression_path.length === 0) && <p className="text-center text-sm text-gray-500 py-4">A trilha está vazia.</p>}
+                            {(!gamificationDesign.progression_path || gamificationDesign.progression_path.length === 0) && <p className="text-center text-sm text-secondary-text py-4">A trilha está vazia.</p>}
                         </div>
                     </div>
                 </div>
 
                 <div>
-                    <h4 className="flex items-center text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200"><FaCity className="mr-3 text-yellow-500" /> Hub da Vila</h4>
-                    <div className="p-4 bg-white/50 dark:bg-gray-800/30 rounded-lg">
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">Ative ou desative os pontos de interesse que foram selecionados nos cards de elementos.</p>
+                    <h4 className="flex items-center text-lg font-semibold mb-4 text-primary-text dark:text-gray-200"><FaCity className="mr-3 text-yellow-500" /> Hub da Vila</h4>
+                    <div className="p-4 bg-secondary-bg/50 dark:bg-gray-800/30 rounded-lg">
+                        <p className="text-xs text-secondary-text dark:text-secondary-text mb-4">Ative ou desative os pontos de interesse que foram selecionados nos cards de elementos.</p>
                         <div className="space-y-3">
                             {(gamificationDesign.hub_elements || []).map((element) => {
                                 const config = elementConfig.hub[element.type];
                                 if (!config) return null; // Segurança
                                 return (
-                                    <div key={element.id} onClick={() => toggleHubElement(element.type)} className="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <div key={element.id} onClick={() => toggleHubElement(element.type)} className="flex items-center p-3 bg-secondary-bg dark:bg-gray-800 rounded-lg shadow-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700">
                                         <img src={`/board/${config.icon}`} alt={config.name} className="w-8 h-8 mr-3" />
-                                        <span className="flex-grow font-medium text-gray-800 dark:text-gray-200">{config.name}</span>
-                                        {element.enabled ? <FaToggleOn className="text-green-500 h-6 w-6" /> : <FaToggleOff className="text-gray-400 h-6 w-6" />}
+                                        <span className="flex-grow font-medium text-primary-text dark:text-gray-200">{config.name}</span>
+                                        {element.enabled ? <FaToggleOn className="text-green-500 h-6 w-6" /> : <FaToggleOff className="text-secondary-text h-6 w-6" />}
                                     </div>
                                 );
                             })}
-                            {(!gamificationDesign.hub_elements || gamificationDesign.hub_elements.length === 0) && <p className="text-center text-sm text-gray-500 py-4">Nenhum elemento do hub selecionado nos cards.</p>}
+                            {(!gamificationDesign.hub_elements || gamificationDesign.hub_elements.length === 0) && <p className="text-center text-sm text-secondary-text py-4">Nenhum elemento do hub selecionado nos cards.</p>}
                         </div>
                     </div>
                 </div>

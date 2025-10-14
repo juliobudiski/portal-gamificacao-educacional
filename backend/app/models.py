@@ -131,14 +131,16 @@ class Class(db.Model):
     enrollment_code = db.Column(db.String(50), unique=True, nullable=False)
     assignment_count = db.Column(db.Integer, nullable=False, default=0, server_default='0')
     professor = db.relationship('User', backref='created_classes', lazy=True)
-
+    is_enrollment_code_public = db.Column(db.Boolean, default=False, nullable=False, server_default='f') 
+    
     def to_dict(self):
         return {
             'id': self.id,
             'name': self.name,
             'description': self.description,
             'professor_id': self.professor_id,
-            'enrollment_code': self.enrollment_code
+            'enrollment_code': self.enrollment_code,
+            'is_enrollment_code_public': self.is_enrollment_code_public
         }
 
 class Enrollment(db.Model):

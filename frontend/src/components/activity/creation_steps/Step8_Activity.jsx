@@ -63,17 +63,17 @@ function Step8_RulesAndSharing({ activityData, handleInputChange, setActivityDat
     <div className="space-y-8 animate-fade-in">
       {/* SEÇÃO 1: Título e Descrição */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+        <h2 className="text-2xl font-bold text-primary-text dark:text-primary-text">
           Regras da Gamificação e Compartilhamento
         </h2>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
+        <p className="mt-2 text-secondary-text dark:text-secondary-text">
           Defina as regras que guiarão a atividade. Boas regras criam um ambiente justo, divertido e produtivo para todos.
         </p>
       </div>
 
       {/* SEÇÃO 2: Seleção de Regras Gerais com Cards */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+        <h3 className="text-lg font-semibold text-primary-text dark:text-primary-text">
           Regras Gerais Sugeridas
         </h3>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -87,14 +87,14 @@ function Step8_RulesAndSharing({ activityData, handleInputChange, setActivityDat
                   group relative flex h-full cursor-pointer flex-col items-center justify-start space-y-3 rounded-xl border p-5 text-center transition-all duration-200
                   ${isSelected
                     ? 'border-2 border-teal-500 bg-teal-50 dark:bg-teal-900/40 ring-2 ring-teal-500/20'
-                    : 'border-gray-300 bg-white hover:border-teal-400 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:hover:border-teal-500'
+                    : 'border-gray-300 bg-secondary-bg hover:border-teal-400 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:hover:border-teal-500'
                   }
                 `}
               >
-                <div className={`text-4xl ${isSelected ? 'text-teal-500' : 'text-gray-400 group-hover:text-teal-500 dark:text-gray-500 dark:group-hover:text-teal-400'}`}>
+                <div className={`text-4xl ${isSelected ? 'text-teal-500' : 'text-secondary-text group-hover:text-teal-500 dark:text-secondary-text dark:group-hover:text-teal-400'}`}>
                   {rule.icon}
                 </div>
-                <p className={`text-sm font-medium ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-gray-700 dark:text-gray-300'}`}>
+                <p className={`text-sm font-medium ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-gray-700 dark:text-secondary-text'}`}>
                   {rule.text}
                 </p>
               </div>
@@ -106,7 +106,7 @@ function Step8_RulesAndSharing({ activityData, handleInputChange, setActivityDat
       {/* SEÇÃO 3: Regras Específicas e Compartilhamento */}
       <div className="pt-4 space-y-6">
         <div>
-          <label htmlFor="gamificationRules.specificRules" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label htmlFor="gamificationRules.specificRules" className="block text-sm font-medium text-gray-700 dark:text-secondary-text">
             Regras específicas da sua atividade (Opcional)
           </label>
           <textarea
@@ -115,7 +115,7 @@ function Step8_RulesAndSharing({ activityData, handleInputChange, setActivityDat
             value={activityData.gamificationRules.specificRules}
             onChange={handleInputChange}
             rows="4"
-            className="mt-1 block w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+            className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
             placeholder="Ex: Não é permitido usar o celular durante o desafio. A entrega do projeto deve conter no mínimo 3 commits."
           ></textarea>
         </div>
@@ -132,10 +132,10 @@ function Step8_RulesAndSharing({ activityData, handleInputChange, setActivityDat
             />
           </div>
           <div className="ml-3 text-sm leading-6">
-            <label htmlFor="isPublic" className="font-medium text-gray-900 dark:text-gray-200">
+            <label htmlFor="isPublic" className="font-medium text-primary-text dark:text-gray-200">
               Compartilhar esta atividade?
             </label>
-            <p className="text-gray-500 dark:text-gray-400">Ao marcar, sua atividade ficará pública para outros professores usarem como modelo.</p>
+            <p className="text-secondary-text dark:text-secondary-text">Ao marcar, sua atividade ficará pública para outros professores usarem como modelo.</p>
           </div>
         </div>
       </div>

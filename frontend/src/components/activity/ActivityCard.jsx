@@ -25,7 +25,7 @@ function ActivityCard({ activity, isOwner, onCopy, onDelete, onSelect, isSelecte
                 </div>
             )}
             <div>
-                <h3 className="text-lg font-bold text-white mb-2">{activity.title}</h3>
+                <h3 className="text-lg font-bold text-primary-text mb-2">{activity.title}</h3>
 
                 {activity.class_name && (
                     <div className="flex items-center text-xs text-yellow-300 bg-yellow-400/10 px-2 py-1 rounded-md mb-3">
@@ -33,8 +33,8 @@ function ActivityCard({ activity, isOwner, onCopy, onDelete, onSelect, isSelecte
                         <span>Turma: {activity.class_name}</span>
                     </div>
                 )}
-                <p className="text-sm text-gray-300 mb-3 line-clamp-3">{activity.description}</p>
-                <div className="flex items-center text-xs text-gray-400 mb-4">
+                <p className="text-sm text-secondary-text mb-3 line-clamp-3">{activity.description}</p>
+                <div className="flex items-center text-xs text-secondary-text mb-4">
                     <span className="font-semibold mr-2">Criado por:</span>
                     <span>{activity.professor_name}</span>
                 </div>
@@ -59,29 +59,29 @@ function ActivityCard({ activity, isOwner, onCopy, onDelete, onSelect, isSelecte
                             className="p-2 bg-gray-700 hover:bg-accent-teal/30 rounded-full group"
                             title="Atribuir à Turma"
                         >
-                            <FaChalkboardTeacher className="text-gray-400 group-hover:text-accent-teal" />
+                            <FaChalkboardTeacher className="text-secondary-text group-hover:text-accent-teal" />
                         </button>
 
                         {/* Botões existentes para o dono da atividade */}
                         <button onClick={() => navigate(`/professor/atividades/${activity.id}/edit`)} className="p-2 bg-gray-700 hover:bg-accent-yellow/30 rounded-full group" title="Editar">
-                            <FaEdit className="text-gray-400 group-hover:text-accent-yellow" />
+                            <FaEdit className="text-secondary-text group-hover:text-accent-yellow" />
                         </button>
                         <button onClick={() => onDelete(activity.id)} className="p-2 bg-gray-700 hover:bg-red-500/30 rounded-full group" title="Deletar">
-                            <FaTrash className="text-gray-400 group-hover:text-red-400" />
+                            <FaTrash className="text-secondary-text group-hover:text-red-400" />
                         </button>
                     </>
                 ) : (
                     <>
                         <button onClick={() => onCopy(activity.id)} className="p-2 bg-gray-700 hover:bg-accent-purple/30 rounded-full group" title="Copiar e Editar">
-                            <FaCopy className="text-gray-400 group-hover:text-accent-purple" />
+                            <FaCopy className="text-secondary-text group-hover:text-accent-purple" />
                         </button>
                     </>
                 )}
                 <button onClick={() => navigate(`/activities/${activity.id}`)} className="p-2 bg-gray-700 hover:bg-blue-500/30 rounded-full group" title="Visualizar">
-                    <FaEye className="text-gray-400 group-hover:text-blue-400" />
+                    <FaEye className="text-secondary-text group-hover:text-blue-400" />
                 </button>
             </div>
-            <div className="flex items-center text-xs text-gray-400 mt-3 space-x-4">
+            <div className="flex items-center text-xs text-secondary-text mt-3 space-x-4">
                 <div className="flex items-center" title={`${copyCount} professores copiaram esta atividade`}>
                     <FaCopy className="mr-1.5" />
                     <span>Copiada {copyCount} vezes</span>

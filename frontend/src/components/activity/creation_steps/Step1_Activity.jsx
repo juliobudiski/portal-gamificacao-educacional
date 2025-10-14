@@ -59,16 +59,16 @@ function Step1_InitialDetails({ activityData, handleInputChange, setActivityData
     <div className="space-y-8 animate-fade-in">
       {/* SEÇÃO 1: Título e Descrição da Atividade */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+        <h2 className="text-2xl font-bold text-primary-text dark:text-primary-text">
           Definindo o Cenário da Atividade
         </h2>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
+        <p className="mt-2 text-secondary-text dark:text-secondary-text">
           Para começar, dê um nome e descreva o propósito geral da sua atividade gamificada.
         </p>
       </div>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div>
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-secondary-text">
             Título da Atividade <span className="text-red-500">*</span>
           </label>
           <input
@@ -77,13 +77,13 @@ function Step1_InitialDetails({ activityData, handleInputChange, setActivityData
             name="title"
             value={activityData.title}
             onChange={handleInputChange}
-            className="mt-1 block w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+            className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
             placeholder="Ex: A Jornada do Herói em Java"
             required
           />
         </div>
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-secondary-text">
             Descrição da Atividade
           </label>
           <textarea
@@ -92,7 +92,7 @@ function Step1_InitialDetails({ activityData, handleInputChange, setActivityData
             value={activityData.description}
             onChange={handleInputChange}
             rows="1"
-            className="mt-1 block w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+            className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
             placeholder="Um resumo sobre o que é a atividade."
           ></textarea>
         </div>
@@ -100,10 +100,10 @@ function Step1_InitialDetails({ activityData, handleInputChange, setActivityData
 
       {/* SEÇÃO 2: Seleção de Problemas com Cards */}
       <div className="pt-4">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+        <h3 className="text-lg font-semibold text-primary-text dark:text-primary-text">
           Quais desafios seus alunos enfrentam?
         </h3>
-        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+        <p className="mt-1 text-sm text-secondary-text dark:text-secondary-text">
           Selecione os principais problemas que você observa. Isso ajudará a personalizar a gamificação.
         </p>
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -117,14 +117,14 @@ function Step1_InitialDetails({ activityData, handleInputChange, setActivityData
                   group relative flex cursor-pointer flex-col items-center justify-start space-y-3 rounded-xl border p-4 text-center transition-all duration-200
                   ${isSelected
                     ? 'border-2 border-teal-500 bg-teal-50 dark:bg-teal-900/40 ring-2 ring-teal-500/20'
-                    : 'border-gray-300 bg-white hover:border-teal-400 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:hover:border-teal-500'
+                    : 'border-gray-300 bg-secondary-bg hover:border-teal-400 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:hover:border-teal-500'
                   }
                 `}
               >
-                <div className={`text-4xl ${isSelected ? 'text-teal-500' : 'text-gray-400 group-hover:text-teal-500 dark:text-gray-500 dark:group-hover:text-teal-400'}`}>
+                <div className={`text-4xl ${isSelected ? 'text-teal-500' : 'text-secondary-text group-hover:text-teal-500 dark:text-secondary-text dark:group-hover:text-teal-400'}`}>
                   {problem.icon}
                 </div>
-                <p className={`text-sm font-medium ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-gray-700 dark:text-gray-300'}`}>
+                <p className={`text-sm font-medium ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-gray-700 dark:text-secondary-text'}`}>
                   {problem.text}
                 </p>
               </div>
@@ -135,7 +135,7 @@ function Step1_InitialDetails({ activityData, handleInputChange, setActivityData
 
       {/* SEÇÃO 3: Campo Aberto e Botão de Ajuda */}
       <div className="pt-4">
-        <label htmlFor="currentScenario.otherProblem" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label htmlFor="currentScenario.otherProblem" className="block text-sm font-medium text-gray-700 dark:text-secondary-text">
           Outro desafio não listado? (Opcional)
         </label>
         <input
@@ -144,7 +144,7 @@ function Step1_InitialDetails({ activityData, handleInputChange, setActivityData
           name="currentScenario.otherProblem"
           value={activityData.currentScenario.otherProblem}
           onChange={handleInputChange}
-          className="mt-1 block w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+          className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
           placeholder="Descreva outro problema específico"
         />
       </div>

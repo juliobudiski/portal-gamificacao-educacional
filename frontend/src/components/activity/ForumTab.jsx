@@ -20,8 +20,8 @@ const formatDate = (isoString) => {
 // Item da lista de CATEGORIAS
 const CategoryListItem = ({ category, onSelect }) => (
     <button onClick={() => onSelect(category)} className="w-full text-left p-4 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors">
-        <h3 className="font-bold text-white text-lg">{category.title}</h3>
-        <p className="text-sm text-gray-400">{category.description}</p>
+        <h3 className="font-bold text-primary-text text-lg">{category.title}</h3>
+        <p className="text-sm text-secondary-text">{category.description}</p>
         <p className="text-xs text-teal-400 mt-2">{category.topic_count} tópicos</p>
     </button>
 );
@@ -32,8 +32,8 @@ const TopicListItem = ({ topic, onSelect }) => (
         <div className="flex items-center gap-3">
             {topic.is_pinned && <FaThumbtack className="text-cyan-400 flex-shrink-0" title="Tópico Fixo" />}
             <div>
-                <h3 className="font-bold text-white">{topic.title}</h3>
-                <p className="text-sm text-gray-400">por {topic.author_name} - {topic.post_count} respostas</p>
+                <h3 className="font-bold text-primary-text">{topic.title}</h3>
+                <p className="text-sm text-secondary-text">por {topic.author_name} - {topic.post_count} respostas</p>
             </div>
         </div>
         {topic.best_answer_id && <FaTrophy className="text-yellow-400 text-xl flex-shrink-0" title="Resolvido" />}
@@ -45,14 +45,14 @@ const PostItem = ({ post, isTopicAuthor, onMarkBest, isBestAnswer, onToggleLike 
     <div className={`p-4 rounded-lg border ${isBestAnswer ? 'bg-yellow-900/30 border-yellow-500' : 'bg-gray-900 border-gray-700'}`}>
         <div className="flex justify-between items-start">
             <p className="font-bold text-teal-300">{post.author_name}</p>
-            <p className="text-xs text-gray-500">{formatDate(post.created_at)}</p>
+            <p className="text-xs text-secondary-text">{formatDate(post.created_at)}</p>
             {isTopicAuthor && !isBestAnswer && (
-                <button onClick={() => onMarkBest(post.id)} className="text-xs flex items-center gap-1 text-yellow-400 hover:text-white">
+                <button onClick={() => onMarkBest(post.id)} className="text-xs flex items-center gap-1 text-yellow-400 hover:text-primary-text">
                     <FaTrophy /> Marcar como Melhor
                 </button>
             )}
         </div>
-        <p className="text-gray-300 mt-2 whitespace-pre-wrap">{post.body}</p>
+        <p className="text-secondary-text mt-2 whitespace-pre-wrap">{post.body}</p>
         <div className="flex justify-between items-center mt-3">
             {isBestAnswer
                 ? <div className="text-xs font-bold text-yellow-400 flex items-center gap-2"><FaTrophy /> MELHOR RESPOSTA</div>
@@ -60,7 +60,7 @@ const PostItem = ({ post, isTopicAuthor, onMarkBest, isBestAnswer, onToggleLike 
             }
 
             {/* --- BLOCO ADICIONADO: Botão e contagem de Likes --- */}
-            <div className="flex items-center gap-2 text-gray-400">
+            <div className="flex items-center gap-2 text-secondary-text">
                 <span className="text-sm">{post.likes_count}</span>
                 <button onClick={() => onToggleLike(post.id, post.current_user_has_liked)} className="text-lg hover:text-red-500 transition-colors">
                     {post.current_user_has_liked ? <FaHeart className="text-red-500" /> : <FaRegHeart />}
@@ -92,7 +92,7 @@ const CreateTopicForm = ({ onSubmit, onCancel, isSubmitting }) => {
             {user.role === 'professor' && (
                 <div className="flex items-center mb-4">
                     <input type="checkbox" id="isPinned" checked={isPinned} onChange={e => setIsPinned(e.target.checked)} className="h-4 w-4 rounded" />
-                    <label htmlFor="isPinned" className="ml-2 text-gray-300">Fixar este tópico no topo do fórum</label>
+                    <label htmlFor="isPinned" className="ml-2 text-secondary-text">Fixar este tópico no topo do fórum</label>
                 </div>
             )}
             <div className="flex justify-end gap-4">
@@ -247,8 +247,8 @@ const ForumTab = ({ onReturn }) => {
                                 <FaArrowLeft /> Voltar para os tópicos
                             </button>
                             <div className="bg-gray-700 p-4 rounded-lg mb-4">
-                                <h2 className="text-2xl font-bold text-white">{selectedTopic.title}</h2>
-                                <p className="text-sm text-gray-400">por {selectedTopic.author_name}</p>
+                                <h2 className="text-2xl font-bold text-primary-text">{selectedTopic.title}</h2>
+                                <p className="text-sm text-secondary-text">por {selectedTopic.author_name}</p>
                                 <p className="text-gray-200 mt-4 whitespace-pre-wrap">{selectedTopic.body}</p>
                             </div>
                             <h3 className="font-bold mb-2">Respostas</h3>
@@ -294,7 +294,7 @@ const ForumTab = ({ onReturn }) => {
                             <button onClick={() => setView('create_topic')} className="bg-blue-600 py-2 px-3 rounded-lg flex items-center gap-2 font-bold"><FaPlus /> Criar Tópico</button>
                         </div>
                         <div className="space-y-3">
-                            {topics.length > 0 ? topics.map(topic => <TopicListItem key={topic.id} topic={topic} onSelect={fetchTopicDetails} />) : <p className="text-gray-500 text-center p-8">Nenhum tópico criado neste canal ainda.</p>}
+                            {topics.length > 0 ? topics.map(topic => <TopicListItem key={topic.id} topic={topic} onSelect={fetchTopicDetails} />) : <p className="text-secondary-text text-center p-8">Nenhum tópico criado neste canal ainda.</p>}
                         </div>
                     </>
                 );
@@ -319,7 +319,7 @@ const ForumTab = ({ onReturn }) => {
 
     return (
         // O contêiner principal continua com a altura fixa e agora é o nosso contêiner flex.
-        <div className="bg-gray-800 p-6 rounded-lg text-white flex flex-col" style={{ height: '80vh', maxHeight: '700px' }}>
+        <div className="bg-gray-800 p-6 rounded-lg text-primary-text flex flex-col" style={{ height: '80vh', maxHeight: '700px' }}>
             {/* O botão "Voltar" agora é um filho direto do contêiner flex. 
             Usamos 'flex-shrink-0' para garantir que ele não seja esmagado. */}
             <div className='flex-shrink-0'>

@@ -45,9 +45,9 @@ const NarrativeTab = ({ content, onComplete }) => {
     }
 
     return (
-      <div className="bg-gray-800 p-8 rounded-lg text-white text-center">
+      <div className="bg-gray-800 p-8 rounded-lg text-primary-text text-center">
         <h2 className="text-2xl font-bold text-yellow-400 mb-4">Missão</h2>
-        <p className="text-gray-400">A narrativa para esta atividade ainda não foi configurada.</p>
+        <p className="text-secondary-text">A narrativa para esta atividade ainda não foi configurada.</p>
         <button
           onClick={handleCompleteNarrative}
           className="mt-8 py-3 px-6 bg-green-600 hover:bg-green-700 rounded-lg text-xl font-bold flex items-center justify-center mx-auto"
@@ -128,7 +128,7 @@ const NarrativeTab = ({ content, onComplete }) => {
   }
 
   return (
-    <div className="bg-gray-800 p-4 sm:p-8 rounded-lg text-white animate-fade-in">
+    <div className="bg-gray-800 p-4 sm:p-8 rounded-lg text-primary-text animate-fade-in">
       {/* --- O PALCO DA CENA --- */}
       <div
         className="relative w-full h-96 bg-cover bg-center rounded-lg mb-4 border-4 border-gray-700 shadow-lg"
@@ -168,7 +168,7 @@ const NarrativeTab = ({ content, onComplete }) => {
           <FaArrowLeft className="mr-2" /> Anterior
         </button>
 
-        <span className="text-gray-400">{currentLineIndex + 1} / {dialogue.length}</span>
+        <span className="text-secondary-text">{currentLineIndex + 1} / {dialogue.length}</span>
 
         {currentLineIndex < dialogue.length - 1 ? (
           <button

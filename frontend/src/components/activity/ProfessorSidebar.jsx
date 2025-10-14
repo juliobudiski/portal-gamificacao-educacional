@@ -48,8 +48,8 @@ const ProfessorSidebar = ({ analytics, onStudentClick, onOpenQuizEditor, onOpenN
         <h4 className="text-lg font-bold text-blue-400 flex items-center">
           <FaChartBar className="mr-2" /> Analytics da Turma
         </h4>
-        <p className="text-white">Taxa de Conclusão: <span className="font-bold">{analytics.completionRate.toFixed(1)}%</span></p>
-        <p className="text-white">Pontuação Média: <span className="font-bold">{analytics.averageScore.toFixed(0)}</span></p>
+        <p className="text-primary-text">Taxa de Conclusão: <span className="font-bold">{analytics.completionRate.toFixed(1)}%</span></p>
+        <p className="text-primary-text">Pontuação Média: <span className="font-bold">{analytics.averageScore.toFixed(0)}</span></p>
       </div>
 
       {/* Lista de Alunos com detalhes expansíveis */}
@@ -67,7 +67,7 @@ const ProfessorSidebar = ({ analytics, onStudentClick, onOpenQuizEditor, onOpenN
                 onClick={() => toggleStudent(student.id)}
                 className="flex justify-between items-center p-2"
               >
-                <span className="text-white font-medium">{student.name}</span>
+                <span className="text-primary-text font-medium">{student.name}</span>
                 <div className="flex items-center gap-2">
                   {/* NOVO: Exibição do Nível do Aluno */}
                   <span className="text-xs font-bold text-yellow-300 bg-yellow-400/10 px-2 py-1 rounded-md flex items-center">
@@ -85,7 +85,7 @@ const ProfessorSidebar = ({ analytics, onStudentClick, onOpenQuizEditor, onOpenN
                 <div className="p-3 border-t border-gray-600 space-y-1 animate-fade-in">
                   <StatLine icon={<FaEye />} label="Narrativa vista" value={`${student.narrative_views}x`} colorClass="text-blue-300" />
                   <StatLine icon={<FaComments />} label="Msg no Chat" value={`${student.chat_messages}x`} colorClass="text-purple-300" />
-                  <StatLine icon={<FaQuestionCircle />} label="Respostas" value={student.total_answers} colorClass="text-gray-300" />
+                  <StatLine icon={<FaQuestionCircle />} label="Respostas" value={student.total_answers} colorClass="text-secondary-text" />
                   <StatLine icon={<FaCheck />} label="Acertos" value={student.correct_answers} colorClass="text-green-300" />
                   <StatLine icon={<FaTimes />} label="Erros" value={student.wrong_answers} colorClass="text-red-300" />
                   {/* NOVO: Taxa de Acerto */}

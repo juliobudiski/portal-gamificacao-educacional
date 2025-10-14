@@ -11,9 +11,9 @@ const LeaderboardTab = ({ leaderboardData, isLoading, onReturn }) => {
     // --- Componente para o Estado de Carregamento ---
     if (isLoading) {
         return (
-            <div className="w-full max-w-2xl mx-auto flex flex-col items-center justify-center p-8 text-white min-h-[400px]">
-                <FaSpinner className="text-4xl animate-spin text-gray-400 mb-4" />
-                <p className="text-lg text-gray-400">Carregando o Ranking...</p>
+            <div className="w-full max-w-2xl mx-auto flex flex-col items-center justify-center p-8 text-primary-text min-h-[400px]">
+                <FaSpinner className="text-4xl animate-spin text-secondary-text mb-4" />
+                <p className="text-lg text-secondary-text">Carregando o Ranking...</p>
             </div>
         );
     }
@@ -21,21 +21,21 @@ const LeaderboardTab = ({ leaderboardData, isLoading, onReturn }) => {
     // --- Componente para o Estado Vazio ---
     if (!leaderboardData || leaderboardData.length === 0) {
         return (
-            <div className="w-full max-w-2xl mx-auto flex flex-col items-center justify-center p-8 text-white min-h-[400px]">
+            <div className="w-full max-w-2xl mx-auto flex flex-col items-center justify-center p-8 text-primary-text min-h-[400px]">
                 <button onClick={onReturn} className="absolute top-4 left-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200 transition-colors z-20">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" /></svg>
                     Voltar
                 </button>
                 <FaExclamationCircle className="text-5xl text-yellow-500 mb-4" />
                 <h2 className="text-2xl font-bold mb-2">Ranking Vazio</h2>
-                <p className="text-gray-400">Ainda não há pontuações registradas. Seja o primeiro a jogar!</p>
+                <p className="text-secondary-text">Ainda não há pontuações registradas. Seja o primeiro a jogar!</p>
             </div>
         );
     }
 
     // --- Renderização Principal do Ranking ---
     return (
-        <div className="w-full max-w-3xl mx-auto p-4 text-white">
+        <div className="w-full max-w-3xl mx-auto p-4 text-primary-text">
             <button onClick={onReturn} className="absolute top-4 left-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200 transition-colors z-20">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" /></svg>
                 Voltar

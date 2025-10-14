@@ -27,7 +27,7 @@ const StudentSidebar = ({ progress, onShowStats }) => {
     if (isDebugMode) {
       console.log('[StudentSidebar] Progresso não carregado - exibindo estado de carregamento');
     }
-    return <div className="p-4 text-gray-400">Carregando progresso...</div>;
+    return <div className="p-4 text-secondary-text">Carregando progresso...</div>;
   }
 
   // Calcula porcentagem de progresso para barra de XP
@@ -53,7 +53,7 @@ const StudentSidebar = ({ progress, onShowStats }) => {
         <h4 className="text-lg font-bold text-yellow-400 flex items-center">
           <FaGem className="mr-2" /> Pontuação
         </h4>
-        <p className="text-4xl font-bold text-white">{progress.points_earned} Pontos</p>
+        <p className="text-4xl font-bold text-primary-text">{progress.points_earned} Pontos</p>
       </div>
 
       {/* Seção de Nível e Progresso */}
@@ -61,7 +61,7 @@ const StudentSidebar = ({ progress, onShowStats }) => {
         <h4 className="text-lg font-bold text-green-400 flex items-center">
           <FaLevelUpAlt className="mr-2" /> Nível
         </h4>
-        <p className="text-2xl font-bold text-white">Nível {progress.level}</p>
+        <p className="text-2xl font-bold text-primary-text">Nível {progress.level}</p>
 
         {/* Barra de progresso de XP */}
         <div className="w-full bg-gray-700 rounded-full h-4 mt-2">
@@ -73,7 +73,7 @@ const StudentSidebar = ({ progress, onShowStats }) => {
             {/* TODO: Implementar animação suave na barra de progresso */}
           </div>
         </div>
-        <p className="text-sm text-gray-400 mt-1 text-right">
+        <p className="text-sm text-secondary-text mt-1 text-right">
           {progress.xp} / {progress.xpForNextLevel} XP
         </p>
       </div>

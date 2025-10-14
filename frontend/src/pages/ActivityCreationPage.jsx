@@ -539,17 +539,17 @@ function ActivityCreationPage({ existingActivity }) {
       <div className="container mx-auto px-4 py-8">
         {/* Cabeçalho */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 dark:text-white">
+          <h1 className="text-4xl font-bold text-primary-text dark:text-primary-text">
             {isEditMode ? 'Editar Atividade' : 'Criar Nova Atividade Gamificada'}
           </h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
+          <p className="mt-2 text-secondary-text dark:text-secondary-text">
             Siga as etapas para criar uma experiência de aprendizado envolvente.
           </p>
         </div>
 
         {showInitialSelection ? (
           // O JSX para a seleção inicial (Iniciar do Zero / Templates) é mantido
-          <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
+          <div className="bg-secondary-bg dark:bg-gray-800 p-8 rounded-lg shadow-md">
             <h3 className="text-2xl font-bold text-center mb-8 bg-gradient-to-r from-accent-purple to-accent-teal bg-clip-text text-transparent">
               Como você gostaria de começar?
             </h3>
@@ -570,12 +570,12 @@ function ActivityCreationPage({ existingActivity }) {
                     <h4 className="text-xl font-semibold text-gray-200 mb-2">
                       Iniciar do Zero
                     </h4>
-                    <p className="text-gray-400 mb-6 flex-grow">
+                    <p className="text-secondary-text mb-6 flex-grow">
                       Comece com um formulário completamente vazio e personalize cada detalhe.
                     </p>
                     <button
                       onClick={handleStartFromScratch}
-                      className="w-full py-3 px-6 bg-gradient-to-r from-accent-yellow to-accent-teal text-gray-900 font-bold rounded-xl shadow-lg hover:shadow-xl hover:from-accent-yellow/90 hover:to-accent-teal/90 transform hover:-translate-y-0.5 transition-all duration-300 ease-out"
+                      className="w-full py-3 px-6 bg-gradient-to-r from-accent-yellow to-accent-teal text-primary-text font-bold rounded-xl shadow-lg hover:shadow-xl hover:from-accent-yellow/90 hover:to-accent-teal/90 transform hover:-translate-y-0.5 transition-all duration-300 ease-out"
                     >
                       Atividade em Branco
                     </button>
@@ -596,12 +596,12 @@ function ActivityCreationPage({ existingActivity }) {
                     <h4 className="text-xl font-semibold text-gray-200 mb-2">
                       Escolher um Template
                     </h4>
-                    <p className="text-gray-400 mb-6 flex-grow">
+                    <p className="text-secondary-text mb-6 flex-grow">
                       Use um de nossos templates predefinidos para agilizar a criação.
                     </p>
                     <button
                       onClick={handleShowTemplates}
-                      className="w-full py-3 px-6 bg-gradient-to-r from-accent-purple to-accent-teal text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:from-accent-purple/90 hover:to-accent-teal/90 transform hover:-translate-y-0.5 transition-all duration-300 ease-out"
+                      className="w-full py-3 px-6 bg-gradient-to-r from-accent-purple to-accent-teal text-primary-text font-bold rounded-xl shadow-lg hover:shadow-xl hover:from-accent-purple/90 hover:to-accent-teal/90 transform hover:-translate-y-0.5 transition-all duration-300 ease-out"
                     >
                       Ver Templates
                     </button>
@@ -618,7 +618,7 @@ function ActivityCreationPage({ existingActivity }) {
                 {loadingTemplates ? (
                   <div className="text-center py-10">
                     <div className="inline-block animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-accent-teal"></div>
-                    <p className="mt-4 text-gray-400">Carregando templates...</p>
+                    <p className="mt-4 text-secondary-text">Carregando templates...</p>
                   </div>
                 ) : templateError ? (
                   <div className="bg-red-900/30 text-red-400 p-4 rounded-xl text-center">
@@ -645,10 +645,10 @@ function ActivityCreationPage({ existingActivity }) {
                             </div>
                           </div>
                           <h5 className="text-lg font-semibold text-gray-200 text-center mb-2">{template.name}</h5>
-                          <p className="text-gray-400 text-sm mb-4 flex-grow text-center">{template.description}</p>
+                          <p className="text-secondary-text text-sm mb-4 flex-grow text-center">{template.description}</p>
                           <button
                             onClick={() => handleSelectTemplate(template.data)}
-                            className="mt-auto py-2 px-4 bg-gradient-to-r from-accent-purple to-accent-teal text-white font-medium rounded-xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300"
+                            className="mt-auto py-2 px-4 bg-gradient-to-r from-accent-purple to-accent-teal text-primary-text font-medium rounded-xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300"
                           >
                             Usar Template
                           </button>
@@ -661,7 +661,7 @@ function ActivityCreationPage({ existingActivity }) {
                 <div className="mt-8 text-center">
                   <button
                     onClick={handleBackToInitialSelection}
-                    className="py-2 px-4 border border-accent-teal/30 rounded-xl shadow-sm text-sm font-medium text-gray-300 bg-[#3a4046] hover:bg-[#4a525a] focus:outline-none focus:ring-2 focus:ring-accent-teal transition duration-300"
+                    className="py-2 px-4 border border-accent-teal/30 rounded-xl shadow-sm text-sm font-medium text-secondary-text bg-[#3a4046] hover:bg-[#4a525a] focus:outline-none focus:ring-2 focus:ring-accent-teal transition duration-300"
                   >
                     <span className="flex items-center justify-center">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -685,7 +685,7 @@ function ActivityCreationPage({ existingActivity }) {
             </div>
 
             {/* Contêiner do Formulário */}
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
+            <div className="bg-secondary-bg dark:bg-gray-800 p-8 rounded-lg shadow-md">
               {/* 3. A função renderStep agora insere o componente filho aqui */}
               {renderStep()}
 
@@ -694,7 +694,7 @@ function ActivityCreationPage({ existingActivity }) {
                 {currentStep > 1 ? (
                   <button
                     onClick={handlePrevious}
-                    className="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                    className="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-secondary-bg hover:bg-gray-50 dark:bg-gray-700 dark:text-secondary-text dark:hover:bg-gray-600"
                   >
                     Anterior
                   </button>
@@ -703,7 +703,7 @@ function ActivityCreationPage({ existingActivity }) {
                 )}
                 <button
                   onClick={handleNext}
-                  className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700"
+                  className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-text bg-teal-600 hover:bg-teal-700"
                 >
                   {currentStep === totalSteps ? 'Concluir e Salvar' : 'Próximo'}
                 </button>
@@ -715,10 +715,10 @@ function ActivityCreationPage({ existingActivity }) {
         {/* Modal de Ajuda (Estrutura mantida) */}
         {showHelpModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full p-6">
-              <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white">{helpContent.title}</h3>
+            <div className="bg-secondary-bg dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full p-6">
+              <h3 className="text-lg font-medium leading-6 text-primary-text dark:text-primary-text">{helpContent.title}</h3>
               <div className="mt-2">
-                <p className="text-sm text-gray-500 dark:text-gray-400">{helpContent.text}</p>
+                <p className="text-sm text-secondary-text dark:text-secondary-text">{helpContent.text}</p>
               </div>
               <div className="mt-4">
                 <button

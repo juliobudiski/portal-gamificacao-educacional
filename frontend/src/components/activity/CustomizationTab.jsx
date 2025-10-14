@@ -114,7 +114,7 @@ const CustomizationTab = ({ activityId, onReturn, onCustomizationChange }) => {
     const findTitle = (id) => unlockedTitles.find(t => t.id === id);
 
     return (
-        <div className="w-full max-w-6xl mx-auto p-4 text-white animate-fade-in">
+        <div className="w-full max-w-6xl mx-auto p-4 text-primary-text animate-fade-in">
             <button onClick={onReturn} className="absolute top-4 left-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200">
                 <FaArrowLeft /> Voltar
             </button>
@@ -153,12 +153,12 @@ const CustomizationTab = ({ activityId, onReturn, onCustomizationChange }) => {
                         <h3 className="text-2xl font-semibold mb-4 flex items-center gap-3"><FaCrown /> Títulos</h3>
                         <div className="flex flex-wrap gap-2 bg-gray-800/50 p-4 rounded-lg">
                             <button onClick={() => handleEquip('/equip-title', { title_id: null }, () => setEquipped(p => ({ ...p, titleId: null })))}
-                                className={`px-4 py-2 rounded-md text-sm ${!equipped.titleId ? 'bg-blue-600 text-white' : 'bg-gray-700 hover:bg-gray-600'}`}>
+                                className={`px-4 py-2 rounded-md text-sm ${!equipped.titleId ? 'bg-blue-600 text-primary-text' : 'bg-gray-700 hover:bg-gray-600'}`}>
                                 Nenhum Título
                             </button>
                             {unlockedTitles.map(title => (
                                 <button key={title.id} onClick={() => handleEquip('/equip-title', { title_id: title.id }, () => setEquipped(p => ({ ...p, titleId: title.id })))}
-                                    className={`px-4 py-2 rounded-md text-sm ${equipped.titleId === title.id ? 'bg-blue-600 text-white' : 'bg-gray-700 hover:bg-gray-600'}`}>
+                                    className={`px-4 py-2 rounded-md text-sm ${equipped.titleId === title.id ? 'bg-blue-600 text-primary-text' : 'bg-gray-700 hover:bg-gray-600'}`}>
                                     {title.displayText}
                                 </button>
                             ))}
@@ -167,7 +167,7 @@ const CustomizationTab = ({ activityId, onReturn, onCustomizationChange }) => {
                     <div>
                         <h3 className="text-2xl font-semibold mb-4 flex items-center gap-3"><FaPaintBrush /> Efeitos Cosméticos</h3>
                         <div className="bg-gray-800/50 p-4 rounded-lg">
-                            <p className="text-sm text-gray-400 mb-4">{selectedCosmetic ? `Clique em um dos botões "Aplicar Efeito" para usar ${selectedCosmetic.name}.` : 'Selecione um efeito abaixo e depois escolha onde aplicá-lo.'}</p>
+                            <p className="text-sm text-secondary-text mb-4">{selectedCosmetic ? `Clique em um dos botões "Aplicar Efeito" para usar ${selectedCosmetic.name}.` : 'Selecione um efeito abaixo e depois escolha onde aplicá-lo.'}</p>
 
                             <div className="flex flex-wrap gap-4 border-b border-gray-700 pb-4 mb-4">
                                 {unlockedCosmetics.map(cosmetic => (

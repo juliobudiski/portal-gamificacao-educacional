@@ -27,7 +27,7 @@ function AdminPage() {
   // Renderiza um estado de carregamento ou nulo enquanto a verificação acontece
   if (!isAuthenticated || user?.role !== 'admin') {
     return (
-      <div className="flex justify-center items-center min-h-screen text-white bg-dark-background">
+      <div className="flex justify-center items-center min-h-screen text-primary-text bg-dark-background">
         <p>Verificando permissões...</p>
       </div>
     );

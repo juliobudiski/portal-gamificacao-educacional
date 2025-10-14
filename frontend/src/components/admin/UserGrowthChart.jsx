@@ -4,7 +4,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 
 function UserGrowthChart({ data }) {
   if (!data || data.length === 0) {
-    return <div className="h-64 flex items-center justify-center text-gray-500">Sem dados para exibir.</div>;
+    return <div className="h-64 flex items-center justify-center text-secondary-text">Sem dados para exibir.</div>;
   }
 
   return (
@@ -17,12 +17,12 @@ function UserGrowthChart({ data }) {
           <CartesianGrid strokeDasharray="3 3" stroke="#4A5568" />
           <XAxis dataKey="date" stroke="#A0AEC0" />
           <YAxis stroke="#A0AEC0" allowDecimals={false} />
-          <Tooltip 
-            contentStyle={{ 
-                backgroundColor: '#2D3748', 
-                border: '1px solid #4A5568',
-                borderRadius: '0.5rem'
-            }} 
+          <Tooltip
+            contentStyle={{
+              backgroundColor: '#2D3748',
+              border: '1px solid #4A5568',
+              borderRadius: '0.5rem'
+            }}
             labelStyle={{ color: '#E2E8F0' }}
           />
           <Legend wrapperStyle={{ color: '#E2E8F0' }} />

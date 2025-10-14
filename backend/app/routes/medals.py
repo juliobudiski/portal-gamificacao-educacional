@@ -144,14 +144,17 @@ def get_all_medals():
     """Retorna uma lista de todas as medalhas existentes na plataforma."""
     medals = Medal.query.order_by(Medal.type, Medal.name).all()
     
+    # --- INÍCIO DA CORREÇÃO ---
+    # Adicionamos uma barra '/' no início do image_url se ela não existir.
     medals_data = [{
         "id": medal.id,
         "name": medal.name,
         "description": medal.description,
-        "imageUrl": medal.image_url,
+        "imageUrl": f"/{medal.image_url.lstrip('/')}", # Garante que o caminho comece com /
         "type": medal.type,
         "notes": medal.notes
     } for medal in medals]
+    # --- FIM DA CORREÇÃO ---
     
     return jsonify(medals_data), 200
 

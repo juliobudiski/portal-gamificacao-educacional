@@ -55,7 +55,7 @@ const AchievementsTab = ({ onReturn, activityId }) => {
     }
 
     return (
-        <div className="w-full max-w-5xl mx-auto p-4 text-white">
+        <div className="w-full max-w-5xl mx-auto p-4 text-primary-text">
             <button onClick={onReturn} className="absolute top-4 left-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200">
                 <FaArrowLeft /> Voltar
             </button>
@@ -80,7 +80,7 @@ const AchievementsTab = ({ onReturn, activityId }) => {
                                 alt={medal.name}
                                 className={`w-24 h-24 transition-all duration-300 ${isUnlocked ? '' : 'filter grayscale opacity-60'}`}
                             />
-                            <p className={`mt-2 font-semibold text-sm ${isUnlocked ? 'text-white' : 'text-gray-400'}`}>
+                            <p className={`mt-2 font-semibold text-sm ${isUnlocked ? 'text-primary-text' : 'text-secondary-text'}`}>
                                 {medal.name}
                             </p>
                         </div>

@@ -69,10 +69,10 @@ function Step7_RewardedActions({ activityData, handleInputChange, setActivityDat
     <div className="space-y-8 animate-fade-in">
       {/* SEÇÃO 1: Título e Descrição */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+        <h2 className="text-2xl font-bold text-primary-text dark:text-primary-text">
           Quais Ações Valem Recompensas?
         </h2>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
+        <p className="mt-2 text-secondary-text dark:text-secondary-text">
           Defina quais comportamentos e conquistas dos alunos serão recompensados. Ações claras incentivam o engajamento direcionado.
         </p>
       </div>
@@ -89,14 +89,14 @@ function Step7_RewardedActions({ activityData, handleInputChange, setActivityDat
                 group relative flex h-full cursor-pointer flex-col items-center justify-start space-y-2 rounded-xl border p-4 text-center transition-all duration-200
                 ${isSelected
                   ? 'border-2 border-teal-500 bg-teal-50 dark:bg-teal-900/40 ring-2 ring-teal-500/20'
-                  : 'border-gray-300 bg-white hover:border-teal-400 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:hover:border-teal-500'
+                  : 'border-gray-300 bg-secondary-bg hover:border-teal-400 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:hover:border-teal-500'
                 }
               `}
             >
-              <div className={`text-4xl ${isSelected ? 'text-teal-500' : 'text-gray-400 group-hover:text-teal-500 dark:text-gray-500 dark:group-hover:text-teal-400'}`}>
+              <div className={`text-4xl ${isSelected ? 'text-teal-500' : 'text-secondary-text group-hover:text-teal-500 dark:text-secondary-text dark:group-hover:text-teal-400'}`}>
                 {action.icon}
               </div>
-              <p className={`text-sm font-medium ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-gray-700 dark:text-gray-300'}`}>
+              <p className={`text-sm font-medium ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-gray-700 dark:text-secondary-text'}`}>
                 {action.text}
               </p>
             </div>
@@ -106,7 +106,7 @@ function Step7_RewardedActions({ activityData, handleInputChange, setActivityDat
 
       {/* SEÇÃO 3: Campo Aberto */}
       <div className="pt-4">
-        <label htmlFor="rewardedActions.otherAction" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label htmlFor="rewardedActions.otherAction" className="block text-sm font-medium text-gray-700 dark:text-secondary-text">
           Outra ação a ser recompensada? (Opcional)
         </label>
         <input
@@ -115,7 +115,7 @@ function Step7_RewardedActions({ activityData, handleInputChange, setActivityDat
           name="rewardedActions.otherAction"
           value={activityData.rewardedActions.otherAction}
           onChange={handleInputChange}
-          className="mt-1 block w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+          className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
           placeholder="Descreva uma ação personalizada"
         />
       </div>

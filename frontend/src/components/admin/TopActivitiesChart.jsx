@@ -4,7 +4,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 
 function TopActivitiesChart({ data }) {
     if (!data || data.length === 0) {
-        return <div className="h-64 flex items-center justify-center text-gray-500">Sem dados para exibir.</div>;
+        return <div className="h-64 flex items-center justify-center text-secondary-text">Sem dados para exibir.</div>;
     }
 
     return (

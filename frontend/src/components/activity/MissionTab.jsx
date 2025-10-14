@@ -18,7 +18,7 @@ const MissionTab = ({ activity, onComplete, onReturn }) => {
                     <FaExclamationCircle className="mr-2" />
                     Cenário Atual (Os Desafios)
                 </h3>
-                <ul className="list-disc list-inside space-y-2 text-gray-300">
+                <ul className="list-disc list-inside space-y-2 text-secondary-text">
                     {currentScenario?.problems?.map((problem, index) => (
                         <li key={index}>{problem}</li>
                     ))}
@@ -32,7 +32,7 @@ const MissionTab = ({ activity, onComplete, onReturn }) => {
                     <FaCheckCircle className="mr-2" />
                     Cenário Desejado (As Metas)
                 </h3>
-                <ul className="list-disc list-inside space-y-2 text-gray-300">
+                <ul className="list-disc list-inside space-y-2 text-secondary-text">
                     {desiredScenario?.objectives?.map((objective, index) => (
                         <li key={index}>{objective}</li>
                     ))}
@@ -42,7 +42,7 @@ const MissionTab = ({ activity, onComplete, onReturn }) => {
 
             <button
                 onClick={onComplete} // A MÁGICA ACONTECE AQUI!
-                className="py-3 px-8 rounded-xl text-lg font-semibold text-gray-900 bg-gradient-to-r from-[#ffbd30] to-[#69e8cb] hover:opacity-90 transition-all duration-300 disabled:opacity-50 group shadow-lg"
+                className="py-3 px-8 rounded-xl text-lg font-semibold text-primary-text bg-gradient-to-r from-[#ffbd30] to-[#69e8cb] hover:opacity-90 transition-all duration-300 disabled:opacity-50 group shadow-lg"
             >
                 Iniciar Jornada!
             </button>

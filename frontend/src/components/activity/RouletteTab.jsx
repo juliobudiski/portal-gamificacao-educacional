@@ -123,8 +123,8 @@ const RouletteTab = ({ onPrizeWon, onReturn, onPrizeUnlocked }) => {
 
       {/* Coluna da Roleta */}
       <div className="flex flex-col items-center gap-4 flex-shrink-0">
-        <h2 className="text-3xl font-bold text-white">Roda da Fortuna</h2>
-        <p className="text-gray-400">Teste sua sorte uma vez por dia!</p>
+        <h2 className="text-3xl font-bold text-primary-text">Roda da Fortuna</h2>
+        <p className="text-secondary-text">Teste sua sorte uma vez por dia!</p>
         <CustomWheel
           segments={segments}
           winningSegmentIndex={winningPrizeIndex}
@@ -149,14 +149,14 @@ const RouletteTab = ({ onPrizeWon, onReturn, onPrizeUnlocked }) => {
               </div>
             ))}
           </div>
-        ) : (<p className="text-gray-500 text-center italic py-8">Seja o primeiro a ganhar!</p>)}
+        ) : (<p className="text-secondary-text text-center italic py-8">Seja o primeiro a ganhar!</p>)}
       </div>
 
       {/* Modal de Revelação de Prêmio */}
       {revealedPrize && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 animate-fadeIn">
           <div className="bg-gray-800 border-2 border-yellow-400 p-8 rounded-xl shadow-2xl text-center prize-reveal-box">
-            <h2 className="text-2xl font-light text-gray-300 mb-2">Você ganhou:</h2>
+            <h2 className="text-2xl font-light text-secondary-text mb-2">Você ganhou:</h2>
             <p className="text-4xl font-bold text-yellow-400">{revealedPrize.label}</p>
           </div>
         </div>

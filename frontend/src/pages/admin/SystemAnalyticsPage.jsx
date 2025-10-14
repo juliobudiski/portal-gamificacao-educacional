@@ -4,9 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, Tooltip as PieTooltip } from 'recharts';
 
-import { 
-    Activity, LogIn, AlertTriangle, FilePlus, Puzzle, Users, Trophy, Gift, Clock, XCircle, 
-    HelpCircle, ShoppingCart, Gamepad2, TrendingUp, DollarSign, Coins, ChevronsRight 
+import {
+    Activity, LogIn, AlertTriangle, FilePlus, Puzzle, Users, Trophy, Gift, Clock, XCircle,
+    HelpCircle, ShoppingCart, Gamepad2, TrendingUp, DollarSign, Coins, ChevronsRight
 } from 'lucide-react';
 // --- Componentes de UI Reutilizáveis (sem alterações) ---
 
@@ -16,15 +16,15 @@ const KPI_Card = ({ title, value, icon, color }) => (
             {icon}
         </div>
         <div>
-            <p className="text-gray-400 text-sm">{title}</p>
-            <p className="text-2xl font-bold text-white">{value}</p>
+            <p className="text-secondary-text text-sm">{title}</p>
+            <p className="text-2xl font-bold text-primary-text">{value}</p>
         </div>
     </div>
 );
 
 const HorizontalBarChart = ({ data, dataKey, nameKey, title, icon }) => (
     <div className="bg-gray-800/50 p-6 rounded-xl">
-        <h2 className="text-xl font-bold text-white mb-4 flex items-center"><span className="mr-2">{icon}</span>{title}</h2>
+        <h2 className="text-xl font-bold text-primary-text mb-4 flex items-center"><span className="mr-2">{icon}</span>{title}</h2>
         <div style={{ width: '100%', height: 400 }}>
             <ResponsiveContainer>
                 <BarChart layout="vertical" data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
@@ -42,14 +42,14 @@ const ProfilePieChart = ({ data }) => {
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF'];
     return (
         <div className="bg-gray-800/50 p-6 rounded-xl">
-            <h2 className="text-xl font-bold text-white mb-4 flex items-center"><Users className="mr-2" />Perfis de Jogador Mais Visados</h2>
+            <h2 className="text-xl font-bold text-primary-text mb-4 flex items-center"><Users className="mr-2" />Perfis de Jogador Mais Visados</h2>
             <div style={{ width: '100%', height: 400 }}>
                 <ResponsiveContainer>
                     <PieChart>
                         <Pie data={data} cx="50%" cy="50%" labelLine={false} outerRadius={140} fill="#8884d8" dataKey="count" nameKey="profile" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
                             {data.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
                         </Pie>
-                        <PieTooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #4b5563' }}/>
+                        <PieTooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #4b5563' }} />
                     </PieChart>
                 </ResponsiveContainer>
             </div>
@@ -61,14 +61,14 @@ const CustomPieChart = ({ data, title, icon, dataKey, nameKey }) => {
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF'];
     return (
         <div className="bg-gray-800/50 p-6 rounded-xl">
-            <h2 className="text-xl font-bold text-white mb-4 flex items-center">{icon}<span className="ml-2">{title}</span></h2>
+            <h2 className="text-xl font-bold text-primary-text mb-4 flex items-center">{icon}<span className="ml-2">{title}</span></h2>
             <div style={{ width: '100%', height: 400 }}>
                 <ResponsiveContainer>
                     <PieChart>
                         <Pie data={data} cx="50%" cy="50%" labelLine={false} outerRadius={140} fill="#8884d8" dataKey={dataKey} nameKey={nameKey} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
                             {data.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
                         </Pie>
-                        <PieTooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #4b5563' }}/>
+                        <PieTooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #4b5563' }} />
                     </PieChart>
                 </ResponsiveContainer>
             </div>
@@ -164,7 +164,7 @@ function SystemAnalyticsPage() {
 
     // Carrega os dados da primeira aba ao montar o componente
     useEffect(() => {
-        if(user?.token) fetchOverviewData();
+        if (user?.token) fetchOverviewData();
     }, [fetchOverviewData, user]);
 
     // Carrega os dados das outras abas sob demanda (quando clicadas)
@@ -189,10 +189,10 @@ function SystemAnalyticsPage() {
                 return loadingOverview ? <p>Carregando visão geral...</p> : (
                     <div className="space-y-8 animate-fade-in">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                           <KPI_Card title="Total de Eventos" value={kpis?.total_events ?? '...'} icon={<Activity size={24}/>} color="bg-blue-500/30" />
-                           <KPI_Card title="Logins (24h)" value={kpis?.successful_logins_24h ?? '...'} icon={<LogIn size={24}/>} color="bg-green-500/30" />
-                           <KPI_Card title="Falhas de Login (24h)" value={kpis?.failed_logins_24h ?? '...'} icon={<AlertTriangle size={24}/>} color="bg-yellow-500/30" />
-                           <KPI_Card title="Atividades Criadas (7d)" value={kpis?.activities_created_7d ?? '...'} icon={<FilePlus size={24}/>} color="bg-purple-500/30" />
+                            <KPI_Card title="Total de Eventos" value={kpis?.total_events ?? '...'} icon={<Activity size={24} />} color="bg-blue-500/30" />
+                            <KPI_Card title="Logins (24h)" value={kpis?.successful_logins_24h ?? '...'} icon={<LogIn size={24} />} color="bg-green-500/30" />
+                            <KPI_Card title="Falhas de Login (24h)" value={kpis?.failed_logins_24h ?? '...'} icon={<AlertTriangle size={24} />} color="bg-yellow-500/30" />
+                            <KPI_Card title="Atividades Criadas (7d)" value={kpis?.activities_created_7d ?? '...'} icon={<FilePlus size={24} />} color="bg-purple-500/30" />
                         </div>
                         <div className="bg-gray-800/50 p-6 rounded-xl">
                             <h2 className="text-xl font-bold mb-4">Top 10 Eventos Mais Frequentes</h2>
@@ -207,10 +207,10 @@ function SystemAnalyticsPage() {
                                 </ResponsiveContainer>
                             </div>
                         </div>
-                         <div className="bg-gray-800/50 p-6 rounded-xl text-center border-2 border-dashed border-gray-700">
-                            <h2 className="text-xl font-bold text-white mb-4">Explorador de Logs</h2>
-                            <p className="text-gray-400 mb-4 max-w-lg mx-auto">Para uma análise profunda, busca e filtragem de todos os eventos do sistema, acesse a página dedicada.</p>
-                            <button onClick={() => navigate('/admin/logs')} className="py-2 px-5 bg-accent-teal text-white font-bold rounded-lg hover:bg-accent-teal/80 transition-colors">
+                        <div className="bg-gray-800/50 p-6 rounded-xl text-center border-2 border-dashed border-gray-700">
+                            <h2 className="text-xl font-bold text-primary-text mb-4">Explorador de Logs</h2>
+                            <p className="text-secondary-text mb-4 max-w-lg mx-auto">Para uma análise profunda, busca e filtragem de todos os eventos do sistema, acesse a página dedicada.</p>
+                            <button onClick={() => navigate('/admin/logs')} className="py-2 px-5 bg-accent-teal text-primary-text font-bold rounded-lg hover:bg-accent-teal/80 transition-colors">
                                 Acessar Explorador de Logs
                             </button>
                         </div>
@@ -218,24 +218,24 @@ function SystemAnalyticsPage() {
                 );
             case 'trends':
                 return loadingTrends ? <p>Carregando tendências de criação...</p> : (
-                     creationTrends && <div className="space-y-6 animate-fade-in">
-                        <HorizontalBarChart data={creationTrends.game_elements} dataKey="count" nameKey="element" title="Top Elementos de Jogo" icon={<Puzzle/>} />
+                    creationTrends && <div className="space-y-6 animate-fade-in">
+                        <HorizontalBarChart data={creationTrends.game_elements} dataKey="count" nameKey="element" title="Top Elementos de Jogo" icon={<Puzzle />} />
                         <ProfilePieChart data={creationTrends.player_profiles} />
-                        <HorizontalBarChart data={creationTrends.rewards_offered} dataKey="count" nameKey="reward" title="Top Recompensas Oferecidas" icon={<Gift/>} />
-                        <HorizontalBarChart data={creationTrends.rewarded_actions} dataKey="count" nameKey="action" title="Top Ações Recompensadas" icon={<Trophy/>} />
+                        <HorizontalBarChart data={creationTrends.rewards_offered} dataKey="count" nameKey="reward" title="Top Recompensas Oferecidas" icon={<Gift />} />
+                        <HorizontalBarChart data={creationTrends.rewarded_actions} dataKey="count" nameKey="action" title="Top Ações Recompensadas" icon={<Trophy />} />
                     </div>
                 );
             case 'funnel':
                 return loadingFunnel ? <p>Carregando análise do funil...</p> : (
-                     creationStepsData && <div className="space-y-6 animate-fade-in">
+                    creationStepsData && <div className="space-y-6 animate-fade-in">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                           <KPI_Card title="Eventos de Duração" value={creationStepsData.reduce((s, i) => s + i.event_count, 0)} icon={<Clock size={24}/>} color="bg-teal-500/30"/>
-                           <KPI_Card title="Total de Abandonos" value={creationStepsData.reduce((s, i) => s + i.abandon_count, 0)} icon={<XCircle size={24}/>} color="bg-yellow-500/30"/>
-                           <KPI_Card title="Pedidos de Ajuda" value={creationStepsData.reduce((s, i) => s + i.help_count, 0)} icon={<HelpCircle size={24}/>} color="bg-purple-500/30"/>
+                            <KPI_Card title="Eventos de Duração" value={creationStepsData.reduce((s, i) => s + i.event_count, 0)} icon={<Clock size={24} />} color="bg-teal-500/30" />
+                            <KPI_Card title="Total de Abandonos" value={creationStepsData.reduce((s, i) => s + i.abandon_count, 0)} icon={<XCircle size={24} />} color="bg-yellow-500/30" />
+                            <KPI_Card title="Pedidos de Ajuda" value={creationStepsData.reduce((s, i) => s + i.help_count, 0)} icon={<HelpCircle size={24} />} color="bg-purple-500/30" />
                         </div>
-                         <div className="bg-gray-800/50 p-6 rounded-xl">
-                             <h2 className="text-xl font-bold text-white mb-4">Detalhes por Etapa</h2>
-                             <div className="overflow-x-auto">
+                        <div className="bg-gray-800/50 p-6 rounded-xl">
+                            <h2 className="text-xl font-bold text-primary-text mb-4">Detalhes por Etapa</h2>
+                            <div className="overflow-x-auto">
                                 <table className="min-w-full divide-y divide-gray-700">
                                     <thead>
                                         <tr>
@@ -256,21 +256,21 @@ function SystemAnalyticsPage() {
                                         ))}
                                     </tbody>
                                 </table>
-                             </div>
-                         </div>
+                            </div>
+                        </div>
                     </div>
                 );
             case 'engagement':
                 return loadingEngagement ? <p className="text-center">Carregando dados de engajamento...</p> : (
                     studentEngagementData && <div className="space-y-6 animate-fade-in">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <KPI_Card title="Total de Moedas Ganhas" value={studentEngagementData.economy_kpis.coins_earned} icon={<Coins size={24}/>} color="bg-green-500/30" />
-                            <KPI_Card title="Total de Moedas Gastas" value={studentEngagementData.economy_kpis.coins_spent} icon={<DollarSign size={24}/>} color="bg-red-500/30" />
+                            <KPI_Card title="Total de Moedas Ganhas" value={studentEngagementData.economy_kpis.coins_earned} icon={<Coins size={24} />} color="bg-green-500/30" />
+                            <KPI_Card title="Total de Moedas Gastas" value={studentEngagementData.economy_kpis.coins_spent} icon={<DollarSign size={24} />} color="bg-red-500/30" />
                         </div>
-                        <HorizontalBarChart data={studentEngagementData.game_element_usage} dataKey="count" nameKey="name" title="Mecânicas de Jogo Mais Usadas" icon={<Gamepad2/>} barFill="#f97316"/>
-                        <HorizontalBarChart data={studentEngagementData.top_store_items} dataKey="count" nameKey="name" title="Itens Mais Populares da Loja" icon={<ShoppingCart/>} barFill="#10b981"/>
-                        <CustomPieChart data={studentEngagementData.progress_status} title="Status de Progresso das Atividades" icon={<ChevronsRight/>} dataKey="count" nameKey="status" />
-                        <HorizontalBarChart data={studentEngagementData.most_engaging_activities} dataKey="total_seconds" nameKey="title" title="Atividades com Maior Tempo de Interação (s)" icon={<Clock/>} barFill="#6366f1"/>
+                        <HorizontalBarChart data={studentEngagementData.game_element_usage} dataKey="count" nameKey="name" title="Mecânicas de Jogo Mais Usadas" icon={<Gamepad2 />} barFill="#f97316" />
+                        <HorizontalBarChart data={studentEngagementData.top_store_items} dataKey="count" nameKey="name" title="Itens Mais Populares da Loja" icon={<ShoppingCart />} barFill="#10b981" />
+                        <CustomPieChart data={studentEngagementData.progress_status} title="Status de Progresso das Atividades" icon={<ChevronsRight />} dataKey="count" nameKey="status" />
+                        <HorizontalBarChart data={studentEngagementData.most_engaging_activities} dataKey="total_seconds" nameKey="title" title="Atividades com Maior Tempo de Interação (s)" icon={<Clock />} barFill="#6366f1" />
                     </div>
                 );
             default: return null;
@@ -278,9 +278,9 @@ function SystemAnalyticsPage() {
     }
 
     return (
-        <div className="animate-fade-in space-y-8 text-white">
+        <div className="animate-fade-in space-y-8 text-primary-text">
             <h1 className="text-3xl font-bold">Análise de Sistema</h1>
-            
+
             {error && <div className="bg-red-500/20 text-red-300 p-4 rounded-lg">{error}</div>}
 
             {/* Navegação por Abas */}
@@ -289,11 +289,10 @@ function SystemAnalyticsPage() {
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`px-4 py-2 text-sm font-medium transition-colors duration-200 focus:outline-none ${
-                            activeTab === tab 
-                            ? 'border-b-2 border-accent-teal text-accent-teal' 
-                            : 'text-gray-400 hover:text-white'
-                        }`}
+                        className={`px-4 py-2 text-sm font-medium transition-colors duration-200 focus:outline-none ${activeTab === tab
+                            ? 'border-b-2 border-accent-teal text-accent-teal'
+                            : 'text-secondary-text hover:text-primary-text'
+                            }`}
                     >
                         {tab === 'overview' && 'Visão Geral'}
                         {tab === 'trends' && 'Tendências de Criação'}

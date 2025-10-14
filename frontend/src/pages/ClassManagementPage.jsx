@@ -170,21 +170,21 @@ function ClassListPage() {
             )}
             {user?.role === 'professor' && (
                 <div className="text-center mb-6">
-                    <Link to="/teacher/classes/new" className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg inline-block transition duration-200 ease-in-out transform hover:scale-105">
+                    <Link to="/teacher/classes/new" className="bg-green-600 hover:bg-green-700 text-primary-text font-bold py-2 px-4 rounded-lg inline-block transition duration-200 ease-in-out transform hover:scale-105">
                         Criar Nova Turma
                     </Link>
                 </div>
             )}
             {isLoading ? (
-                <p className="text-center text-gray-400">Carregando turmas...</p>
+                <p className="text-center text-secondary-text">Carregando turmas...</p>
             ) : classes.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {classes.map((cls) => (
                         <div
                             key={cls.id}
-                            className="bg-[#343a40] p-6 rounded-xl shadow-lg border-t-4 border-[#ffbd30] transition-all duration-300 hover:shadow-2xl hover:-translate-y-1.5 hover:border-[#69e8cb]"
+                            className="bg-secondary-bg p-6 rounded-xl shadow-lg border-t-4 border-[#ffbd30] transition-all duration-300 hover:shadow-2xl hover:-translate-y-1.5 hover:border-[#69e8cb]"
                         >
-                            <h2 className="text-xl font-bold mb-3 text-white">
+                            <h2 className="text-xl font-bold mb-3 text-primary-text">
                                 <Link
                                     to={`/classes/${cls.id}`}
                                     className="text-[#69e8cb] hover:text-[#ffbd30] transition-colors duration-200"
@@ -198,7 +198,7 @@ function ClassListPage() {
                                 <>
                                     <p className="text-[#e9ecef] text-sm mb-4">
                                         Código de Inscrição:
-                                        <span className="font-mono bg-[#2c3135] p-1.5 rounded-md text-[#ffbd30] block mt-1.5">
+                                        <span className="font-mono bg-primary-bg p-1.5 rounded-md text-[#ffbd30] block mt-1.5">
                                             {cls.enrollment_code}
                                         </span>
                                     </p>
@@ -211,7 +211,7 @@ function ClassListPage() {
                                         </Link>
                                         <button
                                             onClick={() => handleDeleteClass(cls.id)}
-                                            className="flex-1 bg-gradient-to-r from-[#ff416c] to-[#ff4b2b] hover:from-[#ff557c] hover:to-[#ff6340] text-white font-bold py-2 px-4 rounded-lg text-sm transition-all duration-200 shadow-md hover:shadow-lg"
+                                            className="flex-1 bg-gradient-to-r from-[#ff416c] to-[#ff4b2b] hover:from-[#ff557c] hover:to-[#ff6340] text-primary-text font-bold py-2 px-4 rounded-lg text-sm transition-all duration-200 shadow-md hover:shadow-lg"
                                         >
                                             Deletar
                                         </button>
@@ -223,7 +223,7 @@ function ClassListPage() {
                                 <div className="mt-5">
                                     <button
                                         onClick={() => handleLeaveClass(cls.id)}
-                                        className="w-full bg-gradient-to-r from-[#ff416c] to-[#ff4b2b] hover:from-[#ff557c] hover:to-[#ff6340] text-white font-bold py-2 px-4 rounded-lg text-sm transition-all duration-200 shadow-md hover:shadow-lg"
+                                        className="w-full bg-gradient-to-r from-[#ff416c] to-[#ff4b2b] hover:from-[#ff557c] hover:to-[#ff6340] text-primary-text font-bold py-2 px-4 rounded-lg text-sm transition-all duration-200 shadow-md hover:shadow-lg"
                                     >
                                         Sair da Turma
                                     </button>
@@ -233,7 +233,7 @@ function ClassListPage() {
                     ))}
                 </div>
             ) : (
-                <p className="text-center text-gray-400">Nenhuma turma encontrada.</p>
+                <p className="text-center text-secondary-text">Nenhuma turma encontrada.</p>
             )}
         </div>
     );

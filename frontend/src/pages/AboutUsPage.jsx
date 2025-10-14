@@ -74,17 +74,23 @@ function AboutUsPage() {
         <h1 className="text-4xl md:text-5xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-[#ffbd30] to-[#69e8cb]">
           Sobre o Portal
         </h1>
-        <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+        <p className="text-xl text-secondary-text dark:text-secondary-text max-w-3xl mx-auto">
           Transformando a educação através da gamificação e engajamento
         </p>
       </div>
 
-      <div className="bg-gradient-to-br from-[#343a40] to-[#2c3135] p-8 rounded-2xl shadow-2xl border-l-4 border-[#ffbd30] mb-16">
+      {/* Bloco de Missão CORRIGIDO para funcionar com ambos os temas */}
+      <div className="bg-gradient-to-br from-gray-100 to-white dark:from-[#343a40] dark:to-[#2c3135] p-8 rounded-2xl shadow-2xl border-l-4 border-accent-yellow mb-16">
         <div className="flex items-start mb-4">
-          <BookOpen className="w-10 h-10 text-[#ffbd30] mr-4 flex-shrink-0" />
+          <BookOpen className="w-10 h-10 text-accent-yellow mr-4 flex-shrink-0" />
           <div>
-            <h2 className="text-3xl font-bold mb-3 text-white">Nossa Missão</h2>
-            <p className="text-lg text-gray-300">
+            {/* ANTES: text-primary-text */}
+            {/* AGORA: texto escuro no modo claro, branco no modo escuro */}
+            <h2 className="text-3xl font-bold mb-3 text-primary-text dark:text-primary-text">Nossa Missão</h2>
+
+            {/* ANTES: text-secondary-text */}
+            {/* AGORA: texto cinza no modo claro, cinza claro no modo escuro */}
+            <p className="text-lg text-secondary-text dark:text-secondary-text">
               Transformar a experiência educacional em uma jornada engajadora, interativa e divertida através da gamificação. Queremos revolucionar a forma como professores ensinam e alunos aprendem, criando um ecossistema educacional vibrante.
             </p>
           </div>
@@ -93,19 +99,19 @@ function AboutUsPage() {
 
       {/* Seção da Equipe com Novo Layout */}
       <div className="mb-16">
-        <h2 className="text-3xl font-bold text-center mb-12 dark:text-white">Conheça Nossa Equipe</h2>
+        <h2 className="text-3xl font-bold text-center mb-12 dark:text-primary-text">Conheça Nossa Equipe</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {teamMembers.map((member, index) => (
-            <div key={index} className="bg-white dark:bg-[#343a40] p-6 rounded-2xl shadow-lg border border-[#9570d9]/20 flex flex-col items-center text-center transition-all duration-300 hover:shadow-xl hover:border-[#ffbd30]/50">
+            <div key={index} className="bg-secondary-bg p-6 rounded-2xl shadow-lg border border-accent-purple/20 flex flex-col items-center text-center transition-all duration-300 hover:shadow-xl hover:border-accent-yellow/50">
               <img
                 src={member.photo}
                 alt={`Foto de ${member.name}`}
                 className="w-32 h-32 rounded-full object-cover mb-4 border-4 border-[#69e8cb]"
               />
-              <h3 className="text-2xl font-bold mb-1 dark:text-white">{member.name}</h3>
+              <h3 className="text-2xl font-bold mb-1 dark:text-primary-text">{member.name}</h3>
               <p className="text-[#ffbd30] font-semibold mb-4">{member.role}</p>
 
-              <div className="text-gray-600 dark:text-gray-300 text-left mb-4">
+              <div className="text-secondary-text dark:text-secondary-text text-left mb-4">
                 <p>
                   {expandedIndex === index ? member.bio : `${member.bio.substring(0, 150)}...`}
                 </p>
@@ -116,10 +122,10 @@ function AboutUsPage() {
               </div>
 
               <div className="flex space-x-4 mt-auto pt-4 border-t border-gray-200 dark:border-gray-600 w-full justify-center">
-                <a href={member.lattes} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[#69e8cb] transition-colors" title="Currículo Lattes">
+                <a href={member.lattes} target="_blank" rel="noopener noreferrer" className="text-secondary-text hover:text-[#69e8cb] transition-colors" title="Currículo Lattes">
                   <LattesIcon />
                 </a>
-                <a href={member.orcid} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[#69e8cb] transition-colors" title="ORCID">
+                <a href={member.orcid} target="_blank" rel="noopener noreferrer" className="text-secondary-text hover:text-[#69e8cb] transition-colors" title="ORCID">
                   <OrcidIcon />
                 </a>
               </div>
@@ -130,12 +136,12 @@ function AboutUsPage() {
 
       {/* Seções restantes (sem alterações) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-16">
-        <div className="bg-white dark:bg-[#343a40] p-6 rounded-2xl shadow-lg border-t-4 border-[#69e8cb]">
-          <h3 className="text-2xl font-bold mb-4 dark:text-white flex items-center">
-            <Shield className="w-6 h-6 text-[#69e8cb] mr-2" />
+        <div className="bg-secondary-bg p-6 rounded-2xl shadow-lg border-t-4 border-accent-teal">
+          <h3 className="text-2xl font-bold mb-4 flex items-center">
+            <Shield className="w-6 h-6 text-accent-teal mr-2" />
             Para Professores
           </h3>
-          <p className="text-lg text-gray-600 dark:text-gray-300">
+          <p className="text-lg text-secondary-text dark:text-secondary-text">
             Oferecemos ferramentas intuitivas para criar e gerenciar atividades gamificadas, permitindo personalizar o ensino e motivar seus alunos. Com nosso sistema, você pode:
           </p>
           <ul className="mt-4 space-y-2">
@@ -147,18 +153,18 @@ function AboutUsPage() {
             ].map((item, index) => (
               <li key={index} className="flex items-start">
                 <span className="text-[#ffbd30] mr-2">•</span>
-                <span className="text-gray-600 dark:text-gray-300">{item}</span>
+                <span className="text-secondary-text dark:text-secondary-text">{item}</span>
               </li>
             ))}
           </ul>
         </div>
 
-        <div className="bg-white dark:bg-[#343a40] p-6 rounded-2xl shadow-lg border-t-4 border-[#9570d9]">
-          <h3 className="text-2xl font-bold mb-4 dark:text-white flex items-center">
+        <div className="bg-secondary-bg dark:bg-secondary-bg p-6 rounded-2xl shadow-lg border-t-4 border-[#9570d9]">
+          <h3 className="text-2xl font-bold mb-4 dark:text-primary-text flex items-center">
             <Award className="w-6 h-6 text-[#9570d9] mr-2" />
             Para Alunos
           </h3>
-          <p className="text-lg text-gray-600 dark:text-gray-300">
+          <p className="text-lg text-secondary-text dark:text-secondary-text">
             Proporcionamos um ambiente dinâmico onde o progresso é recompensado e a colaboração é incentivada. Em nossa plataforma, você pode:
           </p>
           <ul className="mt-4 space-y-2">
@@ -170,7 +176,7 @@ function AboutUsPage() {
             ].map((item, index) => (
               <li key={index} className="flex items-start">
                 <span className="text-[#ffbd30] mr-2">•</span>
-                <span className="text-gray-600 dark:text-gray-300">{item}</span>
+                <span className="text-secondary-text dark:text-secondary-text">{item}</span>
               </li>
             ))}
           </ul>
@@ -178,18 +184,18 @@ function AboutUsPage() {
       </div>
 
       <div className="mb-16">
-        <h2 className="text-3xl font-bold text-center mb-12 dark:text-white">Nossos Valores Fundamentais</h2>
+        <h2 className="text-3xl font-bold text-center mb-12 dark:text-primary-text">Nossos Valores Fundamentais</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {values.map((value, index) => (
             <div
               key={index}
-              className="bg-white dark:bg-[#343a40] p-6 rounded-xl shadow-lg border border-[#69e8cb]/20 hover:shadow-xl transition-all duration-300"
+              className="bg-secondary-bg dark:bg-secondary-bg p-6 rounded-xl shadow-lg border border-[#69e8cb]/20 hover:shadow-xl transition-all duration-300"
             >
               <div className="text-[#ffbd30] mb-4">
                 {value.icon}
               </div>
-              <h3 className="text-xl font-bold mb-3 dark:text-white">{value.title}</h3>
-              <p className="text-gray-600 dark:text-gray-300">{value.description}</p>
+              <h3 className="text-xl font-bold mb-3 dark:text-primary-text">{value.title}</h3>
+              <p className="text-secondary-text dark:text-secondary-text">{value.description}</p>
             </div>
           ))}
         </div>
@@ -197,13 +203,13 @@ function AboutUsPage() {
 
       <div className="bg-gradient-to-r from-[#ffbd30]/10 to-[#69e8cb]/10 p-8 rounded-2xl border-2 border-[#9570d9]/30 text-center mb-8">
         <Heart className="w-12 h-12 mx-auto text-[#ff6b6b] mb-4" />
-        <h2 className="text-3xl font-bold mb-4 dark:text-white">Junte-se a Nossa Comunidade</h2>
-        <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-6">
+        <h2 className="text-3xl font-bold mb-4 dark:text-primary-text">Junte-se a Nossa Comunidade</h2>
+        <p className="text-xl text-secondary-text dark:text-secondary-text max-w-3xl mx-auto mb-6">
           Faça parte desta revolução educacional que já transforma a vida de milhares de professores e alunos.
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           <Link to="/cadastro" className="bg-gradient-to-r from-[#ffbd30] to-[#ffa000] hover:from-[#ffcc5c] hover:to-[#ffb140] text-[#2c3135] font-bold py-3 px-6 rounded-full shadow-md transition-all duration-300 transform hover:scale-105">Comece Agora</Link>
-          <button className="bg-[#343a40] hover:bg-[#2c3135] text-white font-bold py-3 px-6 rounded-full border border-[#69e8cb]/40 shadow-md transition-all duration-300">
+          <button className="bg-secondary-bg hover:bg-primary-bg text-primary-text font-bold py-3 px-6 rounded-full border border-[#69e8cb]/40 shadow-md transition-all duration-300">
             Fale Conosco
           </button>
         </div>

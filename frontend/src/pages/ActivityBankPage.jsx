@@ -179,7 +179,7 @@ function ActivityBankPage() {
 
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-[#1e2226] to-[#2c3135] p-4 md:p-8 text-white">
+        <div className="min-h-screen bg-gradient-to-br from-[#1e2226] to-[#2c3135] p-4 md:p-8 text-primary-text">
             <div className="max-w-7xl mx-auto">
                 {/* Cabeçalho */}
                 <div className="flex flex-col md:flex-row justify-between items-center mb-8">
@@ -202,16 +202,16 @@ function ActivityBankPage() {
                         className="w-full bg-[#3a4046] border-2 border-[#4a525a] rounded-xl py-3 px-4 pl-10 text-gray-200 focus:outline-none focus:ring-2 focus:ring-accent-yellow"
                     />
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <FaSearch className="text-gray-400" />
+                        <FaSearch className="text-secondary-text" />
                     </div>
                 </div>
 
                 {/* Abas de Navegação */}
                 <div className="mb-6 flex border-b border-gray-700">
-                    <button onClick={() => setActiveTab('my')} className={`flex items-center gap-2 py-3 px-6 font-semibold transition-colors ${activeTab === 'my' ? 'border-b-2 border-accent-yellow text-accent-yellow' : 'text-gray-400 hover:text-white'}`}>
+                    <button onClick={() => setActiveTab('my')} className={`flex items-center gap-2 py-3 px-6 font-semibold transition-colors ${activeTab === 'my' ? 'border-b-2 border-accent-yellow text-accent-yellow' : 'text-secondary-text hover:text-primary-text'}`}>
                         <FaUserEdit /> Minhas Atividades ({myActivities.length})
                     </button>
-                    <button onClick={() => setActiveTab('public')} className={`flex items-center gap-2 py-3 px-6 font-semibold transition-colors ${activeTab === 'public' ? 'border-b-2 border-accent-teal text-accent-teal' : 'text-gray-400 hover:text-white'}`}>
+                    <button onClick={() => setActiveTab('public')} className={`flex items-center gap-2 py-3 px-6 font-semibold transition-colors ${activeTab === 'public' ? 'border-b-2 border-accent-teal text-accent-teal' : 'text-secondary-text hover:text-primary-text'}`}>
                         <FaGlobeAmericas /> Banco Público ({publicActivities.length})
                     </button>
                 </div>
@@ -226,14 +226,14 @@ function ActivityBankPage() {
                             <>
                                 {/* ===== 3. BOTÕES DE FILTRO ADICIONADOS AQUI ===== */}
                                 <div className="flex flex-wrap justify-center items-center gap-4 mb-8 bg-[#3a4046] p-3 rounded-xl">
-                                    <span className="font-semibold text-gray-300 mr-2 flex items-center"><FaFilter className="mr-2" />Filtrar por:</span>
-                                    <button onClick={() => setAssignmentFilter('all')} className={`py-2 px-4 rounded-lg text-sm font-bold transition-all ${assignmentFilter === 'all' ? 'bg-accent-yellow text-gray-900 shadow-lg' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'}`}>
+                                    <span className="font-semibold text-secondary-text mr-2 flex items-center"><FaFilter className="mr-2" />Filtrar por:</span>
+                                    <button onClick={() => setAssignmentFilter('all')} className={`py-2 px-4 rounded-lg text-sm font-bold transition-all ${assignmentFilter === 'all' ? 'bg-accent-yellow text-primary-text shadow-lg' : 'bg-gray-700 hover:bg-gray-600 text-secondary-text'}`}>
                                         Todas
                                     </button>
-                                    <button onClick={() => setAssignmentFilter('assigned')} className={`py-2 px-4 rounded-lg text-sm font-bold transition-all ${assignmentFilter === 'assigned' ? 'bg-accent-yellow text-gray-900 shadow-lg' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'}`}>
+                                    <button onClick={() => setAssignmentFilter('assigned')} className={`py-2 px-4 rounded-lg text-sm font-bold transition-all ${assignmentFilter === 'assigned' ? 'bg-accent-yellow text-primary-text shadow-lg' : 'bg-gray-700 hover:bg-gray-600 text-secondary-text'}`}>
                                         Atribuídas
                                     </button>
-                                    <button onClick={() => setAssignmentFilter('unassigned')} className={`py-2 px-4 rounded-lg text-sm font-bold transition-all ${assignmentFilter === 'unassigned' ? 'bg-accent-yellow text-gray-900 shadow-lg' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'}`}>
+                                    <button onClick={() => setAssignmentFilter('unassigned')} className={`py-2 px-4 rounded-lg text-sm font-bold transition-all ${assignmentFilter === 'unassigned' ? 'bg-accent-yellow text-primary-text shadow-lg' : 'bg-gray-700 hover:bg-gray-600 text-secondary-text'}`}>
                                         Não Atribuídas (Modelos)
                                     </button>
                                     {/* ===== 4. CHECKBOX "SELECIONAR TODOS" E BARRA DE AÇÕES ===== */}
@@ -246,7 +246,7 @@ function ActivityBankPage() {
                                                 onChange={handleSelectAll}
                                                 className="h-5 w-5 rounded bg-gray-700 border-gray-500 text-accent-yellow focus:ring-accent-yellow cursor-pointer"
                                             />
-                                            <label htmlFor="selectAll" className="ml-2 text-sm font-medium text-gray-300">Selecionar Todos</label>
+                                            <label htmlFor="selectAll" className="ml-2 text-sm font-medium text-secondary-text">Selecionar Todos</label>
                                         </div>
                                     </div>
                                 </div>
@@ -254,7 +254,7 @@ function ActivityBankPage() {
 
                                 {/* BARRA DE AÇÕES FLUTUANTE */}
                                 {selectedActivities.length > 0 && (
-                                    <div className="sticky top-4 z-20 bg-blue-900/80 backdrop-blur-sm border border-blue-500 text-white rounded-xl shadow-lg p-4 mb-6 flex justify-between items-center animate-fadeIn">
+                                    <div className="sticky top-4 z-20 bg-blue-900/80 backdrop-blur-sm border border-blue-500 text-primary-text rounded-xl shadow-lg p-4 mb-6 flex justify-between items-center animate-fadeIn">
                                         <span className="font-bold">{selectedActivities.length} atividade(s) selecionada(s)</span>
                                         <button onClick={handleBulkDelete} className="flex items-center gap-2 py-2 px-4 bg-red-600 hover:bg-red-700 rounded-lg font-bold transition-transform transform hover:scale-105">
                                             <FaTrash />
@@ -277,7 +277,7 @@ function ActivityBankPage() {
                                             />
                                         ))
                                     ) : (
-                                        <p className="col-span-full text-center py-10 text-gray-400">Nenhuma atividade encontrada.</p>
+                                        <p className="col-span-full text-center py-10 text-secondary-text">Nenhuma atividade encontrada.</p>
                                     )}
                                 </div>
                             </>
@@ -289,7 +289,7 @@ function ActivityBankPage() {
                                         <ActivityCard key={activity.id} activity={activity} isOwner={false} onCopy={handleCopyActivity} />
                                     ))
                                 ) : (
-                                    <p className="col-span-full text-center py-10 text-gray-400">Nenhuma atividade pública disponível no momento.</p>
+                                    <p className="col-span-full text-center py-10 text-secondary-text">Nenhuma atividade pública disponível no momento.</p>
                                 )}
                             </div>
                         )}

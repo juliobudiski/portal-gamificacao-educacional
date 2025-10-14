@@ -91,12 +91,12 @@ function JoinClassPage() {
             <div className="w-full max-w-md">
                 <div className="text-center mb-8">
                     <div className="mx-auto bg-gradient-to-r from-accent-purple to-accent-teal p-3 rounded-full w-20 h-20 flex items-center justify-center shadow-lg">
-                        <FaUserGraduate className="text-white text-4xl" />
+                        <FaUserGraduate className="text-primary-text text-4xl" />
                     </div>
                     <h1 className="mt-4 text-3xl font-bold bg-gradient-to-r from-accent-yellow to-accent-teal bg-clip-text text-transparent">
                         Entrar em uma Turma
                     </h1>
-                    <p className="mt-2 text-gray-300">
+                    <p className="mt-2 text-secondary-text">
                         Insira o código fornecido pelo seu professor
                     </p>
                 </div>
@@ -119,13 +119,13 @@ function JoinClassPage() {
                                     setEnrollmentCode(e.target.value);
                                     console.log('[JoinClassPage] Código de inscrição alterado para:', e.target.value);
                                 }}
-                                className="w-full bg-gray-700 text-white py-3 px-4 pl-11 rounded-xl border border-gray-600 focus:outline-none focus:ring-2 focus:ring-accent-yellow focus:border-transparent transition-all duration-200"
+                                className="w-full bg-gray-700 text-primary-text py-3 px-4 pl-11 rounded-xl border border-gray-600 focus:outline-none focus:ring-2 focus:ring-accent-yellow focus:border-transparent transition-all duration-200"
                                 placeholder="Digite o código aqui"
                                 required
                                 disabled={isLoading}
                             />
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <FaKey className="text-gray-400" />
+                                <FaKey className="text-secondary-text" />
                             </div>
                         </div>
                     </div>
@@ -134,12 +134,12 @@ function JoinClassPage() {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="group relative bg-gradient-to-r from-accent-yellow to-[#ffa500] hover:from-[#ffcb52] hover:to-accent-yellow text-gray-900 font-bold py-3 px-4 rounded-xl shadow-lg transform transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-accent-yellow"
+                            className="group relative bg-gradient-to-r from-accent-yellow to-[#ffa500] hover:from-[#ffcb52] hover:to-accent-yellow text-primary-text font-bold py-3 px-4 rounded-xl shadow-lg transform transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-accent-yellow"
                         >
                             <div className="flex items-center justify-center">
                                 {isLoading ? (
                                     <span className="flex items-center">
-                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-primary-text" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                         </svg>
@@ -156,12 +156,12 @@ function JoinClassPage() {
 
                         {message && (
                             <div className={`mt-4 p-3 rounded-xl border ${message.includes('sucesso')
-                                    ? 'bg-green-900/30 border-green-600'
-                                    : 'bg-red-900/30 border-red-600'
+                                ? 'bg-green-900/30 border-green-600'
+                                : 'bg-red-900/30 border-red-600'
                                 } transition-all duration-300`}>
                                 <p className={`text-center font-medium ${message.includes('sucesso')
-                                        ? 'text-green-400'
-                                        : 'text-red-400'
+                                    ? 'text-green-400'
+                                    : 'text-red-400'
                                     }`}>
                                     {message}
                                 </p>

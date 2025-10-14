@@ -46,7 +46,7 @@ const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === 'true';
 
 // Componente de Tela de Carregamento
 const FullPageLoader = ({ progress, etr }) => (
-  <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white font-sans">
+  <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-primary-text font-sans">
     <h2 className="text-2xl mb-4">Carregando Aventura...</h2>
     <div className="w-3/4 max-w-lg bg-gray-700 rounded-full h-4 overflow-hidden border-2 border-gray-600">
       <div
@@ -55,7 +55,7 @@ const FullPageLoader = ({ progress, etr }) => (
       ></div>
     </div>
     <p className="mt-4 text-xl font-bold">{progress}%</p>
-    {etr && <p className="mt-2 text-gray-400">{etr}</p>}
+    {etr && <p className="mt-2 text-secondary-text">{etr}</p>}
   </div>
 );
 
@@ -640,7 +640,7 @@ function ActivityPage() {
     debugLog(`Cards disponíveis para ${userRole}:`, availableCards.map(c => c.key));
 
     if (availableCards.length === 0) {
-      return <div className="text-center text-gray-400 p-8">Esta atividade não possui elementos interativos.</div>;
+      return <div className="text-center text-secondary-text p-8">Esta atividade não possui elementos interativos.</div>;
     }
 
     return (
@@ -657,9 +657,9 @@ function ActivityPage() {
               <div className={`p-3 rounded-lg bg-${card.color}-400/10 mr-4`}>
                 {card.icon}
               </div>
-              <h3 className="text-xl font-bold text-white">{card.title}</h3>
+              <h3 className="text-xl font-bold text-primary-text">{card.title}</h3>
             </div>
-            <p className="text-gray-400 group-hover:text-gray-300 transition-colors">
+            <p className="text-secondary-text group-hover:text-secondary-text transition-colors">
               {card.description}
             </p>
           </button>
@@ -773,7 +773,7 @@ function ActivityPage() {
         <p className="font-bold">Ocorreu um erro:</p>
         <p>{error}</p>
         <button
-          className="mt-4 px-4 py-2 bg-red-700 rounded hover:bg-red-600 text-white"
+          className="mt-4 px-4 py-2 bg-red-700 rounded hover:bg-red-600 text-primary-text"
           onClick={() => window.location.reload()}
         >
           Tentar novamente
@@ -783,17 +783,17 @@ function ActivityPage() {
   }
 
   if (!activity) {
-    return <div className="text-center p-10 text-white">Atividade não encontrada.</div>;
+    return <div className="text-center p-10 text-primary-text">Atividade não encontrada.</div>;
   }
 
 
   return (
-    <div className="flex min-h-screen bg-gray-900 text-white relative">
+    <div className="flex min-h-screen bg-gray-900 text-primary-text relative">
       {/* Botão para controlar a Sidebar */}
       {user.role === 'aluno' && (
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="absolute top-4 left-4 z-20 p-2 bg-gray-800 rounded-full text-white hover:bg-yellow-500 transition-all"
+          className="absolute top-4 left-4 z-20 p-2 bg-gray-800 rounded-full text-primary-text hover:bg-yellow-500 transition-all"
           aria-label="Mostrar/Esconder Progresso"
         >
           {/* Ícone muda com base no estado */}
@@ -823,7 +823,7 @@ function ActivityPage() {
       {/* Conteúdo principal */}
       <main className="flex-1 w-3/4 p-8">
         <h1 className="text-5xl font-extrabold mb-2">{activity.title}</h1>
-        <p className="mb-8 text-lg text-gray-400">{activity.description}</p>
+        <p className="mb-8 text-lg text-secondary-text">{activity.description}</p>
 
         {activity.gamificationDesign && (
           <GameBoardViewer

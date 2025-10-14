@@ -117,6 +117,15 @@ def get_class_details(class_id):
     class_data = class_obj.to_dict()
     professor_name = User.query.get(class_obj.professor_id).name if User.query.get(class_obj.professor_id) else 'Unknown'
     class_data['professor_name'] = professor_name
+    enrolled_students = User.query.join(Enrollment).filter(Enrollment.class_id == class_id).all()
+    class_data['students'] = [{"id": s.id, "name": s.name} for s in enrolled_students]
+
+    # 2. Lógica para visibilidade do código de inscrição
+    if not class_obj.is_enrollment_code_public and not is_professor:
+        # Se o código não for público e o usuário não for o professor, remova-o da resposta.
+        if 'enrollment_code' in class_data:
+            del class_data['enrollment_code']
+
 
     # Optionally include activities assigned to this class
     assigned_activities = Activity.query.filter_by(class_id=class_id).all()
@@ -153,7 +162,9 @@ def update_class(class_id):
     try:
         class_to_update.name = data.get('name', class_to_update.name)
         class_to_update.description = data.get('description', class_to_update.description)
-        # Enrollment code should not be directly updatable via this route, it's generated
+        if 'is_enrollment_code_public' in data:
+            class_to_update.is_enrollment_code_public = bool(data['is_enrollment_code_public'])
+        
 
         db.session.commit()
         current_app.logger.info(f"Turma ID {class_id} atualizada com sucesso pelo professor ID {current_user_id}.")

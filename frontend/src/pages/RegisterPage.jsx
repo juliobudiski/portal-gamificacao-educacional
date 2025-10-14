@@ -231,15 +231,15 @@ Professora Orientadora: Prof.ª Dr.ª Aline Maria Malachini Miotto Amaral - ammm
       )}
 
       <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-[#2c3135] to-[#1e2226] p-4">
-        <div className="w-full max-w-md bg-[#343a40] rounded-2xl shadow-2xl overflow-hidden border border-[#3e4a52]">
+        <div className="w-full max-w-md bg-secondary-bg rounded-2xl shadow-2xl overflow-hidden border border-[#3e4a52]">
           <div className="bg-gradient-to-r from-[#69e8cb] to-[#9570d9] p-6 text-center">
-            <div className="bg-white/20 backdrop-blur-sm rounded-full p-3 inline-block mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="bg-secondary-bg/20 backdrop-blur-sm rounded-full p-3 inline-block mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-primary-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
             </div>
-            <h2 className="text-3xl font-extrabold text-white">Crie Sua Conta</h2>
-            <p className="text-white/90 mt-2">Transforme sua experiência de aprendizado</p>
+            <h2 className="text-3xl font-extrabold text-primary-text">Crie Sua Conta</h2>
+            <p className="text-primary-text/90 mt-2">Transforme sua experiência de aprendizado</p>
           </div>
 
           <div className="p-8">
@@ -260,17 +260,17 @@ Professora Orientadora: Prof.ª Dr.ª Aline Maria Malachini Miotto Amaral - ammm
             <div className="space-y-6 mb-6">
               {/* 1. Seleção de Perfil */}
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-300 mb-3">Eu sou um...</label>
+                <label className="block text-sm font-medium text-secondary-text mb-3">Eu sou um...</label>
                 <div className="grid grid-cols-2 gap-4">
                   <div
                     className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 ${selectedRole === 'aluno' ? 'border-[#69e8cb] bg-[#69e8cb]/10 shadow-lg' : 'border-[#3e4a52] hover:border-[#69e8cb]/50'}`}
                     onClick={() => setSelectedRole('aluno')}
                   >
                     <div className="flex items-center">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${selectedRole === 'aluno' ? 'bg-[#69e8cb] text-[#2c3135]' : 'bg-[#2c3135] text-[#69e8cb]'}`}>
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${selectedRole === 'aluno' ? 'bg-[#69e8cb] text-[#2c3135]' : 'bg-primary-bg text-[#69e8cb]'}`}>
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5zm0 0v6" /></svg>
                       </div>
-                      <span className="font-medium text-gray-300">Aluno</span>
+                      <span className="font-medium text-secondary-text">Aluno</span>
                     </div>
                     {selectedRole === 'aluno' && (<div className="absolute top-2 right-2"><svg className="w-5 h-5 text-[#69e8cb]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>)}
                   </div>
@@ -279,10 +279,10 @@ Professora Orientadora: Prof.ª Dr.ª Aline Maria Malachini Miotto Amaral - ammm
                     onClick={() => setSelectedRole('professor')}
                   >
                     <div className="flex items-center">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${selectedRole === 'professor' ? 'bg-[#ffbd30] text-[#2c3135]' : 'bg-[#2c3135] text-[#ffbd30]'}`}>
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${selectedRole === 'professor' ? 'bg-[#ffbd30] text-[#2c3135]' : 'bg-primary-bg text-[#ffbd30]'}`}>
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14v6m0 0v6m0-6h6m-6 0H6" /></svg>
                       </div>
-                      <span className="font-medium text-gray-300">Professor</span>
+                      <span className="font-medium text-secondary-text">Professor</span>
                     </div>
                     {selectedRole === 'professor' && (<div className="absolute top-2 right-2"><svg className="w-5 h-5 text-[#ffbd30]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>)}
                   </div>
@@ -294,7 +294,7 @@ Professora Orientadora: Prof.ª Dr.ª Aline Maria Malachini Miotto Amaral - ammm
                 <button
                   type="button"
                   onClick={() => setIsTermsModalOpen(true)}
-                  className="w-full text-center py-3 px-4 rounded-xl border-2 border-solid border-teal-500/60 bg-teal-500/10 text-teal-300 hover:border-teal-400 hover:text-white hover:bg-teal-500/20 transition-all duration-300 flex items-center justify-center font-semibold"
+                  className="w-full text-center py-3 px-4 rounded-xl border-2 border-solid border-teal-500/60 bg-teal-500/10 text-teal-300 hover:border-teal-400 hover:text-primary-text hover:bg-teal-500/20 transition-all duration-300 flex items-center justify-center font-semibold"
                 >
                   Clique para ler e aceitar os Termos de Uso
                 </button>
@@ -310,28 +310,28 @@ Professora Orientadora: Prof.ª Dr.ª Aline Maria Malachini Miotto Amaral - ammm
 
               {/* 3. Botão do Google */}
               <div className="text-center">
-                <p className="text-gray-400 text-sm mb-2">Ou cadastre-se rapidamente com o Google:</p>
-                <div ref={googleButtonRef} className="w-full flex justify-center bg-white rounded-xl overflow-hidden hover:shadow-lg transition-shadow duration-300" />
+                <p className="text-secondary-text text-sm mb-2">Ou cadastre-se rapidamente com o Google:</p>
+                <div ref={googleButtonRef} className="w-full flex justify-center bg-secondary-bg rounded-xl overflow-hidden hover:shadow-lg transition-shadow duration-300" />
                 {!googleLoaded && (<button className="w-full py-3 px-4 bg-gray-200 rounded-xl animate-pulse"><div className="h-6 bg-gray-300 rounded w-3/4 mx-auto"></div></button>)}
               </div>
             </div>
 
             <div className="relative my-8">
               <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-[#3e4a52]"></div></div>
-              <div className="relative flex justify-center"><span className="px-3 bg-[#343a40] text-gray-500 text-sm">Ou preencha seus dados</span></div>
+              <div className="relative flex justify-center"><span className="px-3 bg-secondary-bg text-secondary-text text-sm">Ou preencha seus dados</span></div>
             </div>
 
             <form onSubmit={handleRegister} className="space-y-6">
               <div className="space-y-2">
-                <label htmlFor="name" className="block text-sm font-medium text-gray-300">Nome Completo</label>
-                <div className="relative"><input type="text" id="name" name="name" required value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-3 bg-[#2c3135] border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30] text-white placeholder-gray-500 transition-all duration-200" placeholder="Seu nome completo" /><div className="absolute inset-y-0 right-0 flex items-center pr-3"><svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg></div></div>
+                <label htmlFor="name" className="block text-sm font-medium text-secondary-text">Nome Completo</label>
+                <div className="relative"><input type="text" id="name" name="name" required value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-3 bg-primary-bg border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30] text-primary-text placeholder-gray-500 transition-all duration-200" placeholder="Seu nome completo" /><div className="absolute inset-y-0 right-0 flex items-center pr-3"><svg className="w-5 h-5 text-secondary-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg></div></div>
               </div>
               <div className="space-y-2">
-                <label htmlFor="email" className="block text-sm font-medium text-gray-300">Email</label>
-                <div className="relative"><input type="email" id="email" name="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-3 bg-[#2c3135] border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30] text-white placeholder-gray-500 transition-all duration-200" placeholder="seu@email.com" /><div className="absolute inset-y-0 right-0 flex items-center pr-3"><svg className="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" /><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" /></svg></div></div>
+                <label htmlFor="email" className="block text-sm font-medium text-secondary-text">Email</label>
+                <div className="relative"><input type="email" id="email" name="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-3 bg-primary-bg border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30] text-primary-text placeholder-gray-500 transition-all duration-200" placeholder="seu@email.com" /><div className="absolute inset-y-0 right-0 flex items-center pr-3"><svg className="w-5 h-5 text-secondary-text" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" /><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" /></svg></div></div>
               </div>
               <div className="space-y-2">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-300">Senha</label>
+                <label htmlFor="password" className="block text-sm font-medium text-secondary-text">Senha</label>
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'} // Alterna o tipo do input
@@ -340,11 +340,11 @@ Professora Orientadora: Prof.ª Dr.ª Aline Maria Malachini Miotto Amaral - ammm
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-4 py-3 bg-[#2c3135] border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30] text-white placeholder-gray-500"
+                    className="w-full px-4 py-3 bg-primary-bg border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30] text-primary-text placeholder-gray-500"
                     placeholder="********"
                   />
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-gray-500 focus:outline-none">
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-secondary-text focus:outline-none">
                       {showPassword ? <FaEyeSlash /> : <FaEye />}
                     </button>
                   </div>
@@ -353,7 +353,7 @@ Professora Orientadora: Prof.ª Dr.ª Aline Maria Malachini Miotto Amaral - ammm
 
               {/* --- CAMPO CONFIRME A SENHA MODIFICADO --- */}
               <div className="space-y-2">
-                <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-300">Confirme a Senha</label>
+                <label htmlFor="confirm-password" className="block text-sm font-medium text-secondary-text">Confirme a Senha</label>
                 <div className="relative">
                   <input
                     type={showConfirmPassword ? 'text' : 'password'} // Alterna o tipo do input
@@ -362,11 +362,11 @@ Professora Orientadora: Prof.ª Dr.ª Aline Maria Malachini Miotto Amaral - ammm
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-4 py-3 bg-[#2c3135] border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30] text-white placeholder-gray-500"
+                    className="w-full px-4 py-3 bg-primary-bg border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30] text-primary-text placeholder-gray-500"
                     placeholder="********"
                   />
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                    <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="text-gray-500 focus:outline-none">
+                    <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="text-secondary-text focus:outline-none">
                       {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
                     </button>
                   </div>
@@ -383,15 +383,15 @@ Professora Orientadora: Prof.ª Dr.ª Aline Maria Malachini Miotto Amaral - ammm
             </form>
 
             <div className="mt-8 text-center">
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-secondary-text">
                 Já tem uma conta?{' '}
                 <Link to="/login" className="font-medium text-[#69e8cb] hover:text-[#ffbd30] transition-colors duration-200">Faça login aqui</Link>
               </p>
             </div>
           </div>
 
-          <div className="bg-[#2c3135] p-4 text-center border-t border-[#3e4a52]">
-            <p className="text-xs text-gray-500">© {new Date().getFullYear()} Portal de Gamificação Educacional. Todos os direitos reservados.</p>
+          <div className="bg-primary-bg p-4 text-center border-t border-[#3e4a52]">
+            <p className="text-xs text-secondary-text">© {new Date().getFullYear()} Portal de Gamificação Educacional. Todos os direitos reservados.</p>
           </div>
         </div>
       </div>

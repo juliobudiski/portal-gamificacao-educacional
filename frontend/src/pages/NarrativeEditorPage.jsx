@@ -218,7 +218,7 @@ function NarrativeEditorPage() {
     // Renderização condicional para estados de UI
     const renderContent = () => {
         if (loading) {
-            return <div className="text-center text-white p-10">Carregando editor de narrativa...</div>;
+            return <div className="text-center text-primary-text p-10">Carregando editor de narrativa...</div>;
         }
 
         if (error) {
@@ -308,7 +308,7 @@ function NarrativeEditorPage() {
                 {/* Salvar */}
                 <div className="mt-8 pt-4 border-t border-gray-700">
                     <button onClick={handleSaveChanges} disabled={loading}
-                        className="bg-gradient-to-r from-[#69e8cb] to-[#49d0b0] text-gray-900 font-bold text-lg py-3 px-6 rounded-xl flex items-center">
+                        className="bg-gradient-to-r from-[#69e8cb] to-[#49d0b0] text-primary-text font-bold text-lg py-3 px-6 rounded-xl flex items-center">
                         <FaSave className="mr-2" /> {loading ? 'Salvando...' : 'Salvar Narrativa'}
                     </button>
                     {message && <div className="mt-4 p-3 bg-green-900/30 text-green-400 rounded-xl">{message}</div>}
@@ -319,11 +319,11 @@ function NarrativeEditorPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#2c3135] text-white p-4 md:p-8">
+        <div className="min-h-screen bg-primary-bg text-primary-text p-4 md:p-8">
             <div className="max-w-6xl mx-auto">
                 <div className="flex items-center gap-3 mb-8">
                     <div className="bg-gradient-to-r from-[#ffbd30] to-[#ff9d00] p-3 rounded-xl">
-                        <FaBookOpen className="text-xl text-gray-900" />
+                        <FaBookOpen className="text-xl text-primary-text" />
                     </div>
                     <div>
                         <h1 className="text-2xl md:text-3xl font-bold">Editor de Narrativa</h1>

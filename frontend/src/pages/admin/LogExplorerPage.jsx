@@ -65,7 +65,7 @@ function LogExplorerPage() {
     useEffect(() => {
         fetchLogs();
     }, [fetchLogs]);
-    
+
     // Efeito para resetar a página para 1 quando um novo filtro é aplicado
     useEffect(() => {
         setCurrentPage(1);
@@ -79,7 +79,7 @@ function LogExplorerPage() {
     ];
 
     return (
-        <div className="animate-fade-in space-y-8 text-white">
+        <div className="animate-fade-in space-y-8 text-primary-text">
             <h1 className="text-3xl font-bold">Explorador de Logs do Sistema</h1>
 
             {/* Seção de Tabela de Logs */}
@@ -87,7 +87,7 @@ function LogExplorerPage() {
                 {/* Filtros da Tabela */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary-text" size={20} />
                         <input
                             type="text"
                             placeholder="Buscar por nome de usuário..."
@@ -115,29 +115,29 @@ function LogExplorerPage() {
                     <table className="min-w-full divide-y divide-gray-700">
                         <thead className="bg-gray-900/60">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Usuário</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Ação</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Seção</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Data</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">IP</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-secondary-text uppercase tracking-wider">Usuário</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-secondary-text uppercase tracking-wider">Ação</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-secondary-text uppercase tracking-wider">Seção</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-secondary-text uppercase tracking-wider">Data</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-secondary-text uppercase tracking-wider">IP</th>
                             </tr>
                         </thead>
                         <tbody className="bg-gray-800/50 divide-y divide-gray-700">
                             {loading ? (
-                                <tr><td colSpan="5" className="text-center py-10 text-gray-500">Carregando logs...</td></tr>
+                                <tr><td colSpan="5" className="text-center py-10 text-secondary-text">Carregando logs...</td></tr>
                             ) : logs.length === 0 ? (
-                                <tr><td colSpan="5" className="text-center py-10 text-gray-500">Nenhum log encontrado para os filtros selecionados.</td></tr>
+                                <tr><td colSpan="5" className="text-center py-10 text-secondary-text">Nenhum log encontrado para os filtros selecionados.</td></tr>
                             ) : (
                                 logs.map(log => (
                                     <tr key={log.id} className="hover:bg-gray-700/50">
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm font-medium text-white">{log.user_name}</div>
-                                            <div className="text-xs text-gray-400">{log.user_email}</div>
+                                            <div className="text-sm font-medium text-primary-text">{log.user_name}</div>
+                                            <div className="text-xs text-secondary-text">{log.user_email}</div>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{log.action}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{log.section}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">{new Date(log.timestamp).toLocaleString()}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">{log.ip_address}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-text">{log.action}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-text">{log.section}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-text">{new Date(log.timestamp).toLocaleString()}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-text">{log.ip_address}</td>
                                     </tr>
                                 ))
                             )}
@@ -154,7 +154,7 @@ function LogExplorerPage() {
                     >
                         <ChevronLeft size={16} className="mr-1" /> Anterior
                     </button>
-                    <span className="text-sm text-gray-400">
+                    <span className="text-sm text-secondary-text">
                         Página {pagination.currentPage ?? '...'} de {pagination.totalPages ?? '...'}
                     </span>
                     <button

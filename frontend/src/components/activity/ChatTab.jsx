@@ -68,7 +68,7 @@ const ChatTab = ({ onReturn }) => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-800 p-4 text-white rounded-lg" style={{ height: '80vh', maxHeight: '700px' }}>
+    <div className="flex flex-col h-full bg-gray-800 p-4 text-primary-text rounded-lg" style={{ height: '80vh', maxHeight: '700px' }}>
 
       <div className='flex-shrink-0'>
         <button onClick={onReturn} className="absolute top-4 left-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200 transition-colors z-20">
@@ -83,8 +83,8 @@ const ChatTab = ({ onReturn }) => {
           <div key={msg.id} className={`flex ${Number(msg.sender_id) === Number(user.id) ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-xs lg:max-w-md p-3 rounded-lg ${Number(msg.sender_id) === Number(user.id) ? 'bg-teal-600' : 'bg-gray-600'}`}>
               {Number(msg.sender_id) !== Number(user.id) && <p className="font-bold text-xs text-cyan-300">{msg.sender_name}</p>}
-              <p className="text-white">{msg.content}</p>
-              <p className="text-right text-xs text-gray-400 mt-1">{new Date(msg.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
+              <p className="text-primary-text">{msg.content}</p>
+              <p className="text-right text-xs text-secondary-text mt-1">{new Date(msg.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
             </div>
           </div>
         ))}

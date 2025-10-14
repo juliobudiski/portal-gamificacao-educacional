@@ -185,18 +185,18 @@ function LoginPage() {
   // --- 8. RENDERIZAÇÃO DO COMPONENTE (JSX) ---
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-[#2c3135] to-[#1e2226] p-4">
-      <div className="w-full max-w-md bg-[#343a40] rounded-2xl shadow-2xl overflow-hidden border border-[#3e4a52]">
+      <div className="w-full max-w-md bg-secondary-bg rounded-2xl shadow-2xl overflow-hidden border border-[#3e4a52]">
         {/* Cabeçalho com gradiente */}
         <div className="bg-gradient-to-r from-[#ffbd30] to-[#ffa000] p-6 text-center">
-          <div className="bg-white/20 backdrop-blur-sm rounded-full p-3 inline-block mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="bg-secondary-bg/20 backdrop-blur-sm rounded-full p-3 inline-block mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-primary-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           </div>
-          <h2 className="text-3xl font-extrabold text-white">
+          <h2 className="text-3xl font-extrabold text-primary-text">
             Bem-vindo de Volta!
           </h2>
-          <p className="text-white/90 mt-2">
+          <p className="text-primary-text/90 mt-2">
             Faça login para acessar seu portal de gamificação educacional
           </p>
         </div>
@@ -230,10 +230,10 @@ function LoginPage() {
           {/* Botão do Google no topo */}
           <div className="mb-6">
             <div className="text-center mb-4">
-              <p className="text-gray-300 mb-2">Faça login rapidamente com sua conta Google:</p>
+              <p className="text-secondary-text mb-2">Faça login rapidamente com sua conta Google:</p>
               <div
                 ref={googleButtonRef}
-                className="w-full flex justify-center bg-white rounded-xl overflow-hidden hover:shadow-lg transition-shadow duration-300"
+                className="w-full flex justify-center bg-secondary-bg rounded-xl overflow-hidden hover:shadow-lg transition-shadow duration-300"
               />
 
               {/* Placeholder enquanto o botão carrega */}
@@ -251,7 +251,7 @@ function LoginPage() {
               <div className="w-full border-t border-[#3e4a52]"></div>
             </div>
             <div className="relative flex justify-center">
-              <span className="px-3 bg-[#343a40] text-gray-500 text-sm">Ou com email</span>
+              <span className="px-3 bg-secondary-bg text-secondary-text text-sm">Ou com email</span>
             </div>
           </div>
 
@@ -259,7 +259,7 @@ function LoginPage() {
           <form onSubmit={handleLogin} className="space-y-6">
             {/* Campo Email */}
             <div className="space-y-2">
-              <label htmlFor="email" className="block text-sm font-medium text-gray-300">
+              <label htmlFor="email" className="block text-sm font-medium text-secondary-text">
                 Email
               </label>
               <div className="relative">
@@ -270,11 +270,11 @@ function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 bg-[#2c3135] border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30] text-white placeholder-gray-500 transition-all duration-200"
+                  className="w-full px-4 py-3 bg-primary-bg border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30] text-primary-text placeholder-gray-500 transition-all duration-200"
                   placeholder="seu@email.com"
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                  <svg className="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-5 h-5 text-secondary-text" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
                     <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
                   </svg>
@@ -284,7 +284,7 @@ function LoginPage() {
 
             {/* Campo Senha */}
             <div className="space-y-2">
-              <label htmlFor="password" className="block text-sm font-medium text-gray-300">
+              <label htmlFor="password" className="block text-sm font-medium text-secondary-text">
                 Senha
               </label>
               <div className="relative">
@@ -295,11 +295,11 @@ function LoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 bg-[#2c3135] border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30] text-white placeholder-gray-500 transition-all duration-200"
+                  className="w-full px-4 py-3 bg-primary-bg border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30] text-primary-text placeholder-gray-500 transition-all duration-200"
                   placeholder="********"
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                  <svg className="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-5 h-5 text-secondary-text" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
                   </svg>
                 </div>
@@ -320,7 +320,7 @@ function LoginPage() {
 
           {/* Links inferiores */}
           <div className="mt-8 text-center space-y-3">
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-secondary-text">
               Não tem uma conta?{' '}
               <Link
                 to="/cadastro"
@@ -329,7 +329,7 @@ function LoginPage() {
                 Cadastre-se aqui
               </Link>
             </p>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-secondary-text">
               <Link
                 to="/recuperar-senha"
                 className="font-medium text-[#69e8cb] hover:text-[#ffbd30] transition-colors duration-200"
@@ -341,8 +341,8 @@ function LoginPage() {
         </div>
 
         {/* Rodapé */}
-        <div className="bg-[#2c3135] p-4 text-center border-t border-[#3e4a52]">
-          <p className="text-xs text-gray-500">
+        <div className="bg-primary-bg p-4 text-center border-t border-[#3e4a52]">
+          <p className="text-xs text-secondary-text">
             © {new Date().getFullYear()} Portal de Gamificação Educacional. Todos os direitos reservados.
           </p>
         </div>

@@ -233,10 +233,10 @@ const QuizTab = ({ content, onAnswerCorrect, onComplete, isReplay }) => {
   // Tela de finalização do quiz
   if (isFinished) {
     return (
-      <div className="bg-gray-800 p-8 rounded-lg text-white text-center">
+      <div className="bg-gray-800 p-8 rounded-lg text-primary-text text-center">
         <FaCheckCircle className="text-green-400 text-6xl mb-4" />
         <h2 className="text-3xl font-bold text-green-400 mb-4">Quiz Finalizado!</h2>
-        <p className="text-lg text-gray-300">Retornando ao tabuleiro...</p>
+        <p className="text-lg text-secondary-text">Retornando ao tabuleiro...</p>
         {/* O retorno agora é automático, mas poderia ter um botão se quisesse */}
       </div>
     );
@@ -247,7 +247,7 @@ const QuizTab = ({ content, onAnswerCorrect, onComplete, isReplay }) => {
     if (isDebugMode) {
       console.warn('[QuizTab] Nenhuma pergunta disponível');
     }
-    return <div className="text-center text-gray-400 p-8">Nenhum quiz disponível para esta atividade.</div>;
+    return <div className="text-center text-secondary-text p-8">Nenhum quiz disponível para esta atividade.</div>;
   }
 
   const currentQuestion = questions[currentIndex];
@@ -268,7 +268,7 @@ const QuizTab = ({ content, onAnswerCorrect, onComplete, isReplay }) => {
   }
 
   return (
-    <div className="bg-gray-800 p-8 rounded-lg text-white relative"
+    <div className="bg-gray-800 p-8 rounded-lg text-primary-text relative"
       style={{
         backgroundImage: `url(${backgroundImage})`,
         backgroundSize: 'cover',

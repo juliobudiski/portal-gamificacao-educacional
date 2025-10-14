@@ -59,18 +59,18 @@ const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel }) => {
     return (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
             <div className="bg-gray-800 rounded-lg shadow-xl p-6 max-w-sm w-full border border-gray-700">
-                <h3 className="text-xl font-bold text-white mb-4">{title}</h3>
-                <p className="text-gray-300 mb-6">{message}</p>
+                <h3 className="text-xl font-bold text-primary-text mb-4">{title}</h3>
+                <p className="text-secondary-text mb-6">{message}</p>
                 <div className="flex justify-end gap-4">
                     <button
                         onClick={onCancel}
-                        className="py-2 px-4 bg-gray-600 hover:bg-gray-500 rounded-lg font-semibold text-white transition-colors"
+                        className="py-2 px-4 bg-gray-600 hover:bg-gray-500 rounded-lg font-semibold text-primary-text transition-colors"
                     >
                         Cancelar
                     </button>
                     <button
                         onClick={onConfirm}
-                        className="py-2 px-4 bg-green-600 hover:bg-green-500 rounded-lg font-semibold text-white transition-colors"
+                        className="py-2 px-4 bg-green-600 hover:bg-green-500 rounded-lg font-semibold text-primary-text transition-colors"
                     >
                         Confirmar
                     </button>
@@ -122,8 +122,8 @@ const AddItemForm = ({ onAddItem, onCancel }) => {
     }
 
     return (
-        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 mb-8">
-            <h3 className="text-xl font-bold mb-4 text-white">Criar Item Personalizado</h3>
+        <div className="bg-secondary-bg/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 mb-8">
+            <h3 className="text-xl font-bold mb-4 text-primary-text">Criar Item Personalizado</h3>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <select value={itemType} onChange={e => setItemType(e.target.value)} className="w-full bg-gray-700 p-2 rounded">
                     <option value="title">Título</option>
@@ -193,7 +193,7 @@ const StoreTab = ({ items, userPoints, onPurchase, onAddItem, onDeleteItem, onRe
     };
 
     return (
-        <div className="w-full max-w-5xl mx-auto p-4 text-white">
+        <div className="w-full max-w-5xl mx-auto p-4 text-primary-text">
             <button onClick={onReturn} className="absolute top-4 left-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200 transition-colors z-20">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" /></svg>
                 Voltar
@@ -227,14 +227,14 @@ const StoreTab = ({ items, userPoints, onPurchase, onAddItem, onDeleteItem, onRe
                     <div className="mb-12">
                         <h2 className="text-2xl font-bold mb-4 border-b-2 border-gray-700 pb-2">Itens Rápidos (Presets)</h2>
 
-                        <h3 className="text-lg font-semibold text-gray-300 mt-4 mb-2">Títulos</h3>
+                        <h3 className="text-lg font-semibold text-secondary-text mt-4 mb-2">Títulos</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {PREDEFINED_TITLES.map(preset => {
                                 const isAlreadyAdded = items.some(item => item.name === preset.name);
                                 return (
                                     <div key={preset.name} className="bg-gray-800 p-4 rounded-lg flex flex-col">
                                         <h3 className="font-bold text-lg">{preset.name}</h3>
-                                        <p className="text-sm text-gray-400 flex-grow my-2">{preset.description}</p>
+                                        <p className="text-sm text-secondary-text flex-grow my-2">{preset.description}</p>
                                         <button
                                             onClick={() => onAddItem(preset)}
                                             disabled={isAlreadyAdded} // <-- Desabilita o botão se já foi adicionado
@@ -251,14 +251,14 @@ const StoreTab = ({ items, userPoints, onPurchase, onAddItem, onDeleteItem, onRe
                                 );
                             })}
                         </div>
-                        <h3 className="text-lg font-semibold text-gray-300 mt-4 mb-2">Cosméticos</h3>
+                        <h3 className="text-lg font-semibold text-secondary-text mt-4 mb-2">Cosméticos</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {PREDEFINED_COSMETICS.map(preset => {
                                 const isAlreadyAdded = items.some(item => item.name === preset.name);
                                 return (
                                     <div key={preset.name} className="bg-gray-800 p-4 rounded-lg flex flex-col">
                                         <h3 className="font-bold text-lg">{preset.name}</h3>
-                                        <p className="text-sm text-gray-400 flex-grow my-2">{preset.description}</p>
+                                        <p className="text-sm text-secondary-text flex-grow my-2">{preset.description}</p>
                                         <button
                                             onClick={() => onAddItem(preset)}
                                             disabled={isAlreadyAdded} // <-- Desabilita o botão se já foi adicionado
@@ -275,7 +275,7 @@ const StoreTab = ({ items, userPoints, onPurchase, onAddItem, onDeleteItem, onRe
                                 );
                             })}
                         </div>
-                        <h3 className="text-lg font-semibold text-gray-300 mt-4 mb-2">Avatares</h3>
+                        <h3 className="text-lg font-semibold text-secondary-text mt-4 mb-2">Avatares</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {PREDEFINED_AVATARS.map(preset => {
                                 // Lógica para verificar se já foi adicionado
@@ -286,7 +286,7 @@ const StoreTab = ({ items, userPoints, onPurchase, onAddItem, onDeleteItem, onRe
                                             <img src={preset.effect_id.url} alt={preset.name} className="w-12 h-12 rounded-full bg-gray-700" />
                                             <div>
                                                 <h3 className="font-bold text-lg">{preset.name}</h3>
-                                                <p className="text-sm text-gray-400 flex-grow my-1">{preset.description}</p>
+                                                <p className="text-sm text-secondary-text flex-grow my-1">{preset.description}</p>
                                             </div>
                                         </div>
                                         <button
@@ -331,7 +331,7 @@ const StoreTab = ({ items, userPoints, onPurchase, onAddItem, onDeleteItem, onRe
             ) : (
                 <div className="text-center py-16 bg-black/20 rounded-lg">
                     <FaExclamationTriangle className="mx-auto text-5xl text-yellow-500 mb-4" />
-                    <p className="text-gray-400">
+                    <p className="text-secondary-text">
                         {userRole === 'aluno' ? 'A loja para esta atividade ainda está vazia.' : 'Nenhum item adicionado ainda. Clique em "Adicionar Item" para começar.'}
                     </p>
                 </div>

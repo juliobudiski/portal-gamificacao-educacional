@@ -9,8 +9,8 @@ const TeacherRankingList = ({ title, rankingData, isLoading, error }) => {
 
   if (isLoading) {
     return (
-      <div className="bg-[#343a40] text-white p-6 rounded-2xl shadow-lg">
-        <h3 className="text-xl font-bold mb-4 text-gray-300">{title}</h3>
+      <div className="bg-secondary-bg text-primary-text p-6 rounded-2xl shadow-lg">
+        <h3 className="text-xl font-bold mb-4 text-secondary-text">{title}</h3>
         <p>Carregando ranking...</p>
       </div>
     );
@@ -18,7 +18,7 @@ const TeacherRankingList = ({ title, rankingData, isLoading, error }) => {
 
   if (error) {
     return (
-      <div className="bg-[#343a40] text-white p-6 rounded-2xl shadow-lg">
+      <div className="bg-secondary-bg text-primary-text p-6 rounded-2xl shadow-lg">
         <h3 className="text-xl font-bold mb-4 text-red-400">{title}</h3>
         <p>Não foi possível carregar o ranking. Tente novamente mais tarde.</p>
       </div>
@@ -26,14 +26,14 @@ const TeacherRankingList = ({ title, rankingData, isLoading, error }) => {
   }
 
   return (
-    <div className="bg-[#343a40] text-white p-6 rounded-2xl shadow-lg border border-gray-700">
-      <h3 className="text-2xl font-bold mb-6 text-center text-white">{title}</h3>
+    <div className="bg-secondary-bg text-primary-text p-6 rounded-2xl shadow-lg border border-gray-700">
+      <h3 className="text-2xl font-bold mb-6 text-center text-primary-text">{title}</h3>
       <ul className="space-y-3">
         {rankingData.map((teacher, index) => {
           const isCurrentUser = teacher.id === user.id;
-          let rankColor = 'text-gray-400';
+          let rankColor = 'text-secondary-text';
           if (teacher.rank === 1) rankColor = 'text-yellow-400';
-          if (teacher.rank === 2) rankColor = 'text-gray-300';
+          if (teacher.rank === 2) rankColor = 'text-secondary-text';
           if (teacher.rank === 3) rankColor = 'text-yellow-600';
 
           return (
@@ -50,7 +50,7 @@ const TeacherRankingList = ({ title, rankingData, isLoading, error }) => {
               <span className="flex-1 text-lg text-gray-200">{teacher.name} {isCurrentUser && "(Você)"}</span>
               <div className="text-right">
                 <span className="text-xl font-bold text-[#69e8cb]">{teacher.score}</span>
-                <p className="text-xs text-gray-400">atividades</p>
+                <p className="text-xs text-secondary-text">atividades</p>
               </div>
             </li>
           );

@@ -44,7 +44,7 @@ function ActivityEditPage() {
     }, [activityId, user, navigate]);
 
     if (loading) {
-        return <div className="text-center p-10 text-white">Carregando atividade para edição...</div>;
+        return <div className="text-center p-10 text-primary-text">Carregando atividade para edição...</div>;
     }
 
     if (error) {
@@ -52,7 +52,7 @@ function ActivityEditPage() {
     }
 
     if (!activityData) {
-        return <div className="text-center p-10 text-white">Atividade não encontrada.</div>;
+        return <div className="text-center p-10 text-primary-text">Atividade não encontrada.</div>;
     }
 
     // Passamos os dados da atividade existente para o componente de criação

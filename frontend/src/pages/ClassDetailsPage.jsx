@@ -10,7 +10,8 @@ import {
     FaInfoCircle,
     FaUserGraduate,
     FaChevronDown,
-    FaChevronUp
+    FaChevronUp,
+    FaUsers
 } from "react-icons/fa";
 
 // --- COMPONENTE INTERNO PARA O CARD DA ATIVIDADE ---
@@ -38,7 +39,7 @@ function ActivityCard({ activity }) {
             <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#ffbd30] to-[#9570d9]"></div>
 
             <div className="flex-grow">
-                <h3 className="text-xl font-bold text-white mb-3 flex items-center">
+                <h3 className="text-xl font-bold text-primary-text mb-3 flex items-center">
                     <span className="w-6 h-6 rounded-full bg-[#ffbd30] flex items-center justify-center mr-2 flex-shrink-0">
                         <FaBook className="text-xs text-[#2c3135]" />
                     </span>
@@ -55,7 +56,7 @@ function ActivityCard({ activity }) {
 
                 {/* Seção de Descrição Expansível */}
                 <div
-                    className="text-gray-300 text-sm mb-4 pl-2 border-l-2 border-[#69e8cb] cursor-pointer"
+                    className="text-secondary-text text-sm mb-4 pl-2 border-l-2 border-[#69e8cb] cursor-pointer"
                     onClick={() => toggleSection('description')}
                 >
                     <div className="flex justify-between items-center">
@@ -141,7 +142,7 @@ function ClassDetailsPage() {
     const [message, setMessage] = useState('');
     const [error, setError] = useState(''); // Estado para o erro
     const [isLoading, setIsLoading] = useState(true);
-
+    const [students, setStudents] = useState([]);
     useEffect(() => {
         const fetchClassData = async () => {
             const token = user?.token;
@@ -173,6 +174,7 @@ function ClassDetailsPage() {
 
                 setClassDetails(classData);
                 setActivities(activitiesData);
+                setStudents(classData.students || []);
 
             } catch (err) {
                 console.error('[ClassDetailsPage] Erro na requisição de dados da turma:', err);
@@ -188,7 +190,7 @@ function ClassDetailsPage() {
     }, [class_id, user?.token]);
 
     if (isLoading) {
-        return <div className="container mx-auto p-4 text-center text-gray-400"><p>Carregando detalhes da turma...</p></div>;
+        return <div className="container mx-auto p-4 text-center text-secondary-text"><p>Carregando detalhes da turma...</p></div>;
     }
 
     if (error && !classDetails) {
@@ -196,7 +198,7 @@ function ClassDetailsPage() {
     }
 
     if (!classDetails) {
-        return <div className="container mx-auto p-4 text-center text-gray-500"><p>Nenhum detalhe de turma disponível.</p></div>;
+        return <div className="container mx-auto p-4 text-center text-secondary-text"><p>Nenhum detalhe de turma disponível.</p></div>;
     }
 
     return (
@@ -227,7 +229,7 @@ function ClassDetailsPage() {
                                     <FaBook className="text-[#69e8cb] text-sm" />
                                 </span>
                                 <strong className="text-[#69e8cb] mr-2">Descrição:</strong>
-                                <span className="text-gray-300">{classDetails.description}</span>
+                                <span className="text-secondary-text">{classDetails.description}</span>
                             </p>
 
                             <p className="text-gray-200 mb-4 flex items-start">
@@ -235,18 +237,33 @@ function ClassDetailsPage() {
                                     <FaChalkboardTeacher className="text-[#9570d9] text-sm" />
                                 </span>
                                 <strong className="text-[#ffbd30] mr-2">Professor:</strong>
-                                <span className="text-gray-300">{classDetails.professor_name}</span>
+                                <span className="text-secondary-text">{classDetails.professor_name}</span>
                             </p>
-
-                            {user?.role === 'professor' && (
-                                <div className="bg-[#2c3135]/50 p-4 rounded-xl border border-[#4a525a] mt-5">
+                            {user?.role === 'aluno' && classDetails.enrollment_code && (
+                                <div className="bg-primary-bg/50 p-4 rounded-xl border border-[#4a525a] mt-5">
                                     <p className="text-gray-200 flex items-center">
                                         <span className="w-8 h-8 rounded-full bg-[#ffbd30]/20 flex items-center justify-center mr-3 flex-shrink-0">
                                             <FaUserGraduate className="text-[#ffbd30]" />
                                         </span>
                                         <strong className="text-[#ffbd30] mr-2">Código de Inscrição:</strong>
                                     </p>
-                                    <div className="mt-2 bg-[#2c3135] p-3 rounded-xl border border-[#4a525a]">
+                                    <div className="mt-2 bg-primary-bg p-3 rounded-xl border border-[#4a525a]">
+                                        <code className="font-mono text-lg text-[#69e8cb] tracking-wider">
+                                            {classDetails.enrollment_code}
+                                        </code>
+                                    </div>
+                                </div>
+                            )}
+
+                            {user?.role === 'professor' && (
+                                <div className="bg-primary-bg/50 p-4 rounded-xl border border-[#4a525a] mt-5">
+                                    <p className="text-gray-200 flex items-center">
+                                        <span className="w-8 h-8 rounded-full bg-[#ffbd30]/20 flex items-center justify-center mr-3 flex-shrink-0">
+                                            <FaUserGraduate className="text-[#ffbd30]" />
+                                        </span>
+                                        <strong className="text-[#ffbd30] mr-2">Código de Inscrição:</strong>
+                                    </p>
+                                    <div className="mt-2 bg-primary-bg p-3 rounded-xl border border-[#4a525a]">
                                         <code className="font-mono text-lg text-[#69e8cb] tracking-wider">
                                             {classDetails.enrollment_code}
                                         </code>
@@ -258,17 +275,42 @@ function ClassDetailsPage() {
                         <div className="flex-1 flex items-center justify-center">
                             <div className="relative w-full max-w-xs">
                                 <div className="absolute inset-0 bg-gradient-to-br from-[#ffbd30]/20 to-[#9570d9]/20 rounded-2xl blur-xl opacity-70"></div>
-                                <div className="relative bg-[#2c3135]/50 border border-[#4a525a] rounded-2xl p-6 text-center">
+                                <div className="relative bg-primary-bg/50 border border-[#4a525a] rounded-2xl p-6 text-center">
                                     <div className="w-20 h-20 mx-auto bg-gradient-to-br from-[#ffbd30] to-[#ff9d00] rounded-full flex items-center justify-center mb-4">
                                         <FaBook className="text-3xl text-[#2c3135]" />
                                     </div>
                                     <h3 className="text-xl font-bold text-[#69e8cb] mb-2">Atividades</h3>
-                                    <p className="text-4xl font-bold text-white">{activities.length}</p>
-                                    <p className="text-gray-400 mt-2">atividades nesta turma</p>
+                                    <p className="text-4xl font-bold text-primary-text">{activities.length}</p>
+                                    <p className="text-secondary-text mt-2">atividades nesta turma</p>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
+                {/* --- SEÇÃO NOVA PARA LISTA DE ALUNOS --- */}
+                <div className="mb-8">
+                    <div className="flex items-center mb-6">
+                        <div className="w-10 h-10 rounded-full bg-[#9570d9]/20 flex items-center justify-center mr-3">
+                            <FaUsers className="text-[#9570d9]" />
+                        </div>
+                        <h2 className="text-2xl font-bold text-primary-text">
+                            Colegas de Turma ({students.length})
+                        </h2>
+                    </div>
+                    {students.length > 0 ? (
+                        <div className="bg-[#3a4046] p-6 rounded-2xl shadow-2xl border border-[#4a525a]">
+                            <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                                {students.map((student) => (
+                                    <li key={student.id} className="bg-primary-bg p-3 rounded-lg flex items-center">
+                                        <FaUserGraduate className="text-secondary-text mr-3" />
+                                        <span className="text-gray-200">{student.name}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    ) : (
+                        <p className="text-secondary-text">Nenhum aluno matriculado ainda.</p>
+                    )}
                 </div>
 
                 {/* Seção de Atividades */}
@@ -292,12 +334,12 @@ function ClassDetailsPage() {
                         <div className="bg-[#3a4046] p-10 rounded-2xl shadow-2xl border border-[#4a525a] text-center">
                             <div className="max-w-md mx-auto">
                                 <div className="w-20 h-20 mx-auto bg-gradient-to-br from-[#9570d9] to-[#7a55c4] rounded-full flex items-center justify-center mb-5">
-                                    <FaBook className="text-3xl text-white" />
+                                    <FaBook className="text-3xl text-primary-text" />
                                 </div>
                                 <h3 className="text-xl font-bold text-[#69e8cb] mb-2">
                                     Nenhuma atividade encontrada
                                 </h3>
-                                <p className="text-gray-400">
+                                <p className="text-secondary-text">
                                     Esta turma ainda não tem atividades atribuídas.
                                 </p>
                             </div>

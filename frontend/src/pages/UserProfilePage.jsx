@@ -161,7 +161,7 @@ function UserProfilePage() {
               )}
             </div>
 
-            <div className="space-y-3 bg-[#2c3135]/50 p-5 rounded-xl border border-[#4a525a]">
+            <div className="space-y-3 bg-primary-bg/50 p-5 rounded-xl border border-[#4a525a]">
               <p className="text-gray-200 text-lg flex items-center">
                 <span className="w-6 h-6 bg-[#ffbd30] rounded-full flex items-center justify-center mr-2">
                   <FaUser className="text-xs text-[#2c3135]" />
@@ -171,7 +171,7 @@ function UserProfilePage() {
               </p>
               <p className="text-gray-200 text-lg flex items-center">
                 <span className="w-6 h-6 bg-[#9570d9] rounded-full flex items-center justify-center mr-2">
-                  <FaGraduationCap className="text-xs text-white" />
+                  <FaGraduationCap className="text-xs text-primary-text" />
                 </span>
                 <span className="font-semibold mr-2">Email:</span>
                 <span className="text-[#69e8cb]">{user.email}</span>
@@ -182,8 +182,8 @@ function UserProfilePage() {
                 </span>
                 <span className="font-semibold mr-2">Tipo de Perfil:</span>
                 <span className={`px-2 py-1 rounded-full ${user.role === 'aluno'
-                    ? 'bg-[#9570d9]/20 text-[#9570d9]'
-                    : 'bg-[#ffbd30]/20 text-[#ffbd30]'
+                  ? 'bg-[#9570d9]/20 text-[#9570d9]'
+                  : 'bg-[#ffbd30]/20 text-[#ffbd30]'
                   }`}>
                   {user.role === 'aluno' ? 'Aluno' : 'Professor'}
                 </span>
@@ -228,7 +228,7 @@ function UserProfilePage() {
 
               <button
                 onClick={() => setShowProfileCompletionForm(!showProfileCompletionForm)}
-                className="w-full py-3 px-4 rounded-xl text-sm font-medium text-white bg-gradient-to-r from-[#9570d9] to-[#7a55c4] hover:from-[#7a55c4] hover:to-[#9570d9] transition-all duration-300 flex items-center justify-center"
+                className="w-full py-3 px-4 rounded-xl text-sm font-medium text-primary-text bg-gradient-to-r from-[#9570d9] to-[#7a55c4] hover:from-[#7a55c4] hover:to-[#9570d9] transition-all duration-300 flex items-center justify-center"
                 disabled={profileLoading}
               >
                 <FaEdit className="mr-2" />
@@ -236,7 +236,7 @@ function UserProfilePage() {
               </button>
 
               {showProfileCompletionForm && (
-                <form onSubmit={handleSubmitProfile} className="space-y-4 mt-4 p-5 bg-[#2c3135]/50 rounded-xl border border-[#4a525a]">
+                <form onSubmit={handleSubmitProfile} className="space-y-4 mt-4 p-5 bg-primary-bg/50 rounded-xl border border-[#4a525a]">
                   {/* Mensagens de perfil */}
                   {profileMessages.error && (
                     <div className="bg-red-500/20 border border-red-500 text-red-300 p-3 rounded-xl text-center">
@@ -250,7 +250,7 @@ function UserProfilePage() {
                   )}
 
                   <div>
-                    <label htmlFor="profileInstitutionName" className="block text-sm font-medium text-gray-300 mb-2 flex items-center">
+                    <label htmlFor="profileInstitutionName" className="block text-sm font-medium text-secondary-text mb-2 flex items-center">
                       <FaUniversity className="mr-2 text-[#ffbd30]" /> Instituição de Ensino:
                     </label>
                     <input
@@ -258,13 +258,13 @@ function UserProfilePage() {
                       id="profileInstitutionName"
                       value={profileInstitutionName}
                       onChange={(e) => setProfileInstitutionName(e.target.value)}
-                      className="mt-1 block w-full px-4 py-3 bg-[#2c3135] border border-[#4a525a] text-gray-200 rounded-xl focus:ring-2 focus:ring-[#69e8cb] focus:border-transparent transition-all"
+                      className="mt-1 block w-full px-4 py-3 bg-primary-bg border border-[#4a525a] text-gray-200 rounded-xl focus:ring-2 focus:ring-[#69e8cb] focus:border-transparent transition-all"
                       placeholder="Ex: Universidade XYZ"
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="profileDiscipline" className="block text-sm font-medium text-gray-300 mb-2 flex items-center">
+                    <label htmlFor="profileDiscipline" className="block text-sm font-medium text-secondary-text mb-2 flex items-center">
                       <FaBook className="mr-2 text-[#ffbd30]" /> Disciplina/Matéria:
                     </label>
                     <input
@@ -272,7 +272,7 @@ function UserProfilePage() {
                       id="profileDiscipline"
                       value={profileDiscipline}
                       onChange={(e) => setProfileDiscipline(e.target.value)}
-                      className="mt-1 block w-full px-4 py-3 bg-[#2c3135] border border-[#4a525a] text-gray-200 rounded-xl focus:ring-2 focus:ring-[#69e8cb] focus:border-transparent transition-all"
+                      className="mt-1 block w-full px-4 py-3 bg-primary-bg border border-[#4a525a] text-gray-200 rounded-xl focus:ring-2 focus:ring-[#69e8cb] focus:border-transparent transition-all"
                       placeholder="Ex: Engenharia de Software"
                     />
                   </div>
@@ -305,13 +305,13 @@ function UserProfilePage() {
                 <p className="text-[#69e8cb] font-medium">
                   Em breve, suas medalhas e insígnias aparecerão aqui!
                 </p>
-                <div className="mt-4 h-2 bg-[#2c3135] rounded-full overflow-hidden">
+                <div className="mt-4 h-2 bg-primary-bg rounded-full overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-[#69e8cb] to-[#9570d9] rounded-full"
                     style={{ width: '45%' }}
                   ></div>
                 </div>
-                <p className="text-gray-400 text-sm mt-2">Progresso: 45%</p>
+                <p className="text-secondary-text text-sm mt-2">Progresso: 45%</p>
               </div>
             </div>
           )}
@@ -325,26 +325,26 @@ function UserProfilePage() {
 
               <button
                 onClick={() => setShowPasswordChangeForm(!showPasswordChangeForm)}
-                className="w-full py-3 px-4 rounded-xl shadow-lg text-sm font-medium text-white bg-gradient-to-r from-[#9570d9] to-[#7a55c4] hover:from-[#7a55c4] hover:to-[#9570d9] transition-all duration-300 flex items-center justify-center"
+                className="w-full py-3 px-4 rounded-xl shadow-lg text-sm font-medium text-primary-text bg-gradient-to-r from-[#9570d9] to-[#7a55c4] hover:from-[#7a55c4] hover:to-[#9570d9] transition-all duration-300 flex items-center justify-center"
               >
                 <FaLock className="mr-2" />
                 {showPasswordChangeForm ? 'Cancelar' : 'Alterar Senha'}
               </button>
 
               {showPasswordChangeForm && (
-                <form onSubmit={handleChangePassword} className="space-y-4 mt-4 p-5 bg-[#2c3135]/50 rounded-xl border border-[#4a525a]">
+                <form onSubmit={handleChangePassword} className="space-y-4 mt-4 p-5 bg-primary-bg/50 rounded-xl border border-[#4a525a]">
                   {/* Mensagem de senha */}
                   {passwordMessage && (
                     <div className={`p-3 rounded-xl text-center border ${passwordMessage.includes('Erro') || passwordMessage.includes('inválida')
-                        ? 'bg-red-500/20 border-red-500 text-red-300'
-                        : 'bg-green-500/20 border-green-500 text-green-300'
+                      ? 'bg-red-500/20 border-red-500 text-red-300'
+                      : 'bg-green-500/20 border-green-500 text-green-300'
                       }`}>
                       {passwordMessage}
                     </div>
                   )}
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center">
+                    <label className="block text-sm font-medium text-secondary-text mb-2 flex items-center">
                       <FaKey className="mr-2 text-[#ffbd30]" /> Senha Atual:
                     </label>
                     <input
@@ -353,12 +353,12 @@ function UserProfilePage() {
                       value={passwordData.currentPassword}
                       onChange={handlePasswordChange}
                       required
-                      className="mt-1 block w-full px-4 py-3 bg-[#2c3135] border border-[#4a525a] text-gray-200 rounded-xl focus:ring-2 focus:ring-[#69e8cb] focus:border-transparent transition-all"
+                      className="mt-1 block w-full px-4 py-3 bg-primary-bg border border-[#4a525a] text-gray-200 rounded-xl focus:ring-2 focus:ring-[#69e8cb] focus:border-transparent transition-all"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center">
+                    <label className="block text-sm font-medium text-secondary-text mb-2 flex items-center">
                       <FaKey className="mr-2 text-[#69e8cb]" /> Nova Senha:
                     </label>
                     <input
@@ -367,12 +367,12 @@ function UserProfilePage() {
                       value={passwordData.newPassword}
                       onChange={handlePasswordChange}
                       required
-                      className="mt-1 block w-full px-4 py-3 bg-[#2c3135] border border-[#4a525a] text-gray-200 rounded-xl focus:ring-2 focus:ring-[#69e8cb] focus:border-transparent transition-all"
+                      className="mt-1 block w-full px-4 py-3 bg-primary-bg border border-[#4a525a] text-gray-200 rounded-xl focus:ring-2 focus:ring-[#69e8cb] focus:border-transparent transition-all"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center">
+                    <label className="block text-sm font-medium text-secondary-text mb-2 flex items-center">
                       <FaKey className="mr-2 text-[#9570d9]" /> Confirmar Nova Senha:
                     </label>
                     <input
@@ -381,7 +381,7 @@ function UserProfilePage() {
                       value={passwordData.confirmPassword}
                       onChange={handlePasswordChange}
                       required
-                      className="mt-1 block w-full px-4 py-3 bg-[#2c3135] border border-[#4a525a] text-gray-200 rounded-xl focus:ring-2 focus:ring-[#69e8cb] focus:border-transparent transition-all"
+                      className="mt-1 block w-full px-4 py-3 bg-primary-bg border border-[#4a525a] text-gray-200 rounded-xl focus:ring-2 focus:ring-[#69e8cb] focus:border-transparent transition-all"
                     />
                   </div>
 
@@ -408,7 +408,7 @@ function UserProfilePage() {
           <div className="border-t border-[#4a525a] pt-8">
             <button
               onClick={handleLogout}
-              className="w-full py-3 px-4 border border-transparent rounded-xl shadow-lg text-sm font-medium text-white bg-gradient-to-r from-[#ff6b6b] to-[#ff4f4f] hover:from-[#ff4f4f] hover:to-[#ff6b6b] transition-all duration-300 flex items-center justify-center"
+              className="w-full py-3 px-4 border border-transparent rounded-xl shadow-lg text-sm font-medium text-primary-text bg-gradient-to-r from-[#ff6b6b] to-[#ff4f4f] hover:from-[#ff4f4f] hover:to-[#ff6b6b] transition-all duration-300 flex items-center justify-center"
             >
               <FaSignOutAlt className="mr-2" /> Sair
             </button>

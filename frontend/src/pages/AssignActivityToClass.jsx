@@ -203,7 +203,7 @@ function AssignActivityToClass({ onAssignSuccess }) {
         return (
             <div className="flex flex-col sm:flex-row items-center gap-4">
                 <div className="relative w-full">
-                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-secondary-text">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                         </svg>
@@ -223,14 +223,14 @@ function AssignActivityToClass({ onAssignSuccess }) {
 
                 <button
                     onClick={handleAssign}
-                    className="relative w-full sm:w-auto bg-gradient-to-r from-accent-yellow to-accent-teal text-gray-900 font-bold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl hover:from-accent-yellow/90 hover:to-accent-teal/90 transform hover:-translate-y-0.5 transition-all duration-300 ease-out disabled:opacity-70 disabled:cursor-not-allowed group"
+                    className="relative w-full sm:w-auto bg-gradient-to-r from-accent-yellow to-accent-teal text-primary-text font-bold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl hover:from-accent-yellow/90 hover:to-accent-teal/90 transform hover:-translate-y-0.5 transition-all duration-300 ease-out disabled:opacity-70 disabled:cursor-not-allowed group"
                     disabled={isLoading}
                 >
-                    <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 rounded-xl transition-opacity"></div>
+                    <div className="absolute inset-0 bg-secondary-bg opacity-0 group-hover:opacity-10 rounded-xl transition-opacity"></div>
                     <span className="flex items-center justify-center">
                         {isLoading ? (
                             <>
-                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-gray-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary-text" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
@@ -273,8 +273,8 @@ function AssignActivityToClass({ onAssignSuccess }) {
 
                 {message && (
                     <div className={`mb-4 p-3 rounded-xl ${message.includes('sucesso')
-                            ? 'bg-green-900/30 text-green-400'
-                            : 'bg-red-900/30 text-red-400'
+                        ? 'bg-green-900/30 text-green-400'
+                        : 'bg-red-900/30 text-red-400'
                         } transition-all duration-300`}>
                         <p className="text-sm font-medium">{message}</p>
                     </div>
