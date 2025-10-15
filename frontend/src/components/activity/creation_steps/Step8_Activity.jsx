@@ -87,14 +87,14 @@ function Step8_RulesAndSharing({ activityData, handleInputChange, setActivityDat
                   group relative flex h-full cursor-pointer flex-col items-center justify-start space-y-3 rounded-xl border p-5 text-center transition-all duration-200
                   ${isSelected
                     ? 'border-2 border-teal-500 bg-teal-50 dark:bg-teal-900/40 ring-2 ring-teal-500/20'
-                    : 'border-gray-300 bg-secondary-bg hover:border-teal-400 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:hover:border-teal-500'
+                    : 'border-border-color bg-secondary-bg hover:border-teal-400 hover:shadow-lg dark:border-border-color dark:bg-primary-bg dark:hover:border-teal-500'
                   }
                 `}
               >
                 <div className={`text-4xl ${isSelected ? 'text-teal-500' : 'text-secondary-text group-hover:text-teal-500 dark:text-secondary-text dark:group-hover:text-teal-400'}`}>
                   {rule.icon}
                 </div>
-                <p className={`text-sm font-medium ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-gray-700 dark:text-secondary-text'}`}>
+                <p className={`text-sm font-medium ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-secondary-text dark:text-secondary-text'}`}>
                   {rule.text}
                 </p>
               </div>
@@ -106,7 +106,7 @@ function Step8_RulesAndSharing({ activityData, handleInputChange, setActivityDat
       {/* SEÇÃO 3: Regras Específicas e Compartilhamento */}
       <div className="pt-4 space-y-6">
         <div>
-          <label htmlFor="gamificationRules.specificRules" className="block text-sm font-medium text-gray-700 dark:text-secondary-text">
+          <label htmlFor="gamificationRules.specificRules" className="block text-sm font-medium text-secondary-text dark:text-secondary-text">
             Regras específicas da sua atividade (Opcional)
           </label>
           <textarea
@@ -115,7 +115,7 @@ function Step8_RulesAndSharing({ activityData, handleInputChange, setActivityDat
             value={activityData.gamificationRules.specificRules}
             onChange={handleInputChange}
             rows="4"
-            className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+            className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-primary-bg border border-border-color dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
             placeholder="Ex: Não é permitido usar o celular durante o desafio. A entrega do projeto deve conter no mínimo 3 commits."
           ></textarea>
         </div>
@@ -128,11 +128,11 @@ function Step8_RulesAndSharing({ activityData, handleInputChange, setActivityDat
               type="checkbox"
               checked={activityData.isPublic}
               onChange={handleInputChange}
-              className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+              className="h-4 w-4 rounded border-border-color text-teal-600 focus:ring-teal-500"
             />
           </div>
           <div className="ml-3 text-sm leading-6">
-            <label htmlFor="isPublic" className="font-medium text-primary-text dark:text-gray-200">
+            <label htmlFor="isPublic" className="font-medium text-primary-text dark:text-secondary-text">
               Compartilhar esta atividade?
             </label>
             <p className="text-secondary-text dark:text-secondary-text">Ao marcar, sua atividade ficará pública para outros professores usarem como modelo.</p>

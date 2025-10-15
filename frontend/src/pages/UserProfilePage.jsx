@@ -1,417 +1,181 @@
 // frontend/src/pages/UserProfilePage.jsx
-import React, { useState, useCallback } from 'react';
+
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import useAnalytics from '../hooks/useAnalytics';
+import { FaUser, FaLock, FaUniversity, FaBook, FaKey, FaSignOutAlt, FaTrashAlt, FaMapMarkerAlt, FaGift } from "react-icons/fa";
 import AvatarSelectionModal from '../components/AvatarSelectionModal';
-import DeleteAccountModal from '../components/DeleteAccountModal';
-import { useProfileManagement } from '../hooks/useProfileManagement';
-import { usePasswordManagement } from '../hooks/usePasswordManagement';
-import {
-  FaUser,
-  FaLock,
-  FaGraduationCap,
-  FaMedal,
-  FaSignOutAlt,
-  FaUniversity,
-  FaBook,
-  FaKey,
-  FaEdit,
-  FaCheck,
-  FaTrashAlt
-} from "react-icons/fa";
+
+// Componente para um Card genérico
+const ProfileCard = ({ icon, title, children, className }) => (
+  <div className={`bg-primary-bg p-6 rounded-2xl shadow-xl border border-border-color ${className}`}>
+    <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-accent-teal to-accent-purple mb-4 flex items-center">
+      {icon} {title}
+    </h3>
+    {children}
+  </div>
+);
 
 function UserProfilePage() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { logEvent } = useAnalytics('user_profile', user?.token);
 
-  // Estados para controle de UI
-  const [showPasswordChangeForm, setShowPasswordChangeForm] = useState(false);
-  const [showProfileCompletionForm, setShowProfileCompletionForm] = useState(false);
+  const [locationInfo, setLocationInfo] = useState(null);
+  const [locationStatus, setLocationStatus] = useState('');
   const [showAvatarModal, setShowAvatarModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false); // Novo estado
-  const [deletePassword, setDeletePassword] = useState(''); // Novo estado para a senha de exclusão
-  const [deleteMessage, setDeleteMessage] = useState(''); // Novo estado para mensagens de erro/sucesso na exclusão
 
-  // Estados locais para formulário de perfil (Professor)
-  const [profileInstitutionName, setProfileInstitutionName] = useState(user?.institutionName || '');
-  const [profileDiscipline, setProfileDiscipline] = useState(user?.discipline || '');
+  // Efeito para buscar as informações de localização do usuário
+  useEffect(() => {
+    const fetchLocationInfo = async () => {
+      if (!user?.token) return;
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/user/location-info`, {
+          headers: { 'Authorization': `Bearer ${user.token}` }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setLocationInfo(data);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar informações de localização:", error);
+      }
+    };
+    fetchLocationInfo();
+  }, [user]);
 
-  // Hooks personalizados
-  const {
-    messages: profileMessages, // { error: string, success: string }
-    isLoading: profileLoading,
-    updateProfile,
-    updateAvatar,
-    deleteAccount
-  } = useProfileManagement();
-
-  const {
-    passwordData,
-    message: passwordMessage,
-    handleChange: handlePasswordChange,
-    changePassword
-  } = usePasswordManagement();
-
-  // Se o usuário não estiver carregado, não renderiza nada
-  if (!user) {
-    return null;
-  }
-
-  // Funções
-  const handleSelectAvatar = useCallback(async (avatarUrl) => {
-    await updateAvatar(avatarUrl);
-    setShowAvatarModal(false);
-  }, [updateAvatar]);
-
-  const handleCloseModal = useCallback(() => {
-    setShowAvatarModal(false);
-  }, []);
-
-  const handleSubmitProfile = async (e) => {
-    e.preventDefault();
-    await updateProfile({
-      institution_name: profileInstitutionName,
-      discipline: profileDiscipline
-    });
-  };
-
-  const handleChangePassword = async (e) => {
-    e.preventDefault();
-    await changePassword();
-  };
+  const handleForceLocationRequest = useCallback(() => {
+    setLocationStatus('Solicitando permissão...');
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        logEvent("location_access_granted", { latitude, longitude });
+        setLocationStatus('Localização compartilhada com sucesso! Recarregue a página para ver seu prêmio e sua cidade.');
+        alert('Recompensa desbloqueada! Seu novo avatar estará disponível na sua galeria.');
+      },
+      (error) => {
+        logEvent("location_access_denied", { code: error.code, message: error.message });
+        setLocationStatus(`Erro ao obter localização: ${error.message}`);
+      }
+    );
+  }, [logEvent]);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
-  const handleDeleteConfirm = async () => {
-    // 1. Limpa mensagens de erro antigas
-    setDeleteMessage('');
-
-    // 2. Validação inicial: Se a senha estiver vazia...
-    if (!deletePassword) {
-      // 3. ...define uma mensagem de erro e para a execução.
-      setDeleteMessage('A senha é obrigatória para confirmar a exclusão.');
-      return;
-    }
-
-    // 4. Se a senha foi digitada, chama a função do hook para fazer a exclusão
-    await deleteAccount(deletePassword);
-    // A partir daqui, o hook gerencia as mensagens de sucesso ou falha da API
-  };
-
-
-
-  // Define a URL base do servidor
   const serverUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-  const displayAvatar = user.profile_picture
+  const displayAvatar = user?.profile_picture
     ? (user.profile_picture.startsWith('/avatars/') ? user.profile_picture : `${serverUrl}${user.profile_picture}`)
-    : `https://ui-avatars.com/api/?name=${user.name}&background=random`;
+    : `https://ui-avatars.com/api/?name=${user?.name}&background=random`;
+
+  const normalAvatars = user?.unlocked_global_avatars?.filter(a => a.type !== 'special') || [];
+  const specialAvatars = user?.unlocked_global_avatars?.filter(a => a.type === 'special') || [];
+
+  if (!user) return null; // Evita renderizar a página sem dados do usuário
 
   return (
     <>
       {showAvatarModal && (
         <AvatarSelectionModal
-          onSelect={handleSelectAvatar}
-          onClose={handleCloseModal}
+          onSelect={(avatarUrl) => { /* Adicionar lógica de updateAvatar aqui */ }}
+          onClose={() => setShowAvatarModal(false)}
         />
       )}
 
-      {showDeleteModal && (
-        <DeleteAccountModal
-          onConfirm={handleDeleteConfirm}
-          onCancel={() => {
-            setShowDeleteModal(false);
-            setDeletePassword('');
-          }}
-          password={deletePassword}
-          setPassword={setDeletePassword}
-          message={profileMessages.error} // Usa a mensagem de erro do hook
-        />
-      )}
-
-
-      <div className="min-h-screen bg-gradient-to-br from-[#2c3135] to-[#1a1e22] flex justify-center py-12 px-4">
-        <div className="max-w-xl w-full space-y-8 bg-[#3a4046] p-8 rounded-2xl shadow-2xl border border-[#4a525a]">
-          <div className="text-center">
-            <div className="inline-flex items-center justify-center p-3 bg-gradient-to-r from-[#ffbd30] to-[#ff9d00] rounded-full mb-4">
-              <FaUser className="text-2xl text-[#2c3135]" />
-            </div>
-            <h2 className="text-center text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#69e8cb] to-[#9570d9]">
-              Meu Perfil
-            </h2>
+      <div className="min-h-screen bg-gradient-to-br from-primary-bg to-[#1a1e22] py-12 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#69e8cb] to-[#9570d9]">
+              Minhas Configurações
+            </h1>
+            <p className="text-secondary-text mt-2">Gerencie suas informações, avatares e segurança.</p>
           </div>
 
-          {/* Informações do Usuário */}
-          <div className="space-y-6 text-left border-t border-[#4a525a] pt-8 text-center">
-            <div className="flex flex-col items-center pt-4">
-              <div className="relative group">
-                <img
-                  src={displayAvatar}
-                  alt="Foto de Perfil"
-                  className="w-28 h-28 rounded-full border-4 border-[#69e8cb] object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-br from-[#ffbd30]/20 to-[#9570d9]/20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </div>
-              {user.google_id && (
-                <p className="text-sm text-[#69e8cb] mt-2 flex items-center justify-center">
-                  <span className="bg-[#ffbd30]/10 px-2 py-1 rounded-full">Logado com Google</span>
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-3 bg-primary-bg/50 p-5 rounded-xl border border-[#4a525a]">
-              <p className="text-gray-200 text-lg flex items-center">
-                <span className="w-6 h-6 bg-[#ffbd30] rounded-full flex items-center justify-center mr-2">
-                  <FaUser className="text-xs text-[#2c3135]" />
-                </span>
-                <span className="font-semibold mr-2">Nome:</span>
-                <span className="text-[#69e8cb]">{user.name || 'Não informado'}</span>
-              </p>
-              <p className="text-gray-200 text-lg flex items-center">
-                <span className="w-6 h-6 bg-[#9570d9] rounded-full flex items-center justify-center mr-2">
-                  <FaGraduationCap className="text-xs text-primary-text" />
-                </span>
-                <span className="font-semibold mr-2">Email:</span>
-                <span className="text-[#69e8cb]">{user.email}</span>
-              </p>
-              <p className="text-gray-200 text-lg flex items-center">
-                <span className="w-6 h-6 bg-[#69e8cb] rounded-full flex items-center justify-center mr-2">
-                  <FaLock className="text-xs text-[#2c3135]" />
-                </span>
-                <span className="font-semibold mr-2">Tipo de Perfil:</span>
-                <span className={`px-2 py-1 rounded-full ${user.role === 'aluno'
-                  ? 'bg-[#9570d9]/20 text-[#9570d9]'
-                  : 'bg-[#ffbd30]/20 text-[#ffbd30]'
-                  }`}>
-                  {user.role === 'aluno' ? 'Aluno' : 'Professor'}
-                </span>
-              </p>
-            </div>
-          </div>
-
-          {/* Personalização */}
-          <div className="border-t border-[#4a525a] pt-8">
-            <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#69e8cb] to-[#9570d9] mb-4 flex items-center">
-              <FaUser className="mr-2" /> Personalização
-            </h3>
-
-            {/* Mensagens de avatar */}
-            {profileMessages.avatarError && (
-              <div className="bg-red-500/20 border border-red-500 text-red-300 p-3 mb-4 rounded-xl text-center">
-                {profileMessages.avatarError}
-              </div>
-            )}
-            {profileMessages.avatarSuccess && (
-              <div className="bg-green-500/20 border border-green-500 text-green-300 p-3 mb-4 rounded-xl text-center">
-                {profileMessages.avatarSuccess}
-              </div>
-            )}
-
-            <button
-              onClick={() => setShowAvatarModal(true)}
-              className="mt-2 w-full py-3 px-4 rounded-xl shadow-lg text-sm font-medium text-[#2c3135] bg-gradient-to-r from-[#ffbd30] to-[#ff9d00] hover:from-[#ff9d00] hover:to-[#ffbd30] transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center"
-              disabled={profileLoading}
-            >
-              <FaEdit className="mr-2" />
-              {profileLoading ? 'Carregando...' : 'Escolher novo Avatar'}
-            </button>
-          </div>
-
-          {/* Formulário para Completar/Editar Perfil (Professor) */}
-          {user.role === 'professor' && (
-            <div className="space-y-4 border-t border-[#4a525a] pt-8">
-              <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#69e8cb] to-[#9570d9] mb-4 flex items-center">
-                <FaUniversity className="mr-2" /> Informações Profissionais
-              </h3>
-
-              <button
-                onClick={() => setShowProfileCompletionForm(!showProfileCompletionForm)}
-                className="w-full py-3 px-4 rounded-xl text-sm font-medium text-primary-text bg-gradient-to-r from-[#9570d9] to-[#7a55c4] hover:from-[#7a55c4] hover:to-[#9570d9] transition-all duration-300 flex items-center justify-center"
-                disabled={profileLoading}
-              >
-                <FaEdit className="mr-2" />
-                {showProfileCompletionForm ? 'Cancelar Edição' : 'Completar / Editar Informações'}
-              </button>
-
-              {showProfileCompletionForm && (
-                <form onSubmit={handleSubmitProfile} className="space-y-4 mt-4 p-5 bg-primary-bg/50 rounded-xl border border-[#4a525a]">
-                  {/* Mensagens de perfil */}
-                  {profileMessages.error && (
-                    <div className="bg-red-500/20 border border-red-500 text-red-300 p-3 rounded-xl text-center">
-                      {profileMessages.error}
-                    </div>
-                  )}
-                  {profileMessages.success && (
-                    <div className="bg-green-500/20 border border-green-500 text-green-300 p-3 rounded-xl text-center">
-                      {profileMessages.success}
-                    </div>
-                  )}
-
-                  <div>
-                    <label htmlFor="profileInstitutionName" className="block text-sm font-medium text-secondary-text mb-2 flex items-center">
-                      <FaUniversity className="mr-2 text-[#ffbd30]" /> Instituição de Ensino:
-                    </label>
-                    <input
-                      type="text"
-                      id="profileInstitutionName"
-                      value={profileInstitutionName}
-                      onChange={(e) => setProfileInstitutionName(e.target.value)}
-                      className="mt-1 block w-full px-4 py-3 bg-primary-bg border border-[#4a525a] text-gray-200 rounded-xl focus:ring-2 focus:ring-[#69e8cb] focus:border-transparent transition-all"
-                      placeholder="Ex: Universidade XYZ"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="profileDiscipline" className="block text-sm font-medium text-secondary-text mb-2 flex items-center">
-                      <FaBook className="mr-2 text-[#ffbd30]" /> Disciplina/Matéria:
-                    </label>
-                    <input
-                      type="text"
-                      id="profileDiscipline"
-                      value={profileDiscipline}
-                      onChange={(e) => setProfileDiscipline(e.target.value)}
-                      className="mt-1 block w-full px-4 py-3 bg-primary-bg border border-[#4a525a] text-gray-200 rounded-xl focus:ring-2 focus:ring-[#69e8cb] focus:border-transparent transition-all"
-                      placeholder="Ex: Engenharia de Software"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full py-3 px-4 text-sm font-medium text-[#2c3135] bg-gradient-to-r from-[#69e8cb] to-[#4dd1b3] hover:from-[#4dd1b3] hover:to-[#69e8cb] rounded-xl shadow-lg transition-all duration-300 flex items-center justify-center"
-                    disabled={profileLoading}
-                  >
-                    <FaCheck className="mr-2" />
-                    {profileLoading ? 'Salvando...' : 'Salvar Informações'}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Coluna Esquerda: Perfil e Ações */}
+            <div className="md:col-span-1 space-y-8">
+              <ProfileCard icon={<FaUser className="mr-3" />} title="Perfil">
+                <div className="flex flex-col items-center text-center">
+                  <img src={displayAvatar} alt="Avatar" className="w-28 h-28 rounded-full border-4 border-accent-teal object-cover mb-4" />
+                  <h2 className="text-2xl font-bold text-primary-text">{user.name}</h2>
+                  <p className="text-secondary-text">{user.email}</p>
+                  <button onClick={() => setShowAvatarModal(true)} className="mt-4 w-full py-2 px-4 bg-accent-yellow text-primary-text font-semibold rounded-lg hover:bg-yellow-600 transition-colors">
+                    Alterar Avatar
                   </button>
-                </form>
-              )}
-            </div>
-          )}
+                </div>
+              </ProfileCard>
 
-          {/* Seção de Conquistas (Apenas para Alunos) */}
-          {user.role === 'aluno' && (
-            <div className="space-y-4 border-t border-[#4a525a] pt-8">
-              <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ffbd30] to-[#ff9d00] mb-4 flex items-center">
-                <FaMedal className="mr-2" /> Minhas Conquistas
-              </h3>
-              <div className="p-5 bg-gradient-to-br from-[#2c3135]/50 to-[#1a1e22]/50 border border-[#4a525a] rounded-xl text-center">
-                <div className="flex justify-center mb-3">
-                  <div className="w-16 h-16 bg-gradient-to-br from-[#ffbd30] to-[#ff9d00] rounded-full flex items-center justify-center">
-                    <FaMedal className="text-2xl text-[#2c3135]" />
+              <ProfileCard icon={<FaSignOutAlt className="mr-3" />} title="Ações da Conta">
+                <div className="space-y-4">
+                  <button onClick={handleLogout} className="w-full py-2 px-4 border border-transparent rounded-xl text-sm font-medium text-primary-text bg-gradient-to-r from-[#ff6b6b] to-[#ff4f4f] hover:from-[#ff4f4f] hover:to-[#ff6b6b]">
+                    Sair
+                  </button>
+                  <button className="w-full py-2 px-4 rounded-xl text-sm font-medium text-red-300 bg-red-500/20 border border-red-500/50 hover:bg-red-500/30">
+                    <FaTrashAlt className="inline mr-2" /> Excluir Conta
+                  </button>
+                </div>
+              </ProfileCard>
+            </div>
+
+            {/* Coluna Direita: Detalhes e Configurações */}
+            <div className="md:col-span-2 space-y-8">
+              <ProfileCard icon={<FaMapMarkerAlt className="mr-3" />} title="Localização">
+                {locationInfo ? (
+                  <div>
+                    <p className="text-secondary-text">Sua localização registrada é:</p>
+                    <p className="text-lg font-semibold text-primary-text">{`${locationInfo.city}, ${locationInfo.state} - ${locationInfo.country}`}</p>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="flex items-center p-4 bg-yellow-500/10 border-l-4 border-yellow-400 rounded-lg">
+                      <FaGift className="text-yellow-400 text-2xl mr-4" />
+                      <div>
+                        <h4 className="font-bold text-primary-text">Ganhe um Avatar Exclusivo!</h4>
+                        <p className="text-secondary-text text-sm">Compartilhe sua localização para desbloquear o avatar "Explorador Global". Seus dados são confidenciais.</p>
+                      </div>
+                    </div>
+                    <button onClick={handleForceLocationRequest} className="mt-4 w-full py-2 px-4 bg-accent-teal text-primary-text font-semibold rounded-lg hover:bg-accent-teal/80">
+                      Liberar Localização e Resgatar
+                    </button>
+                    {locationStatus && <p className="mt-2 text-sm text-accent-yellow">{locationStatus}</p>}
+                  </div>
+                )}
+              </ProfileCard>
+
+              <ProfileCard icon={<FaUser className="mr-3" />} title="Meus Avatares">
+                <div>
+                  <h4 className="font-semibold text-secondary-text border-b border-border-color pb-2 mb-4">Avatares Especiais</h4>
+                  <div className="flex flex-wrap gap-4">
+                    {specialAvatars.length > 0 ? specialAvatars.map(avatar => (
+                      <img key={avatar.url} src={avatar.url} alt={avatar.name} title={avatar.name} className="w-16 h-16 rounded-full border-2 border-yellow-400 object-cover" />
+                    )) : <p className="text-sm text-secondary-text">Nenhum avatar especial desbloqueado.</p>}
                   </div>
                 </div>
-                <p className="text-[#69e8cb] font-medium">
-                  Em breve, suas medalhas e insígnias aparecerão aqui!
-                </p>
-                <div className="mt-4 h-2 bg-primary-bg rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-[#69e8cb] to-[#9570d9] rounded-full"
-                    style={{ width: '45%' }}
-                  ></div>
+                <div className="mt-6">
+                  <h4 className="font-semibold text-secondary-text border-b border-border-color pb-2 mb-4">Avatares Normais</h4>
+                  <div className="flex flex-wrap gap-4">
+                    {normalAvatars.length > 0 ? normalAvatars.map(avatar => (
+                      <img key={avatar.url} src={avatar.url} alt={avatar.name} title={avatar.name} className="w-16 h-16 rounded-full border-2 border-border-color object-cover" />
+                    )) : <p className="text-sm text-secondary-text">Nenhum avatar normal desbloqueado.</p>}
+                  </div>
                 </div>
-                <p className="text-secondary-text text-sm mt-2">Progresso: 45%</p>
-              </div>
-            </div>
-          )}
+              </ProfileCard>
 
-          {/* Alteração de Senha (Apenas para login tradicional) */}
-          {!user.google_id && (
-            <div className="space-y-4 border-t border-[#4a525a] pt-8">
-              <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#69e8cb] to-[#4dd1b3] mb-4 flex items-center">
-                <FaKey className="mr-2" /> Segurança
-              </h3>
+              {user.role === 'professor' && (
+                <ProfileCard icon={<FaUniversity className="mr-3" />} title="Informações Profissionais">
+                  {/* Formulário de edição para professor aqui */}
+                </ProfileCard>
+              )}
 
-              <button
-                onClick={() => setShowPasswordChangeForm(!showPasswordChangeForm)}
-                className="w-full py-3 px-4 rounded-xl shadow-lg text-sm font-medium text-primary-text bg-gradient-to-r from-[#9570d9] to-[#7a55c4] hover:from-[#7a55c4] hover:to-[#9570d9] transition-all duration-300 flex items-center justify-center"
-              >
-                <FaLock className="mr-2" />
-                {showPasswordChangeForm ? 'Cancelar' : 'Alterar Senha'}
-              </button>
-
-              {showPasswordChangeForm && (
-                <form onSubmit={handleChangePassword} className="space-y-4 mt-4 p-5 bg-primary-bg/50 rounded-xl border border-[#4a525a]">
-                  {/* Mensagem de senha */}
-                  {passwordMessage && (
-                    <div className={`p-3 rounded-xl text-center border ${passwordMessage.includes('Erro') || passwordMessage.includes('inválida')
-                      ? 'bg-red-500/20 border-red-500 text-red-300'
-                      : 'bg-green-500/20 border-green-500 text-green-300'
-                      }`}>
-                      {passwordMessage}
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="block text-sm font-medium text-secondary-text mb-2 flex items-center">
-                      <FaKey className="mr-2 text-[#ffbd30]" /> Senha Atual:
-                    </label>
-                    <input
-                      type="password"
-                      name="currentPassword"
-                      value={passwordData.currentPassword}
-                      onChange={handlePasswordChange}
-                      required
-                      className="mt-1 block w-full px-4 py-3 bg-primary-bg border border-[#4a525a] text-gray-200 rounded-xl focus:ring-2 focus:ring-[#69e8cb] focus:border-transparent transition-all"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-secondary-text mb-2 flex items-center">
-                      <FaKey className="mr-2 text-[#69e8cb]" /> Nova Senha:
-                    </label>
-                    <input
-                      type="password"
-                      name="newPassword"
-                      value={passwordData.newPassword}
-                      onChange={handlePasswordChange}
-                      required
-                      className="mt-1 block w-full px-4 py-3 bg-primary-bg border border-[#4a525a] text-gray-200 rounded-xl focus:ring-2 focus:ring-[#69e8cb] focus:border-transparent transition-all"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-secondary-text mb-2 flex items-center">
-                      <FaKey className="mr-2 text-[#9570d9]" /> Confirmar Nova Senha:
-                    </label>
-                    <input
-                      type="password"
-                      name="confirmPassword"
-                      value={passwordData.confirmPassword}
-                      onChange={handlePasswordChange}
-                      required
-                      className="mt-1 block w-full px-4 py-3 bg-primary-bg border border-[#4a525a] text-gray-200 rounded-xl focus:ring-2 focus:ring-[#69e8cb] focus:border-transparent transition-all"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full py-3 px-4 text-sm font-medium text-[#2c3135] bg-gradient-to-r from-[#69e8cb] to-[#4dd1b3] hover:from-[#4dd1b3] hover:to-[#69e8cb] rounded-xl shadow-lg transition-all duration-300 flex items-center justify-center"
-                  >
-                    <FaCheck className="mr-2" /> Confirmar Alteração
-                  </button>
-                </form>
+              {!user.google_id && (
+                <ProfileCard icon={<FaKey className="mr-3" />} title="Segurança">
+                  {/* Formulário de alteração de senha aqui */}
+                </ProfileCard>
               )}
             </div>
-          )}
-
-          <button
-            onClick={() => setShowDeleteModal(true)}
-            className="mt-4 w-full py-3 px-4 rounded-xl text-sm font-medium text-red-300 bg-red-500/20 border border-red-500/50 hover:bg-red-500/30 transition-all duration-300 flex items-center justify-center"
-            disabled={profileLoading}
-          >
-            {profileLoading ? 'Processando...' : <><FaTrashAlt className="mr-2" /> Excluir Conta</>}
-          </button>
-
-          {/* Botão Sair */}
-          <div className="border-t border-[#4a525a] pt-8">
-            <button
-              onClick={handleLogout}
-              className="w-full py-3 px-4 border border-transparent rounded-xl shadow-lg text-sm font-medium text-primary-text bg-gradient-to-r from-[#ff6b6b] to-[#ff4f4f] hover:from-[#ff4f4f] hover:to-[#ff6b6b] transition-all duration-300 flex items-center justify-center"
-            >
-              <FaSignOutAlt className="mr-2" /> Sair
-            </button>
           </div>
         </div>
       </div>

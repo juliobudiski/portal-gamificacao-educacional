@@ -80,14 +80,14 @@ function Step2_DesiredScenario({ activityData, handleInputChange, setActivityDat
                 group relative flex h-full cursor-pointer flex-col items-center justify-start space-y-3 rounded-xl border p-5 text-center transition-all duration-200
                 ${isSelected
                   ? 'border-2 border-teal-500 bg-teal-50 dark:bg-teal-900/40 ring-2 ring-teal-500/20'
-                  : 'border-gray-300 bg-secondary-bg hover:border-teal-400 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:hover:border-teal-500'
+                  : 'border-border-color bg-secondary-bg hover:border-teal-400 hover:shadow-lg dark:border-border-color dark:bg-primary-bg dark:hover:border-teal-500'
                 }
               `}
             >
               <div className={`text-5xl ${isSelected ? 'text-teal-500' : 'text-secondary-text group-hover:text-teal-500 dark:text-secondary-text dark:group-hover:text-teal-400'}`}>
                 {objective.icon}
               </div>
-              <p className={`text-sm font-medium ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-gray-700 dark:text-secondary-text'}`}>
+              <p className={`text-sm font-medium ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-secondary-text dark:text-secondary-text'}`}>
                 {objective.text}
               </p>
             </div>
@@ -97,7 +97,7 @@ function Step2_DesiredScenario({ activityData, handleInputChange, setActivityDat
 
       {/* SEÇÃO 3: Campo Aberto */}
       <div className="pt-4">
-        <label htmlFor="desiredScenario.otherObjective" className="block text-sm font-medium text-gray-700 dark:text-secondary-text">
+        <label htmlFor="desiredScenario.otherObjective" className="block text-sm font-medium text-secondary-text dark:text-secondary-text">
           Outro objetivo em mente? (Opcional)
         </label>
         <input
@@ -106,7 +106,7 @@ function Step2_DesiredScenario({ activityData, handleInputChange, setActivityDat
           name="desiredScenario.otherObjective"
           value={activityData.desiredScenario.otherObjective}
           onChange={handleInputChange}
-          className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+          className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-primary-bg border border-border-color dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
           placeholder="Descreva um objetivo personalizado"
         />
       </div>

@@ -73,6 +73,7 @@ function LogExplorerPage() {
 
     // Lista de ações para o filtro (pode ser gerada dinamicamente no futuro)
     const availableActions = [
+        'location_access_granted',
         'activity_created', 'activity_edited', 'activity_deleted',
         'activity_copied', 'activity_assigned', 'login_success',
         'login_fail', 'register_success', 'step_view_duration', 'form_abandoned', 'help_button_click'
@@ -83,7 +84,7 @@ function LogExplorerPage() {
             <h1 className="text-3xl font-bold">Explorador de Logs do Sistema</h1>
 
             {/* Seção de Tabela de Logs */}
-            <div className="bg-gray-800/50 p-6 rounded-xl">
+            <div className="bg-primary-bg/50 p-6 rounded-xl">
                 {/* Filtros da Tabela */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div className="relative">
@@ -93,13 +94,13 @@ function LogExplorerPage() {
                             placeholder="Buscar por nome de usuário..."
                             value={userSearch}
                             onChange={(e) => setUserSearch(e.target.value)}
-                            className="w-full bg-gray-900/50 border border-gray-700 rounded-lg pl-10 pr-4 py-2 focus:ring-2 focus:ring-accent-teal outline-none"
+                            className="w-full bg-primary-bg/50 border border-border-color rounded-lg pl-10 pr-4 py-2 focus:ring-2 focus:ring-accent-teal outline-none"
                         />
                     </div>
                     <select
                         value={actionFilter}
                         onChange={(e) => setActionFilter(e.target.value)}
-                        className="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-accent-teal outline-none"
+                        className="w-full bg-primary-bg/50 border border-border-color rounded-lg px-4 py-2 focus:ring-2 focus:ring-accent-teal outline-none"
                     >
                         <option value="">Filtrar por Ação...</option>
                         {availableActions.map(action => (
@@ -113,7 +114,7 @@ function LogExplorerPage() {
                 {/* Tabela de Logs */}
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-700">
-                        <thead className="bg-gray-900/60">
+                        <thead className="bg-primary-bg/60">
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-secondary-text uppercase tracking-wider">Usuário</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-secondary-text uppercase tracking-wider">Ação</th>
@@ -122,14 +123,14 @@ function LogExplorerPage() {
                                 <th className="px-6 py-3 text-left text-xs font-medium text-secondary-text uppercase tracking-wider">IP</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-gray-800/50 divide-y divide-gray-700">
+                        <tbody className="bg-primary-bg/50 divide-y divide-gray-700">
                             {loading ? (
                                 <tr><td colSpan="5" className="text-center py-10 text-secondary-text">Carregando logs...</td></tr>
                             ) : logs.length === 0 ? (
                                 <tr><td colSpan="5" className="text-center py-10 text-secondary-text">Nenhum log encontrado para os filtros selecionados.</td></tr>
                             ) : (
                                 logs.map(log => (
-                                    <tr key={log.id} className="hover:bg-gray-700/50">
+                                    <tr key={log.id} className="hover:bg-border-color/50">
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="text-sm font-medium text-primary-text">{log.user_name}</div>
                                             <div className="text-xs text-secondary-text">{log.user_email}</div>
@@ -150,7 +151,7 @@ function LogExplorerPage() {
                     <button
                         onClick={() => setCurrentPage(p => p - 1)}
                         disabled={!pagination.hasPrev || loading}
-                        className="px-4 py-2 bg-gray-700 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                        className="px-4 py-2 bg-border-color rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                     >
                         <ChevronLeft size={16} className="mr-1" /> Anterior
                     </button>
@@ -160,7 +161,7 @@ function LogExplorerPage() {
                     <button
                         onClick={() => setCurrentPage(p => p + 1)}
                         disabled={!pagination.hasNext || loading}
-                        className="px-4 py-2 bg-gray-700 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                        className="px-4 py-2 bg-border-color rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                     >
                         Próxima <ChevronRight size={16} className="ml-1" />
                     </button>

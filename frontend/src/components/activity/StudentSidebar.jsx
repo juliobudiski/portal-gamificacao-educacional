@@ -47,7 +47,7 @@ const StudentSidebar = ({ progress, onShowStats }) => {
   }
 
   return (
-    <div className="p-4 bg-gray-900 rounded-lg space-y-6 sticky top-4">
+    <div className="p-4 bg-primary-bg rounded-lg space-y-6 sticky top-4">
       {/* Seção de Pontuação */}
       <div>
         <h4 className="text-lg font-bold text-yellow-400 flex items-center">
@@ -64,7 +64,7 @@ const StudentSidebar = ({ progress, onShowStats }) => {
         <p className="text-2xl font-bold text-primary-text">Nível {progress.level}</p>
 
         {/* Barra de progresso de XP */}
-        <div className="w-full bg-gray-700 rounded-full h-4 mt-2">
+        <div className="w-full bg-border-color rounded-full h-4 mt-2">
           <div
             className="bg-green-500 h-4 rounded-full"
             style={{ width: `${xpPercentage}%` }}

@@ -137,14 +137,14 @@ const RouletteTab = ({ onPrizeWon, onReturn, onPrizeUnlocked }) => {
       </div>
 
       {/* Coluna de Vencedores */}
-      <div className="w-full max-w-sm bg-gray-800/50 p-4 rounded-2xl border border-gray-700 flex flex-col mt-8 lg:mt-16">
+      <div className="w-full max-w-sm bg-primary-bg/50 p-4 rounded-2xl border border-border-color flex flex-col mt-8 lg:mt-16">
         <h3 className="text-xl font-bold text-center mb-4 text-[#69e8cb]">Últimos Ganhadores</h3>
         {loadingWinners ? (<div className="flex-grow flex items-center justify-center py-8"><FaSpinner className="animate-spin text-2xl" /></div>
         ) : winners.length > 0 ? (
           <div className="space-y-3">
             {winners.map((winner, index) => (
-              <div key={index} className="bg-gray-700 p-3 rounded-lg flex justify-between items-center animate-fadeIn">
-                <span className="font-semibold text-gray-200">{winner.userName}</span>
+              <div key={index} className="bg-border-color p-3 rounded-lg flex justify-between items-center animate-fadeIn">
+                <span className="font-semibold text-secondary-text">{winner.userName}</span>
                 <span className="font-bold text-yellow-400 px-2 py-1 bg-yellow-400/10 rounded-md text-sm">{winner.prize}</span>
               </div>
             ))}
@@ -155,7 +155,7 @@ const RouletteTab = ({ onPrizeWon, onReturn, onPrizeUnlocked }) => {
       {/* Modal de Revelação de Prêmio */}
       {revealedPrize && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 animate-fadeIn">
-          <div className="bg-gray-800 border-2 border-yellow-400 p-8 rounded-xl shadow-2xl text-center prize-reveal-box">
+          <div className="bg-primary-bg border-2 border-yellow-400 p-8 rounded-xl shadow-2xl text-center prize-reveal-box">
             <h2 className="text-2xl font-light text-secondary-text mb-2">Você ganhou:</h2>
             <p className="text-4xl font-bold text-yellow-400">{revealedPrize.label}</p>
           </div>

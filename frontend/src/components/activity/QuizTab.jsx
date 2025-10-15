@@ -233,7 +233,7 @@ const QuizTab = ({ content, onAnswerCorrect, onComplete, isReplay }) => {
   // Tela de finalização do quiz
   if (isFinished) {
     return (
-      <div className="bg-gray-800 p-8 rounded-lg text-primary-text text-center">
+      <div className="bg-primary-bg p-8 rounded-lg text-primary-text text-center">
         <FaCheckCircle className="text-green-400 text-6xl mb-4" />
         <h2 className="text-3xl font-bold text-green-400 mb-4">Quiz Finalizado!</h2>
         <p className="text-lg text-secondary-text">Retornando ao tabuleiro...</p>
@@ -268,7 +268,7 @@ const QuizTab = ({ content, onAnswerCorrect, onComplete, isReplay }) => {
   }
 
   return (
-    <div className="bg-gray-800 p-8 rounded-lg text-primary-text relative"
+    <div className="bg-primary-bg p-8 rounded-lg text-primary-text relative"
       style={{
         backgroundImage: `url(${backgroundImage})`,
         backgroundSize: 'cover',
@@ -323,7 +323,7 @@ const QuizTab = ({ content, onAnswerCorrect, onComplete, isReplay }) => {
                 console.log(`[QuizTab] Opção selecionada: ${option}`);
               }
             }}
-            className={`p-4 rounded-lg text-left text-lg transition-all ${selectedAnswer === option ? 'bg-yellow-500 ring-4 ring-yellow-300' : 'bg-gray-700 hover:bg-gray-600'}`}>
+            className={`p-4 rounded-lg text-left text-lg transition-all ${selectedAnswer === option ? 'bg-yellow-500 ring-4 ring-yellow-300' : 'bg-border-color hover:bg-hover-bg-color'}`}>
             {option}
           </button>
         ))}

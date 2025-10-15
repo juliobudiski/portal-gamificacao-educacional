@@ -12,7 +12,7 @@ function ActivityCard({ activity, isOwner, onCopy, onDelete, onSelect, isSelecte
     };
 
     return (
-        <div className="bg-[#3a4046] p-5 rounded-xl shadow-lg border border-[#4a525a] flex flex-col justify-between h-full transform hover:-translate-y-1 transition-transform duration-300">
+        <div className="bg-secondary-bg p-5 rounded-xl shadow-lg border border-[#4a525a] flex flex-col justify-between h-full transform hover:-translate-y-1 transition-transform duration-300">
             {isOwner && (
                 <div className="absolute top-3 right-3 z-10">
                     <input
@@ -20,7 +20,7 @@ function ActivityCard({ activity, isOwner, onCopy, onDelete, onSelect, isSelecte
                         checked={isSelected}
                         onChange={handleCheckboxClick}
                         onClick={(e) => e.stopPropagation()} // Garante que o clique não propague
-                        className="h-5 w-5 rounded bg-gray-700 border-gray-500 text-accent-yellow focus:ring-accent-yellow cursor-pointer"
+                        className="h-5 w-5 rounded bg-border-color border-gray-500 text-accent-yellow focus:ring-accent-yellow cursor-pointer"
                     />
                 </div>
             )}
@@ -56,28 +56,28 @@ function ActivityCard({ activity, isOwner, onCopy, onDelete, onSelect, isSelecte
                         {/* 2. Botão "Atribuir Turma" adicionado aqui */}
                         <button
                             onClick={() => navigate(`/assign-activity-to-class/${activity.id}`)}
-                            className="p-2 bg-gray-700 hover:bg-accent-teal/30 rounded-full group"
+                            className="p-2 bg-border-color hover:bg-accent-teal/30 rounded-full group"
                             title="Atribuir à Turma"
                         >
                             <FaChalkboardTeacher className="text-secondary-text group-hover:text-accent-teal" />
                         </button>
 
                         {/* Botões existentes para o dono da atividade */}
-                        <button onClick={() => navigate(`/professor/atividades/${activity.id}/edit`)} className="p-2 bg-gray-700 hover:bg-accent-yellow/30 rounded-full group" title="Editar">
+                        <button onClick={() => navigate(`/professor/atividades/${activity.id}/edit`)} className="p-2 bg-border-color hover:bg-accent-yellow/30 rounded-full group" title="Editar">
                             <FaEdit className="text-secondary-text group-hover:text-accent-yellow" />
                         </button>
-                        <button onClick={() => onDelete(activity.id)} className="p-2 bg-gray-700 hover:bg-red-500/30 rounded-full group" title="Deletar">
+                        <button onClick={() => onDelete(activity.id)} className="p-2 bg-border-color hover:bg-red-500/30 rounded-full group" title="Deletar">
                             <FaTrash className="text-secondary-text group-hover:text-red-400" />
                         </button>
                     </>
                 ) : (
                     <>
-                        <button onClick={() => onCopy(activity.id)} className="p-2 bg-gray-700 hover:bg-accent-purple/30 rounded-full group" title="Copiar e Editar">
+                        <button onClick={() => onCopy(activity.id)} className="p-2 bg-border-color hover:bg-accent-purple/30 rounded-full group" title="Copiar e Editar">
                             <FaCopy className="text-secondary-text group-hover:text-accent-purple" />
                         </button>
                     </>
                 )}
-                <button onClick={() => navigate(`/activities/${activity.id}`)} className="p-2 bg-gray-700 hover:bg-blue-500/30 rounded-full group" title="Visualizar">
+                <button onClick={() => navigate(`/activities/${activity.id}`)} className="p-2 bg-border-color hover:bg-blue-500/30 rounded-full group" title="Visualizar">
                     <FaEye className="text-secondary-text group-hover:text-blue-400" />
                 </button>
             </div>

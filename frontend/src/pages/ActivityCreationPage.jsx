@@ -535,7 +535,7 @@ function ActivityCreationPage({ existingActivity }) {
 
   // --- O JSX ESTRUTURAL DA PÁGINA É MANTIDO ---
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="min-h-screen bg-primary-bg dark:bg-primary-bg">
       <div className="container mx-auto px-4 py-8">
         {/* Cabeçalho */}
         <div className="text-center mb-8">
@@ -549,7 +549,7 @@ function ActivityCreationPage({ existingActivity }) {
 
         {showInitialSelection ? (
           // O JSX para a seleção inicial (Iniciar do Zero / Templates) é mantido
-          <div className="bg-secondary-bg dark:bg-gray-800 p-8 rounded-lg shadow-md">
+          <div className="bg-secondary-bg dark:bg-primary-bg p-8 rounded-lg shadow-md">
             <h3 className="text-2xl font-bold text-center mb-8 bg-gradient-to-r from-accent-purple to-accent-teal bg-clip-text text-transparent">
               Como você gostaria de começar?
             </h3>
@@ -557,17 +557,17 @@ function ActivityCreationPage({ existingActivity }) {
             {!showTemplateList ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Opção: Iniciar do Zero */}
-                <div className="relative bg-gradient-to-br from-[#3a4046] to-[#2c3135] rounded-2xl shadow-xl overflow-hidden border border-[#4a525a] hover:border-accent-yellow/50 transition-all duration-300 group">
+                <div className="relative bg-primary-bg rounded-2xl shadow-xl overflow-hidden border border-[#4a525a] hover:border-accent-yellow/50 transition-all duration-300 group">
                   <div className="absolute inset-0 bg-gradient-to-r from-accent-teal/5 to-accent-purple/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <div className="relative z-10 p-6 flex flex-col items-center text-center h-full">
                     <div className="mb-4 bg-gradient-to-r from-accent-yellow to-accent-teal p-1 rounded-full">
-                      <div className="bg-[#3a4046] rounded-full p-3">
+                      <div className="bg-secondary-bg rounded-full p-3">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-accent-yellow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>
                       </div>
                     </div>
-                    <h4 className="text-xl font-semibold text-gray-200 mb-2">
+                    <h4 className="text-xl font-semibold text-secondary-text mb-2">
                       Iniciar do Zero
                     </h4>
                     <p className="text-secondary-text mb-6 flex-grow">
@@ -583,17 +583,17 @@ function ActivityCreationPage({ existingActivity }) {
                 </div>
 
                 {/* Opção: Escolher um Template */}
-                <div className="relative bg-gradient-to-br from-[#3a4046] to-[#2c3135] rounded-2xl shadow-xl overflow-hidden border border-[#4a525a] hover:border-accent-purple/50 transition-all duration-300 group">
+                <div className="relative bg-primary-bg rounded-2xl shadow-xl overflow-hidden border border-[#4a525a] hover:border-accent-purple/50 transition-all duration-300 group">
                   <div className="absolute inset-0 bg-gradient-to-r from-accent-purple/5 to-accent-yellow/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <div className="relative z-10 p-6 flex flex-col items-center text-center h-full">
                     <div className="mb-4 bg-gradient-to-r from-accent-purple to-accent-teal p-1 rounded-full">
-                      <div className="bg-[#3a4046] rounded-full p-3">
+                      <div className="bg-secondary-bg rounded-full p-3">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-accent-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
                         </svg>
                       </div>
                     </div>
-                    <h4 className="text-xl font-semibold text-gray-200 mb-2">
+                    <h4 className="text-xl font-semibold text-secondary-text mb-2">
                       Escolher um Template
                     </h4>
                     <p className="text-secondary-text mb-6 flex-grow">
@@ -633,18 +633,18 @@ function ActivityCreationPage({ existingActivity }) {
                     {templates.map(template => (
                       <div
                         key={template.id}
-                        className="relative bg-gradient-to-br from-[#3a4046] to-[#2c3135] rounded-2xl shadow-xl p-6 border border-[#4a525a] hover:border-accent-teal/50 transition-all duration-300 group overflow-hidden"
+                        className="relative bg-primary-bg rounded-2xl shadow-xl p-6 border border-[#4a525a] hover:border-accent-teal/50 transition-all duration-300 group overflow-hidden"
                       >
                         <div className="absolute inset-0 bg-gradient-to-r from-accent-purple/5 to-accent-yellow/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         <div className="relative z-10 flex flex-col h-full">
                           <div className="flex justify-center mb-4">
                             <div className="bg-gradient-to-r from-accent-purple to-accent-yellow p-1 rounded-full">
-                              <div className="bg-[#3a4046] rounded-full p-2">
+                              <div className="bg-secondary-bg rounded-full p-2">
                                 <span className="text-2xl">{template.icon}</span>
                               </div>
                             </div>
                           </div>
-                          <h5 className="text-lg font-semibold text-gray-200 text-center mb-2">{template.name}</h5>
+                          <h5 className="text-lg font-semibold text-secondary-text text-center mb-2">{template.name}</h5>
                           <p className="text-secondary-text text-sm mb-4 flex-grow text-center">{template.description}</p>
                           <button
                             onClick={() => handleSelectTemplate(template.data)}
@@ -661,7 +661,7 @@ function ActivityCreationPage({ existingActivity }) {
                 <div className="mt-8 text-center">
                   <button
                     onClick={handleBackToInitialSelection}
-                    className="py-2 px-4 border border-accent-teal/30 rounded-xl shadow-sm text-sm font-medium text-secondary-text bg-[#3a4046] hover:bg-[#4a525a] focus:outline-none focus:ring-2 focus:ring-accent-teal transition duration-300"
+                    className="py-2 px-4 border border-accent-teal/30 rounded-xl shadow-sm text-sm font-medium text-secondary-text bg-secondary-bg hover:bg-hover-bg-color focus:outline-none focus:ring-2 focus:ring-accent-teal transition duration-300"
                   >
                     <span className="flex items-center justify-center">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -677,7 +677,7 @@ function ActivityCreationPage({ existingActivity }) {
         ) : (
           <>
             {/* Barra de Progresso */}
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mb-6">
+            <div className="w-full bg-gray-200 dark:bg-border-color rounded-full h-2.5 mb-6">
               <div
                 className="bg-teal-500 h-2.5 rounded-full transition-all duration-500"
                 style={{ width: `${(currentStep / totalSteps) * 100}%` }}
@@ -685,16 +685,16 @@ function ActivityCreationPage({ existingActivity }) {
             </div>
 
             {/* Contêiner do Formulário */}
-            <div className="bg-secondary-bg dark:bg-gray-800 p-8 rounded-lg shadow-md">
+            <div className="bg-secondary-bg dark:bg-primary-bg p-8 rounded-lg shadow-md">
               {/* 3. A função renderStep agora insere o componente filho aqui */}
               {renderStep()}
 
               {/* Botões de Navegação */}
-              <div className="flex justify-between mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex justify-between mt-8 pt-6 border-t border-border-color dark:border-border-color">
                 {currentStep > 1 ? (
                   <button
                     onClick={handlePrevious}
-                    className="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-secondary-bg hover:bg-gray-50 dark:bg-gray-700 dark:text-secondary-text dark:hover:bg-gray-600"
+                    className="py-2 px-4 border border-border-color rounded-md shadow-sm text-sm font-medium text-secondary-text bg-secondary-bg hover:bg-hover-bg-color dark:bg-border-color dark:text-secondary-text dark:hover:bg-hover-bg-color"
                   >
                     Anterior
                   </button>
@@ -715,7 +715,7 @@ function ActivityCreationPage({ existingActivity }) {
         {/* Modal de Ajuda (Estrutura mantida) */}
         {showHelpModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-            <div className="bg-secondary-bg dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full p-6">
+            <div className="bg-secondary-bg dark:bg-primary-bg rounded-lg shadow-xl max-w-lg w-full p-6">
               <h3 className="text-lg font-medium leading-6 text-primary-text dark:text-primary-text">{helpContent.title}</h3>
               <div className="mt-2">
                 <p className="text-sm text-secondary-text dark:text-secondary-text">{helpContent.text}</p>

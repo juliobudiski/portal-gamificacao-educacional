@@ -45,7 +45,7 @@ const NarrativeTab = ({ content, onComplete }) => {
     }
 
     return (
-      <div className="bg-gray-800 p-8 rounded-lg text-primary-text text-center">
+      <div className="bg-primary-bg p-8 rounded-lg text-primary-text text-center">
         <h2 className="text-2xl font-bold text-yellow-400 mb-4">Missão</h2>
         <p className="text-secondary-text">A narrativa para esta atividade ainda não foi configurada.</p>
         <button
@@ -128,10 +128,10 @@ const NarrativeTab = ({ content, onComplete }) => {
   }
 
   return (
-    <div className="bg-gray-800 p-4 sm:p-8 rounded-lg text-primary-text animate-fade-in">
+    <div className="bg-primary-bg p-4 sm:p-8 rounded-lg text-primary-text animate-fade-in">
       {/* --- O PALCO DA CENA --- */}
       <div
-        className="relative w-full h-96 bg-cover bg-center rounded-lg mb-4 border-4 border-gray-700 shadow-lg"
+        className="relative w-full h-96 bg-cover bg-center rounded-lg mb-4 border-4 border-border-color shadow-lg"
         style={{ backgroundImage: `url(${scenario})` }}
       >
         {/* TODO: Adicionar fallback para imagens quebradas */}
@@ -152,9 +152,9 @@ const NarrativeTab = ({ content, onComplete }) => {
 
       {/* --- CAIXA DE DIÁLOGO --- */}
       {currentLine && (
-        <div className="bg-gray-900/80 backdrop-blur-sm p-4 rounded-lg border border-gray-600 min-h-[120px]">
+        <div className="bg-primary-bg/80 backdrop-blur-sm p-4 rounded-lg border border-gray-600 min-h-[120px]">
           <h3 className="text-xl font-bold text-yellow-400 mb-2">{currentLine.characterRole}</h3>
-          <p className="text-lg text-gray-200">{currentLine.text}</p>
+          <p className="text-lg text-secondary-text">{currentLine.text}</p>
         </div>
       )}
 
@@ -163,7 +163,7 @@ const NarrativeTab = ({ content, onComplete }) => {
         <button
           onClick={goToPreviousLine}
           disabled={currentLineIndex === 0}
-          className="py-2 px-4 bg-gray-700 hover:bg-gray-600 rounded-lg flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+          className="py-2 px-4 bg-border-color hover:bg-hover-bg-color rounded-lg flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <FaArrowLeft className="mr-2" /> Anterior
         </button>

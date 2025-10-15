@@ -27,7 +27,7 @@ function AdminPage() {
   // Renderiza um estado de carregamento ou nulo enquanto a verificação acontece
   if (!isAuthenticated || user?.role !== 'admin') {
     return (
-      <div className="flex justify-center items-center min-h-screen text-primary-text bg-dark-background">
+      <div className="flex justify-center items-center min-h-screen text-primary-text bg-border-color">
         <p>Verificando permissões...</p>
       </div>
     );
@@ -35,7 +35,7 @@ function AdminPage() {
 
   // Renderização principal do layout do admin
   return (
-    <div className="min-h-screen w-full bg-dark-background flex">
+    <div className="min-h-screen w-full bg-border-color flex">
       {/* Barra de Navegação Lateral Fixa */}
       <Sidebar />
 

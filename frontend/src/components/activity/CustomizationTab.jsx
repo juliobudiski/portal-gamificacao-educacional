@@ -125,9 +125,9 @@ const CustomizationTab = ({ activityId, onReturn, onCustomizationChange }) => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 relative">
                 {isSaving && <div className="absolute inset-0 bg-black/50 flex justify-center items-center z-10 rounded-xl"><FaSpinner className="animate-spin text-3xl" /></div>}
 
-                <div className="lg:col-span-1 bg-gray-800/50 p-6 rounded-xl border border-gray-700 self-start">
+                <div className="lg:col-span-1 bg-primary-bg/50 p-6 rounded-xl border border-border-color self-start">
                     <h2 className="text-2xl font-semibold mb-4 text-center">Preview no Ranking</h2>
-                    <div className="bg-gray-900 p-4 rounded-lg flex items-center gap-4">
+                    <div className="bg-primary-bg p-4 rounded-lg flex items-center gap-4">
                         <img src={equipped.avatarUrl || user.profile_picture || '/avatars/default_avatar.webp'} alt="Avatar" className="w-16 h-16 rounded-full object-cover border-2 border-gray-600" />
                         {/* --- CORREÇÃO DE LAYOUT: Adicionado 'flex flex-col' para o título ficar abaixo do nome --- */}
                         <div className="flex flex-col">
@@ -140,7 +140,7 @@ const CustomizationTab = ({ activityId, onReturn, onCustomizationChange }) => {
                 <div className="lg:col-span-2 space-y-8">
                     <div>
                         <h3 className="text-2xl font-semibold mb-4 flex items-center gap-3"><FaUserCircle /> Avatares</h3>
-                        <div className="flex flex-wrap gap-4 bg-gray-800/50 p-4 rounded-lg">
+                        <div className="flex flex-wrap gap-4 bg-primary-bg/50 p-4 rounded-lg">
                             {unlockedAvatars.map(avatar => (
                                 <button key={avatar.url} onClick={() => handleEquip('/avatar', { avatar_url: avatar.url }, () => setEquipped(p => ({ ...p, avatarUrl: avatar.url })))}
                                     className={`w-20 h-20 rounded-lg border-4 overflow-hidden transition-all ${equipped.avatarUrl === avatar.url ? 'border-yellow-400 scale-110' : 'border-gray-600'}`}>
@@ -151,14 +151,14 @@ const CustomizationTab = ({ activityId, onReturn, onCustomizationChange }) => {
                     </div>
                     <div>
                         <h3 className="text-2xl font-semibold mb-4 flex items-center gap-3"><FaCrown /> Títulos</h3>
-                        <div className="flex flex-wrap gap-2 bg-gray-800/50 p-4 rounded-lg">
+                        <div className="flex flex-wrap gap-2 bg-primary-bg/50 p-4 rounded-lg">
                             <button onClick={() => handleEquip('/equip-title', { title_id: null }, () => setEquipped(p => ({ ...p, titleId: null })))}
-                                className={`px-4 py-2 rounded-md text-sm ${!equipped.titleId ? 'bg-blue-600 text-primary-text' : 'bg-gray-700 hover:bg-gray-600'}`}>
+                                className={`px-4 py-2 rounded-md text-sm ${!equipped.titleId ? 'bg-blue-600 text-primary-text' : 'bg-border-color hover:bg-hover-bg-color'}`}>
                                 Nenhum Título
                             </button>
                             {unlockedTitles.map(title => (
                                 <button key={title.id} onClick={() => handleEquip('/equip-title', { title_id: title.id }, () => setEquipped(p => ({ ...p, titleId: title.id })))}
-                                    className={`px-4 py-2 rounded-md text-sm ${equipped.titleId === title.id ? 'bg-blue-600 text-primary-text' : 'bg-gray-700 hover:bg-gray-600'}`}>
+                                    className={`px-4 py-2 rounded-md text-sm ${equipped.titleId === title.id ? 'bg-blue-600 text-primary-text' : 'bg-border-color hover:bg-hover-bg-color'}`}>
                                     {title.displayText}
                                 </button>
                             ))}
@@ -166,10 +166,10 @@ const CustomizationTab = ({ activityId, onReturn, onCustomizationChange }) => {
                     </div>
                     <div>
                         <h3 className="text-2xl font-semibold mb-4 flex items-center gap-3"><FaPaintBrush /> Efeitos Cosméticos</h3>
-                        <div className="bg-gray-800/50 p-4 rounded-lg">
+                        <div className="bg-primary-bg/50 p-4 rounded-lg">
                             <p className="text-sm text-secondary-text mb-4">{selectedCosmetic ? `Clique em um dos botões "Aplicar Efeito" para usar ${selectedCosmetic.name}.` : 'Selecione um efeito abaixo e depois escolha onde aplicá-lo.'}</p>
 
-                            <div className="flex flex-wrap gap-4 border-b border-gray-700 pb-4 mb-4">
+                            <div className="flex flex-wrap gap-4 border-b border-border-color pb-4 mb-4">
                                 {unlockedCosmetics.map(cosmetic => (
                                     <button key={cosmetic.id} onClick={() => setSelectedCosmetic(cosmetic)}
                                         className={`p-2 rounded-lg border-2 transition-all ${selectedCosmetic?.id === cosmetic.id ? 'border-yellow-400 scale-110' : 'border-gray-600'}`}>
@@ -179,9 +179,9 @@ const CustomizationTab = ({ activityId, onReturn, onCustomizationChange }) => {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="bg-gray-900/50 p-4 rounded-lg">
+                                <div className="bg-primary-bg/50 p-4 rounded-lg">
                                     <h4 className="font-bold">Nome de Jogador</h4>
-                                    <div className="my-2 h-16 flex items-center justify-center bg-gray-800 rounded">
+                                    <div className="my-2 h-16 flex items-center justify-center bg-primary-bg rounded">
                                         <CosmeticPreview text={user.name} cosmetic={findCosmetic(equipped.nameCosmeticId)?.effect_id} defaultText="Seu Nome" className="text-2xl" />
                                     </div>
                                     <button onClick={() => handleEquipCosmetic('name')} disabled={!selectedCosmetic || isSaving}
@@ -189,9 +189,9 @@ const CustomizationTab = ({ activityId, onReturn, onCustomizationChange }) => {
                                         {selectedCosmetic?.id === equipped.nameCosmeticId ? 'Remover Efeito' : 'Aplicar Efeito'}
                                     </button>
                                 </div>
-                                <div className="bg-gray-900/50 p-4 rounded-lg">
+                                <div className="bg-primary-bg/50 p-4 rounded-lg">
                                     <h4 className="font-bold">Título</h4>
-                                    <div className="my-2 h-16 flex items-center justify-center bg-gray-800 rounded">
+                                    <div className="my-2 h-16 flex items-center justify-center bg-primary-bg rounded">
                                         <CosmeticPreview text={findTitle(equipped.titleId)?.displayText} cosmetic={findCosmetic(equipped.titleCosmeticId)?.effect_id} defaultText="Sem Título" className="text-lg" />
                                     </div>
                                     <button onClick={() => handleEquipCosmetic('title')} disabled={!selectedCosmetic || isSaving}

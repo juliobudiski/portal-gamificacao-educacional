@@ -48,7 +48,7 @@ function ActivityManagementPage() {
     return (
         <div className="animate-fade-in">
             <h1 className="text-3xl font-bold text-primary-text mb-6">Gerenciamento de Conteúdo</h1>
-            <div className="bg-gray-800 rounded-xl shadow-xl overflow-hidden">
+            <div className="bg-primary-bg rounded-xl shadow-xl overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-700">
                         <thead className="bg-gradient-to-r from-blue-400/20 to-accent-purple/10">
@@ -64,7 +64,7 @@ function ActivityManagementPage() {
                         <tbody className="divide-y divide-gray-700">
                             {activitiesList.map((activity) => (
                                 <React.Fragment key={activity.id}>
-                                    <tr className="hover:bg-gray-700/50">
+                                    <tr className="hover:bg-border-color/50">
                                         <td className="py-4 px-4 text-sm font-medium text-accent-yellow">{activity.id}</td>
                                         <td className="py-4 px-4 text-sm text-primary-text">{activity.title}</td>
                                         <td className="py-4 px-4 text-sm text-secondary-text">{activity.professor_name || 'N/A'}</td>
@@ -82,8 +82,8 @@ function ActivityManagementPage() {
                                     </tr>
                                     {expandedActivityId === activity.id && (
                                         <tr>
-                                            <td colSpan="5" className="p-4 bg-gray-900/50">
-                                                <div className="bg-gray-800 p-4 rounded-lg">
+                                            <td colSpan="5" className="p-4 bg-primary-bg/50">
+                                                <div className="bg-primary-bg p-4 rounded-lg">
                                                     <h4 className="font-bold text-primary-text">Descrição:</h4>
                                                     <p className="text-secondary-text">{activity.description || 'Sem descrição.'}</p>
                                                 </div>

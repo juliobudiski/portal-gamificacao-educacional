@@ -108,7 +108,7 @@ function Step5_GameElements({ activityData, handleInputChange, setActivityData, 
                 group relative flex h-full cursor-pointer flex-col items-center justify-start space-y-2 rounded-xl border p-4 text-center transition-all duration-200
                 ${isSelected
                   ? 'border-2 border-teal-500 bg-teal-50 dark:bg-teal-900/40 ring-2 ring-teal-500/20'
-                  : 'border-gray-300 bg-secondary-bg hover:border-teal-400 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:hover:border-teal-500'
+                  : 'border-border-color bg-secondary-bg hover:border-teal-400 hover:shadow-lg dark:border-border-color dark:bg-primary-bg dark:hover:border-teal-500'
                 }
               `}
             >
@@ -120,7 +120,7 @@ function Step5_GameElements({ activityData, handleInputChange, setActivityData, 
               <div className={`text-4xl ${isSelected ? 'text-teal-500' : 'text-secondary-text group-hover:text-teal-500 dark:text-secondary-text dark:group-hover:text-teal-400'}`}>
                 {element.icon}
               </div>
-              <p className={`text-sm font-medium ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-gray-700 dark:text-secondary-text'}`}>
+              <p className={`text-sm font-medium ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-secondary-text dark:text-secondary-text'}`}>
                 {element.name}
               </p>
             </div>
@@ -130,7 +130,7 @@ function Step5_GameElements({ activityData, handleInputChange, setActivityData, 
 
       {/* SEÇÃO 3: Campo Aberto */}
       <div className="pt-4">
-        <label htmlFor="gameElements.otherElement" className="block text-sm font-medium text-gray-700 dark:text-secondary-text">
+        <label htmlFor="gameElements.otherElement" className="block text-sm font-medium text-secondary-text dark:text-secondary-text">
           Outro elemento não listado? (Opcional)
         </label>
         <input
@@ -139,7 +139,7 @@ function Step5_GameElements({ activityData, handleInputChange, setActivityData, 
           name="gameElements.otherElement"
           value={activityData.gameElements.otherElement}
           onChange={handleInputChange}
-          className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+          className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-primary-bg border border-border-color dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
           placeholder="Descreva um elemento de jogo personalizado"
         />
       </div>
@@ -159,12 +159,12 @@ function Step5_GameElements({ activityData, handleInputChange, setActivityData, 
           </h4>
           <div className="space-y-4">
             <div>
-              <label htmlFor="gameElements.narrativeTitle" className="block text-sm font-medium text-gray-700 dark:text-secondary-text">Título da Narrativa:</label>
-              <input type="text" id="gameElements.narrativeTitle" name="gameElements.narrativeTitle" value={activityData.gameElements.narrativeTitle} onChange={handleInputChange} className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm" placeholder="Ex: A Saga do Código Perdido" />
+              <label htmlFor="gameElements.narrativeTitle" className="block text-sm font-medium text-secondary-text dark:text-secondary-text">Título da Narrativa:</label>
+              <input type="text" id="gameElements.narrativeTitle" name="gameElements.narrativeTitle" value={activityData.gameElements.narrativeTitle} onChange={handleInputChange} className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-primary-bg border border-border-color dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm" placeholder="Ex: A Saga do Código Perdido" />
             </div>
             <div>
-              <label htmlFor="gameElements.narrativeContent" className="block text-sm font-medium text-gray-700 dark:text-secondary-text">Conteúdo da Narrativa:</label>
-              <textarea id="gameElements.narrativeContent" name="gameElements.narrativeContent" value={activityData.gameElements.narrativeContent} onChange={handleInputChange} rows="5" className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm" placeholder="Descreva o enredo, os personagens e o mundo da sua atividade."></textarea>
+              <label htmlFor="gameElements.narrativeContent" className="block text-sm font-medium text-secondary-text dark:text-secondary-text">Conteúdo da Narrativa:</label>
+              <textarea id="gameElements.narrativeContent" name="gameElements.narrativeContent" value={activityData.gameElements.narrativeContent} onChange={handleInputChange} rows="5" className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-primary-bg border border-border-color dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm" placeholder="Descreva o enredo, os personagens e o mundo da sua atividade."></textarea>
               <p className="text-xs text-secondary-text dark:text-secondary-text mt-2">Em breve iremos conectar com a API para geração de falas da narrativa.</p>
             </div>
           </div>

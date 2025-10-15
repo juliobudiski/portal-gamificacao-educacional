@@ -68,7 +68,7 @@ const ChatTab = ({ onReturn }) => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-800 p-4 text-primary-text rounded-lg" style={{ height: '80vh', maxHeight: '700px' }}>
+    <div className="flex flex-col h-full bg-primary-bg p-4 text-primary-text rounded-lg" style={{ height: '80vh', maxHeight: '700px' }}>
 
       <div className='flex-shrink-0'>
         <button onClick={onReturn} className="absolute top-4 left-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200 transition-colors z-20">
@@ -98,7 +98,7 @@ const ChatTab = ({ onReturn }) => {
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
           placeholder="Digite sua mensagem..."
-          className="flex-grow bg-gray-700 p-2 rounded-lg focus:outline-none"
+          className="flex-grow bg-border-color p-2 rounded-lg focus:outline-none"
         />
         <button type="submit" className="bg-teal-600 px-4 py-2 rounded-lg font-bold">Enviar</button>
       </form>

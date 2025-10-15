@@ -79,11 +79,11 @@ function RecentActivityFeed({ feedItems }) {
     <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
       {feedItems.map(item => (
         <div key={item.id} className="flex items-start space-x-3">
-          <div className="flex-shrink-0 bg-gray-700 p-2 rounded-full">
+          <div className="flex-shrink-0 bg-border-color p-2 rounded-full">
             {iconMap[item.action] || <PlusCircle className="text-secondary-text" size={16} />}
           </div>
           <div>
-            <p className="text-sm text-gray-200">
+            <p className="text-sm text-secondary-text">
               <span className="font-bold">{item.user_name}</span> {formatActionText(item)}
             </p>
             <p className="text-xs text-secondary-text">

@@ -1,7 +1,7 @@
 // frontend/src/components/admin/Sidebar.jsx
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, BookCopy, BarChart4, LogOut, GraduationCap } from 'lucide-react';
+import { MapPin, LayoutDashboard, Users, BookCopy, BarChart4, LogOut, GraduationCap } from 'lucide-react';
 
 /**
  * Componente Sidebar
@@ -14,11 +14,11 @@ function Sidebar() {
   // Estilos para o link ativo (página atual)
   const activeLinkStyle = "bg-gradient-to-r from-accent-teal/20 to-accent-purple/20 text-primary-text font-semibold shadow-inner";
   // Estilos para o link inativo (hover)
-  const inactiveLinkStyle = "hover:bg-gray-700 hover:text-primary-text";
+  const inactiveLinkStyle = "hover:bg-border-color hover:text-primary-text";
 
   return (
-    <aside className="w-64 bg-gray-800/50 backdrop-blur-sm flex-shrink-0 flex flex-col border-r border-gray-700">
-      <div className="h-20 flex items-center justify-center border-b border-gray-700">
+    <aside className="w-64 bg-primary-bg/50 backdrop-blur-sm flex-shrink-0 flex flex-col border-r border-border-color">
+      <div className="h-20 flex items-center justify-center border-b border-border-color">
         <div className="flex items-center text-primary-text">
           <GraduationCap size={32} className="text-accent-yellow mr-3" />
           <span className="text-xl font-bold">Admin</span>
@@ -55,9 +55,16 @@ function Sidebar() {
           <BarChart4 className="mr-3" size={20} />
           Análise e Logs
         </NavLink>
+        <NavLink
+          to="/admin/mapa-localizacao"
+          className={({ isActive }) => `${baseLinkStyle} ${isActive ? activeLinkStyle : inactiveLinkStyle}`}
+        >
+          <MapPin className="mr-3" size={20} />
+          <span>Mapa e Localização</span>
+        </NavLink>
       </nav>
 
-      <div className="px-4 py-4 border-t border-gray-700">
+      <div className="px-4 py-4 border-t border-border-color">
         <button className={`${baseLinkStyle} w-full ${inactiveLinkStyle}`}>
           <LogOut className="mr-3" size={20} />
           Sair

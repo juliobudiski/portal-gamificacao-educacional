@@ -192,11 +192,11 @@ function ClassListPage() {
                                     {cls.name}
                                 </Link>
                             </h2>
-                            <p className="text-[#e9ecef] text-sm mb-4">{cls.description}</p>
+                            <p className="text-secondary-texttext-sm mb-4">{cls.description}</p>
 
                             {user?.role === 'professor' && (
                                 <>
-                                    <p className="text-[#e9ecef] text-sm mb-4">
+                                    <p className="text-secondary-texttext-sm mb-4">
                                         Código de Inscrição:
                                         <span className="font-mono bg-primary-bg p-1.5 rounded-md text-[#ffbd30] block mt-1.5">
                                             {cls.enrollment_code}

@@ -46,9 +46,9 @@ const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === 'true';
 
 // Componente de Tela de Carregamento
 const FullPageLoader = ({ progress, etr }) => (
-  <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-primary-text font-sans">
+  <div className="flex flex-col items-center justify-center min-h-screen bg-primary-bg text-primary-text font-sans">
     <h2 className="text-2xl mb-4">Carregando Aventura...</h2>
-    <div className="w-3/4 max-w-lg bg-gray-700 rounded-full h-4 overflow-hidden border-2 border-gray-600">
+    <div className="w-3/4 max-w-lg bg-border-color rounded-full h-4 overflow-hidden border-2 border-gray-600">
       <div
         className="bg-yellow-400 h-full rounded-full transition-all duration-300 ease-linear"
         style={{ width: `${progress}%` }}
@@ -649,7 +649,7 @@ function ActivityPage() {
           <button
             key={card.key}
             onClick={() => onSelectView(card.key)} // Usa o novo handler
-            className={`bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700 text-left transition-all
+            className={`bg-primary-bg p-6 rounded-2xl shadow-lg border border-border-color text-left transition-all
                         transform hover:-translate-y-2 hover:border-${card.color}-400 group`}
             aria-label={`Acessar ${card.title}`}
           >
@@ -788,12 +788,12 @@ function ActivityPage() {
 
 
   return (
-    <div className="flex min-h-screen bg-gray-900 text-primary-text relative">
+    <div className="flex min-h-screen bg-primary-bg text-primary-text relative">
       {/* Botão para controlar a Sidebar */}
       {user.role === 'aluno' && (
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="absolute top-4 left-4 z-20 p-2 bg-gray-800 rounded-full text-primary-text hover:bg-yellow-500 transition-all"
+          className="absolute top-4 left-4 z-20 p-2 bg-primary-bg rounded-full text-primary-text hover:bg-yellow-500 transition-all"
           aria-label="Mostrar/Esconder Progresso"
         >
           {/* Ícone muda com base no estado */}
@@ -805,7 +805,7 @@ function ActivityPage() {
       )}
       {/* Sidebar do Aluno com flex-shrink-0 */}
       {user.role === 'aluno' && (
-        <aside className={`bg-gray-800 p-4 border-r border-gray-700 transition-all duration-300 ease-in-out transform flex-shrink-0 ${isSidebarOpen ? 'w-1/4 translate-x-0' : 'w-0 -translate-x-full'}`}>
+        <aside className={`bg-primary-bg p-4 border-r border-border-color transition-all duration-300 ease-in-out transform flex-shrink-0 ${isSidebarOpen ? 'w-1/4 translate-x-0' : 'w-0 -translate-x-full'}`}>
           <div className={`${isSidebarOpen ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200`}>
             {userProgress && <StudentSidebar progress={userProgress} onShowStats={handleShowStats} />}
           </div>
@@ -815,7 +815,7 @@ function ActivityPage() {
 
       {/* Sidebar do Professor - Continua como antes */}
       {user.role === 'professor' && (
-        <aside className="w-1/4 bg-gray-800 p-4 border-r border-gray-700">
+        <aside className="w-1/4 bg-primary-bg p-4 border-r border-border-color">
           {analytics && <ProfessorSidebar analytics={analytics} onStudentClick={handleStudentClick} onOpenQuizEditor={handleOpenQuizEditor} onOpenNarrativeEditor={handleOpenNarrativeEditor} />}
         </aside>
       )}

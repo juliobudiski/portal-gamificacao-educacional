@@ -59,7 +59,7 @@ const Reel = ({ finalSymbol, isSpinning, delay }) => {
     []);
 
   return (
-    <div className="w-24 h-24 bg-gray-900/50 rounded-lg overflow-hidden flex items-center justify-center shadow-inner">
+    <div className="w-24 h-24 bg-primary-bg/50 rounded-lg overflow-hidden flex items-center justify-center shadow-inner">
       <div
         className={`reel-strip ${isSpinning ? 'is-spinning' : ''}`}
         style={{ transitionDelay: isSpinning ? '0s' : delay }}
@@ -166,7 +166,7 @@ const SlotMachineTab = ({ userCoins, onPrizeWon, winners, loadingWinners, onWin,
           </div>
 
           {/* A Máquina em si */}
-          <div className={`flex justify-center items-center gap-4 bg-gray-900 p-6 rounded-xl border-4 border-gray-700 transition-shadow ${resultState === 'win' ? 'result-win' : ''}`}>
+          <div className={`flex justify-center items-center gap-4 bg-primary-bg p-6 rounded-xl border-4 border-border-color transition-shadow ${resultState === 'win' ? 'result-win' : ''}`}>
             {reels.map((symbol, i) => (
               <Reel key={i} finalSymbol={symbol} isSpinning={isSpinning} delay={`${i * 0.2}s`} />
             ))}
@@ -196,14 +196,14 @@ const SlotMachineTab = ({ userCoins, onPrizeWon, winners, loadingWinners, onWin,
         </div>
 
         {/* Coluna Secundária: Ganhadores */}
-        <div className="w-full max-w-sm bg-gray-800/50 backdrop-blur-sm p-4 rounded-2xl border border-gray-700 flex flex-col lg:mt-12">
+        <div className="w-full max-w-sm bg-primary-bg/50 backdrop-blur-sm p-4 rounded-2xl border border-border-color flex flex-col lg:mt-12">
           <h3 className="text-xl font-bold text-center mb-4 text-[#69e8cb]">Últimos Ganhadores</h3>
           {loadingWinners ? (<div className="flex-grow flex items-center justify-center py-8"><FaSpinner className="animate-spin text-2xl" /></div>
           ) : winners.length > 0 ? (
             <div className="space-y-3">
               {winners.map((winner, index) => (
-                <div key={index} className="bg-gray-700 p-3 rounded-lg flex justify-between items-center animate-fadeIn">
-                  <span className="font-semibold text-gray-200">{winner.userName}</span>
+                <div key={index} className="bg-border-color p-3 rounded-lg flex justify-between items-center animate-fadeIn">
+                  <span className="font-semibold text-secondary-text">{winner.userName}</span>
                   <span className="font-bold text-yellow-400 px-2 py-1 bg-yellow-400/10 rounded-md text-sm">{winner.prize}</span>
                 </div>
               ))}

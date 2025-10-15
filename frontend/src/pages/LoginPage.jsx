@@ -184,7 +184,7 @@ function LoginPage() {
 
   // --- 8. RENDERIZAÇÃO DO COMPONENTE (JSX) ---
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-[#2c3135] to-[#1e2226] p-4">
+    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br bg-primary-bg  p-4">
       <div className="w-full max-w-md bg-secondary-bg rounded-2xl shadow-2xl overflow-hidden border border-[#3e4a52]">
         {/* Cabeçalho com gradiente */}
         <div className="bg-gradient-to-r from-[#ffbd30] to-[#ffa000] p-6 text-center">

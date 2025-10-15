@@ -87,14 +87,14 @@ function Step3_ActivityPlanning({ activityData, handleInputChange, setActivityDa
                   group relative flex h-full cursor-pointer flex-col items-center justify-start space-y-3 rounded-xl border p-5 text-center transition-all duration-200
                   ${isSelected
                     ? 'border-2 border-teal-500 bg-teal-50 dark:bg-teal-900/40 ring-2 ring-teal-500/20'
-                    : 'border-gray-300 bg-secondary-bg hover:border-teal-400 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:hover:border-teal-500'
+                    : 'border-border-color bg-secondary-bg hover:border-teal-400 hover:shadow-lg dark:border-border-color dark:bg-primary-bg dark:hover:border-teal-500'
                   }
                 `}
               >
                 <div className={`text-4xl ${isSelected ? 'text-teal-500' : 'text-secondary-text group-hover:text-teal-500 dark:text-secondary-text dark:group-hover:text-teal-400'}`}>
                   {char.icon}
                 </div>
-                <p className={`text-sm font-medium ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-gray-700 dark:text-secondary-text'}`}>
+                <p className={`text-sm font-medium ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-secondary-text dark:text-secondary-text'}`}>
                   {char.text}
                 </p>
               </div>
@@ -110,34 +110,34 @@ function Step3_ActivityPlanning({ activityData, handleInputChange, setActivityDa
         </h3>
         <div className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-2">
           <div>
-            <label htmlFor="activityPlanning.participantsQuantity" className="block text-sm font-medium text-gray-700 dark:text-secondary-text">
+            <label htmlFor="activityPlanning.participantsQuantity" className="block text-sm font-medium text-secondary-text dark:text-secondary-text">
               Quantidade de participantes
             </label>
-            <input type="text" id="activityPlanning.participantsQuantity" name="activityPlanning.participantsQuantity" value={activityData.activityPlanning.participantsQuantity} onChange={handleInputChange} className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm" placeholder="Ex: 25 alunos" />
+            <input type="text" id="activityPlanning.participantsQuantity" name="activityPlanning.participantsQuantity" value={activityData.activityPlanning.participantsQuantity} onChange={handleInputChange} className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-primary-bg border border-border-color dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm" placeholder="Ex: 25 alunos" />
           </div>
           <div>
-            <label htmlFor="activityPlanning.expectedDuration" className="block text-sm font-medium text-gray-700 dark:text-secondary-text">
+            <label htmlFor="activityPlanning.expectedDuration" className="block text-sm font-medium text-secondary-text dark:text-secondary-text">
               Duração prevista
             </label>
-            <input type="text" id="activityPlanning.expectedDuration" name="activityPlanning.expectedDuration" value={activityData.activityPlanning.expectedDuration} onChange={handleInputChange} className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm" placeholder="Ex: 90 minutos" />
+            <input type="text" id="activityPlanning.expectedDuration" name="activityPlanning.expectedDuration" value={activityData.activityPlanning.expectedDuration} onChange={handleInputChange} className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-primary-bg border border-border-color dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm" placeholder="Ex: 90 minutos" />
           </div>
           <div>
-            <label htmlFor="activityPlanning.location" className="block text-sm font-medium text-gray-700 dark:text-secondary-text">
+            <label htmlFor="activityPlanning.location" className="block text-sm font-medium text-secondary-text dark:text-secondary-text">
               Localização
             </label>
-            <input type="text" id="activityPlanning.location" name="activityPlanning.location" value={activityData.activityPlanning.location} onChange={handleInputChange} className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm" placeholder="Ex: Laboratório 5, Online (Discord)" />
+            <input type="text" id="activityPlanning.location" name="activityPlanning.location" value={activityData.activityPlanning.location} onChange={handleInputChange} className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-primary-bg border border-border-color dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm" placeholder="Ex: Laboratório 5, Online (Discord)" />
           </div>
           <div>
-            <label htmlFor="areaKnowledge" className="block text-sm font-medium text-gray-700 dark:text-secondary-text">
+            <label htmlFor="areaKnowledge" className="block text-sm font-medium text-secondary-text dark:text-secondary-text">
               Área de Conhecimento
             </label>
-            <input type="text" id="areaKnowledge" name="areaKnowledge" value={activityData.areaKnowledge} onChange={handleInputChange} className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm" placeholder="Ex: Engenharia de Software" />
+            <input type="text" id="areaKnowledge" name="areaKnowledge" value={activityData.areaKnowledge} onChange={handleInputChange} className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-primary-bg border border-border-color dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm" placeholder="Ex: Engenharia de Software" />
           </div>
           <div className="md:col-span-2">
-            <label htmlFor="activityPlanning.otherInfo" className="block text-sm font-medium text-gray-700 dark:text-secondary-text">
+            <label htmlFor="activityPlanning.otherInfo" className="block text-sm font-medium text-secondary-text dark:text-secondary-text">
               Outras informações relevantes (Opcional)
             </label>
-            <textarea id="activityPlanning.otherInfo" name="activityPlanning.otherInfo" value={activityData.activityPlanning.otherInfo} onChange={handleInputChange} rows="3" className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm" placeholder="Ex: Os alunos precisam trazer notebook. Acesso à internet é essencial."></textarea>
+            <textarea id="activityPlanning.otherInfo" name="activityPlanning.otherInfo" value={activityData.activityPlanning.otherInfo} onChange={handleInputChange} rows="3" className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-primary-bg border border-border-color dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm" placeholder="Ex: Os alunos precisam trazer notebook. Acesso à internet é essencial."></textarea>
           </div>
         </div>
       </div>

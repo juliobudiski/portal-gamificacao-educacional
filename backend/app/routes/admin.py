@@ -6,6 +6,7 @@ from ..models import db, User, Activity, EventLog, Purchase, ActivityProgress
 from sqlalchemy import func, case, cast, Numeric
 from datetime import datetime, timedelta
 from collections import Counter
+import requests
 admin_bp = Blueprint('admin', __name__)
 
 # Função auxiliar para verificar se o usuário é admin
@@ -184,29 +185,32 @@ def get_event_distribution():
 def get_system_logs():
     if not check_admin(): return jsonify({"message": "Acesso negado."}), 403
 
-    # Parâmetros de paginação e filtro
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('limit', 15, type=int)
     search_user = request.args.get('user', None, type=str)
     filter_action = request.args.get('action', None, type=str)
     
-    query = db.session.query(EventLog, User.name, User.email).join(User, User.id == EventLog.user_id)
+    query = db.session.query(
+        EventLog, 
+        User.name, 
+        User.email, 
+        User.last_known_latitude, 
+        User.last_known_longitude
+    ).join(User, User.id == EventLog.user_id)
 
-    # Aplica filtros se fornecidos
     if search_user:
         query = query.filter(User.name.ilike(f'%{search_user}%'))
     if filter_action:
         query = query.filter(EventLog.action == filter_action)
     
-    # Ordena pelos mais recentes
     query = query.order_by(EventLog.created_at.desc())
     
-    # Paginação
     paginated_logs = query.paginate(page=page, per_page=per_page, error_out=False)
     
     logs_data = []
-    for log, user_name, user_email in paginated_logs.items:
-        logs_data.append({
+    # --- LÓGICA DE GEOLOCALIZAÇÃO CORRIGIDA ---
+    for log, user_name, user_email, lat, lon in paginated_logs.items:
+        log_data = {
             "id": log.id,
             "user_name": user_name,
             "user_email": user_email,
@@ -214,8 +218,30 @@ def get_system_logs():
             "section": log.section,
             "details": log.details,
             "ip_address": log.ip_address,
-            "timestamp": log.created_at.isoformat()
-        })
+            "timestamp": log.created_at.isoformat(),
+            "location": None # Começa como nulo
+        }
+
+        # Se o usuário tiver uma lat/lon registrada, buscamos a cidade
+        if lat and lon:
+            try:
+                geo_url = f"https://nominatim.openstreetmap.org/reverse?format=json&lat={lat}&lon={lon}"
+                headers = {'User-Agent': 'GamificaEduPortal/1.0'}
+                geo_res = requests.get(geo_url, headers=headers, timeout=5)
+                geo_res.raise_for_status()
+                geo_data = geo_res.json()
+                address = geo_data.get('address', {})
+                
+                log_data['location'] = {
+                    'city': address.get('city') or address.get('town') or address.get('village', 'N/A'),
+                    'state': address.get('state', 'N/A'),
+                    'country': address.get('country', 'N/A')
+                }
+            except requests.exceptions.RequestException as e:
+                current_app.logger.error(f"Falha na geocodificação para o log ID {log.id}: {e}")
+                log_data['location'] = None
+            
+        logs_data.append(log_data)
         
     return jsonify({
         "logs": logs_data,
@@ -497,3 +523,61 @@ def get_student_engagement_data():
         "economy_kpis": economy_kpis,
         "progress_status": progress_status,
     })
+
+@admin_bp.route('/analytics/user-locations', methods=['GET'])
+@jwt_required()
+def get_user_locations():
+    if not check_admin():
+        return jsonify({"message": "Acesso negado."}), 403
+
+    # Busca todos os usuários que já tiveram a localização registrada
+    users_with_location = User.query.filter(
+        User.last_known_latitude.isnot(None),
+        User.last_known_longitude.isnot(None)
+    ).all()
+
+    locations_data = []
+    # Usaremos um cache simples para não chamar a API para a mesma coordenada várias vezes
+    geo_cache = {}
+
+    for user in users_with_location:
+        lat = user.last_known_latitude
+        lon = user.last_known_longitude
+        cache_key = f"{lat:.4f},{lon:.4f}" # Chave de cache com 4 casas decimais
+
+        if cache_key in geo_cache:
+            address = geo_cache[cache_key]
+        else:
+            try:
+                geo_url = f"https://nominatim.openstreetmap.org/reverse?format=json&lat={lat}&lon={lon}"
+                headers = {'User-Agent': 'GamificaEduPortal/1.0'}
+                geo_res = requests.get(geo_url, headers=headers, timeout=5)
+                geo_res.raise_for_status()
+                geo_data = geo_res.json().get('address', {})
+                
+                address = {
+                    'city': geo_data.get('city') or geo_data.get('town') or geo_data.get('village', 'N/A'),
+                    'state': geo_data.get('state', 'N/A'),
+                    'country': geo_data.get('country', 'N/A'),
+                    'suburb': geo_data.get('suburb', 'N/A') # Bairro/Subúrbio
+                }
+                geo_cache[cache_key] = address # Salva no cache
+
+            except requests.exceptions.RequestException as e:
+                current_app.logger.error(f"Falha na geocodificação para user {user.id}: {e}")
+                address = None
+        
+        if address:
+            locations_data.append({
+                "user_id": user.id,
+                "user_name": user.name,
+                "latitude": lat,
+                "longitude": lon,
+                "city": address.get('city'),
+                "state": address.get('state'),
+                "country": address.get('country'),
+                "suburb": address.get('suburb'),
+                "last_update": user.last_location_update.isoformat() if user.last_location_update else 'N/A'
+            })
+            
+    return jsonify(locations_data)

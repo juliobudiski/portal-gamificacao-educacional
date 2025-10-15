@@ -155,7 +155,7 @@ function ClassEditPage() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-[#2c3135] to-[#1e2226] flex items-center justify-center p-4">
+            <div className="min-h-screen bg-gradient-to-br bg-primary-bg  flex items-center justify-center p-4">
                 <div className="text-center">
                     <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-4 border-[#ffbd30] mb-4"></div>
                     <p className="text-xl text-secondary-text">Carregando dados da turma...</p>
@@ -165,7 +165,7 @@ function ClassEditPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-[#2c3135] to-[#1e2226] p-4 text-primary-text">
+        <div className="min-h-screen bg-gradient-to-br bg-primary-bg  p-4 text-primary-text">
             <div className="max-w-4xl mx-auto">
                 <header className="mb-8 text-center bg-gradient-to-r from-[#ffbd30] to-[#ffa000] p-6 rounded-2xl shadow-2xl border-b-4 border-[#ffcc5c]">
                     <h1 className="text-2xl md:text-3xl font-extrabold text-[#2c3135]">
@@ -215,7 +215,7 @@ function ClassEditPage() {
                                     checked={classDetails.is_enrollment_code_public || false}
                                     onChange={(e) => setClassDetails({ ...classDetails, is_enrollment_code_public: e.target.checked })}
                                 />
-                                <div className="w-11 h-6 bg-gray-600 rounded-full peer peer-focus:ring-2 peer-focus:ring-yellow-400 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-secondary-bg after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-500"></div>
+                                <div className="w-11 h-6 bg-gray-600 rounded-full peer peer-focus:ring-2 peer-focus:ring-yellow-400 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-secondary-bg after:border-border-color after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-500"></div>
                             </label>
                         </div>
                     </div>

@@ -22,7 +22,7 @@ const RankingItem = ({ player, isCurrentUser }) => {
         return {
           icon: <FaMedal className="text-secondary-text" />,
           borderClass: 'border-gray-400',
-          bgClass: 'bg-gray-700/40',
+          bgClass: 'bg-border-color/40',
         };
       case 3:
         return {
@@ -31,7 +31,7 @@ const RankingItem = ({ player, isCurrentUser }) => {
           bgClass: 'bg-orange-900/40',
         };
       default:
-        return { icon: rank, borderClass: 'border-transparent', bgClass: 'bg-gray-700/80' };
+        return { icon: rank, borderClass: 'border-transparent', bgClass: 'bg-border-color/80' };
     }
   };
 

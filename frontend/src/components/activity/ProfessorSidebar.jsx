@@ -42,7 +42,7 @@ const ProfessorSidebar = ({ analytics, onStudentClick, onOpenQuizEditor, onOpenN
   }
 
   return (
-    <div className="p-4 bg-gray-900 rounded-lg space-y-6 sticky top-4">
+    <div className="p-4 bg-primary-bg rounded-lg space-y-6 sticky top-4">
       {/* Seção de Analytics da Turma */}
       <div>
         <h4 className="text-lg font-bold text-blue-400 flex items-center">
@@ -61,7 +61,7 @@ const ProfessorSidebar = ({ analytics, onStudentClick, onOpenQuizEditor, onOpenN
           {analytics.students.map(student => (
             <li
               key={student.id}
-              className="bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-all duration-200"
+              className="bg-border-color rounded-lg cursor-pointer hover:bg-hover-bg-color transition-all duration-200"
             >
               <div
                 onClick={() => toggleStudent(student.id)}
@@ -98,7 +98,7 @@ const ProfessorSidebar = ({ analytics, onStudentClick, onOpenQuizEditor, onOpenN
       </div>
 
       {/* Controles de Gerenciamento */}
-      <div className="space-y-3 pt-3 border-t border-gray-700">
+      <div className="space-y-3 pt-3 border-t border-border-color">
         <button
           onClick={onOpenQuizEditor}
           className="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 rounded-lg flex items-center justify-center transition-colors"

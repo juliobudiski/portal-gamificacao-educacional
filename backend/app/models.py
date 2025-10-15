@@ -20,7 +20,9 @@ class User(db.Model):
     learning_preferences = db.Column(db.String(500), nullable=True)
     institution_name = db.Column(db.String(255), nullable=True)
     discipline = db.Column(db.String(100), nullable=True)
-    
+    last_known_latitude = db.Column(db.Float, nullable=True)
+    last_known_longitude = db.Column(db.Float, nullable=True)
+    last_location_update = db.Column(db.DateTime, nullable=True)
     unlocked_global_avatars = db.Column(JSONB, nullable=True, server_default='[]')
     
     forum_topics = db.relationship('ForumTopic', backref='author', lazy=True, foreign_keys='ForumTopic.author_id')

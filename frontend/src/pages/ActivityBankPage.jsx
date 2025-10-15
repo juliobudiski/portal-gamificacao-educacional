@@ -199,7 +199,7 @@ function ActivityBankPage() {
                         placeholder="Pesquisar por título..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full bg-[#3a4046] border-2 border-[#4a525a] rounded-xl py-3 px-4 pl-10 text-gray-200 focus:outline-none focus:ring-2 focus:ring-accent-yellow"
+                        className="w-full bg-secondary-bg border-2 border-[#4a525a] rounded-xl py-3 px-4 pl-10 text-secondary-text focus:outline-none focus:ring-2 focus:ring-accent-yellow"
                     />
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <FaSearch className="text-secondary-text" />
@@ -207,7 +207,7 @@ function ActivityBankPage() {
                 </div>
 
                 {/* Abas de Navegação */}
-                <div className="mb-6 flex border-b border-gray-700">
+                <div className="mb-6 flex border-b border-border-color">
                     <button onClick={() => setActiveTab('my')} className={`flex items-center gap-2 py-3 px-6 font-semibold transition-colors ${activeTab === 'my' ? 'border-b-2 border-accent-yellow text-accent-yellow' : 'text-secondary-text hover:text-primary-text'}`}>
                         <FaUserEdit /> Minhas Atividades ({myActivities.length})
                     </button>
@@ -216,7 +216,7 @@ function ActivityBankPage() {
                     </button>
                 </div>
 
-                {message && <div className="bg-gray-700 p-3 rounded-lg mb-4 text-center">{message}</div>}
+                {message && <div className="bg-border-color p-3 rounded-lg mb-4 text-center">{message}</div>}
 
                 {loading ? (
                     <p className="text-center py-10">Carregando atividades...</p>
@@ -225,15 +225,15 @@ function ActivityBankPage() {
                         {activeTab === 'my' && (
                             <>
                                 {/* ===== 3. BOTÕES DE FILTRO ADICIONADOS AQUI ===== */}
-                                <div className="flex flex-wrap justify-center items-center gap-4 mb-8 bg-[#3a4046] p-3 rounded-xl">
+                                <div className="flex flex-wrap justify-center items-center gap-4 mb-8 bg-secondary-bg p-3 rounded-xl">
                                     <span className="font-semibold text-secondary-text mr-2 flex items-center"><FaFilter className="mr-2" />Filtrar por:</span>
-                                    <button onClick={() => setAssignmentFilter('all')} className={`py-2 px-4 rounded-lg text-sm font-bold transition-all ${assignmentFilter === 'all' ? 'bg-accent-yellow text-primary-text shadow-lg' : 'bg-gray-700 hover:bg-gray-600 text-secondary-text'}`}>
+                                    <button onClick={() => setAssignmentFilter('all')} className={`py-2 px-4 rounded-lg text-sm font-bold transition-all ${assignmentFilter === 'all' ? 'bg-accent-yellow text-primary-text shadow-lg' : 'bg-border-color hover:bg-hover-bg-color text-secondary-text'}`}>
                                         Todas
                                     </button>
-                                    <button onClick={() => setAssignmentFilter('assigned')} className={`py-2 px-4 rounded-lg text-sm font-bold transition-all ${assignmentFilter === 'assigned' ? 'bg-accent-yellow text-primary-text shadow-lg' : 'bg-gray-700 hover:bg-gray-600 text-secondary-text'}`}>
+                                    <button onClick={() => setAssignmentFilter('assigned')} className={`py-2 px-4 rounded-lg text-sm font-bold transition-all ${assignmentFilter === 'assigned' ? 'bg-accent-yellow text-primary-text shadow-lg' : 'bg-border-color hover:bg-hover-bg-color text-secondary-text'}`}>
                                         Atribuídas
                                     </button>
-                                    <button onClick={() => setAssignmentFilter('unassigned')} className={`py-2 px-4 rounded-lg text-sm font-bold transition-all ${assignmentFilter === 'unassigned' ? 'bg-accent-yellow text-primary-text shadow-lg' : 'bg-gray-700 hover:bg-gray-600 text-secondary-text'}`}>
+                                    <button onClick={() => setAssignmentFilter('unassigned')} className={`py-2 px-4 rounded-lg text-sm font-bold transition-all ${assignmentFilter === 'unassigned' ? 'bg-accent-yellow text-primary-text shadow-lg' : 'bg-border-color hover:bg-hover-bg-color text-secondary-text'}`}>
                                         Não Atribuídas (Modelos)
                                     </button>
                                     {/* ===== 4. CHECKBOX "SELECIONAR TODOS" E BARRA DE AÇÕES ===== */}
@@ -244,7 +244,7 @@ function ActivityBankPage() {
                                                 id="selectAll"
                                                 checked={isAllSelected}
                                                 onChange={handleSelectAll}
-                                                className="h-5 w-5 rounded bg-gray-700 border-gray-500 text-accent-yellow focus:ring-accent-yellow cursor-pointer"
+                                                className="h-5 w-5 rounded bg-border-color border-gray-500 text-accent-yellow focus:ring-accent-yellow cursor-pointer"
                                             />
                                             <label htmlFor="selectAll" className="ml-2 text-sm font-medium text-secondary-text">Selecionar Todos</label>
                                         </div>

@@ -211,10 +211,10 @@ function AssignActivityToClass({ onAssignSuccess }) {
                     <select
                         value={selectedClassId}
                         onChange={(e) => setSelectedClassId(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-[#3a4046] border-2 border-[#4a525a] rounded-xl text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-accent-yellow focus:border-transparent appearance-none"
+                        className="w-full pl-10 pr-4 py-3 bg-secondary-bg border-2 border-[#4a525a] rounded-xl text-secondary-text placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-accent-yellow focus:border-transparent appearance-none"
                     >
                         {availableClasses.map((cls) => (
-                            <option key={cls.id} value={cls.id} className="bg-[#3a4046] text-gray-200">
+                            <option key={cls.id} value={cls.id} className="bg-secondary-bg text-secondary-text">
                                 {cls.name}
                             </option>
                         ))}
@@ -255,12 +255,12 @@ function AssignActivityToClass({ onAssignSuccess }) {
     }
 
     return (
-        <div className="relative bg-gradient-to-br from-[#3a4046] to-[#2c3135] rounded-2xl shadow-2xl p-6 border border-[#4a525a] overflow-hidden">
+        <div className="relative bg-primary-bg rounded-2xl shadow-2xl p-6 border border-[#4a525a] overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-accent-purple/10 to-accent-teal/10"></div>
             <div className="relative z-10">
                 <div className="flex items-center mb-4">
                     <div className="bg-gradient-to-r from-accent-yellow to-accent-teal p-1 rounded-full mr-3">
-                        <div className="bg-[#3a4046] rounded-full p-2">
+                        <div className="bg-secondary-bg rounded-full p-2">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-accent-yellow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>

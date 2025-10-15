@@ -58,13 +58,13 @@ const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel }) => {
 
     return (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-            <div className="bg-gray-800 rounded-lg shadow-xl p-6 max-w-sm w-full border border-gray-700">
+            <div className="bg-primary-bg rounded-lg shadow-xl p-6 max-w-sm w-full border border-border-color">
                 <h3 className="text-xl font-bold text-primary-text mb-4">{title}</h3>
                 <p className="text-secondary-text mb-6">{message}</p>
                 <div className="flex justify-end gap-4">
                     <button
                         onClick={onCancel}
-                        className="py-2 px-4 bg-gray-600 hover:bg-gray-500 rounded-lg font-semibold text-primary-text transition-colors"
+                        className="py-2 px-4 bg-gray-600 hover:bg-hover-bg-color0 rounded-lg font-semibold text-primary-text transition-colors"
                     >
                         Cancelar
                     </button>
@@ -125,15 +125,15 @@ const AddItemForm = ({ onAddItem, onCancel }) => {
         <div className="bg-secondary-bg/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 mb-8">
             <h3 className="text-xl font-bold mb-4 text-primary-text">Criar Item Personalizado</h3>
             <form onSubmit={handleSubmit} className="space-y-4">
-                <select value={itemType} onChange={e => setItemType(e.target.value)} className="w-full bg-gray-700 p-2 rounded">
+                <select value={itemType} onChange={e => setItemType(e.target.value)} className="w-full bg-border-color p-2 rounded">
                     <option value="title">Título</option>
                     <option value="cosmetic">Cosmético (Cor de Nome)</option>
                     <option value="utility">Utilitário</option>
                 </select>
 
-                <input type="text" placeholder={itemType === 'title' ? "Texto do Título (ex: Mestre da Atividade)" : "Nome do Item"} value={name} onChange={e => setName(e.target.value)} className="w-full bg-gray-700 p-2 rounded" required />
-                <input type="text" placeholder="Descrição" value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-gray-700 p-2 rounded" required />
-                <input type="number" placeholder="Preço em pontos" value={price} onChange={e => setPrice(e.target.value)} className="w-full bg-gray-700 p-2 rounded" required />
+                <input type="text" placeholder={itemType === 'title' ? "Texto do Título (ex: Mestre da Atividade)" : "Nome do Item"} value={name} onChange={e => setName(e.target.value)} className="w-full bg-border-color p-2 rounded" required />
+                <input type="text" placeholder="Descrição" value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-border-color p-2 rounded" required />
+                <input type="number" placeholder="Preço em pontos" value={price} onChange={e => setPrice(e.target.value)} className="w-full bg-border-color p-2 rounded" required />
 
                 {/* --- A "OFICINA DE COSMÉTICOS" (Condicional) --- */}
                 {itemType === 'cosmetic' && (
@@ -151,7 +151,7 @@ const AddItemForm = ({ onAddItem, onCancel }) => {
                                 </div>
                                 <div className="pt-4">
                                     <label>Preview:</label>
-                                    <div className="p-4 bg-gray-900 rounded-lg text-center">
+                                    <div className="p-4 bg-primary-bg rounded-lg text-center">
                                         <span style={previewStyle} className="text-2xl font-bold transition-all">Nome do Aluno</span>
                                     </div>
                                 </div>
@@ -162,7 +162,7 @@ const AddItemForm = ({ onAddItem, onCancel }) => {
 
                 <div className="flex gap-4 pt-4">
                     <button type="submit" className="flex-1 py-2 px-4 bg-blue-600 hover:bg-blue-500 rounded font-bold">Salvar Item</button>
-                    <button type="button" onClick={onCancel} className="py-2 px-4 bg-gray-600 hover:bg-gray-500 rounded">Cancelar</button>
+                    <button type="button" onClick={onCancel} className="py-2 px-4 bg-gray-600 hover:bg-hover-bg-color0 rounded">Cancelar</button>
                 </div>
             </form>
         </div>
@@ -225,14 +225,14 @@ const StoreTab = ({ items, userPoints, onPurchase, onAddItem, onDeleteItem, onRe
 
                     {/* Seção de Presets agora dividida */}
                     <div className="mb-12">
-                        <h2 className="text-2xl font-bold mb-4 border-b-2 border-gray-700 pb-2">Itens Rápidos (Presets)</h2>
+                        <h2 className="text-2xl font-bold mb-4 border-b-2 border-border-color pb-2">Itens Rápidos (Presets)</h2>
 
                         <h3 className="text-lg font-semibold text-secondary-text mt-4 mb-2">Títulos</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {PREDEFINED_TITLES.map(preset => {
                                 const isAlreadyAdded = items.some(item => item.name === preset.name);
                                 return (
-                                    <div key={preset.name} className="bg-gray-800 p-4 rounded-lg flex flex-col">
+                                    <div key={preset.name} className="bg-primary-bg p-4 rounded-lg flex flex-col">
                                         <h3 className="font-bold text-lg">{preset.name}</h3>
                                         <p className="text-sm text-secondary-text flex-grow my-2">{preset.description}</p>
                                         <button
@@ -256,7 +256,7 @@ const StoreTab = ({ items, userPoints, onPurchase, onAddItem, onDeleteItem, onRe
                             {PREDEFINED_COSMETICS.map(preset => {
                                 const isAlreadyAdded = items.some(item => item.name === preset.name);
                                 return (
-                                    <div key={preset.name} className="bg-gray-800 p-4 rounded-lg flex flex-col">
+                                    <div key={preset.name} className="bg-primary-bg p-4 rounded-lg flex flex-col">
                                         <h3 className="font-bold text-lg">{preset.name}</h3>
                                         <p className="text-sm text-secondary-text flex-grow my-2">{preset.description}</p>
                                         <button
@@ -281,9 +281,9 @@ const StoreTab = ({ items, userPoints, onPurchase, onAddItem, onDeleteItem, onRe
                                 // Lógica para verificar se já foi adicionado
                                 const isAlreadyAdded = items.some(item => item.name === preset.name);
                                 return (
-                                    <div key={preset.name} className="bg-gray-800 p-4 rounded-lg flex flex-col">
+                                    <div key={preset.name} className="bg-primary-bg p-4 rounded-lg flex flex-col">
                                         <div className="flex items-start gap-4">
-                                            <img src={preset.effect_id.url} alt={preset.name} className="w-12 h-12 rounded-full bg-gray-700" />
+                                            <img src={preset.effect_id.url} alt={preset.name} className="w-12 h-12 rounded-full bg-border-color" />
                                             <div>
                                                 <h3 className="font-bold text-lg">{preset.name}</h3>
                                                 <p className="text-sm text-secondary-text flex-grow my-1">{preset.description}</p>
@@ -301,7 +301,7 @@ const StoreTab = ({ items, userPoints, onPurchase, onAddItem, onDeleteItem, onRe
                             })}
                         </div>
                     </div>
-                    <h2 className="text-2xl font-bold mb-4 border-b-2 border-gray-700 pb-2">Itens Atuais na Loja</h2>
+                    <h2 className="text-2xl font-bold mb-4 border-b-2 border-border-color pb-2">Itens Atuais na Loja</h2>
                 </>
             )}
 

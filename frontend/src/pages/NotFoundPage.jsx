@@ -142,7 +142,7 @@ function NotFoundPage() {
 
             <button
               onClick={() => window.history.back()}
-              className="flex items-center justify-center px-6 py-3 bg-gray-700 rounded-lg font-semibold hover:bg-gray-600 transition-colors duration-300"
+              className="flex items-center justify-center px-6 py-3 bg-border-color rounded-lg font-semibold hover:bg-hover-bg-color transition-colors duration-300"
             >
               <FaSearch className="mr-2" />
               Voltar à Página Anterior

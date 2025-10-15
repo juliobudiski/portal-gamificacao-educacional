@@ -8,17 +8,17 @@
 */
 :root {
   --background-primary: #f4f4f5;
-  /* Um cinza bem claro para o fundo geral */
+  /* Fundo geral claro */
   --background-secondary: #ffffff;
-  /* Branco para o conteúdo principal */
+  /* Fundo de conteúdo (cards, modais) */
   --text-primary: #1f2937;
-  /* Texto escuro */
-  --header-background: #343a40;
-  /* Fundo do cabeçalho */
-  --card-background: #f9fafb;
-  /* Fundo de cards e elementos similares */
+  /* Texto principal (escuro) */
   --text-secondary: #4b5563;
-  /* Este é o text-secondary-text */
+  /* Texto secundário (cinza) */
+  --border-color: #e5e7eb;
+  /* Cor da borda padrão */
+  --hover-bg-color: #e5e7eb;
+  /* Fundo do hover */
 }
 
 /* Definição de variáveis de cor para o tema escuro.
@@ -28,14 +28,15 @@ html.dark {
   --background-primary: #2c3135;
   /* Fundo geral escuro */
   --background-secondary: #343a40;
-  /* Fundo do conteúdo principal escuro */
+  /* Fundo de conteúdo (cards, modais) */
   --text-primary: #e5e7eb;
-  /* Texto claro */
-  --header-background: #343a40;
-  /* Fundo do cabeçalho (pode ser o mesmo ou diferente) */
-  --card-background: #3f474e;
-  /* Fundo de cards escuro */
+  /* Texto principal (claro) */
   --text-secondary: #d1d5db;
+  /* Texto secundário (cinza claro) */
+  --border-color: #3e4a52;
+  /* Cor da borda padrão */
+  --hover-bg-color: #3f474e;
+  /* Fundo do hover */
 }
 
 /* Estilo base para o body, utilizando as variáveis.
@@ -47,20 +48,12 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Garante que html e body preencham a tela e removam margens/padding padrão */
-html,
-body {
+/* Garante que a aplicação ocupe toda a tela */
+#root,
+body,
+html {
+  height: 100%;
+  width: 100%;
   margin: 0;
   padding: 0;
-  width: 100%;
-  min-height: 100vh;
-}
-
-/* Garante que a div #root preencha a largura total e possa centralizar seu filho */
-#root {
-  width: 100%;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }

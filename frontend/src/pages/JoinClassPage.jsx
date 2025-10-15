@@ -87,7 +87,7 @@ function JoinClassPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[#2c3135] to-[#1e2226]">
+        <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br bg-primary-bg ">
             <div className="w-full max-w-md">
                 <div className="text-center mb-8">
                     <div className="mx-auto bg-gradient-to-r from-accent-purple to-accent-teal p-3 rounded-full w-20 h-20 flex items-center justify-center shadow-lg">
@@ -103,7 +103,7 @@ function JoinClassPage() {
 
                 <form
                     onSubmit={handleSubmit}
-                    className="bg-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-700 transform transition-all duration-300 hover:shadow-[0_10px_30px_-5px_rgba(105,232,203,0.15)]"
+                    className="bg-primary-bg p-8 rounded-2xl shadow-2xl border border-border-color transform transition-all duration-300 hover:shadow-[0_10px_30px_-5px_rgba(105,232,203,0.15)]"
                 >
                     <div className="mb-6">
                         <label htmlFor="enrollmentCode" className="block text-accent-teal font-medium mb-2 flex items-center">
@@ -119,7 +119,7 @@ function JoinClassPage() {
                                     setEnrollmentCode(e.target.value);
                                     console.log('[JoinClassPage] Código de inscrição alterado para:', e.target.value);
                                 }}
-                                className="w-full bg-gray-700 text-primary-text py-3 px-4 pl-11 rounded-xl border border-gray-600 focus:outline-none focus:ring-2 focus:ring-accent-yellow focus:border-transparent transition-all duration-200"
+                                className="w-full bg-border-color text-primary-text py-3 px-4 pl-11 rounded-xl border border-gray-600 focus:outline-none focus:ring-2 focus:ring-accent-yellow focus:border-transparent transition-all duration-200"
                                 placeholder="Digite o código aqui"
                                 required
                                 disabled={isLoading}

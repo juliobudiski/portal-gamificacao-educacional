@@ -10,7 +10,7 @@ const MedalDetailModal = ({ medal, isUnlocked, onClose }) => {
             onClick={onClose} // Fecha o modal ao clicar no fundo
         >
             <div
-                className="bg-gray-800 border-2 border-yellow-400 p-8 rounded-xl shadow-2xl text-center max-w-md w-full relative"
+                className="bg-primary-bg border-2 border-yellow-400 p-8 rounded-xl shadow-2xl text-center max-w-md w-full relative"
                 onClick={e => e.stopPropagation()} // Impede que o clique dentro do modal o feche
             >
                 <button onClick={onClose} className="absolute top-4 right-4 text-secondary-text hover:text-primary-text text-2xl">&times;</button>
@@ -24,7 +24,7 @@ const MedalDetailModal = ({ medal, isUnlocked, onClose }) => {
                 <h2 className={`text-3xl font-bold ${isUnlocked ? 'text-yellow-300' : 'text-secondary-text'}`}>{medal.name}</h2>
 
                 <p className="text-sm text-secondary-text mt-4 border-t border-gray-600 pt-4">
-                    <span className="font-bold text-gray-200">Como obter:</span> {medal.description}
+                    <span className="font-bold text-secondary-text">Como obter:</span> {medal.description}
                 </p>
 
                 {medal.notes && (

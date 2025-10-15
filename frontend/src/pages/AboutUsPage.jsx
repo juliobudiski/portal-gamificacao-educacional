@@ -121,7 +121,7 @@ function AboutUsPage() {
                 </button>
               </div>
 
-              <div className="flex space-x-4 mt-auto pt-4 border-t border-gray-200 dark:border-gray-600 w-full justify-center">
+              <div className="flex space-x-4 mt-auto pt-4 border-t border-border-color dark:border-gray-600 w-full justify-center">
                 <a href={member.lattes} target="_blank" rel="noopener noreferrer" className="text-secondary-text hover:text-[#69e8cb] transition-colors" title="Currículo Lattes">
                   <LattesIcon />
                 </a>

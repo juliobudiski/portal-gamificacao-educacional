@@ -20,7 +20,7 @@ const ClassCard = ({ classInfo }) => {
   }
 
   return (
-    <div className="bg-[#3a4046] rounded-2xl shadow-xl border-l-4 border-[#ffbd30] p-6 flex flex-col justify-between transform hover:-translate-y-1 transition-all duration-300">
+    <div className="bg-secondary-bg rounded-2xl shadow-xl border-l-4 border-[#ffbd30] p-6 flex flex-col justify-between transform hover:-translate-y-1 transition-all duration-300">
       <div>
         <h3 className="text-xl font-bold text-primary-text mb-2">{classInfo.name}</h3>
         <div className="flex items-center text-sm text-secondary-text mb-4">
@@ -66,7 +66,7 @@ const ActivityCard = ({ activity }) => {
   }
 
   return (
-    <div className="bg-[#3a4046] p-4 rounded-xl flex items-center justify-between hover:bg-[#4a525a] transition-colors">
+    <div className="bg-secondary-bg p-4 rounded-xl flex items-center justify-between hover:bg-hover-bg-color transition-colors">
       <div>
         <p className="font-bold text-primary-text">{activity.title}</p>
         <p className="text-sm text-secondary-text">{activity.class_name}</p>
@@ -186,7 +186,7 @@ function StudentDashboardPage() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1e2226] to-[#2c3135] p-4 md:p-8 text-primary-text">
+    <div className="min-h-screen bg-primary-bg p-4 md:p-8 text-primary-text">
       <div className="max-w-7xl mx-auto">
         {/* Cabeçalho de Boas-vindas */}
         <header className="mb-12">

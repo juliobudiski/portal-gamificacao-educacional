@@ -92,14 +92,14 @@ function Step4_PlayerProfile({ activityData, setActivityData, openHelpModal }) {
                 group relative flex h-full cursor-pointer flex-col items-center justify-start space-y-3 rounded-xl border p-6 text-center transition-all duration-200
                 ${isSelected
                   ? 'border-2 border-teal-500 bg-teal-50 dark:bg-teal-900/40 ring-2 ring-teal-500/20'
-                  : 'border-gray-300 bg-secondary-bg hover:border-teal-400 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:hover:border-teal-500'
+                  : 'border-border-color bg-secondary-bg hover:border-teal-400 hover:shadow-lg dark:border-border-color dark:bg-primary-bg dark:hover:border-teal-500'
                 }
               `}
             >
               <div className={`text-5xl mb-2 ${isSelected ? 'text-teal-500' : 'text-secondary-text group-hover:text-teal-500 dark:text-secondary-text dark:group-hover:text-teal-400'}`}>
                 {profile.icon}
               </div>
-              <h4 className={`text-base font-semibold ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-primary-text dark:text-gray-200'}`}>
+              <h4 className={`text-base font-semibold ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-primary-text dark:text-secondary-text'}`}>
                 {profile.name}
               </h4>
               <p className={`text-xs ${isSelected ? 'text-teal-700 dark:text-teal-200' : 'text-secondary-text dark:text-secondary-text'}`}>

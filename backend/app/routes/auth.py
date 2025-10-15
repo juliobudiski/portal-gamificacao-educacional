@@ -8,9 +8,17 @@ from ..config import Config
 from flask_cors import cross_origin
 from google.oauth2 import id_token
 from google.auth.transport import requests
-
+import requests
+from sqlalchemy.orm.attributes import flag_modified
 auth_bp = Blueprint('auth', __name__)
-
+# --- ESTRUTURA DOS AVATARES PADRÃO ---
+# Defina esta lista no topo do arquivo para ser reutilizada
+DEFAULT_AVATARS = [
+    {"url": "/avatars/avatar2.webp", "name": "Avatar Básico 2", "type": "normal"},
+    {"url": "/avatars/avatar8.webp", "name": "Avatar Básico 8", "type": "normal"},
+    {"url": "/avatars/avatar9.webp", "name": "Avatar Básico 9", "type": "normal"},
+]
+DEFAULT_PROFILE_PICTURE = "/avatars/avatar9.webp"
 # --- 2. FUNÇÃO AUXILIAR PARA LOGGING DE AUTENTICAÇÃO ---
 def _log_auth_event(user_id, action, details, is_success=True):
     """
@@ -61,7 +69,14 @@ def register_user():
         return jsonify({"message": "E-mail já cadastrado."}), 409
 
     hashed_password = generate_password_hash(password)
-    new_user = User(email=email, password_hash=hashed_password, name=name, role=role)
+    new_user = User(
+        email=email, 
+        password_hash=hashed_password, 
+        name=name, 
+        role=role,
+        profile_picture=DEFAULT_PROFILE_PICTURE,      # Avatar padrão equipado
+        unlocked_global_avatars=DEFAULT_AVATARS       # Lista de avatares desbloqueados
+    )
 
     try:
         db.session.add(new_user)
@@ -77,7 +92,8 @@ def register_user():
             "email": new_user.email, "name": new_user.name, "role": new_user.role,
             "profile_picture": new_user.profile_picture,
             "institutionName": new_user.institution_name,
-            "discipline": new_user.discipline
+            "discipline": new_user.discipline,
+            "unlocked_global_avatars": new_user.unlocked_global_avatars
         }
         access_token = create_access_token(identity=str(new_user.id), additional_claims=additional_claims)
 
@@ -86,13 +102,12 @@ def register_user():
             "profile_picture": new_user.profile_picture,
             "institutionName": new_user.institution_name,
             "discipline": new_user.discipline,
+            "unlocked_global_avatars": new_user.unlocked_global_avatars,
             "token": access_token
         }
         return jsonify(access_token=access_token, user=user_data), 201
-
     except Exception as e:
         db.session.rollback()
-        current_app.logger.error(f"Erro ao registrar usuário '{email}': {str(e)}", exc_info=True)
         return jsonify({"message": f"Erro interno ao cadastrar usuário: {str(e)}"}), 500
 
 # Rota para login de usuário com e-mail e senha
@@ -126,7 +141,8 @@ def login_user():
             "id": user.id, "email": user.email, "name": user.name, "role": user.role,
             "profile_picture": user.profile_picture, "google_id": user.google_id,
             "institutionName": user.institution_name, "discipline": user.discipline,
-            "token": access_token
+            "token": access_token,
+            "unlocked_global_avatars": user.unlocked_global_avatars,
         }
         return jsonify(access_token=access_token, user=user_data), 200
     else:
@@ -189,21 +205,27 @@ def google_auth():
                 _log_auth_event(user_id=user.id, action='link_google_account', details={'email': user.email})
             else:
                 current_app.logger.info(f"Nenhum usuário encontrado. Criando novo usuário Google para {email}.")
-                _log_auth_event(user_id=user.id, action='register_success', details={'email': user.email, 'method': 'google'})
+                _log_auth_event(user_id=None, action='register_success', details={'email': email, 'method': 'google'})
                 user = User(
                     email=email, password_hash='google_auth_only', google_id=google_id,
-                    name=name, profile_picture=picture, role=selected_role
+                    name=name, profile_picture=picture, role=selected_role,
+                    unlocked_global_avatars=DEFAULT_AVATARS # Adiciona os avatares padrão
                 )
+                if not user.profile_picture:
+                    user.profile_picture = DEFAULT_PROFILE_PICTURE # Define o avatar padrão se o Google não fornecer um
+
                 db.session.add(user)
                 db.session.commit()
                 status_code = 201
+            # --- FIM DA ALTERAÇÃO ---
 
         current_app.logger.info(f"Gerando token de acesso para o usuário {user.email}")
         additional_claims = {
             "email": user.email, "name": user.name, "role": user.role,
             "profile_picture": user.profile_picture,
             "institutionName": user.institution_name,
-            "discipline": user.discipline
+            "discipline": user.discipline,
+            "unlocked_global_avatars": user.unlocked_global_avatars
         }
         access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
 
@@ -211,6 +233,8 @@ def google_auth():
             "id": user.id, "email": user.email, "name": user.name, "role": user.role,
             "profile_picture": user.profile_picture, "google_id": user.google_id,
             "institutionName": user.institution_name, "discipline": user.discipline,
+            "token": access_token,
+            "unlocked_global_avatars": user.unlocked_global_avatars,
         }
         return jsonify(access_token=access_token, user=user_data), status_code
 
@@ -390,3 +414,33 @@ def delete_account():
         current_app.logger.error(f"Erro ao excluir a conta do usuário ID {current_user_id}: {str(e)}")
         return jsonify({"message": "Erro interno ao excluir a conta."}), 500
 
+@auth_bp.route('/user/location-info', methods=['GET'])
+@jwt_required()
+def get_user_location_info():
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+
+    if not user or not user.last_known_latitude:
+        return jsonify(None), 200 # Retorna nulo se não houver localização
+
+    try:
+        lat = user.last_known_latitude
+        lon = user.last_known_longitude
+        
+        # Chamada para a API Nominatim (gratuita e sem chave)
+        geo_url = f"https://nominatim.openstreetmap.org/reverse?format=json&lat={lat}&lon={lon}"
+        headers = {'User-Agent': 'GamificaEduPortal/1.0'}
+        geo_res = requests.get(geo_url, headers=headers, timeout=5)
+        geo_res.raise_for_status()
+        address = geo_res.json().get('address', {})
+        
+        location_info = {
+            'city': address.get('city') or address.get('town') or address.get('village', 'N/A'),
+            'state': address.get('state', 'N/A'),
+            'country': address.get('country', 'N/A')
+        }
+        return jsonify(location_info), 200
+
+    except requests.exceptions.RequestException as e:
+        current_app.logger.error(f"Falha na geocodificação para o usuário {user.id}: {e}")
+        return jsonify({"message": "Erro ao buscar informações de localização."}), 500

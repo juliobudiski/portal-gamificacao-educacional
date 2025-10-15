@@ -11,7 +11,7 @@ import {
 // --- Componentes de UI Reutilizáveis (sem alterações) ---
 
 const KPI_Card = ({ title, value, icon, color }) => (
-    <div className="bg-gray-800/50 p-6 rounded-xl flex items-center space-x-4">
+    <div className="bg-primary-bg/50 p-6 rounded-xl flex items-center space-x-4">
         <div className={`p-3 rounded-full ${color}`}>
             {icon}
         </div>
@@ -23,7 +23,7 @@ const KPI_Card = ({ title, value, icon, color }) => (
 );
 
 const HorizontalBarChart = ({ data, dataKey, nameKey, title, icon }) => (
-    <div className="bg-gray-800/50 p-6 rounded-xl">
+    <div className="bg-primary-bg/50 p-6 rounded-xl">
         <h2 className="text-xl font-bold text-primary-text mb-4 flex items-center"><span className="mr-2">{icon}</span>{title}</h2>
         <div style={{ width: '100%', height: 400 }}>
             <ResponsiveContainer>
@@ -41,7 +41,7 @@ const HorizontalBarChart = ({ data, dataKey, nameKey, title, icon }) => (
 const ProfilePieChart = ({ data }) => {
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF'];
     return (
-        <div className="bg-gray-800/50 p-6 rounded-xl">
+        <div className="bg-primary-bg/50 p-6 rounded-xl">
             <h2 className="text-xl font-bold text-primary-text mb-4 flex items-center"><Users className="mr-2" />Perfis de Jogador Mais Visados</h2>
             <div style={{ width: '100%', height: 400 }}>
                 <ResponsiveContainer>
@@ -60,7 +60,7 @@ const ProfilePieChart = ({ data }) => {
 const CustomPieChart = ({ data, title, icon, dataKey, nameKey }) => {
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF'];
     return (
-        <div className="bg-gray-800/50 p-6 rounded-xl">
+        <div className="bg-primary-bg/50 p-6 rounded-xl">
             <h2 className="text-xl font-bold text-primary-text mb-4 flex items-center">{icon}<span className="ml-2">{title}</span></h2>
             <div style={{ width: '100%', height: 400 }}>
                 <ResponsiveContainer>
@@ -194,7 +194,7 @@ function SystemAnalyticsPage() {
                             <KPI_Card title="Falhas de Login (24h)" value={kpis?.failed_logins_24h ?? '...'} icon={<AlertTriangle size={24} />} color="bg-yellow-500/30" />
                             <KPI_Card title="Atividades Criadas (7d)" value={kpis?.activities_created_7d ?? '...'} icon={<FilePlus size={24} />} color="bg-purple-500/30" />
                         </div>
-                        <div className="bg-gray-800/50 p-6 rounded-xl">
+                        <div className="bg-primary-bg/50 p-6 rounded-xl">
                             <h2 className="text-xl font-bold mb-4">Top 10 Eventos Mais Frequentes</h2>
                             <div style={{ width: '100%', height: 300 }}>
                                 <ResponsiveContainer>
@@ -207,7 +207,7 @@ function SystemAnalyticsPage() {
                                 </ResponsiveContainer>
                             </div>
                         </div>
-                        <div className="bg-gray-800/50 p-6 rounded-xl text-center border-2 border-dashed border-gray-700">
+                        <div className="bg-primary-bg/50 p-6 rounded-xl text-center border-2 border-dashed border-border-color">
                             <h2 className="text-xl font-bold text-primary-text mb-4">Explorador de Logs</h2>
                             <p className="text-secondary-text mb-4 max-w-lg mx-auto">Para uma análise profunda, busca e filtragem de todos os eventos do sistema, acesse a página dedicada.</p>
                             <button onClick={() => navigate('/admin/logs')} className="py-2 px-5 bg-accent-teal text-primary-text font-bold rounded-lg hover:bg-accent-teal/80 transition-colors">
@@ -233,7 +233,7 @@ function SystemAnalyticsPage() {
                             <KPI_Card title="Total de Abandonos" value={creationStepsData.reduce((s, i) => s + i.abandon_count, 0)} icon={<XCircle size={24} />} color="bg-yellow-500/30" />
                             <KPI_Card title="Pedidos de Ajuda" value={creationStepsData.reduce((s, i) => s + i.help_count, 0)} icon={<HelpCircle size={24} />} color="bg-purple-500/30" />
                         </div>
-                        <div className="bg-gray-800/50 p-6 rounded-xl">
+                        <div className="bg-primary-bg/50 p-6 rounded-xl">
                             <h2 className="text-xl font-bold text-primary-text mb-4">Detalhes por Etapa</h2>
                             <div className="overflow-x-auto">
                                 <table className="min-w-full divide-y divide-gray-700">
@@ -284,7 +284,7 @@ function SystemAnalyticsPage() {
             {error && <div className="bg-red-500/20 text-red-300 p-4 rounded-lg">{error}</div>}
 
             {/* Navegação por Abas */}
-            <div className="flex space-x-1 border-b border-gray-700">
+            <div className="flex space-x-1 border-b border-border-color">
                 {['overview', 'trends', 'engagement', 'funnel'].map(tab => (
                     <button
                         key={tab}

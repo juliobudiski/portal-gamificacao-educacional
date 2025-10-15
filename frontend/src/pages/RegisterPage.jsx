@@ -230,7 +230,7 @@ Professora Orientadora: Prof.ª Dr.ª Aline Maria Malachini Miotto Amaral - ammm
         />
       )}
 
-      <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-[#2c3135] to-[#1e2226] p-4">
+      <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br bg-primary-bg  p-4">
         <div className="w-full max-w-md bg-secondary-bg rounded-2xl shadow-2xl overflow-hidden border border-[#3e4a52]">
           <div className="bg-gradient-to-r from-[#69e8cb] to-[#9570d9] p-6 text-center">
             <div className="bg-secondary-bg/20 backdrop-blur-sm rounded-full p-3 inline-block mb-4">

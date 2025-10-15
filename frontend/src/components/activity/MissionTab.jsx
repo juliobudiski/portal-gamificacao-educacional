@@ -13,7 +13,7 @@ const MissionTab = ({ activity, onComplete, onReturn }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
             {/* Cenário Atual */}
-            <div className="bg-gray-700/50 p-6 rounded-xl border border-red-500/30">
+            <div className="bg-border-color/50 p-6 rounded-xl border border-red-500/30">
                 <h3 className="text-xl font-semibold text-red-400 mb-3 flex items-center">
                     <FaExclamationCircle className="mr-2" />
                     Cenário Atual (Os Desafios)
@@ -27,7 +27,7 @@ const MissionTab = ({ activity, onComplete, onReturn }) => {
             </div>
 
             {/* Cenário Desejado */}
-            <div className="bg-gray-700/50 p-6 rounded-xl border border-green-500/30">
+            <div className="bg-border-color/50 p-6 rounded-xl border border-green-500/30">
                 <h3 className="text-xl font-semibold text-green-400 mb-3 flex items-center">
                     <FaCheckCircle className="mr-2" />
                     Cenário Desejado (As Metas)

@@ -104,7 +104,7 @@ function CreateClassPage() {
                     </h1>
                 </div>
 
-                <div className="relative bg-gradient-to-br from-[#3a4046] to-[#2c3135] rounded-2xl shadow-2xl overflow-hidden">
+                <div className="relative bg-primary-bg rounded-2xl shadow-2xl overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-r from-accent-purple/10 to-accent-teal/10"></div>
                     <div className="relative p-8 z-10">
                         <form onSubmit={handleSubmit}>
@@ -123,7 +123,7 @@ function CreateClassPage() {
                                         setName(e.target.value);
                                         console.log('[CreateClassPage] Nome da turma alterado para:', e.target.value);
                                     }}
-                                    className="w-full bg-[#3a4046] border-2 border-[#4a525a] rounded-xl py-3 px-4 text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-accent-yellow focus:border-transparent transition duration-300"
+                                    className="w-full bg-secondary-bg border-2 border-[#4a525a] rounded-xl py-3 px-4 text-secondary-text placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-accent-yellow focus:border-transparent transition duration-300"
                                     placeholder="Digite o nome da turma"
                                     required
                                     disabled={isLoading}
@@ -144,7 +144,7 @@ function CreateClassPage() {
                                         setDescription(e.target.value);
                                         console.log('[CreateClassPage] Descrição alterada para:', e.target.value);
                                     }}
-                                    className="w-full bg-[#3a4046] border-2 border-[#4a525a] rounded-xl py-3 px-4 text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-accent-yellow focus:border-transparent transition duration-300 h-40 resize-none"
+                                    className="w-full bg-secondary-bg border-2 border-[#4a525a] rounded-xl py-3 px-4 text-secondary-text placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-accent-yellow focus:border-transparent transition duration-300 h-40 resize-none"
                                     placeholder="Adicione uma descrição para a turma..."
                                     disabled={isLoading}
                                 ></textarea>

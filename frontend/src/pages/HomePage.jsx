@@ -19,7 +19,7 @@ function Homepage() {
             </span>
           </h1>
 
-          <p className="text-xl md:text-2xl max-w-3xl mx-auto text-gray-700 dark:text-secondary-text leading-relaxed">
+          <p className="text-xl md:text-2xl max-w-3xl mx-auto text-secondary-text dark:text-secondary-text leading-relaxed">
             Transforme a educação em uma jornada envolvente e interativa. Crie, compartilhe e participe de atividades gamificadas que <span className="text-[#ffbd30]">inspiram o aprendizado</span> e o <span className="text-[#69e8cb]">engajamento</span>.
           </p>
         </div>
@@ -28,7 +28,7 @@ function Homepage() {
         <div className="flex flex-col sm:flex-row justify-center gap-6 mb-16">
           <Link
             to="/login"
-            className="relative group bg-gradient-to-br from-gray-100 to-white dark:from-[#2c3135] dark:to-[#1e2226] px-8 py-4 rounded-xl shadow-2xl border border-accent-teal/30 hover:border-accent-teal transition-all duration-300"
+            className="relative group bg-gradient-to-br from-gray-100 to-white dark:bg-primary-bg dark: px-8 py-4 rounded-xl shadow-2xl border border-accent-teal/30 hover:border-accent-teal transition-all duration-300"
           >
             <span className="text-lg font-bold text-accent-teal group-hover:text-primary-text transition-colors">
               Entrar

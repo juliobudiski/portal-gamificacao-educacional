@@ -52,7 +52,7 @@ const TeacherRankingPage = () => {
   }, [getToken, API_URL]); // Adicionado API_URL às dependências
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#2c3135] to-[#1e2226] p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-br bg-primary-bg  p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
         <header className="mb-8 text-center">
           <h1 className="text-3xl md:text-4xl font-extrabold text-primary-text">
@@ -71,7 +71,7 @@ const TeacherRankingPage = () => {
             error={error} // Passando a mensagem de erro (string) em vez do objeto
           />
           {/* Placeholder para o futuro ranking de avaliadores */}
-          <div className="bg-secondary-bg text-primary-text p-6 rounded-2xl shadow-lg border border-dashed border-gray-700">
+          <div className="bg-secondary-bg text-primary-text p-6 rounded-2xl shadow-lg border border-dashed border-border-color">
             <h3 className="text-2xl font-bold mb-4 text-secondary-text">⭐ Top Avaliadores</h3>
             <p className="text-secondary-text">Em breve: um ranking para os professores que mais avaliam e fornecem feedback sobre atividades da comunidade.</p>
           </div>

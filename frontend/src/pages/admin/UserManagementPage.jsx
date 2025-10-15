@@ -106,7 +106,7 @@ function UserManagementPage() {
       <h1 className="text-3xl font-bold text-primary-text mb-6">Gerenciamento de Usuários</h1>
       {/* Aqui entrarão os filtros e a barra de busca no Estágio 3 */}
 
-      <div className="bg-gray-800 rounded-xl shadow-xl overflow-hidden">
+      <div className="bg-primary-bg rounded-xl shadow-xl overflow-hidden">
         <div className="overflow-x-auto">
           {/* Tabela de Usuários (JSX extraído da AdminPage original) */}
           <table className="min-w-full divide-y divide-gray-700">
@@ -129,13 +129,13 @@ function UserManagementPage() {
             </thead>
             <tbody className="divide-y divide-gray-700">
               {sortedUsers.map((userItem) => (
-                <tr key={userItem.id} className="hover:bg-gray-700/50">
+                <tr key={userItem.id} className="hover:bg-border-color/50">
                   {editingUserId === userItem.id ? (
                     <>
                       <td className="py-4 px-4 text-sm">{userItem.id}</td>
-                      <td className="py-4 px-4"><input name="name" value={editFormData.name} onChange={handleEditInputChange} className="bg-gray-700 text-primary-text rounded px-2 py-1 w-full" /></td>
-                      <td className="py-4 px-4"><input name="email" value={editFormData.email} onChange={handleEditInputChange} className="bg-gray-700 text-primary-text rounded px-2 py-1 w-full" /></td>
-                      <td className="py-4 px-4"><select name="role" value={editFormData.role} onChange={handleEditInputChange} className="bg-gray-700 text-primary-text rounded px-2 py-1 w-full"><option value="aluno">aluno</option><option value="professor">professor</option><option value="admin">admin</option></select></td>
+                      <td className="py-4 px-4"><input name="name" value={editFormData.name} onChange={handleEditInputChange} className="bg-border-color text-primary-text rounded px-2 py-1 w-full" /></td>
+                      <td className="py-4 px-4"><input name="email" value={editFormData.email} onChange={handleEditInputChange} className="bg-border-color text-primary-text rounded px-2 py-1 w-full" /></td>
+                      <td className="py-4 px-4"><select name="role" value={editFormData.role} onChange={handleEditInputChange} className="bg-border-color text-primary-text rounded px-2 py-1 w-full"><option value="aluno">aluno</option><option value="professor">professor</option><option value="admin">admin</option></select></td>
                       <td className="py-4 px-4 flex justify-end space-x-2">
                         <button onClick={handleSaveEdit} className="p-2 hover:bg-green-500/20 rounded"><Save size={18} className="text-green-400" /></button>
                         <button onClick={handleCancelEdit} className="p-2 hover:bg-red-500/20 rounded"><X size={18} className="text-red-400" /></button>

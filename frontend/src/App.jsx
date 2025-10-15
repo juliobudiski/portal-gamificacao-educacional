@@ -43,13 +43,13 @@ import UserManagementPage from './pages/admin/UserManagementPage';
 import ActivityManagementPage from './pages/admin/ActivityManagementPage';
 import SystemAnalyticsPage from './pages/admin/SystemAnalyticsPage';
 import LogExplorerPage from './pages/admin/LogExplorerPage';
-
+import LocationMapPage from './pages/admin/LocationMapPage';
 // --- 2. COMPONENTES AUXILIARES ---
 
 // (O componente GeolocationPrompt permanece o mesmo)
 const GeolocationPrompt = ({ onAccept }) => (
   <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[999] p-4">
-    <div className="bg-gray-800 p-8 rounded-2xl shadow-xl max-w-md w-full text-center border border-yellow-500/50">
+    <div className="bg-primary-bg p-8 rounded-2xl shadow-xl max-w-md w-full text-center border border-yellow-500/50">
       <h3 className="text-2xl font-bold text-yellow-400 mb-4">Aviso de Localização</h3>
       <p className="text-secondary-text mb-6">
         Para aprimorar sua experiência e a segurança da plataforma, nosso portal solicita acesso à sua localização. Seus dados são confidenciais e usados apenas para fins de registro.
@@ -128,10 +128,18 @@ function AppContent() {
             className="flex items-center space-x-2 mb-4 sm:mb-0 group transition-transform duration-300"
             onClick={closeAllMenus}
           >
+            {/* Logo para o MODO CLARO (o novo, com texto preto) */}
             <img
-              src="/images/logotipo.webp"
+              src="/images/logotipo-dark.webp"
               alt="Logo GamificaEdu"
-              className="h-20 transition-transform duration-300 group-hover:scale-105"
+              className="h-20 transition-transform duration-300 group-hover:scale-105 dark:hidden"
+            />
+
+            {/* Logo para o MODO ESCURO (o original, com texto branco) */}
+            <img
+              src="/images/logotipo-light.webp"
+              alt="Logo GamificaEdu"
+              className="h-20 transition-transform duration-300 group-hover:scale-105 hidden dark:block"
             />
           </Link>
 
@@ -353,6 +361,7 @@ function AppContent() {
               <Route path="activities" element={<ActivityManagementPage />} />
               <Route path="analytics" element={<SystemAnalyticsPage />} />
               <Route path="logs" element={<LogExplorerPage />} />
+              <Route path="mapa-localizacao" element={<LocationMapPage />} />
             </Route>
           </Route>
 

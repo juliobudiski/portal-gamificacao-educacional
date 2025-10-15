@@ -33,7 +33,7 @@ function ActivityCard({ activity }) {
     return (
         <div
             key={activity.id}
-            className="bg-[#3a4046] p-6 rounded-2xl shadow-2xl border border-[#4a525a] transition-all duration-300 hover:shadow-[0_10px_30px_rgba(105,232,203,0.15)] hover:border-[#69e8cb]/50 relative overflow-hidden flex flex-col"
+            className="bg-secondary-bg p-6 rounded-2xl shadow-2xl border border-[#4a525a] transition-all duration-300 hover:shadow-[0_10px_30px_rgba(105,232,203,0.15)] hover:border-[#69e8cb]/50 relative overflow-hidden flex flex-col"
         >
             {/* Decoração no topo do card */}
             <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#ffbd30] to-[#9570d9]"></div>
@@ -60,7 +60,7 @@ function ActivityCard({ activity }) {
                     onClick={() => toggleSection('description')}
                 >
                     <div className="flex justify-between items-center">
-                        <strong className="text-gray-200">Descrição</strong>
+                        <strong className="text-secondary-text">Descrição</strong>
                         {isExpanded.description ? <FaChevronUp /> : <FaChevronDown />}
                     </div>
                     {isExpanded.description && (
@@ -121,7 +121,7 @@ function ActivityCard({ activity }) {
                 )}
             </div>
 
-            <div className="mt-6 text-right border-t border-gray-700 pt-4">
+            <div className="mt-6 text-right border-t border-border-color pt-4">
                 <Link
                     to={`/activities/${activity.id}`}
                     className="inline-block bg-gradient-to-r from-[#69e8cb] to-[#4dd1b3] hover:from-[#4dd1b3] hover:to-[#69e8cb] text-[#2c3135] font-bold py-2 px-4 rounded-xl text-sm transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg"
@@ -202,7 +202,7 @@ function ClassDetailsPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-[#2c3135] to-[#1a1e22] p-4">
+        <div className="min-h-screen bg-gradient-to-br bg-primary-bg to-[#1a1e22] p-4">
             <div className="max-w-6xl mx-auto">
                 {/* Cabeçalho com gradiente */}
                 <div className="bg-gradient-to-r from-[#ffbd30] to-[#ff9d00] p-5 rounded-2xl shadow-2xl mb-8">
@@ -212,7 +212,7 @@ function ClassDetailsPage() {
                 </div>
 
                 {/* Card de informações da turma */}
-                <div className="bg-[#3a4046] p-6 rounded-2xl shadow-2xl border border-[#4a525a] mb-8">
+                <div className="bg-secondary-bg p-6 rounded-2xl shadow-2xl border border-[#4a525a] mb-8">
                     <div className="flex flex-col md:flex-row gap-6">
                         <div className="flex-1">
                             <div className="flex items-center mb-4">
@@ -224,7 +224,7 @@ function ClassDetailsPage() {
                                 </h2>
                             </div>
 
-                            <p className="text-gray-200 mb-4 flex items-start">
+                            <p className="text-secondary-text mb-4 flex items-start">
                                 <span className="w-8 h-8 rounded-full bg-[#69e8cb]/20 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">
                                     <FaBook className="text-[#69e8cb] text-sm" />
                                 </span>
@@ -232,7 +232,7 @@ function ClassDetailsPage() {
                                 <span className="text-secondary-text">{classDetails.description}</span>
                             </p>
 
-                            <p className="text-gray-200 mb-4 flex items-start">
+                            <p className="text-secondary-text mb-4 flex items-start">
                                 <span className="w-8 h-8 rounded-full bg-[#9570d9]/20 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">
                                     <FaChalkboardTeacher className="text-[#9570d9] text-sm" />
                                 </span>
@@ -241,7 +241,7 @@ function ClassDetailsPage() {
                             </p>
                             {user?.role === 'aluno' && classDetails.enrollment_code && (
                                 <div className="bg-primary-bg/50 p-4 rounded-xl border border-[#4a525a] mt-5">
-                                    <p className="text-gray-200 flex items-center">
+                                    <p className="text-secondary-text flex items-center">
                                         <span className="w-8 h-8 rounded-full bg-[#ffbd30]/20 flex items-center justify-center mr-3 flex-shrink-0">
                                             <FaUserGraduate className="text-[#ffbd30]" />
                                         </span>
@@ -257,7 +257,7 @@ function ClassDetailsPage() {
 
                             {user?.role === 'professor' && (
                                 <div className="bg-primary-bg/50 p-4 rounded-xl border border-[#4a525a] mt-5">
-                                    <p className="text-gray-200 flex items-center">
+                                    <p className="text-secondary-text flex items-center">
                                         <span className="w-8 h-8 rounded-full bg-[#ffbd30]/20 flex items-center justify-center mr-3 flex-shrink-0">
                                             <FaUserGraduate className="text-[#ffbd30]" />
                                         </span>
@@ -298,12 +298,12 @@ function ClassDetailsPage() {
                         </h2>
                     </div>
                     {students.length > 0 ? (
-                        <div className="bg-[#3a4046] p-6 rounded-2xl shadow-2xl border border-[#4a525a]">
+                        <div className="bg-secondary-bg p-6 rounded-2xl shadow-2xl border border-[#4a525a]">
                             <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                                 {students.map((student) => (
                                     <li key={student.id} className="bg-primary-bg p-3 rounded-lg flex items-center">
                                         <FaUserGraduate className="text-secondary-text mr-3" />
-                                        <span className="text-gray-200">{student.name}</span>
+                                        <span className="text-secondary-text">{student.name}</span>
                                     </li>
                                 ))}
                             </ul>
@@ -331,7 +331,7 @@ function ClassDetailsPage() {
                             ))}
                         </div>
                     ) : (
-                        <div className="bg-[#3a4046] p-10 rounded-2xl shadow-2xl border border-[#4a525a] text-center">
+                        <div className="bg-secondary-bg p-10 rounded-2xl shadow-2xl border border-[#4a525a] text-center">
                             <div className="max-w-md mx-auto">
                                 <div className="w-20 h-20 mx-auto bg-gradient-to-br from-[#9570d9] to-[#7a55c4] rounded-full flex items-center justify-center mb-5">
                                     <FaBook className="text-3xl text-primary-text" />

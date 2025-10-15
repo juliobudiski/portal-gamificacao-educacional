@@ -150,7 +150,7 @@ function QuizEditorPage() {
                     </div>
                 </div>
 
-                <div className="bg-gray-800 p-6 rounded-2xl shadow-xl shadow-gray-900/50 mb-8 border border-gray-700">
+                <div className="bg-primary-bg p-6 rounded-2xl shadow-xl shadow-gray-900/50 mb-8 border border-border-color">
                     <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
                         <FaEdit />
                         {editingIndex !== null ? 'Editando Pergunta' : 'Nova Pergunta'}
@@ -166,7 +166,7 @@ function QuizEditorPage() {
                                 value={currentQuestion.text}
                                 onChange={handleInputChange}
                                 placeholder="Digite o texto da pergunta..."
-                                className="w-full p-3 bg-gray-700 rounded-xl border border-gray-600 focus:border-[#ffbd30] focus:ring-2 focus:ring-[#ffbd30]/30 transition-all duration-300"
+                                className="w-full p-3 bg-border-color rounded-xl border border-gray-600 focus:border-[#ffbd30] focus:ring-2 focus:ring-[#ffbd30]/30 transition-all duration-300"
                             />
                         </div>
 
@@ -182,7 +182,7 @@ function QuizEditorPage() {
                                         value={option}
                                         onChange={(e) => handleInputChange(e, index)}
                                         placeholder={`Opção ${index + 1}`}
-                                        className="flex-1 p-3 bg-gray-700 rounded-xl border border-gray-600 focus:border-[#ffbd30] focus:ring-2 focus:ring-[#ffbd30]/30 transition-all duration-300"
+                                        className="flex-1 p-3 bg-border-color rounded-xl border border-gray-600 focus:border-[#ffbd30] focus:ring-2 focus:ring-[#ffbd30]/30 transition-all duration-300"
                                     />
                                 </div>
                             ))}
@@ -197,7 +197,7 @@ function QuizEditorPage() {
                                     name="correct_option"
                                     value={currentQuestion.correct_option}
                                     onChange={handleInputChange}
-                                    className="w-full p-3 bg-gray-700 rounded-xl border border-gray-600 focus:border-[#ffbd30] focus:ring-2 focus:ring-[#ffbd30]/30 transition-all duration-300"
+                                    className="w-full p-3 bg-border-color rounded-xl border border-gray-600 focus:border-[#ffbd30] focus:ring-2 focus:ring-[#ffbd30]/30 transition-all duration-300"
                                 >
                                     <option value="">Selecione a resposta correta</option>
                                     {currentQuestion.options.map((opt, i) => (opt && <option key={`${opt}-${i}`} value={opt}>{opt}</option>))}
@@ -213,7 +213,7 @@ function QuizEditorPage() {
                                     name="points"
                                     value={currentQuestion.points}
                                     onChange={handleInputChange}
-                                    className="w-full p-3 bg-gray-700 rounded-xl border border-gray-600 focus:border-[#ffbd30] focus:ring-2 focus:ring-[#ffbd30]/30 transition-all duration-300"
+                                    className="w-full p-3 bg-border-color rounded-xl border border-gray-600 focus:border-[#ffbd30] focus:ring-2 focus:ring-[#ffbd30]/30 transition-all duration-300"
                                 />
                             </div>
 
@@ -227,7 +227,7 @@ function QuizEditorPage() {
                                     name="coins"
                                     value={currentQuestion.coins}
                                     onChange={handleInputChange}
-                                    className="w-full p-3 bg-gray-700 rounded-xl border border-gray-600 focus:border-[#ffbd30] focus:ring-2 focus:ring-[#ffbd30]/30 transition-all duration-300"
+                                    className="w-full p-3 bg-border-color rounded-xl border border-gray-600 focus:border-[#ffbd30] focus:ring-2 focus:ring-[#ffbd30]/30 transition-all duration-300"
                                 />
                             </div>
 
@@ -242,7 +242,7 @@ function QuizEditorPage() {
                                         name="timeLimit"
                                         value={currentQuestion.timeLimit}
                                         onChange={handleInputChange}
-                                        className="w-full p-3 bg-gray-700 rounded-xl border border-gray-600 focus:border-[#ffbd30] focus:ring-2 focus:ring-[#ffbd30]/30 transition-all duration-300"
+                                        className="w-full p-3 bg-border-color rounded-xl border border-gray-600 focus:border-[#ffbd30] focus:ring-2 focus:ring-[#ffbd30]/30 transition-all duration-300"
                                     />
                                 </div>
                             )}
@@ -272,7 +272,7 @@ function QuizEditorPage() {
                             {questions.map((q, index) => (
                                 <div
                                     key={index}
-                                    className="bg-gray-800 p-4 rounded-xl flex justify-between items-center border border-gray-700 shadow-lg hover:shadow-xl transition-shadow duration-300"
+                                    className="bg-primary-bg p-4 rounded-xl flex justify-between items-center border border-border-color shadow-lg hover:shadow-xl transition-shadow duration-300"
                                 >
                                     <div className="flex-1">
                                         <div className="flex items-start">
@@ -282,21 +282,21 @@ function QuizEditorPage() {
                                             <div>
                                                 <p className="font-medium">{q.text}</p>
                                                 <div className="flex flex-wrap gap-2 mt-2">
-                                                    <span className="bg-gray-700 px-2 py-1 rounded-lg text-xs flex items-center">
+                                                    <span className="bg-border-color px-2 py-1 rounded-lg text-xs flex items-center">
                                                         <FaCheck className="mr-1 text-[#69e8cb]" />
                                                         {q.correct_option}
                                                     </span>
-                                                    <span className="bg-gray-700 px-2 py-1 rounded-lg text-xs flex items-center">
+                                                    <span className="bg-border-color px-2 py-1 rounded-lg text-xs flex items-center">
                                                         <FaStar className="mr-1 text-[#69e8cb]" />
                                                         {q.points} pontos
                                                     </span>
-                                                    <span className="bg-gray-700 px-2 py-1 rounded-lg text-xs flex items-center">
+                                                    <span className="bg-border-color px-2 py-1 rounded-lg text-xs flex items-center">
                                                         <FaGem className="mr-1 text-[#ffbd30]" />
                                                         {q.coins || 0} moedas
                                                     </span>
                                                     {/* ATUALIZADO: Mostra o tempo limite apenas se for relevante */}
                                                     {isTimed && (
-                                                        <span className="bg-gray-700 px-2 py-1 rounded-lg text-xs flex items-center">
+                                                        <span className="bg-border-color px-2 py-1 rounded-lg text-xs flex items-center">
                                                             <FaClock className="mr-1 text-[#69e8cb]" />
                                                             {q.timeLimit}s
                                                         </span>
@@ -329,7 +329,7 @@ function QuizEditorPage() {
 
                 {/* Salvar Alterações */}
                 {questions.length > 0 && (
-                    <div className="mt-8 pt-4 border-t border-gray-700">
+                    <div className="mt-8 pt-4 border-t border-border-color">
                         <button
                             onClick={handleSaveChanges}
                             className="bg-gradient-to-r from-[#69e8cb] to-[#49d0b0] hover:from-[#49d0b0] hover:to-[#69e8cb] text-primary-text font-bold text-lg py-3 px-6 rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 w-full md:w-auto group"

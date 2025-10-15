@@ -93,23 +93,23 @@ function DashboardOverviewPage() {
 
       {dashboardData && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-gray-800/50 p-6 rounded-xl"><Users className="text-accent-teal mb-2" size={24} /> <p className="text-secondary-text">Total de Usuários</p> <p className="text-2xl font-bold text-primary-text">{dashboardData.total_users}</p></div>
-          <div className="bg-gray-800/50 p-6 rounded-xl"><UserIcon className="text-accent-purple mb-2" size={24} /> <p className="text-secondary-text">Total de Professores</p> <p className="text-2xl font-bold text-primary-text">{dashboardData.total_professors}</p></div>
-          <div className="bg-gray-800/50 p-6 rounded-xl"><GraduationCap className="text-accent-yellow mb-2" size={24} /> <p className="text-secondary-text">Total de Alunos</p> <p className="text-2xl font-bold text-primary-text">{dashboardData.total_students}</p></div>
-          <div className="bg-gray-800/50 p-6 rounded-xl"><BookOpen className="text-blue-400 mb-2" size={24} /> <p className="text-secondary-text">Total de Atividades</p> <p className="text-2xl font-bold text-primary-text">{dashboardData.total_activities}</p></div>
+          <div className="bg-primary-bg/50 p-6 rounded-xl"><Users className="text-accent-teal mb-2" size={24} /> <p className="text-secondary-text">Total de Usuários</p> <p className="text-2xl font-bold text-primary-text">{dashboardData.total_users}</p></div>
+          <div className="bg-primary-bg/50 p-6 rounded-xl"><UserIcon className="text-accent-purple mb-2" size={24} /> <p className="text-secondary-text">Total de Professores</p> <p className="text-2xl font-bold text-primary-text">{dashboardData.total_professors}</p></div>
+          <div className="bg-primary-bg/50 p-6 rounded-xl"><GraduationCap className="text-accent-yellow mb-2" size={24} /> <p className="text-secondary-text">Total de Alunos</p> <p className="text-2xl font-bold text-primary-text">{dashboardData.total_students}</p></div>
+          <div className="bg-primary-bg/50 p-6 rounded-xl"><BookOpen className="text-blue-400 mb-2" size={24} /> <p className="text-secondary-text">Total de Atividades</p> <p className="text-2xl font-bold text-primary-text">{dashboardData.total_activities}</p></div>
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-gray-800/50 p-6 rounded-xl">
+        <div className="lg:col-span-2 bg-primary-bg/50 p-6 rounded-xl">
           <h2 className="text-xl font-bold text-primary-text mb-4">Crescimento de Usuários (Últimos 30 dias)</h2>
           <UserGrowthChart data={userGrowthData} />
         </div>
-        <div className="lg:col-span-1 bg-gray-800/50 p-6 rounded-xl">
+        <div className="lg:col-span-1 bg-primary-bg/50 p-6 rounded-xl">
           <h2 className="text-xl font-bold text-primary-text mb-4">Atividade Recente</h2>
           <RecentActivityFeed feedItems={activityFeed} />
         </div>
-        <div className="lg:col-span-3 bg-gray-800/50 p-6 rounded-xl">
+        <div className="lg:col-span-3 bg-primary-bg/50 p-6 rounded-xl">
           <h2 className="text-xl font-bold text-primary-text mb-4">Top 5 Atividades Mais Copiadas</h2>
           <TopActivitiesChart data={topActivitiesData} />
         </div>

@@ -9,7 +9,7 @@ const FinalRewardTab = ({ reward, onCollect, onReturnToBoard }) => {
             <h2 className="text-4xl font-bold mb-2">{reward?.celebrationText || 'Atividade Concluída!'}</h2>
             <p className="text-lg text-secondary-text mb-6">Você superou todos os desafios desta jornada. Veja sua recompensa!</p>
 
-            <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-6 max-w-md mx-auto mb-8">
+            <div className="bg-primary-bg/50 border border-border-color rounded-lg p-6 max-w-md mx-auto mb-8">
                 <h3 className="text-xl font-semibold text-green-400 mb-3">Recompensa Final</h3>
                 <p className="text-3xl font-bold">
                     {/* Exibe a recompensa baseada no tipo */}

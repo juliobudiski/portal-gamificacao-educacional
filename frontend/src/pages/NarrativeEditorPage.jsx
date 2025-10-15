@@ -228,7 +228,7 @@ function NarrativeEditorPage() {
         return (
             <>
                 {/* Seção de Cenário */}
-                <div className="bg-gray-800 p-6 rounded-2xl shadow-xl mb-8">
+                <div className="bg-primary-bg p-6 rounded-2xl shadow-xl mb-8">
                     <h3 className="text-xl font-bold mb-4 flex items-center gap-2"><FaImage /> Selecionar Cenário</h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {SCENARIOS.map(url => (
@@ -241,27 +241,27 @@ function NarrativeEditorPage() {
                 </div>
 
                 {/* Seção de Personagens */}
-                <div className="bg-gray-800 p-6 rounded-2xl shadow-xl mb-8">
+                <div className="bg-primary-bg p-6 rounded-2xl shadow-xl mb-8">
                     <h3 className="text-xl font-bold mb-4 flex items-center gap-2"><FaUserCircle /> Selecionar e Nomear Personagens</h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                         {CHARACTERS.map(url => (
                             <div key={url} onClick={() => handleToggleCharacter(url)}
                                 className={`rounded-full border-4 cursor-pointer transition-all duration-300 ${narrativeConfig.characters.some(c => c.image === url) ? 'border-green-400 scale-105' : 'border-transparent hover:border-green-400/50'}`}>
-                                <img src={url} alt={`Personagem ${url}`} className="w-32 h-32 object-contain rounded-full bg-gray-700/50" />
+                                <img src={url} alt={`Personagem ${url}`} className="w-32 h-32 object-contain rounded-full bg-border-color/50" />
                             </div>
                         ))}
                     </div>
                     {narrativeConfig.characters.length > 0 && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-gray-700 pt-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-border-color pt-4">
                             {narrativeConfig.characters.map((char, index) => (
                                 <div key={index} className="flex items-center gap-3">
-                                    <img src={char.image} alt="" className="w-16 h-16 rounded-full bg-gray-700" />
+                                    <img src={char.image} alt="" className="w-16 h-16 rounded-full bg-border-color" />
                                     <input
                                         type="text"
                                         value={char.role}
                                         onChange={(e) => handleRoleChange(index, e.target.value)}
                                         placeholder="Nome do Papel (ex: Instrutor)"
-                                        className="w-full p-2 bg-gray-700 rounded-xl border border-gray-600"
+                                        className="w-full p-2 bg-border-color rounded-xl border border-gray-600"
                                     />
                                 </div>
                             ))}
@@ -270,11 +270,11 @@ function NarrativeEditorPage() {
                 </div>
 
                 {/* Seção de Diálogo */}
-                <div className="bg-gray-800 p-6 rounded-2xl shadow-xl mb-8">
+                <div className="bg-primary-bg p-6 rounded-2xl shadow-xl mb-8">
                     <h3 className="text-xl font-bold mb-4">Criar Diálogo</h3>
                     <div className="space-y-4">
                         {narrativeConfig.dialogue.map((line, index) => (
-                            <div key={index} className="flex items-center gap-3 p-3 bg-gray-700/50 rounded-lg">
+                            <div key={index} className="flex items-center gap-3 p-3 bg-border-color/50 rounded-lg">
                                 <select
                                     value={line.characterRole}
                                     onChange={(e) => handleDialogueChange(index, 'characterRole', e.target.value)}
@@ -306,7 +306,7 @@ function NarrativeEditorPage() {
                 </div>
 
                 {/* Salvar */}
-                <div className="mt-8 pt-4 border-t border-gray-700">
+                <div className="mt-8 pt-4 border-t border-border-color">
                     <button onClick={handleSaveChanges} disabled={loading}
                         className="bg-gradient-to-r from-[#69e8cb] to-[#49d0b0] text-primary-text font-bold text-lg py-3 px-6 rounded-xl flex items-center">
                         <FaSave className="mr-2" /> {loading ? 'Salvando...' : 'Salvar Narrativa'}
