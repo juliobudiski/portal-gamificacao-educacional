@@ -70,6 +70,7 @@ class Activity(db.Model):
     forum_topics = db.relationship('ForumTopic', backref='activity', lazy=True, cascade="all, delete-orphan")
 
     def to_dict(self):
+        design = self.gamification_design or {}
         return {
             'id': self.id,
             'professor_id': self.professor_id,
@@ -94,7 +95,11 @@ class Activity(db.Model):
             'class_name': self.class_obj.name if self.class_obj else None,
             'copy_count': self.copy_count,
             'assignment_count': self.assignment_count,
-            'gamificationDesign': self.gamification_design
+            'gamificationDesign': {
+                'theme': design.get('theme', 'vila_da_aventura'), # Adicione um padrão
+                'progression_path': design.get('progression_path', []),
+                'hub_elements': design.get('hub_elements', [])
+            }
         }
 
 # --- NOVAS TABELAS PARA CONTEÚDO DOS PASSOS ---

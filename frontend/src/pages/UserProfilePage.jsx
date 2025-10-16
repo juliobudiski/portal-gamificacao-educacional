@@ -18,48 +18,108 @@ const ProfileCard = ({ icon, title, children, className }) => (
 );
 
 function UserProfilePage() {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUserData, getToken } = useAuth();
   const navigate = useNavigate();
   const { logEvent } = useAnalytics('user_profile', user?.token);
 
   const [locationInfo, setLocationInfo] = useState(null);
   const [locationStatus, setLocationStatus] = useState('');
   const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const handleUpdateAvatar = async (avatarUrl) => {
+    console.log("Selecionado novo avatar:", avatarUrl);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/user/avatar`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getToken()}`
+        },
+        body: JSON.stringify({ avatar_url: avatarUrl })
+      });
 
+      if (!response.ok) {
+        throw new Error('Falha ao atualizar o avatar.');
+      }
+
+      const data = await response.json();
+      updateUserData(data); // Atualiza o contexto com o novo token que contém a foto atualizada
+      setShowAvatarModal(false); // Fecha o modal após o sucesso
+
+    } catch (error) {
+      console.error("Erro ao atualizar avatar:", error);
+      // Adicione um feedback visual para o usuário aqui, se desejar
+    }
+  };
+  const hasLocationAvatar = React.useMemo(() => {
+    if (!user?.unlocked_global_avatars) return false;
+    // O ideal é verificar pela URL, que é um identificador mais único que o nome.
+    return user.unlocked_global_avatars.some(avatar => avatar.url.includes('avatar3.webp'));
+  }, [user?.unlocked_global_avatars]);
   // Efeito para buscar as informações de localização do usuário
   useEffect(() => {
     const fetchLocationInfo = async () => {
-      if (!user?.token) return;
+      // Evita chamadas desnecessárias se o token não existir
+      const token = getToken();
+      if (!token) return;
+
       try {
         const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/user/location-info`, {
-          headers: { 'Authorization': `Bearer ${user.token}` }
+          headers: { 'Authorization': `Bearer ${token}` }
         });
         if (response.ok) {
           const data = await response.json();
+          // Se data for null (porque ainda não há lat/lon), o estado continua null
           setLocationInfo(data);
         }
       } catch (error) {
         console.error("Erro ao buscar informações de localização:", error);
       }
     };
-    fetchLocationInfo();
-  }, [user]);
+
+    // A condição é: se o usuário TEM o avatar, ENTÃO busque as informações de localização.
+    if (hasLocationAvatar) {
+      fetchLocationInfo();
+    }
+    // A dependência em `hasLocationAvatar` garante que esta lógica rode
+    // tanto no carregamento da página quanto logo após o avatar ser desbloqueado.
+  }, [hasLocationAvatar, getToken]);
 
   const handleForceLocationRequest = useCallback(() => {
     setLocationStatus('Solicitando permissão...');
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
         const { latitude, longitude } = position.coords;
-        logEvent("location_access_granted", { latitude, longitude });
-        setLocationStatus('Localização compartilhada com sucesso! Recarregue a página para ver seu prêmio e sua cidade.');
-        alert('Recompensa desbloqueada! Seu novo avatar estará disponível na sua galeria.');
+        setLocationStatus('Permissão concedida! Desbloqueando sua recompensa...');
+
+        try {
+          const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/user/unlock-location-avatar`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json', // Essencial para o backend entender o body
+              'Authorization': `Bearer ${getToken()}`
+            },
+            // Enviando as coordenadas no corpo da requisição
+            body: JSON.stringify({ latitude, longitude })
+          });
+
+          if (!response.ok) throw new Error('Falha ao resgatar a recompensa.');
+
+          const data = await response.json();
+          updateUserData(data); // Isso atualiza o `user`, que atualiza `hasLocationAvatar`, que dispara o useEffect acima.
+
+          alert('Recompensa desbloqueada! Seu novo avatar está na sua galeria.');
+          setLocationStatus('Recompensa desbloqueada!');
+
+        } catch (error) {
+          console.error("Erro ao desbloquear avatar de localização:", error);
+          setLocationStatus('Ocorreu um erro ao tentar resgatar sua recompensa.');
+        }
       },
       (error) => {
-        logEvent("location_access_denied", { code: error.code, message: error.message });
         setLocationStatus(`Erro ao obter localização: ${error.message}`);
       }
     );
-  }, [logEvent]);
+  }, [getToken, updateUserData]);
 
   const handleLogout = () => {
     logout();
@@ -80,7 +140,7 @@ function UserProfilePage() {
     <>
       {showAvatarModal && (
         <AvatarSelectionModal
-          onSelect={(avatarUrl) => { /* Adicionar lógica de updateAvatar aqui */ }}
+          onSelect={handleUpdateAvatar}
           onClose={() => setShowAvatarModal(false)}
         />
       )}
@@ -123,18 +183,27 @@ function UserProfilePage() {
             {/* Coluna Direita: Detalhes e Configurações */}
             <div className="md:col-span-2 space-y-8">
               <ProfileCard icon={<FaMapMarkerAlt className="mr-3" />} title="Localização">
-                {locationInfo ? (
-                  <div>
-                    <p className="text-secondary-text">Sua localização registrada é:</p>
-                    <p className="text-lg font-semibold text-primary-text">{`${locationInfo.city}, ${locationInfo.state} - ${locationInfo.country}`}</p>
-                  </div>
+                {hasLocationAvatar ? (
+                  // CASO 1: O usuário JÁ TEM o avatar "Explorador"
+                  locationInfo ? (
+                    // Mostra a localização que foi buscada pelo useEffect
+                    <div>
+                      <p className="text-secondary-text">Sua localização registrada é:</p>
+                      <p className="text-lg font-semibold text-primary-text">{`${locationInfo.city}, ${locationInfo.state} - ${locationInfo.country}`}</p>
+                    </div>
+                  ) : (
+                    // Mensagem de fallback enquanto a localização está sendo carregada ou se falhar
+                    <p className="text-secondary-text">Carregando informações de localização...</p>
+                  )
                 ) : (
+                  // CASO 2: O usuário AINDA NÃO TEM o avatar "Explorador"
+                  // Mostra o card de recompensa com o botão
                   <div>
                     <div className="flex items-center p-4 bg-yellow-500/10 border-l-4 border-yellow-400 rounded-lg">
                       <FaGift className="text-yellow-400 text-2xl mr-4" />
                       <div>
                         <h4 className="font-bold text-primary-text">Ganhe um Avatar Exclusivo!</h4>
-                        <p className="text-secondary-text text-sm">Compartilhe sua localização para desbloquear o avatar "Explorador Global". Seus dados são confidenciais.</p>
+                        <p className="text-secondary-text text-sm">Compartilhe sua localização para desbloquear o avatar "Explorador".</p>
                       </div>
                     </div>
                     <button onClick={handleForceLocationRequest} className="mt-4 w-full py-2 px-4 bg-accent-teal text-primary-text font-semibold rounded-lg hover:bg-accent-teal/80">

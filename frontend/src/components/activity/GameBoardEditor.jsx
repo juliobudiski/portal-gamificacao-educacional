@@ -109,10 +109,10 @@ function GameBoardEditor({ gamificationDesign = { theme: 'vila_da_aventura', pro
                 <select
                     value={gamificationDesign.theme || 'vila_da_aventura'}
                     onChange={(e) => updateDesign('theme', e.target.value)}
-                    className="w-full md:w-1/3 p-2 bg-secondary-bg dark:bg-primary-bg border border-border-color dark:border-gray-600 rounded-md shadow-sm"
+                    className="w-full md:w-1/3 p-2 bg-secondary-bg ..."
                 >
-                    <option value="fluxograma">Fluxograma Simples</option>
                     <option value="vila_da_aventura">Vila da Aventura (Imersivo)</option>
+                    <option value="fluxograma">Fluxograma Simples</option>
                 </select>
             </div>
 

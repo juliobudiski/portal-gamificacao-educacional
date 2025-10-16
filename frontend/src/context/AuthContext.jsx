@@ -37,6 +37,7 @@ const getUserFromToken = (token) => {
       profile_picture: decoded.profile_picture,
       institutionName: decoded.institutionName,
       discipline: decoded.discipline,
+      unlocked_global_avatars: decoded.unlocked_global_avatars, // Extrai os avatares do token
       token: token
     };
   } catch (error) {

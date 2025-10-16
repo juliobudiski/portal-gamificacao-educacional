@@ -9,16 +9,21 @@ from flask_cors import cross_origin
 from google.oauth2 import id_token
 from google.auth.transport import requests
 import requests
+from datetime import datetime
 from sqlalchemy.orm.attributes import flag_modified
 auth_bp = Blueprint('auth', __name__)
 # --- ESTRUTURA DOS AVATARES PADRÃO ---
 # Defina esta lista no topo do arquivo para ser reutilizada
 DEFAULT_AVATARS = [
+    {"url": "/avatars/avatar1.webp", "name": "Avatar Básico 1", "type": "normal"},
     {"url": "/avatars/avatar2.webp", "name": "Avatar Básico 2", "type": "normal"},
+    {"url": "/avatars/avatar6.webp", "name": "Avatar Básico 6", "type": "normal"},
+    {"url": "/avatars/avatar7.webp", "name": "Avatar Básico 7", "type": "normal"},
     {"url": "/avatars/avatar8.webp", "name": "Avatar Básico 8", "type": "normal"},
     {"url": "/avatars/avatar9.webp", "name": "Avatar Básico 9", "type": "normal"},
+    {"url": "/avatars/default_avatar.webp", "name": "Avatar Padrão", "type": "normal"},
 ]
-DEFAULT_PROFILE_PICTURE = "/avatars/avatar9.webp"
+DEFAULT_PROFILE_PICTURE = "/avatars/default_avatar.webp"
 # --- 2. FUNÇÃO AUXILIAR PARA LOGGING DE AUTENTICAÇÃO ---
 def _log_auth_event(user_id, action, details, is_success=True):
     """
@@ -133,7 +138,8 @@ def login_user():
             "email": user.email, "name": user.name, "role": user.role,
             "profile_picture": user.profile_picture,
             "institutionName": user.institution_name,
-            "discipline": user.discipline
+            "discipline": user.discipline,
+            "unlocked_global_avatars": user.unlocked_global_avatars
         }
         access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
         
@@ -296,7 +302,9 @@ def update_profile():
             "role": user.role,
             "profile_picture": user.profile_picture,
             "institutionName": user.institution_name, # <-- AGORA PEGA O VALOR ATUALIZADO
-            "discipline": user.discipline # <-- AGORA PEGA O VALOR ATUALIZADO
+            "discipline": user.discipline, # <-- AGORA PEGA O VALOR ATUALIZADO
+            "unlocked_global_avatars": user.unlocked_global_avatars
+            
         }
         new_access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
 
@@ -444,3 +452,88 @@ def get_user_location_info():
     except requests.exceptions.RequestException as e:
         current_app.logger.error(f"Falha na geocodificação para o usuário {user.id}: {e}")
         return jsonify({"message": "Erro ao buscar informações de localização."}), 500
+    
+    
+@auth_bp.route('/user/avatar', methods=['PUT'])
+@jwt_required()
+def update_avatar():
+    """
+    Atualiza a foto de perfil do usuário logado.
+    """
+    user_id = get_jwt_identity()
+    data = request.get_json()
+    new_avatar_url = data.get('avatar_url')
+
+    if not new_avatar_url:
+        return jsonify({"msg": "URL do avatar é obrigatória."}), 400
+
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"msg": "Usuário não encontrado."}), 404
+
+    user.profile_picture = new_avatar_url
+    db.session.commit()
+
+    # Gera um novo token com os dados atualizados para o frontend
+    additional_claims = {
+        "email": user.email,
+        "name": user.name,
+        "role": user.role,
+        "profile_picture": user.profile_picture,
+        "unlocked_global_avatars": user.unlocked_global_avatars
+    }
+    access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
+    
+    return jsonify(access_token=access_token), 200    
+
+
+@auth_bp.route('/user/unlock-location-avatar', methods=['POST'])
+@jwt_required()
+def unlock_location_avatar():
+    user_id = get_jwt_identity()
+    data = request.get_json()
+    latitude = data.get('latitude')
+    longitude = data.get('longitude')
+
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"msg": "Usuário não encontrado."}), 404
+
+    # --- INÍCIO DA MODIFICAÇÃO ---
+    # Salva as coordenadas e a data da atualização no perfil do usuário
+    if latitude and longitude:
+        user.last_known_latitude = latitude
+        user.last_known_longitude = longitude
+        user.last_location_update = datetime.utcnow()
+    # --- FIM DA MODIFICAÇÃO ---
+
+    # Lógica para desbloquear o avatar (permanece a mesma)
+    location_avatar = {
+        "url": "/avatars/avatar_special.webp",
+        "name": "Explorador",
+        "type": "special"
+    }
+
+    if not user.unlocked_global_avatars:
+        user.unlocked_global_avatars = []
+
+    if location_avatar not in user.unlocked_global_avatars:
+        from sqlalchemy.orm.attributes import flag_modified
+        user.unlocked_global_avatars.append(location_avatar)
+        flag_modified(user, "unlocked_global_avatars")
+    
+    db.session.commit() # Salva as alterações (localização e avatar) no banco
+
+    # Geração do novo token (permanece a mesma)
+    additional_claims = {
+        "email": user.email,
+        "name": user.name,
+        "role": user.role,
+        "profile_picture": user.profile_picture,
+        "institutionName": user.institution_name,
+        "discipline": user.discipline,
+        "unlocked_global_avatars": user.unlocked_global_avatars
+    }
+    access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
+    
+    return jsonify(access_token=access_token), 200
