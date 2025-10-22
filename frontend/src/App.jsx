@@ -45,7 +45,12 @@ import SystemAnalyticsPage from './pages/admin/SystemAnalyticsPage';
 import LogExplorerPage from './pages/admin/LogExplorerPage';
 import LocationMapPage from './pages/admin/LocationMapPage';
 // --- 2. COMPONENTES AUXILIARES ---
-
+const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === 'true';
+const debugLog = (message, ...optionalParams) => {
+  if (DEBUG_MODE) {
+    console.debug(`[App] ${message}`, ...optionalParams);
+  }
+};
 // (O componente GeolocationPrompt permanece o mesmo)
 const GeolocationPrompt = ({ onAccept }) => (
   <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[999] p-4">
@@ -78,7 +83,8 @@ function AppContent() {
   const [isStudentMenuOpen, setIsStudentMenuOpen] = useState(false);
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
   const locationRequestedRef = useRef(false);
-
+  const [loadingAuth, setLoadingAuth] = useState(true); // Começa true até a verificação inicial
+  debugLog('AppContent: Renderizando...', { user, isAuthenticated, loadingAuth });
   const closeAllMenus = () => {
     setIsProfileMenuOpen(false);
     setIsTeacherMenuOpen(false);
@@ -86,6 +92,7 @@ function AppContent() {
   };
 
   const handleLogout = () => {
+    debugLog('AppContent: Chamando logout.');
     logout();
     closeAllMenus();
     navigate('/');
@@ -105,10 +112,15 @@ function AppContent() {
 
   useEffect(() => {
     if (user && !locationRequestedRef.current) {
+      debugLog('AppContent (useEffect [user]): Usuário autenticado. Agendando prompt de localização.');
       locationRequestedRef.current = true;
-      setTimeout(() => setShowLocationPrompt(true), 2000);
+      setTimeout(() => {
+        debugLog('AppContent (useEffect [user] - setTimeout): Mostrando prompt de localização.');
+        setShowLocationPrompt(true);
+      }, 2000);
     }
     if (!isAuthenticated) {
+      debugLog('AppContent (useEffect [user]): Usuário não autenticado. Resetando flag do prompt de localização.');
       locationRequestedRef.current = false;
     }
   }, [user, isAuthenticated]);

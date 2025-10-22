@@ -1,101 +1,48 @@
 import React from 'react';
-import { FaPlus, FaTrash, FaPen, FaToggleOn, FaToggleOff, FaStar, FaRoute, FaCity } from 'react-icons/fa';
+import { FaPlus, FaTrash, FaPen, FaToggleOn, FaToggleOff, FaRoute, FaCity } from 'react-icons/fa';
+import { elementConfig } from './GameBoardConfig';
 
-// Configuração completa dos elementos do tabuleiro
-const elementConfig = {
-    path: {
-        narrative: { icon: 'narrative_board.webp', name: 'Narrativa' },
-        quiz: { icon: 'quiz_board.webp', name: 'Quiz' },
-    },
-    hub: {
-        roulette: { icon: 'roleta_board.webp', name: 'Roleta' },
-        slot_machine: { icon: 'slotmachine_board.webp', name: 'Caça-níquel' },
-        ranking: { icon: 'ranking_board.webp', name: 'Ranking' },
-        badges: { icon: 'badges_board.webp', name: 'Medalhas' },
-        chat: { icon: 'chat_board.webp', name: 'Chat' },
-        store: { icon: 'store_board.webp', name: 'Loja' },
-        mission: { icon: 'mission_character_board.webp', name: 'Missão' },
-    }
-};
-
-const hasContent = (step) => {
-    if (step.content) {
-        if (step.content.type === 'quiz') {
-            return step.content.questions && step.content.questions.length > 0;
-        } else if (step.content.type === 'narrative') {
-            return step.content.dialogue && step.content.dialogue.length > 0;
-        }
-    }
-    return false;
-};
-
-/**
- * @component GameBoardEditor
- * @param {Object} props
- * @param {Object} props.gamificationDesign - O objeto de design da gamificação.
- * @param {Function} props.setActivityData - Função para atualizar o estado da atividade.
- * @param {Function} props.onEditContent - Função para abrir a página de edição de um passo.
- */
-// --- CORREÇÃO APLICADA AQUI ---
-// Adicionamos um valor padrão para a prop 'gamificationDesign'.
-// Se ela for 'undefined', o componente usará este objeto padrão, evitando o crash.
 function GameBoardEditor({ gamificationDesign = { theme: 'vila_da_aventura', progression_path: [], hub_elements: [] }, setActivityData, onEditContent, onStructureChange }) {
 
-    console.log("%cLOG 5: PROP 'gamificationDesign' RECEBIDA NO EDITOR", "color: red; font-weight: bold;", gamificationDesign);
-    const path_to_render = gamificationDesign?.progression_path || [];
-    console.log("%cLOG 6: 'progression_path' QUE SERÁ USADO PARA RENDERIZAR", "color: brown; font-weight: bold;", path_to_render);
-
-
     const updateDesign = (key, value) => {
+        const newDesign = { ...(gamificationDesign || {}), [key]: value };
         setActivityData(prev => ({
             ...prev,
-            gamificationDesign: {
-                ...(prev.gamificationDesign || {}),
-                [key]: value,
-            }
+            gamificationDesign: newDesign,
         }));
+        if (['progression_path', 'hub_elements'].includes(key)) {
+            onStructureChange(newDesign);
+        }
     };
-
-
 
     const addPathStep = (type) => {
-        const newStep = {
-            id: `step_${new Date().getTime()}`,
-            type: type,
-            isMandatory: true,
-            config: {},
-        };
-        const currentPath = gamificationDesign.progression_path || [];
-        const newPath = [...currentPath, newStep];
-        const newDesign = { ...gamificationDesign, progression_path: newPath };
-
-        // Atualiza o estado local primeiro (para a UI ser rápida)
+        const newStep = { id: `step_${new Date().getTime()}`, type, isMandatory: true, content: {} };
+        const newPath = [...(gamificationDesign.progression_path || []), newStep];
         updateDesign('progression_path', newPath);
-        // Dispara o auto-save com o novo design completo
-        onStructureChange(newDesign);
     };
 
-
     const removePathStep = (stepId) => {
-        const newPath = gamificationDesign.progression_path.filter(step => step.id !== stepId);
-        const newDesign = { ...gamificationDesign, progression_path: newPath };
-
+        const newPath = (gamificationDesign.progression_path || []).filter(step => step.id !== stepId);
         updateDesign('progression_path', newPath);
-        onStructureChange(newDesign);
     };
 
     const toggleMandatory = (stepId) => {
-        const newPath = gamificationDesign.progression_path.map(step =>
-            step.id === stepId ? { ...step, isMandatory: !step.isMandatory } : step
-        );
+        const newPath = (gamificationDesign.progression_path || []).map(step => {
+            if (step.id === stepId) {
+                return { ...step, isMandatory: !step.isMandatory };
+            }
+            return step;
+        });
         updateDesign('progression_path', newPath);
     };
 
-    const toggleHubElement = (type) => {
-        const currentHubElements = gamificationDesign.hub_elements || [];
-        const newHubElements = currentHubElements.map(el =>
-            el.type === type ? { ...el, enabled: !el.enabled } : el
-        );
+    const toggleHubElement = (elementType) => {
+        const newHubElements = (gamificationDesign.hub_elements || []).map(element => {
+            if (element.type === elementType) {
+                return { ...element, enabled: !element.enabled };
+            }
+            return element;
+        });
         updateDesign('hub_elements', newHubElements);
     };
 
@@ -109,7 +56,7 @@ function GameBoardEditor({ gamificationDesign = { theme: 'vila_da_aventura', pro
                 <select
                     value={gamificationDesign.theme || 'vila_da_aventura'}
                     onChange={(e) => updateDesign('theme', e.target.value)}
-                    className="w-full md:w-1/3 p-2 bg-secondary-bg ..."
+                    className="w-full md:w-1/3 p-2 bg-secondary-bg rounded-md border border-border-color focus:ring-2 focus:ring-teal-500"
                 >
                     <option value="vila_da_aventura">Vila da Aventura (Imersivo)</option>
                     <option value="fluxograma">Fluxograma Simples</option>
@@ -120,19 +67,21 @@ function GameBoardEditor({ gamificationDesign = { theme: 'vila_da_aventura', pro
                 <div>
                     <h4 className="flex items-center text-lg font-semibold mb-4 text-primary-text dark:text-secondary-text"><FaRoute className="mr-3 text-blue-500" /> Trilha de Progressão</h4>
                     <div className="p-4 bg-secondary-bg/50 dark:bg-primary-bg/30 rounded-lg">
-                        <p className="text-xs text-secondary-text dark:text-secondary-text mb-4">Adicione os passos sequenciais da atividade.</p>
+                        <p className="text-xs text-secondary-text dark:text-secondary-text mb-4">Adicione os passos sequenciais da atividade (Quiz, Narrativa, etc.).</p>
+
                         <div className="flex flex-wrap gap-2 mb-4">
                             {Object.entries(elementConfig.path).map(([type, config]) => (
                                 <button key={type} onClick={() => addPathStep(type)} className="flex items-center p-2 text-sm bg-blue-100 dark:bg-blue-900/50 rounded-md hover:bg-blue-200 dark:hover:bg-blue-900">
-                                    <img src={`/board/${config.icon}`} alt="" className="w-5 h-5 mr-2" /> Adicionar {config.name}
+                                    <img src={config.icon} alt="" className="w-5 h-5 mr-2" /> Adicionar {config.name}
                                 </button>
                             ))}
                         </div>
+
                         <div className="space-y-3">
                             {(gamificationDesign.progression_path || []).map((step, index) => (
                                 <div key={step.id} className="flex items-center p-2 bg-secondary-bg dark:bg-primary-bg rounded-md shadow-sm">
                                     <span className="font-bold text-secondary-text dark:text-secondary-text mr-3">{index + 1}</span>
-                                    <img src={`/board/${elementConfig.path[step.type]?.icon}`} alt="" className="w-8 h-8 mr-3" />
+                                    <img src={elementConfig.path[step.type]?.icon} alt="" className="w-8 h-8 mr-3" />
                                     <div className="flex-grow">
                                         <p className="font-semibold text-primary-text dark:text-secondary-text">{elementConfig.path[step.type]?.name}</p>
                                         <p className={`text-xs font-bold ${step.isMandatory ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}`}>{step.isMandatory ? 'Obrigatório' : 'Opcional'}</p>
@@ -152,22 +101,22 @@ function GameBoardEditor({ gamificationDesign = { theme: 'vila_da_aventura', pro
                 </div>
 
                 <div>
-                    <h4 className="flex items-center text-lg font-semibold mb-4 text-primary-text dark:text-secondary-text"><FaCity className="mr-3 text-yellow-500" /> Hub da Vila</h4>
+                    <h4 className="flex items-center text-lg font-semibold mb-4 text-primary-text dark:text-secondary-text"><FaCity className="mr-3 text-yellow-500" /> Hub e Elementos do Tabuleiro</h4>
                     <div className="p-4 bg-secondary-bg/50 dark:bg-primary-bg/30 rounded-lg">
                         <p className="text-xs text-secondary-text dark:text-secondary-text mb-4">Ative ou desative os pontos de interesse que foram selecionados nos cards de elementos.</p>
                         <div className="space-y-3">
                             {(gamificationDesign.hub_elements || []).map((element) => {
                                 const config = elementConfig.hub[element.type];
-                                if (!config) return null; // Segurança
+                                if (!config) return null;
                                 return (
                                     <div key={element.id} onClick={() => toggleHubElement(element.type)} className="flex items-center p-3 bg-secondary-bg dark:bg-primary-bg rounded-lg shadow-sm cursor-pointer hover:bg-primary-bg dark:hover:bg-border-color">
-                                        <img src={`/board/${config.icon}`} alt={config.name} className="w-8 h-8 mr-3" />
+                                        <img src={config.icon} alt={config.name} className="w-8 h-8 mr-3" />
                                         <span className="flex-grow font-medium text-primary-text dark:text-secondary-text">{config.name}</span>
                                         {element.enabled ? <FaToggleOn className="text-green-500 h-6 w-6" /> : <FaToggleOff className="text-secondary-text h-6 w-6" />}
                                     </div>
                                 );
                             })}
-                            {(!gamificationDesign.hub_elements || gamificationDesign.hub_elements.length === 0) && <p className="text-center text-sm text-secondary-text py-4">Nenhum elemento do hub selecionado nos cards.</p>}
+                            {(!gamificationDesign.hub_elements || gamificationDesign.hub_elements.length === 0) && <p className="text-center text-sm text-secondary-text py-4">Nenhum elemento selecionado na Etapa 5.</p>}
                         </div>
                     </div>
                 </div>

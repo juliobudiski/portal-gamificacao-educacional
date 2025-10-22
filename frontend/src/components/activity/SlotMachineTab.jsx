@@ -79,7 +79,7 @@ const Reel = ({ finalSymbol, isSpinning, delay }) => {
 // ====================================================================
 // 4. COMPONENTE PRINCIPAL 'SlotMachineTab' REFATORADO
 // ====================================================================
-const SlotMachineTab = ({ userCoins, onPrizeWon, winners, loadingWinners, onWin, onReturn }) => {
+const SlotMachineTab = ({ userCoins, onPrizeWon, winners = [], loadingWinners, onWin, onReturn }) => {
   const { user } = useAuth();
   const { activityId } = useParams();
 

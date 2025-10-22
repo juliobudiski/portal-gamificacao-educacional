@@ -1,6 +1,5 @@
-// frontend/src/components/activity/ForumTab.jsx
 import React, { useState, useEffect, useCallback } from 'react';
-import { FaArrowLeft, FaComments, FaPlus, FaTrophy, FaPaperPlane, FaThumbtack, FaHeart, FaRegHeart } from 'react-icons/fa';
+import { FaArrowLeft, FaComments, FaPlus, FaTrophy, FaPaperPlane, FaThumbtack, FaHeart, FaRegHeart, FaSpinner, FaExclamationCircle } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { useParams } from 'react-router-dom';
 
@@ -8,7 +7,6 @@ import { useParams } from 'react-router-dom';
 const formatDate = (isoString) => {
     if (!isoString) return '';
     const date = new Date(isoString);
-    // Formata para "dd/mm/aaaa hh:mm"
     return date.toLocaleString('pt-BR', {
         day: '2-digit',
         month: '2-digit',
@@ -58,8 +56,6 @@ const PostItem = ({ post, isTopicAuthor, onMarkBest, isBestAnswer, onToggleLike 
                 ? <div className="text-xs font-bold text-yellow-400 flex items-center gap-2"><FaTrophy /> MELHOR RESPOSTA</div>
                 : <div></div> // Espaçador para alinhar o botão de like
             }
-
-            {/* --- BLOCO ADICIONADO: Botão e contagem de Likes --- */}
             <div className="flex items-center gap-2 text-secondary-text">
                 <span className="text-sm">{post.likes_count}</span>
                 <button onClick={() => onToggleLike(post.id, post.current_user_has_liked)} className="text-lg hover:text-red-500 transition-colors">
@@ -72,7 +68,7 @@ const PostItem = ({ post, isTopicAuthor, onMarkBest, isBestAnswer, onToggleLike 
 
 // Formulário para criar um novo TÓPICO
 const CreateTopicForm = ({ onSubmit, onCancel, isSubmitting }) => {
-    const { user } = useAuth(); // Apenas para verificar o papel do utilizador
+    const { user } = useAuth();
     const [title, setTitle] = useState('');
     const [body, setBody] = useState('');
     const [isPinned, setIsPinned] = useState(false);
@@ -108,31 +104,35 @@ const ForumTab = ({ onReturn }) => {
     const { user } = useAuth();
     const { activityId } = useParams();
 
-    // Controlo de navegação e dados
-    const [view, setView] = useState('categories'); // 'categories', 'topics', 'topic_detail', 'create_topic'
+    const [view, setView] = useState('categories');
     const [categories, setCategories] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [topics, setTopics] = useState([]);
     const [selectedTopic, setSelectedTopic] = useState(null);
 
-    // Controlo de UI e formulários
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [newPostBody, setNewPostBody] = useState('');
 
-    // --- LÓGICA DE BUSCA DE DADOS ---
     const fetchCategories = useCallback(async () => {
         setIsLoading(true);
+        setError('');
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/forum/activity/${activityId}/categories`, { headers: { 'Authorization': `Bearer ${user.token}` } });
             if (!response.ok) throw new Error("Não foi possível carregar os canais do fórum.");
-            setCategories(await response.json());
-        } catch (err) { setError(err.message); } finally { setIsLoading(false); }
+            const data = await response.json();
+            setCategories(data);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setIsLoading(false);
+        }
     }, [activityId, user.token]);
 
     const fetchTopics = useCallback(async (categoryId) => {
         setIsLoading(true);
+        setError('');
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/forum/category/${categoryId}/topics`, { headers: { 'Authorization': `Bearer ${user.token}` } });
             if (!response.ok) throw new Error("Não foi possível carregar os tópicos.");
@@ -142,6 +142,7 @@ const ForumTab = ({ onReturn }) => {
 
     const fetchTopicDetails = useCallback(async (topicId) => {
         setIsLoading(true);
+        setError('');
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/forum/topics/${topicId}`, { headers: { 'Authorization': `Bearer ${user.token}` } });
             if (!response.ok) throw new Error("Não foi possível carregar o tópico.");
@@ -152,16 +153,12 @@ const ForumTab = ({ onReturn }) => {
 
     useEffect(() => { if (view === 'categories') { fetchCategories(); } }, [view, fetchCategories]);
 
-    // --- LÓGICA DE CRIAÇÃO/ATUALIZAÇÃO ---
     const handleToggleLike = async (postId) => {
-        // Não precisa de 'isSubmitting' para não bloquear a UI inteira por um like
         try {
             await fetch(`${import.meta.env.VITE_API_URL}/api/forum/posts/${postId}/like`, {
-                method: 'POST', // A mesma rota lida com adicionar e remover
+                method: 'POST',
                 headers: { 'Authorization': `Bearer ${user.token}` },
             });
-
-            // Otimização: Atualiza o estado localmente para uma resposta visual instantânea
             setSelectedTopic(prevTopic => ({
                 ...prevTopic,
                 posts: prevTopic.posts.map(p => {
@@ -173,10 +170,6 @@ const ForumTab = ({ onReturn }) => {
                     return p;
                 })
             }));
-
-            // Opcional, mas bom para consistência: Recarrega os dados do servidor em segundo plano
-            // await fetchTopicDetails(selectedTopic.id);
-
         } catch (err) {
             setError("Não foi possível registrar o like. Tente novamente.");
         }
@@ -189,7 +182,7 @@ const ForumTab = ({ onReturn }) => {
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` },
                 body: JSON.stringify({ title, body, is_pinned: isPinned }),
             });
-            await fetchTopics(selectedCategory.id); // Recarrega a lista de tópicos
+            await fetchTopics(selectedCategory.id);
             setView('topics');
         } catch (err) { setError(err.message); } finally { setIsSubmitting(false); }
     };
@@ -220,28 +213,31 @@ const ForumTab = ({ onReturn }) => {
         } catch (err) { setError(err.message); } finally { setIsSubmitting(false); }
     };
 
-    // --- RENDERIZAÇÃO CONDICIONAL ---
     const renderContent = () => {
-        if (isLoading) return <div className="text-center p-8">Carregando...</div>;
-        if (error) return <div className="text-red-400 text-center p-8">{error}</div>;
-
+        if (isLoading) {
+            return (
+                <div className="flex flex-col items-center justify-center h-full text-center">
+                    <FaSpinner className="animate-spin text-4xl text-yellow-400 mb-4" />
+                    <p>Carregando Fórum...</p>
+                </div>
+            );
+        }
+        if (error) {
+            return (
+                <div className="text-red-400 text-center p-8">
+                    <FaExclamationCircle className="text-5xl mx-auto mb-4" />
+                    <p className="font-semibold">Falha ao carregar o fórum</p>
+                    <p className="text-sm">{error}</p>
+                </div>
+            );
+        }
         switch (view) {
             case 'create_topic':
                 return <CreateTopicForm onSubmit={handleCreateTopic} onCancel={() => setView('topics')} isSubmitting={isSubmitting} />;
 
             case 'topic_detail':
-                console.log('Comparando IDs:', {
-                    userId: user.id,
-                    typeUserId: typeof user.id,
-                    authorId: selectedTopic.author_id,
-                    typeAuthorId: typeof selectedTopic.author_id,
-                    saoIguais: user.id === selectedTopic.author_id
-                });
                 return (
-                    // MODIFICAÇÃO 1: O contêiner principal já tem as classes corretas (flex flex-col h-full)
-                    // Isso garante que ele tentará ocupar todo o espaço do seu pai.
                     <div className="flex flex-col h-full">
-                        {/* --- SEÇÃO DO CABEÇALHO (Não rola) --- */}
                         <div>
                             <button onClick={() => setView('topics')} className="mb-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200">
                                 <FaArrowLeft /> Voltar para os tópicos
@@ -253,13 +249,6 @@ const ForumTab = ({ onReturn }) => {
                             </div>
                             <h3 className="font-bold mb-2">Respostas</h3>
                         </div>
-
-                        {/* MODIFICAÇÃO 2: A MÁGICA ACONTECE AQUI */}
-                        {/* Este div agora é o contêiner de rolagem.
-                - 'flex-grow': Faz ele se expandir para preencher o espaço disponível.
-                - 'overflow-y-auto': Adiciona a barra de rolagem vertical APENAS quando necessário.
-                - 'min-h-0': Uma propriedade importante do flexbox para evitar que ele mesmo cause um overflow no pai.
-            */}
                         <div className="flex-grow space-y-4 overflow-y-auto pr-2 min-h-0">
                             {selectedTopic.posts.map(post => (
                                 <PostItem key={post.id} post={post}
@@ -270,11 +259,6 @@ const ForumTab = ({ onReturn }) => {
                                 />
                             ))}
                         </div>
-
-                        {/* --- SEÇÃO DO RODAPÉ / CAIXA DE RESPOSTA (Não rola) --- */}
-                        {/* MODIFICAÇÃO 3: Esta seção fica fixa na parte de baixo.
-                - 'flex-shrink-0': Garante que a caixa de resposta não encolha.
-            */}
                         <div className="mt-4 flex-shrink-0">
                             <textarea value={newPostBody} onChange={e => setNewPostBody(e.target.value)} placeholder="Escreva a sua resposta..." className="w-full bg-border-color p-2 rounded-t-lg focus:outline-none resize-none h-20" />
                             <button onClick={handleCreatePost} disabled={isSubmitting} className="w-full bg-teal-600 p-2 rounded-b-lg disabled:bg-gray-500 font-bold flex items-center justify-center gap-2">
@@ -283,7 +267,6 @@ const ForumTab = ({ onReturn }) => {
                         </div>
                     </div>
                 );
-
 
             case 'topics':
                 return (
@@ -299,7 +282,7 @@ const ForumTab = ({ onReturn }) => {
                     </>
                 );
 
-            default: // 'categories'
+            default:
                 return (
                     <>
                         <h2 className="text-2xl font-bold text-teal-400 mb-4">Canais do Fórum</h2>
@@ -318,22 +301,12 @@ const ForumTab = ({ onReturn }) => {
     };
 
     return (
-        // O contêiner principal continua com a altura fixa e agora é o nosso contêiner flex.
         <div className="bg-primary-bg p-6 rounded-lg text-primary-text flex flex-col" style={{ height: '80vh', maxHeight: '700px' }}>
-            {/* O botão "Voltar" agora é um filho direto do contêiner flex. 
-            Usamos 'flex-shrink-0' para garantir que ele não seja esmagado. */}
             <div className='flex-shrink-0'>
                 <button onClick={onReturn} className="absolute top-4 left-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200 transition-colors z-20">
                     <FaArrowLeft /> Voltar ao Tabuleiro
                 </button>
             </div>
-
-            {/* O conteúdo renderizado agora ocupa o espaço restante.
-            'flex-grow': permite que ele cresça.
-            'relative': necessário se houver elementos posicionados absolutamente dentro.
-            'mt-8': a margem que estava no div anterior.
-            'min-h-0': crucial para evitar que o conteúdo flex cresça além do limite do pai.
-        */}
             <div className="flex-grow relative mt-8 min-h-0">
                 {renderContent()}
             </div>

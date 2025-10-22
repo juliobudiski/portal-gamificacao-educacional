@@ -26,6 +26,10 @@ const hubElementCardMap = {
   "Conquistas digitais para metas alcançadas": ["badges"],
   "Economia (sistema monetário)": ["store"],
   "Objetivo (missão, meta do jogo)": ["mission"],
+  "Recompensas atraentes": ["final_reward"],
+  "Fórum de Discussão": ["forum"],
+  "Customização de personagem": ["avatar_customization"],
+  "Customização de equipamento": ["avatar_customization"]
 };
 
 /**

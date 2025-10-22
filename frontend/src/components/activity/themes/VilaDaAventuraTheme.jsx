@@ -1,66 +1,109 @@
 import React, { useRef, useState, useLayoutEffect, useMemo } from 'react';
 import { elementConfig } from '../GameBoardConfig';
 import '../GameBoard.css';
+import { useActivity } from '../../../context/ActivityContext';
 
-// ========================================================================
-// LÓGICA DE CÁLCULO DE LAYOUT (MOVEMOS PARA CÁ)
-// ========================================================================
-const calculateStepCoordinates = (activity, boardSize) => {
-    const path = activity?.gamificationDesign?.progression_path;
-    if (!path || !boardSize) return [];
-
-    const coords = [];
-    const numberOfSteps = path.length;
-
-    const pathAreaWidth = boardSize.width * 0.7; // Reserva 70% da largura para a trilha
-
-    for (let i = 0; i < numberOfSteps; i++) {
-        const row = Math.floor(i / 4);
-        const positionInRow = i % 4;
-        const y = boardSize.height * (0.15 + (row * 0.25));
-        let x;
-        if (row % 2 === 0) {
-            x = pathAreaWidth * (0.15 + (positionInRow * 0.25));
-        } else {
-            x = pathAreaWidth * (0.85 - (positionInRow * 0.25));
-        }
-        coords.push({ x: `${x}px`, y: `${y}px` });
+const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === 'true';
+const debugLog = (message, ...optionalParams) => {
+    if (DEBUG_MODE) {
+        console.debug(`[VilaDaAventuraTheme] ${message}`, ...optionalParams);
     }
-
-    if (activity.gamificationDesign.finalReward) {
-        const lastCoord = coords[coords.length - 1] || { x: `${pathAreaWidth / 2}px`, y: `${boardSize.height * 0.8}px` };
-        coords.push({ x: lastCoord.x, y: `${parseFloat(lastCoord.y) + 60}px` });
-    }
-
-    return coords;
 };
 
-const generateSvgPath = (coordinates) => {
-    if (!coordinates || coordinates.length < 2) return "";
-    let pathString = `M ${parseFloat(coordinates[0].x)} ${parseFloat(coordinates[0].y)}`;
-    for (let i = 1; i < coordinates.length; i++) {
-        pathString += ` L ${parseFloat(coordinates[i].x)} ${parseFloat(coordinates[i].y)}`;
+// ========================================================================
+// LÓGICA DE CÁLCULO DE LAYOUT (REFEITA PARA SERPENTEAR)
+// ========================================================================
+const calculateStepCoordinates = (activity, boardSize) => {
+    const design = activity?.gamificationDesign;
+    if (!design || !boardSize) return { missionNode: null, pathNodes: [], finalRewardNode: null };
+
+    const itemsPerRow = 4;
+    const path = design.progression_path || [];
+
+    const missionElement = design.hub_elements?.find(el => el.type === 'mission' && el.enabled);
+    const finalRewardElement = design.hub_elements?.find(el => el.type === 'final_reward' && el.enabled);
+
+    const pathAreaWidth = boardSize.width * 0.8;
+    const offsetX = boardSize.width * 0.1;
+    const offsetY = boardSize.height * 0.15;
+    const rowHeight = 120; // Espaçamento vertical entre as linhas
+
+    let missionNode = null;
+    if (missionElement) {
+        missionNode = { x: offsetX, y: offsetY };
+    }
+
+    const pathNodes = [];
+    path.forEach((step, index) => {
+        const row = Math.floor(index / itemsPerRow);
+        const col = index % itemsPerRow;
+
+        // Se a linha for par (0, 2, ...), vai da esquerda para a direita.
+        // Se for ímpar (1, 3, ...), vai da direita para a esquerda.
+        const effectiveCol = row % 2 === 0 ? col : (itemsPerRow - 1 - col);
+
+        const x = offsetX + (pathAreaWidth / (itemsPerRow > 1 ? itemsPerRow - 1 : 1)) * effectiveCol;
+        const y = offsetY + (missionNode ? rowHeight : 0) + (row * rowHeight);
+
+        pathNodes.push({ x, y });
+    });
+
+    let finalRewardNode = null;
+    if (finalRewardElement) {
+        // Pega a posição do último nó da trilha, ou da missão se a trilha estiver vazia
+        const lastNodePosition = pathNodes[pathNodes.length - 1] || missionNode;
+
+        if (lastNodePosition) {
+            const lastNodeIndex = path.length - 1;
+            const lastNodeRow = Math.floor(lastNodeIndex / itemsPerRow);
+
+            let finalX;
+            // Se a última linha tiver espaço, coloca ao lado
+            if (path.length % itemsPerRow !== 0) {
+                finalX = lastNodeRow % 2 === 0 ? lastNodePosition.x + (pathAreaWidth / (itemsPerRow - 1)) : lastNodePosition.x - (pathAreaWidth / (itemsPerRow - 1));
+            } else { // Se a última linha estiver cheia, desce
+                finalX = lastNodePosition.x;
+            }
+
+            const finalY = lastNodePosition.y + (path.length % itemsPerRow === 0 ? rowHeight : 0);
+
+            finalRewardNode = { x: finalX, y: finalY };
+
+        } else { // Se não houver nem missão nem passos, coloca no centro
+            finalRewardNode = { x: boardSize.width / 2, y: boardSize.height / 2 };
+        }
+    }
+
+    return { missionNode, pathNodes, finalRewardNode };
+};
+
+
+const generateSvgPath = (missionNode, pathNodes, finalRewardNode) => {
+    const allPoints = [];
+    if (missionNode) allPoints.push(missionNode);
+    allPoints.push(...pathNodes);
+    if (finalRewardNode) allPoints.push(finalRewardNode);
+
+    if (allPoints.length < 2) return "";
+    let pathString = `M ${allPoints[0].x} ${allPoints[0].y}`;
+    for (let i = 1; i < allPoints.length; i++) {
+        pathString += ` L ${allPoints[i].x} ${allPoints[i].y}`;
     }
     return pathString;
 };
 
-// ========================================================================
-// COMPONENTE DO TEMA
-// ========================================================================
-const VilaDaAventuraTheme = ({
-    gamificationDesign,
-    currentView,
-    children,
-    getStepStatus,
-    onStepClick,
-    onHubIconClick,
-    onFinalRewardClick,
-    finalRewardStatus,
-    hubElementsToRender,
-    renderedDecorations,
-    finalRewardConfig,
-    ...props // Pega o resto das props
-}) => {
+const VilaDaAventuraTheme = ({ children }) => {
+    const {
+        activity,
+        currentView,
+        getStepStatus,
+        handleStepClick,
+        handleHubIconClick,
+        handleFinalRewardClick,
+        finalRewardStatus,
+        hubElementsToRender,
+        renderedDecorations,
+    } = useActivity();
 
     const boardRef = useRef(null);
     const [boardSize, setBoardSize] = useState(null);
@@ -77,18 +120,20 @@ const VilaDaAventuraTheme = ({
         }
     }, []);
 
-    const stepCoordinates = useMemo(() => calculateStepCoordinates({ gamificationDesign }, boardSize), [gamificationDesign, boardSize]);
-    const svgPath = useMemo(() => generateSvgPath(stepCoordinates), [stepCoordinates]);
-    const finalRewardPosition = stepCoordinates[stepCoordinates.length - 1];
+    const { missionNode, pathNodes, finalRewardNode } = useMemo(() => calculateStepCoordinates(activity, boardSize), [activity, boardSize]);
+    const svgPath = useMemo(() => generateSvgPath(missionNode, pathNodes, finalRewardNode), [missionNode, pathNodes, finalRewardNode]);
 
-    // Se a view não for 'board', renderiza o conteúdo (Quiz, Narrativa, etc.)
+    const villageHubElements = hubElementsToRender.filter(el => el.type !== 'mission' && el.type !== 'final_reward');
+    const missionConfig = elementConfig.hub.mission;
+    const finalRewardConfig = elementConfig.hub.final_reward;
+
+
     if (currentView !== 'board') {
         return <div className="game-content-area">{children}</div>;
     }
 
-    // Se ainda não medimos o tabuleiro, mostramos um placeholder para ser medido.
     if (!boardSize) {
-        return <div className="rpg-map-board" ref={boardRef} style={{ width: '100%', minHeight: '500px' }} />;
+        return <div className="rpg-map-board" ref={boardRef} style={{ width: '100%', minHeight: '600px' }} />;
     }
 
     return (
@@ -97,17 +142,28 @@ const VilaDaAventuraTheme = ({
                 {renderedDecorations.map(deco => (
                     <img key={deco.id} src={deco.src} alt="Decoração" className={`board-decoration ${deco.className}`} style={deco.style} />
                 ))}
-                <svg className="path-svg" viewBox={`0 0 ${boardSize.width} ${boardSize.height}`} preserveAspectRatio="xMidYMid meet">
+
+                <svg className="path-svg" viewBox={`0 0 ${boardSize.width} ${boardSize.height}`} preserveAspectRatio="none">
                     <path d={svgPath} className="path-line" />
                 </svg>
-                {(gamificationDesign.progression_path || []).map((step, index) => {
+
+                {missionNode && missionConfig && (
+                    <div className="path-node-wrapper" style={{ top: `${missionNode.y}px`, left: `${missionNode.x}px` }} onClick={() => handleStepClick({ type: 'mission' })}>
+                        <div className={`path-node path-node--active`}>
+                            <img className="path-node-image" src={missionConfig.icon} alt={missionConfig.name} />
+                        </div>
+                        <div className="path-label">{missionConfig.name}</div>
+                    </div>
+                )}
+
+                {(activity.gamificationDesign.progression_path || []).map((step, index) => {
                     const status = getStepStatus(step);
                     const config = elementConfig.path[step.type];
-                    const position = stepCoordinates[index];
+                    const position = pathNodes[index];
                     if (!config || !position) return null;
 
                     return (
-                        <div key={step.id} className="path-node-wrapper" style={{ top: position.y, left: position.x }} onClick={() => (status === 'active' || status === 'completed') && onStepClick(step)}>
+                        <div key={step.id} className="path-node-wrapper" style={{ top: `${position.y}px`, left: `${position.x}px` }} onClick={() => (status === 'active' || status === 'completed') && handleStepClick(step)}>
                             <div className={`path-node path-node--${status}`}>
                                 <img className="path-node-image" src={config.icon} alt={config.name} />
                                 {status === 'completed' && <div className="path-node-completed-check">✔</div>}
@@ -116,8 +172,9 @@ const VilaDaAventuraTheme = ({
                         </div>
                     );
                 })}
-                {gamificationDesign?.finalReward && finalRewardPosition && finalRewardConfig && (
-                    <div className="path-node-wrapper" style={{ top: finalRewardPosition.y, left: finalRewardPosition.x }} onClick={() => finalRewardStatus === 'active' && onFinalRewardClick()}>
+
+                {finalRewardNode && finalRewardConfig && (
+                    <div className="path-node-wrapper" style={{ top: `${finalRewardNode.y}px`, left: `${finalRewardNode.x}px` }} onClick={() => finalRewardStatus === 'active' && handleFinalRewardClick()}>
                         <div className={`path-node path-node--${finalRewardStatus}`}>
                             <img className="path-node-image" src={finalRewardConfig.icon} alt={finalRewardConfig.name} />
                             {finalRewardStatus === 'completed' && <div className="path-node-completed-check">✔</div>}
@@ -126,13 +183,14 @@ const VilaDaAventuraTheme = ({
                     </div>
                 )}
             </div>
+
             <div className="hub-village">
-                {(hubElementsToRender || []).map(hubElement => {
+                {villageHubElements.map(hubElement => {
                     if (!hubElement.enabled) return null;
                     const config = elementConfig.hub[hubElement.type];
                     if (!config) return null;
                     return (
-                        <div key={hubElement.id} className="hub-building hub-building--animated" title={config.name} onClick={() => onHubIconClick(hubElement.type)}>
+                        <div key={hubElement.id} className="hub-building hub-building--animated" title={config.name} onClick={() => handleHubIconClick(hubElement.type)}>
                             <img src={config.icon} alt={config.name} />
                             <div className="hub-label">{config.name}</div>
                         </div>

@@ -4,12 +4,14 @@
 // 1. Configuração dos ÍCONES para os passos da trilha e elementos do hub
 export const elementConfig = {
     path: {
-        mission: { icon: '/board/mission_character_board.webp', name: 'Missão' },
+        // 'mission' e 'final_reward' foram removidos daqui
         narrative: { icon: '/board/narrative_board.webp', name: 'Narrativa' },
         quiz: { icon: '/board/quiz_board.webp', name: 'Quiz' },
-        final_reward: { icon: '/board/end_board.webp', name: 'Recompensa Final' }
     },
     hub: {
+        // Adicionados aqui para serem tratados como elementos do hub/tabuleiro
+        mission: { icon: '/board/mission_character_board.webp', name: 'Missão' },
+        final_reward: { icon: '/board/end_board.webp', name: 'Recompensa Final' },
         roulette: { icon: '/board/roleta_board.webp', name: 'Roleta' },
         slot_machine: { icon: '/board/slotmachine_board.webp', name: 'Caça-níquel' },
         ranking: { icon: '/board/ranking_board.webp', name: 'Ranking' },
@@ -18,7 +20,6 @@ export const elementConfig = {
         store: { icon: '/board/store_board.webp', name: 'Loja' },
         avatar_customization: { icon: '/board/meuestilo_board.webp', name: 'Meu Estilo' },
         forum: { icon: '/board/fox_board.webp', name: 'Fórum' },
-
     }
 };
 

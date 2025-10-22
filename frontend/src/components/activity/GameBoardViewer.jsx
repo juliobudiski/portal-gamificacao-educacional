@@ -1,34 +1,34 @@
-// ARQUIVO CORRIGIDO: src/components/activity/GameBoardViewer.jsx
-
-import React, { lazy, Suspense, useRef, useState, useLayoutEffect, useMemo } from 'react';
+import React, { lazy, Suspense } from 'react';
+import { useActivity } from '../../context/ActivityContext';
 
 // Importação dos temas
 const VilaDaAventuraTheme = lazy(() => import('./themes/VilaDaAventuraTheme'));
 const FlowchartTheme = lazy(() => import('./themes/FlowchartTheme'));
-
+const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === 'true';
+const debugLog = (message, ...optionalParams) => {
+    if (DEBUG_MODE) {
+        console.debug(`[GameBoardViewer] ${message}`, ...optionalParams);
+    }
+};
 const themeMap = {
     vila_da_aventura: VilaDaAventuraTheme,
     fluxograma: FlowchartTheme,
 };
 
-// ========================================================================
-// COMPONENTE PRINCIPAL
-// Este componente agora atua como um roteador de props para o tema correto.
-// ========================================================================
+function GameBoardViewer({ children }) {
+    const { activity } = useActivity();
+    debugLog('GameBoardViewer renderizado. Valor de activity do contexto:', activity);
+    const themeName = activity?.gamificationDesign?.theme || 'vila_da_aventura';
+    debugLog('Tema selecionado:', themeName);
+    const ThemeComponent = themeMap[themeName] || VilaDaAventuraTheme;
 
-function GameBoardViewer({ gamificationDesign, ...props }) {
-    const { theme = 'vila_da_aventura' } = gamificationDesign;
-    const ThemeComponent = themeMap[theme] || VilaDaAventuraTheme;
-
-    // ...props contém todas as outras props passadas do ActivityPage,
-    // como getStepStatus, onStepClick, onReturnToBoard, etc.
-    // Elas serão repassadas diretamente para o componente de tema.
     return (
-        <Suspense fallback={<div>Carregando...</div>}>
-            <ThemeComponent
-                gamificationDesign={gamificationDesign}
-                {...props}
-            />
+        <Suspense fallback={<div>Carregando tema do tabuleiro...</div>}>
+            {debugLog('Renderizando componente de tema:', ThemeComponent.displayName || ThemeComponent.name || 'UnknownTheme')}
+            <ThemeComponent>
+                {debugLog('Renderizando children dentro do tema:', children)}
+                {children}
+            </ThemeComponent>
         </Suspense>
     );
 }
