@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FaGem, FaStar, FaTrophy, FaGift, FaSyncAlt, FaSpinner, FaCoins } from 'react-icons/fa';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -77,36 +77,63 @@ const Reel = ({ finalSymbol, isSpinning, delay }) => {
 };
 
 // ====================================================================
-// 4. COMPONENTE PRINCIPAL 'SlotMachineTab' REFATORADO
+// 4. COMPONENTE PRINCIPAL 'SlotMachineTab' COM A CORREÇÃO
 // ====================================================================
-const SlotMachineTab = ({ userCoins, onPrizeWon, winners = [], loadingWinners, onWin, onReturn }) => {
+const SlotMachineTab = ({ userCoins, onPrizeWon, onWin, onReturn }) => {
   const { user } = useAuth();
   const { activityId } = useParams();
 
   // --- Estados do Componente ---
   const [reels, setReels] = useState([symbols[0], symbols[1], symbols[2]]);
   const [isSpinning, setIsSpinning] = useState(false);
-  const [resultState, setResultState] = useState(null); // 'win', 'lose', ou null
+  const [resultState, setResultState] = useState(null);
   const [prizeMessage, setPrizeMessage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const spinCost = 0;
 
-  // --- Lógica de Giro (Ação Principal) ---
+  // --- INÍCIO DA CORREÇÃO: Estados e lógica para buscar ganhadores ---
+  const [winners, setWinners] = useState([]);
+  const [loadingWinners, setLoadingWinners] = useState(true);
+
+  // Função para buscar os últimos ganhadores no backend
+  const fetchWinners = useCallback(async () => {
+    setLoadingWinners(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/progress/${activityId}/slot-winners`, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      if (response.ok) {
+        setWinners(await response.json());
+      } else {
+        console.error("Falha ao buscar ganhadores do caça-níquel.");
+      }
+    } catch (err) {
+      console.error("Erro de rede ao buscar ganhadores:", err);
+    } finally {
+      setLoadingWinners(false);
+    }
+  }, [activityId, user.token]);
+
+  // useEffect para chamar a busca de ganhadores quando o componente carregar
+  useEffect(() => {
+    fetchWinners();
+  }, [fetchWinners]);
+  // --- FIM DA CORREÇÃO ---
+
+
   const handleSpinClick = async () => {
     if (userCoins < spinCost) {
       setError(`Moedas insuficientes. Custo: ${spinCost}`);
       return;
     }
 
-    // Resetar estados para um novo giro
     setError('');
     setPrizeMessage('');
     setResultState(null);
     setLoading(true);
 
     try {
-      // Simula a chamada à API (no seu caso, a chamada real)
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/progress/${activityId}/play-slot`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${user.token}` },
@@ -114,16 +141,14 @@ const SlotMachineTab = ({ userCoins, onPrizeWon, winners = [], loadingWinners, o
       const result = await response.json();
       if (!response.ok) throw new Error(result.message || 'Não foi possível jogar.');
 
-      // Inicia a animação visual
       setIsSpinning(true);
-      setLoading(false); // A API respondeu, agora é só animação
+      setLoading(false);
 
       const finalSymbols = result.result.map(symbolName => symbols.find(s => s.name === symbolName));
 
-      // Duração da animação + suspense
       setTimeout(() => {
         setReels(finalSymbols);
-        setIsSpinning(false); // Para a animação de "blur" e mostra o resultado
+        setIsSpinning(false);
 
         if (result.prize) {
           setResultState('win');
@@ -131,12 +156,15 @@ const SlotMachineTab = ({ userCoins, onPrizeWon, winners = [], loadingWinners, o
           if (result.prize.type === 'xp') {
             onPrizeWon(result.prize.value);
           }
-          onWin(); // Recarrega a lista de ganhadores
+          // --- CORREÇÃO: Chama fetchWinners após ganhar ---
+          fetchWinners(); // Atualiza a lista de ganhadores
         } else {
           setResultState('lose');
           setPrizeMessage("Não foi dessa vez!");
         }
-      }, 3000); // Duração total da animação
+        // Chama onWin para que o componente pai possa atualizar o saldo de moedas, se necessário
+        onWin?.();
+      }, 3000);
 
     } catch (err) {
       setError(err.message);

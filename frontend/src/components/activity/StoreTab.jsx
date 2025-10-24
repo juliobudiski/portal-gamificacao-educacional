@@ -1,9 +1,12 @@
 // frontend/src/components/activity/StoreTab.jsx
 import React, { useState } from 'react';
 import { FaCoins, FaPlus, FaTimes, FaExclamationTriangle } from 'react-icons/fa';
-import ItemCard from './ItemCard'; // Importa o novo componente de card
+import ItemCard from './ItemCard';
 import { HexColorPicker } from 'react-colorful';
-// --- LISTA DE ITENS PRÉ-DEFINIDOS ---
+import { useAuth } from '../../context/AuthContext'; // <-- IMPORTADO
+import { useParams } from 'react-router-dom'; // <-- IMPORTADO
+
+// --- LISTA DE ITENS PRÉ-DEFINIDOS (sem alterações) ---
 const PREDEFINED_COSMETICS = [
     {
         name: 'Nome Dourado (Neon)',
@@ -11,7 +14,7 @@ const PREDEFINED_COSMETICS = [
         price: 750,
         icon: '🌟',
         item_type: 'cosmetic',
-        effect_id: { type: 'color', color: '#FBBF24', effect: 'neon' } // Formato JSON
+        effect_id: { type: 'color', color: '#FBBF24', effect: 'neon' }
     },
     {
         name: 'Nome Prateado (Neon)',
@@ -19,10 +22,9 @@ const PREDEFINED_COSMETICS = [
         price: 500,
         icon: '✨',
         item_type: 'cosmetic',
-        effect_id: { type: 'color', color: '#D1D5DB', effect: 'neon' } // Formato JSON
+        effect_id: { type: 'color', color: '#D1D5DB', effect: 'neon' }
     }
 ];
-
 const PREDEFINED_AVATARS = [
     {
         name: 'Gato Mago',
@@ -41,7 +43,6 @@ const PREDEFINED_AVATARS = [
         effect_id: { url: '/avatars/robot.webp', name: 'Robô Futurista', promotable: false }
     }
 ];
-
 const PREDEFINED_TITLES = [
     {
         name: 'O Grande Comprador',
@@ -49,49 +50,33 @@ const PREDEFINED_TITLES = [
         price: 1200,
         icon: '👑',
         item_type: 'title',
-        effect_id: null // O backend irá gerar o effect_id dinamicamente
+        effect_id: null
     }
 ];
 
+// --- MODAIS E FORMULÁRIOS (sem alterações) ---
 const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel }) => {
     if (!isOpen) return null;
-
     return (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
             <div className="bg-primary-bg rounded-lg shadow-xl p-6 max-w-sm w-full border border-border-color">
                 <h3 className="text-xl font-bold text-primary-text mb-4">{title}</h3>
                 <p className="text-secondary-text mb-6">{message}</p>
                 <div className="flex justify-end gap-4">
-                    <button
-                        onClick={onCancel}
-                        className="py-2 px-4 bg-gray-600 hover:bg-hover-bg-color0 rounded-lg font-semibold text-primary-text transition-colors"
-                    >
-                        Cancelar
-                    </button>
-                    <button
-                        onClick={onConfirm}
-                        className="py-2 px-4 bg-green-600 hover:bg-green-500 rounded-lg font-semibold text-primary-text transition-colors"
-                    >
-                        Confirmar
-                    </button>
+                    <button onClick={onCancel} className="py-2 px-4 bg-gray-600 hover:bg-hover-bg-color0 rounded-lg font-semibold text-primary-text transition-colors">Cancelar</button>
+                    <button onClick={onConfirm} className="py-2 px-4 bg-green-600 hover:bg-green-500 rounded-lg font-semibold text-primary-text transition-colors">Confirmar</button>
                 </div>
             </div>
         </div>
     );
 };
-
-
-// Formulário para adicionar novos itens (visão do professor)
 const AddItemForm = ({ onAddItem, onCancel }) => {
-    // --- Estados do Formulário ---
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [price, setPrice] = useState('');
     const [itemType, setItemType] = useState('title');
-
-    // --- Novos Estados para a "Oficina de Cosméticos" ---
     const [color, setColor] = useState('#ffffff');
-    const [effect, setEffect] = useState('none'); // 'none', 'neon', 'pulsating'
+    const [effect, setEffect] = useState('none');
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -99,20 +84,16 @@ const AddItemForm = ({ onAddItem, onCancel }) => {
             alert('Por favor, preencha todos os campos.');
             return;
         }
-
         let finalEffectId = null;
         if (itemType === 'cosmetic') {
-            finalEffectId = { type: 'color', color, effect }; // Monta o objeto JSON
+            finalEffectId = { type: 'color', color, effect };
         } else if (itemType === 'title') {
             const safe_name = name.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
             finalEffectId = `TITLE_CUSTOM_${safe_name}`;
         }
-
         onAddItem({ name, description, price: parseInt(price, 10), icon: '👑', item_type: itemType, effect_id: finalEffectId });
         onCancel();
     };
-
-    // Estilo dinâmico para o preview em tempo real
     const previewStyle = {};
     if (itemType === 'cosmetic') {
         previewStyle.color = color;
@@ -120,7 +101,6 @@ const AddItemForm = ({ onAddItem, onCancel }) => {
             previewStyle.textShadow = `0 0 8px ${color}, 0 0 12px ${color}`;
         }
     }
-
     return (
         <div className="bg-secondary-bg/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 mb-8">
             <h3 className="text-xl font-bold mb-4 text-primary-text">Criar Item Personalizado</h3>
@@ -130,19 +110,14 @@ const AddItemForm = ({ onAddItem, onCancel }) => {
                     <option value="cosmetic">Cosmético (Cor de Nome)</option>
                     <option value="utility">Utilitário</option>
                 </select>
-
                 <input type="text" placeholder={itemType === 'title' ? "Texto do Título (ex: Mestre da Atividade)" : "Nome do Item"} value={name} onChange={e => setName(e.target.value)} className="w-full bg-border-color p-2 rounded" required />
                 <input type="text" placeholder="Descrição" value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-border-color p-2 rounded" required />
                 <input type="number" placeholder="Preço em pontos" value={price} onChange={e => setPrice(e.target.value)} className="w-full bg-border-color p-2 rounded" required />
-
-                {/* --- A "OFICINA DE COSMÉTICOS" (Condicional) --- */}
                 {itemType === 'cosmetic' && (
                     <div className="bg-black/20 p-4 rounded-lg space-y-4">
                         <h4 className="font-bold">Editor de Efeito Cosmético</h4>
                         <div className="flex flex-col md:flex-row gap-4">
-                            <div className="flex-1">
-                                <HexColorPicker color={color} onChange={setColor} />
-                            </div>
+                            <div className="flex-1"><HexColorPicker color={color} onChange={setColor} /></div>
                             <div className="flex-1 space-y-2">
                                 <label>Efeito Especial:</label>
                                 <div>
@@ -151,15 +126,12 @@ const AddItemForm = ({ onAddItem, onCancel }) => {
                                 </div>
                                 <div className="pt-4">
                                     <label>Preview:</label>
-                                    <div className="p-4 bg-primary-bg rounded-lg text-center">
-                                        <span style={previewStyle} className="text-2xl font-bold transition-all">Nome do Aluno</span>
-                                    </div>
+                                    <div className="p-4 bg-primary-bg rounded-lg text-center"><span style={previewStyle} className="text-2xl font-bold transition-all">Nome do Aluno</span></div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 )}
-
                 <div className="flex gap-4 pt-4">
                     <button type="submit" className="flex-1 py-2 px-4 bg-blue-600 hover:bg-blue-500 rounded font-bold">Salvar Item</button>
                     <button type="button" onClick={onCancel} className="py-2 px-4 bg-gray-600 hover:bg-hover-bg-color0 rounded">Cancelar</button>
@@ -169,14 +141,42 @@ const AddItemForm = ({ onAddItem, onCancel }) => {
     );
 };
 
-
 // Componente principal da Loja
 const StoreTab = ({ items, userPoints, onPurchase, onAddItem, onDeleteItem, onReturn, userRole }) => {
-    // Estado para controlar a visibilidade do formulário de adição (para professores)
     const [showAddForm, setShowAddForm] = useState(false);
     const [modalState, setModalState] = useState({ isOpen: false, title: '', message: '', onConfirm: null });
 
-    // --- NOVA FUNÇÃO PARA ABRIR O MODAL ---
+    // --- INÍCIO DA CORREÇÃO ---
+    const { user } = useAuth();
+    const { activityId } = useParams();
+
+    // Nova função que realiza a compra no backend
+    const handlePurchaseItem = async (itemToBuy) => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/progress/${activityId}/purchase-item`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.token}`,
+                },
+                body: JSON.stringify({ item_id: itemToBuy.id }),
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.message || "Não foi possível completar a compra.");
+            }
+
+            alert("Compra realizada com sucesso!");
+            // Chama a função 'onPurchase' (que é na verdade fetchAllData) para atualizar a UI
+            onPurchase();
+
+        } catch (err) {
+            alert(`Erro: ${err.message}`);
+        }
+    };
+    // --- FIM DA CORREÇÃO ---
+
     const openConfirmationModal = (title, message, onConfirm) => {
         setModalState({ isOpen: true, title, message, onConfirm });
     };
@@ -199,7 +199,6 @@ const StoreTab = ({ items, userPoints, onPurchase, onAddItem, onDeleteItem, onRe
                 Voltar
             </button>
 
-            {/* Cabeçalho dinâmico baseado no papel do usuário */}
             <header className="flex justify-between items-center mb-8 pt-8">
                 <h1 className="text-4xl font-bold">Loja</h1>
                 {userRole === 'aluno' && (
@@ -215,18 +214,13 @@ const StoreTab = ({ items, userPoints, onPurchase, onAddItem, onDeleteItem, onRe
                 )}
             </header>
 
-            {/* Formulário de adição para professor (condicional) */}
             {userRole === 'professor' && (
                 <>
-                    {/* Formulário de adição (que vamos modificar no próximo passo) */}
                     {showAddForm && (
                         <AddItemForm onAddItem={onAddItem} onCancel={() => setShowAddForm(false)} />
                     )}
-
-                    {/* Seção de Presets agora dividida */}
                     <div className="mb-12">
                         <h2 className="text-2xl font-bold mb-4 border-b-2 border-border-color pb-2">Itens Rápidos (Presets)</h2>
-
                         <h3 className="text-lg font-semibold text-secondary-text mt-4 mb-2">Títulos</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {PREDEFINED_TITLES.map(preset => {
@@ -235,18 +229,7 @@ const StoreTab = ({ items, userPoints, onPurchase, onAddItem, onDeleteItem, onRe
                                     <div key={preset.name} className="bg-primary-bg p-4 rounded-lg flex flex-col">
                                         <h3 className="font-bold text-lg">{preset.name}</h3>
                                         <p className="text-sm text-secondary-text flex-grow my-2">{preset.description}</p>
-                                        <button
-                                            onClick={() => onAddItem(preset)}
-                                            disabled={isAlreadyAdded} // <-- Desabilita o botão se já foi adicionado
-                                            className={`mt-auto w-full py-2 px-4 rounded font-bold text-sm transition-all
-                            ${isAlreadyAdded
-                                                    ? 'bg-gray-600 cursor-not-allowed'
-                                                    : 'bg-indigo-600 hover:bg-indigo-500'
-                                                }`
-                                            }
-                                        >
-                                            {isAlreadyAdded ? 'Já Adicionado' : '+ Adicionar à Loja'}
-                                        </button>
+                                        <button onClick={() => onAddItem(preset)} disabled={isAlreadyAdded} className={`mt-auto w-full py-2 px-4 rounded font-bold text-sm transition-all ${isAlreadyAdded ? 'bg-gray-600 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-500'}`}>{isAlreadyAdded ? 'Já Adicionado' : '+ Adicionar à Loja'}</button>
                                     </div>
                                 );
                             })}
@@ -259,18 +242,7 @@ const StoreTab = ({ items, userPoints, onPurchase, onAddItem, onDeleteItem, onRe
                                     <div key={preset.name} className="bg-primary-bg p-4 rounded-lg flex flex-col">
                                         <h3 className="font-bold text-lg">{preset.name}</h3>
                                         <p className="text-sm text-secondary-text flex-grow my-2">{preset.description}</p>
-                                        <button
-                                            onClick={() => onAddItem(preset)}
-                                            disabled={isAlreadyAdded} // <-- Desabilita o botão se já foi adicionado
-                                            className={`mt-auto w-full py-2 px-4 rounded font-bold text-sm transition-all
-                            ${isAlreadyAdded
-                                                    ? 'bg-gray-600 cursor-not-allowed'
-                                                    : 'bg-indigo-600 hover:bg-indigo-500'
-                                                }`
-                                            }
-                                        >
-                                            {isAlreadyAdded ? 'Já Adicionado' : '+ Adicionar à Loja'}
-                                        </button>
+                                        <button onClick={() => onAddItem(preset)} disabled={isAlreadyAdded} className={`mt-auto w-full py-2 px-4 rounded font-bold text-sm transition-all ${isAlreadyAdded ? 'bg-gray-600 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-500'}`}>{isAlreadyAdded ? 'Já Adicionado' : '+ Adicionar à Loja'}</button>
                                     </div>
                                 );
                             })}
@@ -278,7 +250,6 @@ const StoreTab = ({ items, userPoints, onPurchase, onAddItem, onDeleteItem, onRe
                         <h3 className="text-lg font-semibold text-secondary-text mt-4 mb-2">Avatares</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {PREDEFINED_AVATARS.map(preset => {
-                                // Lógica para verificar se já foi adicionado
                                 const isAlreadyAdded = items.some(item => item.name === preset.name);
                                 return (
                                     <div key={preset.name} className="bg-primary-bg p-4 rounded-lg flex flex-col">
@@ -289,13 +260,7 @@ const StoreTab = ({ items, userPoints, onPurchase, onAddItem, onDeleteItem, onRe
                                                 <p className="text-sm text-secondary-text flex-grow my-1">{preset.description}</p>
                                             </div>
                                         </div>
-                                        <button
-                                            onClick={() => onAddItem(preset)}
-                                            disabled={isAlreadyAdded}
-                                            className={`mt-auto w-full py-2 px-4 rounded font-bold text-sm transition-all mt-4 ${isAlreadyAdded ? 'bg-gray-600 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-500'}`}
-                                        >
-                                            {isAlreadyAdded ? 'Já Adicionado' : `+ Adicionar por ${preset.price} pts`}
-                                        </button>
+                                        <button onClick={() => onAddItem(preset)} disabled={isAlreadyAdded} className={`mt-auto w-full py-2 px-4 rounded font-bold text-sm transition-all mt-4 ${isAlreadyAdded ? 'bg-gray-600 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-500'}`}>{isAlreadyAdded ? 'Já Adicionado' : `+ Adicionar por ${preset.price} pts`}</button>
                                     </div>
                                 );
                             })}
@@ -305,7 +270,6 @@ const StoreTab = ({ items, userPoints, onPurchase, onAddItem, onDeleteItem, onRe
                 </>
             )}
 
-            {/* Grid de Itens */}
             {items.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {items.map(item => (
@@ -314,11 +278,11 @@ const StoreTab = ({ items, userPoints, onPurchase, onAddItem, onDeleteItem, onRe
                             item={item}
                             userRole={userRole}
                             userPoints={userPoints}
-                            // PASSA A FUNÇÃO PARA ABRIR O MODAL EM VEZ DA AÇÃO DIRETA
+                            // --- CORREÇÃO: Chama a nova função de compra ---
                             onPurchaseRequest={(itemToBuy) => openConfirmationModal(
                                 'Confirmar Compra',
                                 `Você tem certeza que quer comprar "${itemToBuy.name}" por ${itemToBuy.price} pontos?`,
-                                () => onPurchase(itemToBuy)
+                                () => handlePurchaseItem(itemToBuy)
                             )}
                             onDeleteRequest={(itemId, itemName) => openConfirmationModal(
                                 'Confirmar Remoção',
@@ -336,7 +300,6 @@ const StoreTab = ({ items, userPoints, onPurchase, onAddItem, onDeleteItem, onRe
                     </p>
                 </div>
             )}
-            {/* RENDERIZA O MODAL AQUI */}
             <ConfirmationModal
                 isOpen={modalState.isOpen}
                 title={modalState.title}

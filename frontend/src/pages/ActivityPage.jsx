@@ -19,6 +19,7 @@ import RouletteTab from '../components/activity/RouletteTab';
 import SlotMachineTab from '../components/activity/SlotMachineTab';
 import GameBoardViewer from '../components/activity/GameBoardViewer';
 import AchievementsTab from '../components/activity/AchievementsTab';
+import ChatTab from '../components/activity/ChatTab';
 
 import './ActivityPage.css';
 
@@ -143,7 +144,7 @@ const ViewRenderer = () => {
     case 'store':
       return <StoreTab
         items={storeItems}
-        userPoints={userProgress?.points || 0}
+        userPoints={userProgress?.points_earned || 0}
         onPurchase={fetchAllData}
         onAddItem={fetchAllData}
         onDeleteItem={fetchAllData}
@@ -170,6 +171,8 @@ const ViewRenderer = () => {
         onPrizeUnlocked={fetchAllData}
         onReturn={handleReturnToBoard}
       />;
+    case 'chat':
+      return <ChatTab onReturn={handleReturnToBoard} />;
     case 'slot_machine':
       return <SlotMachineTab
         userCoins={userProgress?.coins || 0}

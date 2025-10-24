@@ -11,7 +11,11 @@ ENV_VAR_NAME="VITE_API_URL"
 # --- Início do Script ---
 
 echo "🚀 Iniciando ambiente de desenvolvimento completo..."
-
+# --- NOVO: Backup automático dos dados do WakaTime ---
+echo "0. Verificando e salvando histórico do WakaTime..."
+python3 save_wakatime.py 
+echo "---"
+# --------------------------------------------------------
 # Limpa logs antigos para garantir que não estamos lendo URLs velhas
 rm -f backend_tunnel.log frontend_tunnel.log
 

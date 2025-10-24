@@ -13,19 +13,26 @@ const ChatTab = ({ onReturn }) => {
   const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
 
-  // Novos estados de UI
+  // --- CORREÇÃO: Estados de UI adicionados ---
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-
+  console.log("[ChatTab] Estado inicial de isloading:", isLoading);
+  console.log("[ChatTab] Estado inicial de error:", error);
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   useEffect(() => {
+    console.log("[ChatTab] useEffect executado com activityId:", activityId);
+    console.log("[ChatTab] useEffect executado com user.token:", user.token);
+    console.log("[ChatTab] useEffect executado com user.id:", user.id);
     const fetchHistory = async () => {
+      console.log("[ChatTab] fetchHistory executado")
+      // --- CORREÇÃO: Gerenciamento de estado ---
       setIsLoading(true);
       setError('');
       try {
+        console.log("[ChatTab] fetchHistory entrou no try")
         const response = await fetch(`${import.meta.env.VITE_API_URL}/api/chat/activity/${activityId}/messages`, {
           headers: { 'Authorization': `Bearer ${user.token}` }
         });
@@ -38,6 +45,7 @@ const ChatTab = ({ onReturn }) => {
         console.error("Erro ao buscar histórico do chat:", error);
         setError(error.message);
       } finally {
+        // Garante que o loading termine, com sucesso ou erro
         setIsLoading(false);
       }
     };
@@ -83,6 +91,7 @@ const ChatTab = ({ onReturn }) => {
       </div>
       <h2 className="text-xl font-bold mb-4 flex-shrink-0">Chat da Atividade</h2>
 
+      {/* --- CORREÇÃO: Renderização condicional baseada nos novos estados --- */}
       <div className="flex-grow overflow-y-auto mb-4 pr-2 space-y-4">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
@@ -117,7 +126,7 @@ const ChatTab = ({ onReturn }) => {
           onChange={(e) => setNewMessage(e.target.value)}
           placeholder="Digite sua mensagem..."
           className="flex-grow bg-border-color p-2 rounded-lg focus:outline-none"
-          disabled={isLoading || !!error}
+          disabled={isLoading || !!error} // Desabilita o input durante o loading ou em caso de erro
         />
         <button type="submit" className="bg-teal-600 px-4 py-2 rounded-lg font-bold" disabled={isLoading || !!error}>Enviar</button>
       </form>

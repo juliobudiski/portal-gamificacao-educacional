@@ -1,0 +1,2905 @@
+[
+    {
+        "grand_total": {
+            "hours": 5,
+            "minutes": 0,
+            "total_seconds": 18000,
+            "digital": "5:00",
+            "text": "5 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-07-01",
+            "start": "2025-07-01T00:00:00Z",
+            "end": "2025-07-01T23:59:59Z",
+            "text": "Manually Added - Tuesday, July 01, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-07-02",
+            "start": "2025-07-02T00:00:00Z",
+            "end": "2025-07-02T23:59:59Z",
+            "text": "Manually Added - Wednesday, July 02, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 5,
+            "minutes": 0,
+            "total_seconds": 18000,
+            "digital": "5:00",
+            "text": "5 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-07-03",
+            "start": "2025-07-03T00:00:00Z",
+            "end": "2025-07-03T23:59:59Z",
+            "text": "Manually Added - Thursday, July 03, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 5,
+            "minutes": 0,
+            "total_seconds": 18000,
+            "digital": "5:00",
+            "text": "5 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-07-04",
+            "start": "2025-07-04T00:00:00Z",
+            "end": "2025-07-04T23:59:59Z",
+            "text": "Manually Added - Friday, July 04, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-07-06",
+            "start": "2025-07-06T00:00:00Z",
+            "end": "2025-07-06T23:59:59Z",
+            "text": "Manually Added - Sunday, July 06, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 5,
+            "minutes": 0,
+            "total_seconds": 18000,
+            "digital": "5:00",
+            "text": "5 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-07-07",
+            "start": "2025-07-07T00:00:00Z",
+            "end": "2025-07-07T23:59:59Z",
+            "text": "Manually Added - Monday, July 07, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-07-08",
+            "start": "2025-07-08T00:00:00Z",
+            "end": "2025-07-08T23:59:59Z",
+            "text": "Manually Added - Tuesday, July 08, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-07-15",
+            "start": "2025-07-15T00:00:00Z",
+            "end": "2025-07-15T23:59:59Z",
+            "text": "Manually Added - Tuesday, July 15, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-07-16",
+            "start": "2025-07-16T00:00:00Z",
+            "end": "2025-07-16T23:59:59Z",
+            "text": "Manually Added - Wednesday, July 16, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-07-17",
+            "start": "2025-07-17T00:00:00Z",
+            "end": "2025-07-17T23:59:59Z",
+            "text": "Manually Added - Thursday, July 17, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-07-18",
+            "start": "2025-07-18T00:00:00Z",
+            "end": "2025-07-18T23:59:59Z",
+            "text": "Manually Added - Friday, July 18, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-07-24",
+            "start": "2025-07-24T00:00:00Z",
+            "end": "2025-07-24T23:59:59Z",
+            "text": "Manually Added - Thursday, July 24, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 5,
+            "minutes": 0,
+            "total_seconds": 18000,
+            "digital": "5:00",
+            "text": "5 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-07-25",
+            "start": "2025-07-25T00:00:00Z",
+            "end": "2025-07-25T23:59:59Z",
+            "text": "Manually Added - Friday, July 25, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 5,
+            "minutes": 0,
+            "total_seconds": 18000,
+            "digital": "5:00",
+            "text": "5 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-07-26",
+            "start": "2025-07-26T00:00:00Z",
+            "end": "2025-07-26T23:59:59Z",
+            "text": "Manually Added - Saturday, July 26, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-07-28",
+            "start": "2025-07-28T00:00:00Z",
+            "end": "2025-07-28T23:59:59Z",
+            "text": "Manually Added - Monday, July 28, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-07-29",
+            "start": "2025-07-29T00:00:00Z",
+            "end": "2025-07-29T23:59:59Z",
+            "text": "Manually Added - Tuesday, July 29, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-07-30",
+            "start": "2025-07-30T00:00:00Z",
+            "end": "2025-07-30T23:59:59Z",
+            "text": "Manually Added - Wednesday, July 30, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-07-31",
+            "start": "2025-07-31T00:00:00Z",
+            "end": "2025-07-31T23:59:59Z",
+            "text": "Manually Added - Thursday, July 31, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-08-01",
+            "start": "2025-08-01T00:00:00Z",
+            "end": "2025-08-01T23:59:59Z",
+            "text": "Manually Added - Friday, August 01, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-08-06",
+            "start": "2025-08-06T00:00:00Z",
+            "end": "2025-08-06T23:59:59Z",
+            "text": "Manually Added - Wednesday, August 06, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 5,
+            "minutes": 0,
+            "total_seconds": 18000,
+            "digital": "5:00",
+            "text": "5 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-08-13",
+            "start": "2025-08-13T00:00:00Z",
+            "end": "2025-08-13T23:59:59Z",
+            "text": "Manually Added - Wednesday, August 13, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-08-14",
+            "start": "2025-08-14T00:00:00Z",
+            "end": "2025-08-14T23:59:59Z",
+            "text": "Manually Added - Thursday, August 14, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-08-18",
+            "start": "2025-08-18T00:00:00Z",
+            "end": "2025-08-18T23:59:59Z",
+            "text": "Manually Added - Monday, August 18, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-08-19",
+            "start": "2025-08-19T00:00:00Z",
+            "end": "2025-08-19T23:59:59Z",
+            "text": "Manually Added - Tuesday, August 19, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-08-20",
+            "start": "2025-08-20T00:00:00Z",
+            "end": "2025-08-20T23:59:59Z",
+            "text": "Manually Added - Wednesday, August 20, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-08-22",
+            "start": "2025-08-22T00:00:00Z",
+            "end": "2025-08-22T23:59:59Z",
+            "text": "Manually Added - Friday, August 22, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-08-25",
+            "start": "2025-08-25T00:00:00Z",
+            "end": "2025-08-25T23:59:59Z",
+            "text": "Manually Added - Monday, August 25, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-08-26",
+            "start": "2025-08-26T00:00:00Z",
+            "end": "2025-08-26T23:59:59Z",
+            "text": "Manually Added - Tuesday, August 26, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 5,
+            "minutes": 0,
+            "total_seconds": 18000,
+            "digital": "5:00",
+            "text": "5 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-08-27",
+            "start": "2025-08-27T00:00:00Z",
+            "end": "2025-08-27T23:59:59Z",
+            "text": "Manually Added - Wednesday, August 27, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-08-29",
+            "start": "2025-08-29T00:00:00Z",
+            "end": "2025-08-29T23:59:59Z",
+            "text": "Manually Added - Friday, August 29, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-09-02",
+            "start": "2025-09-02T00:00:00Z",
+            "end": "2025-09-02T23:59:59Z",
+            "text": "Manually Added - Tuesday, September 02, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-09-03",
+            "start": "2025-09-03T00:00:00Z",
+            "end": "2025-09-03T23:59:59Z",
+            "text": "Manually Added - Wednesday, September 03, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-09-10",
+            "start": "2025-09-10T00:00:00Z",
+            "end": "2025-09-10T23:59:59Z",
+            "text": "Manually Added - Wednesday, September 10, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-09-11",
+            "start": "2025-09-11T00:00:00Z",
+            "end": "2025-09-11T23:59:59Z",
+            "text": "Manually Added - Thursday, September 11, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-09-12",
+            "start": "2025-09-12T00:00:00Z",
+            "end": "2025-09-12T23:59:59Z",
+            "text": "Manually Added - Friday, September 12, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-09-17",
+            "start": "2025-09-17T00:00:00Z",
+            "end": "2025-09-17T23:59:59Z",
+            "text": "Manually Added - Wednesday, September 17, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-09-18",
+            "start": "2025-09-18T00:00:00Z",
+            "end": "2025-09-18T23:59:59Z",
+            "text": "Manually Added - Thursday, September 18, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-09-23",
+            "start": "2025-09-23T00:00:00Z",
+            "end": "2025-09-23T23:59:59Z",
+            "text": "Manually Added - Tuesday, September 23, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-09-24",
+            "start": "2025-09-24T00:00:00Z",
+            "end": "2025-09-24T23:59:59Z",
+            "text": "Manually Added - Wednesday, September 24, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-09-25",
+            "start": "2025-09-25T00:00:00Z",
+            "end": "2025-09-25T23:59:59Z",
+            "text": "Manually Added - Thursday, September 25, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-09-26",
+            "start": "2025-09-26T00:00:00Z",
+            "end": "2025-09-26T23:59:59Z",
+            "text": "Manually Added - Friday, September 26, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-09-29",
+            "start": "2025-09-29T00:00:00Z",
+            "end": "2025-09-29T23:59:59Z",
+            "text": "Manually Added - Monday, September 29, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-10-01",
+            "start": "2025-10-01T00:00:00Z",
+            "end": "2025-10-01T23:59:59Z",
+            "text": "Manually Added - Wednesday, October 01, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-10-02",
+            "start": "2025-10-02T00:00:00Z",
+            "end": "2025-10-02T23:59:59Z",
+            "text": "Manually Added - Thursday, October 02, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-10-06",
+            "start": "2025-10-06T00:00:00Z",
+            "end": "2025-10-06T23:59:59Z",
+            "text": "Manually Added - Monday, October 06, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-10-07",
+            "start": "2025-10-07T00:00:00Z",
+            "end": "2025-10-07T23:59:59Z",
+            "text": "Manually Added - Tuesday, October 07, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-10-08",
+            "start": "2025-10-08T00:00:00Z",
+            "end": "2025-10-08T23:59:59Z",
+            "text": "Manually Added - Wednesday, October 08, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-10-09",
+            "start": "2025-10-09T00:00:00Z",
+            "end": "2025-10-09T23:59:59Z",
+            "text": "Manually Added - Thursday, October 09, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-10-13",
+            "start": "2025-10-13T00:00:00Z",
+            "end": "2025-10-13T23:59:59Z",
+            "text": "Manually Added - Monday, October 13, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-10-14",
+            "start": "2025-10-14T00:00:00Z",
+            "end": "2025-10-14T23:59:59Z",
+            "text": "Manually Added - Tuesday, October 14, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-10-15",
+            "start": "2025-10-15T00:00:00Z",
+            "end": "2025-10-15T23:59:59Z",
+            "text": "Manually Added - Wednesday, October 15, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "grand_total": {
+            "hours": 6,
+            "minutes": 0,
+            "total_seconds": 21600,
+            "digital": "6:00",
+            "text": "6 hrs 0 mins"
+        },
+        "range": {
+            "date": "2025-10-16",
+            "start": "2025-10-16T00:00:00Z",
+            "end": "2025-10-16T23:59:59Z",
+            "text": "Manually Added - Thursday, October 16, 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "manually_added": true
+    },
+    {
+        "languages": [],
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "editors": [],
+        "operating_systems": [],
+        "categories": [],
+        "dependencies": [],
+        "machines": [],
+        "projects": [],
+        "range": {
+            "start": "2025-10-18T03:00:00Z",
+            "end": "2025-10-19T02:59:59Z",
+            "date": "2025-10-18",
+            "text": "Sat Oct 18th 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "ai_additions": 0,
+        "ai_deletions": 0,
+        "human_additions": 0,
+        "human_deletions": 0
+    },
+    {
+        "languages": [],
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "editors": [],
+        "operating_systems": [],
+        "categories": [],
+        "dependencies": [],
+        "machines": [],
+        "projects": [],
+        "range": {
+            "start": "2025-10-19T03:00:00Z",
+            "end": "2025-10-20T02:59:59Z",
+            "date": "2025-10-19",
+            "text": "Sun Oct 19th 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "ai_additions": 0,
+        "ai_deletions": 0,
+        "human_additions": 0,
+        "human_deletions": 0
+    },
+    {
+        "languages": [
+            {
+                "name": "JavaScript",
+                "total_seconds": 2121.937,
+                "digital": "0:35:21",
+                "decimal": "0.58",
+                "text": "35 mins",
+                "hours": 0,
+                "minutes": 35,
+                "seconds": 21,
+                "percent": 100.0
+            }
+        ],
+        "grand_total": {
+            "hours": 0,
+            "minutes": 35,
+            "total_seconds": 2121.937,
+            "digital": "0:35",
+            "decimal": "0.58",
+            "text": "35 mins",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 308,
+            "human_deletions": 536
+        },
+        "editors": [
+            {
+                "name": "VS Code",
+                "total_seconds": 2121.937,
+                "digital": "0:35:21",
+                "decimal": "0.58",
+                "text": "35 mins",
+                "hours": 0,
+                "minutes": 35,
+                "seconds": 21,
+                "percent": 100.0
+            }
+        ],
+        "operating_systems": [
+            {
+                "name": "Linux",
+                "total_seconds": 2121.937,
+                "digital": "0:35:21",
+                "decimal": "0.58",
+                "text": "35 mins",
+                "hours": 0,
+                "minutes": 35,
+                "seconds": 21,
+                "percent": 100.0
+            }
+        ],
+        "categories": [
+            {
+                "name": "Coding",
+                "total_seconds": 2121.937,
+                "digital": "0:35:21",
+                "decimal": "0.58",
+                "text": "35 mins",
+                "hours": 0,
+                "minutes": 35,
+                "seconds": 21,
+                "percent": 100.0
+            }
+        ],
+        "dependencies": [
+            {
+                "name": "react",
+                "total_seconds": 2060.365,
+                "digital": "0:34:20",
+                "decimal": "0.57",
+                "text": "34 mins",
+                "hours": 0,
+                "minutes": 34,
+                "seconds": 20,
+                "percent": 5.72
+            },
+            {
+                "name": "GameBoardConfig",
+                "total_seconds": 1993.616,
+                "digital": "0:33:13",
+                "decimal": "0.55",
+                "text": "33 mins",
+                "hours": 0,
+                "minutes": 33,
+                "seconds": 13,
+                "percent": 5.53
+            },
+            {
+                "name": "react-router-dom",
+                "total_seconds": 1893.037,
+                "digital": "0:31:33",
+                "decimal": "0.52",
+                "text": "31 mins",
+                "hours": 0,
+                "minutes": 31,
+                "seconds": 33,
+                "percent": 5.26
+            },
+            {
+                "name": "QuizTab",
+                "total_seconds": 1481.912,
+                "digital": "0:24:41",
+                "decimal": "0.40",
+                "text": "24 mins",
+                "hours": 0,
+                "minutes": 24,
+                "seconds": 41,
+                "percent": 4.11
+            },
+            {
+                "name": "NarrativeTab",
+                "total_seconds": 1481.912,
+                "digital": "0:24:41",
+                "decimal": "0.40",
+                "text": "24 mins",
+                "hours": 0,
+                "minutes": 24,
+                "seconds": 41,
+                "percent": 4.11
+            },
+            {
+                "name": "MissionTab",
+                "total_seconds": 1481.912,
+                "digital": "0:24:41",
+                "decimal": "0.40",
+                "text": "24 mins",
+                "hours": 0,
+                "minutes": 24,
+                "seconds": 41,
+                "percent": 4.11
+            },
+            {
+                "name": "ForumTab",
+                "total_seconds": 1481.912,
+                "digital": "0:24:41",
+                "decimal": "0.40",
+                "text": "24 mins",
+                "hours": 0,
+                "minutes": 24,
+                "seconds": 41,
+                "percent": 4.11
+            },
+            {
+                "name": "ProfessorSidebar",
+                "total_seconds": 1481.912,
+                "digital": "0:24:41",
+                "decimal": "0.40",
+                "text": "24 mins",
+                "hours": 0,
+                "minutes": 24,
+                "seconds": 41,
+                "percent": 4.11
+            },
+            {
+                "name": "FinalRewardTab",
+                "total_seconds": 1481.912,
+                "digital": "0:24:41",
+                "decimal": "0.40",
+                "text": "24 mins",
+                "hours": 0,
+                "minutes": 24,
+                "seconds": 41,
+                "percent": 4.11
+            },
+            {
+                "name": "CustomizationTab",
+                "total_seconds": 1481.912,
+                "digital": "0:24:41",
+                "decimal": "0.40",
+                "text": "24 mins",
+                "hours": 0,
+                "minutes": 24,
+                "seconds": 41,
+                "percent": 4.11
+            },
+            {
+                "name": "ActivityPage",
+                "total_seconds": 1481.912,
+                "digital": "0:24:41",
+                "decimal": "0.40",
+                "text": "24 mins",
+                "hours": 0,
+                "minutes": 24,
+                "seconds": 41,
+                "percent": 4.11
+            },
+            {
+                "name": "GameBoardViewer",
+                "total_seconds": 1481.912,
+                "digital": "0:24:41",
+                "decimal": "0.40",
+                "text": "24 mins",
+                "hours": 0,
+                "minutes": 24,
+                "seconds": 41,
+                "percent": 4.11
+            },
+            {
+                "name": "StoreTab",
+                "total_seconds": 1481.912,
+                "digital": "0:24:41",
+                "decimal": "0.40",
+                "text": "24 mins",
+                "hours": 0,
+                "minutes": 24,
+                "seconds": 41,
+                "percent": 4.11
+            },
+            {
+                "name": "StatsModal",
+                "total_seconds": 1481.912,
+                "digital": "0:24:41",
+                "decimal": "0.40",
+                "text": "24 mins",
+                "hours": 0,
+                "minutes": 24,
+                "seconds": 41,
+                "percent": 4.11
+            },
+            {
+                "name": "LeaderboardTab",
+                "total_seconds": 1481.912,
+                "digital": "0:24:41",
+                "decimal": "0.40",
+                "text": "24 mins",
+                "hours": 0,
+                "minutes": 24,
+                "seconds": 41,
+                "percent": 4.11
+            },
+            {
+                "name": "StudentSidebar",
+                "total_seconds": 1481.912,
+                "digital": "0:24:41",
+                "decimal": "0.40",
+                "text": "24 mins",
+                "hours": 0,
+                "minutes": 24,
+                "seconds": 41,
+                "percent": 4.11
+            },
+            {
+                "name": "AuthContext",
+                "total_seconds": 1263.081,
+                "digital": "0:21:03",
+                "decimal": "0.35",
+                "text": "21 mins",
+                "hours": 0,
+                "minutes": 21,
+                "seconds": 3,
+                "percent": 3.51
+            },
+            {
+                "name": "POST",
+                "total_seconds": 1263.081,
+                "digital": "0:21:03",
+                "decimal": "0.35",
+                "text": "21 mins",
+                "hours": 0,
+                "minutes": 21,
+                "seconds": 3,
+                "percent": 3.51
+            },
+            {
+                "name": "true",
+                "total_seconds": 1263.081,
+                "digital": "0:21:03",
+                "decimal": "0.35",
+                "text": "21 mins",
+                "hours": 0,
+                "minutes": 21,
+                "seconds": 3,
+                "percent": 3.51
+            },
+            {
+                "name": "useAssetLoader",
+                "total_seconds": 1263.081,
+                "digital": "0:21:03",
+                "decimal": "0.35",
+                "text": "21 mins",
+                "hours": 0,
+                "minutes": 21,
+                "seconds": 3,
+                "percent": 3.51
+            },
+            {
+                "name": "ActivityContext",
+                "total_seconds": 699.296,
+                "digital": "0:11:39",
+                "decimal": "0.18",
+                "text": "11 mins",
+                "hours": 0,
+                "minutes": 11,
+                "seconds": 39,
+                "percent": 1.94
+            },
+            {
+                "name": "Authorization",
+                "total_seconds": 642.687,
+                "digital": "0:10:42",
+                "decimal": "0.17",
+                "text": "10 mins",
+                "hours": 0,
+                "minutes": 10,
+                "seconds": 42,
+                "percent": 1.78
+            },
+            {
+                "name": "useActivityLogic",
+                "total_seconds": 629.956,
+                "digital": "0:10:29",
+                "decimal": "0.17",
+                "text": "10 mins",
+                "hours": 0,
+                "minutes": 10,
+                "seconds": 29,
+                "percent": 1.75
+            },
+            {
+                "name": "fa",
+                "total_seconds": 515.457,
+                "digital": "0:08:35",
+                "decimal": "0.13",
+                "text": "8 mins",
+                "hours": 0,
+                "minutes": 8,
+                "seconds": 35,
+                "percent": 1.43
+            },
+            {
+                "name": "useAnalytics",
+                "total_seconds": 515.457,
+                "digital": "0:08:35",
+                "decimal": "0.13",
+                "text": "8 mins",
+                "hours": 0,
+                "minutes": 8,
+                "seconds": 35,
+                "percent": 1.43
+            },
+            {
+                "name": "AchievementsTab",
+                "total_seconds": 515.457,
+                "digital": "0:08:35",
+                "decimal": "0.13",
+                "text": "8 mins",
+                "hours": 0,
+                "minutes": 8,
+                "seconds": 35,
+                "percent": 1.43
+            },
+            {
+                "name": "SlotMachineTab",
+                "total_seconds": 515.457,
+                "digital": "0:08:35",
+                "decimal": "0.13",
+                "text": "8 mins",
+                "hours": 0,
+                "minutes": 8,
+                "seconds": 35,
+                "percent": 1.43
+            },
+            {
+                "name": "ChatTab",
+                "total_seconds": 515.457,
+                "digital": "0:08:35",
+                "decimal": "0.13",
+                "text": "8 mins",
+                "hours": 0,
+                "minutes": 8,
+                "seconds": 35,
+                "percent": 1.43
+            },
+            {
+                "name": "RouletteTab",
+                "total_seconds": 515.457,
+                "digital": "0:08:35",
+                "decimal": "0.13",
+                "text": "8 mins",
+                "hours": 0,
+                "minutes": 8,
+                "seconds": 35,
+                "percent": 1.43
+            },
+            {
+                "name": "gameElementsConfig",
+                "total_seconds": 515.457,
+                "digital": "0:08:35",
+                "decimal": "0.13",
+                "text": "8 mins",
+                "hours": 0,
+                "minutes": 8,
+                "seconds": 35,
+                "percent": 1.43
+            },
+            {
+                "name": "GameBoard",
+                "total_seconds": 100.579,
+                "digital": "0:01:40",
+                "decimal": "0.02",
+                "text": "1 min",
+                "hours": 0,
+                "minutes": 1,
+                "seconds": 40,
+                "percent": 0.28
+            },
+            {
+                "name": "FlowchartTheme",
+                "total_seconds": 37.609,
+                "digital": "0:00:37",
+                "decimal": "0.00",
+                "text": "37 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 37,
+                "percent": 0.1
+            },
+            {
+                "name": "VilaDaAventuraTheme",
+                "total_seconds": 37.609,
+                "digital": "0:00:37",
+                "decimal": "0.00",
+                "text": "37 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 37,
+                "percent": 0.1
+            }
+        ],
+        "machines": [
+            {
+                "name": "julio-Inspiron-5421",
+                "total_seconds": 2121.937,
+                "machine_name_id": "d0573cb1-0538-42ac-98f0-a27838c4f2c8",
+                "digital": "0:35:21",
+                "decimal": "0.58",
+                "text": "35 mins",
+                "hours": 0,
+                "minutes": 35,
+                "seconds": 21,
+                "percent": 100.0
+            }
+        ],
+        "projects": [
+            {
+                "name": "portal-gamificacao-educacional",
+                "total_seconds": 2121.937,
+                "ai_additions": 0,
+                "ai_deletions": 0,
+                "human_additions": 308,
+                "human_deletions": 536,
+                "color": null,
+                "digital": "0:35:21",
+                "decimal": "0.58",
+                "text": "35 mins",
+                "hours": 0,
+                "minutes": 35,
+                "seconds": 21,
+                "percent": 100.0
+            }
+        ],
+        "range": {
+            "start": "2025-10-20T03:00:00Z",
+            "end": "2025-10-21T02:59:59Z",
+            "date": "2025-10-20",
+            "text": "Mon Oct 20th 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "ai_additions": 0,
+        "ai_deletions": 0,
+        "human_additions": 0,
+        "human_deletions": 0
+    },
+    {
+        "languages": [
+            {
+                "name": "JavaScript",
+                "total_seconds": 6466.357,
+                "digital": "1:47:46",
+                "decimal": "1.78",
+                "text": "1 hr 47 mins",
+                "hours": 1,
+                "minutes": 47,
+                "seconds": 46,
+                "percent": 100.0
+            }
+        ],
+        "grand_total": {
+            "hours": 1,
+            "minutes": 47,
+            "total_seconds": 6466.357,
+            "digital": "1:47",
+            "decimal": "1.78",
+            "text": "1 hr 47 mins",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 441,
+            "human_deletions": 299
+        },
+        "editors": [
+            {
+                "name": "VS Code",
+                "total_seconds": 6466.357,
+                "digital": "1:47:46",
+                "decimal": "1.78",
+                "text": "1 hr 47 mins",
+                "hours": 1,
+                "minutes": 47,
+                "seconds": 46,
+                "percent": 100.0
+            }
+        ],
+        "operating_systems": [
+            {
+                "name": "Linux",
+                "total_seconds": 6466.357,
+                "digital": "1:47:46",
+                "decimal": "1.78",
+                "text": "1 hr 47 mins",
+                "hours": 1,
+                "minutes": 47,
+                "seconds": 46,
+                "percent": 100.0
+            }
+        ],
+        "categories": [
+            {
+                "name": "Coding",
+                "total_seconds": 6466.357,
+                "digital": "1:47:46",
+                "decimal": "1.78",
+                "text": "1 hr 47 mins",
+                "hours": 1,
+                "minutes": 47,
+                "seconds": 46,
+                "percent": 100.0
+            }
+        ],
+        "dependencies": [
+            {
+                "name": "react",
+                "total_seconds": 6466.357,
+                "digital": "1:47:46",
+                "decimal": "1.78",
+                "text": "1 hr 47 mins",
+                "hours": 1,
+                "minutes": 47,
+                "seconds": 46,
+                "percent": 8.53
+            },
+            {
+                "name": "true",
+                "total_seconds": 5033.294,
+                "digital": "1:23:53",
+                "decimal": "1.38",
+                "text": "1 hr 23 mins",
+                "hours": 1,
+                "minutes": 23,
+                "seconds": 53,
+                "percent": 6.64
+            },
+            {
+                "name": "GameBoardConfig",
+                "total_seconds": 3996.114,
+                "digital": "1:06:36",
+                "decimal": "1.10",
+                "text": "1 hr 6 mins",
+                "hours": 1,
+                "minutes": 6,
+                "seconds": 36,
+                "percent": 5.27
+            },
+            {
+                "name": "react-router-dom",
+                "total_seconds": 3760.868,
+                "digital": "1:02:40",
+                "decimal": "1.03",
+                "text": "1 hr 2 mins",
+                "hours": 1,
+                "minutes": 2,
+                "seconds": 40,
+                "percent": 4.96
+            },
+            {
+                "name": "ActivityContext",
+                "total_seconds": 2813.189,
+                "digital": "0:46:53",
+                "decimal": "0.77",
+                "text": "46 mins",
+                "hours": 0,
+                "minutes": 46,
+                "seconds": 53,
+                "percent": 3.71
+            },
+            {
+                "name": "ActivityPage",
+                "total_seconds": 2345.344,
+                "digital": "0:39:05",
+                "decimal": "0.65",
+                "text": "39 mins",
+                "hours": 0,
+                "minutes": 39,
+                "seconds": 5,
+                "percent": 3.1
+            },
+            {
+                "name": "AuthContext",
+                "total_seconds": 2008.006,
+                "digital": "0:33:28",
+                "decimal": "0.55",
+                "text": "33 mins",
+                "hours": 0,
+                "minutes": 33,
+                "seconds": 28,
+                "percent": 2.65
+            },
+            {
+                "name": "LeaderboardTab",
+                "total_seconds": 1752.862,
+                "digital": "0:29:12",
+                "decimal": "0.48",
+                "text": "29 mins",
+                "hours": 0,
+                "minutes": 29,
+                "seconds": 12,
+                "percent": 2.31
+            },
+            {
+                "name": "GameBoardViewer",
+                "total_seconds": 1752.862,
+                "digital": "0:29:12",
+                "decimal": "0.48",
+                "text": "29 mins",
+                "hours": 0,
+                "minutes": 29,
+                "seconds": 12,
+                "percent": 2.31
+            },
+            {
+                "name": "useActivityLogic",
+                "total_seconds": 1752.862,
+                "digital": "0:29:12",
+                "decimal": "0.48",
+                "text": "29 mins",
+                "hours": 0,
+                "minutes": 29,
+                "seconds": 12,
+                "percent": 2.31
+            },
+            {
+                "name": "FinalRewardTab",
+                "total_seconds": 1752.862,
+                "digital": "0:29:12",
+                "decimal": "0.48",
+                "text": "29 mins",
+                "hours": 0,
+                "minutes": 29,
+                "seconds": 12,
+                "percent": 2.31
+            },
+            {
+                "name": "CustomizationTab",
+                "total_seconds": 1752.862,
+                "digital": "0:29:12",
+                "decimal": "0.48",
+                "text": "29 mins",
+                "hours": 0,
+                "minutes": 29,
+                "seconds": 12,
+                "percent": 2.31
+            },
+            {
+                "name": "QuizTab",
+                "total_seconds": 1752.862,
+                "digital": "0:29:12",
+                "decimal": "0.48",
+                "text": "29 mins",
+                "hours": 0,
+                "minutes": 29,
+                "seconds": 12,
+                "percent": 2.31
+            },
+            {
+                "name": "StudentSidebar",
+                "total_seconds": 1752.862,
+                "digital": "0:29:12",
+                "decimal": "0.48",
+                "text": "29 mins",
+                "hours": 0,
+                "minutes": 29,
+                "seconds": 12,
+                "percent": 2.31
+            },
+            {
+                "name": "NarrativeTab",
+                "total_seconds": 1752.862,
+                "digital": "0:29:12",
+                "decimal": "0.48",
+                "text": "29 mins",
+                "hours": 0,
+                "minutes": 29,
+                "seconds": 12,
+                "percent": 2.31
+            },
+            {
+                "name": "MissionTab",
+                "total_seconds": 1752.862,
+                "digital": "0:29:12",
+                "decimal": "0.48",
+                "text": "29 mins",
+                "hours": 0,
+                "minutes": 29,
+                "seconds": 12,
+                "percent": 2.31
+            },
+            {
+                "name": "StoreTab",
+                "total_seconds": 1752.862,
+                "digital": "0:29:12",
+                "decimal": "0.48",
+                "text": "29 mins",
+                "hours": 0,
+                "minutes": 29,
+                "seconds": 12,
+                "percent": 2.31
+            },
+            {
+                "name": "StatsModal",
+                "total_seconds": 1752.862,
+                "digital": "0:29:12",
+                "decimal": "0.48",
+                "text": "29 mins",
+                "hours": 0,
+                "minutes": 29,
+                "seconds": 12,
+                "percent": 2.31
+            },
+            {
+                "name": "ProfessorSidebar",
+                "total_seconds": 1752.862,
+                "digital": "0:29:12",
+                "decimal": "0.48",
+                "text": "29 mins",
+                "hours": 0,
+                "minutes": 29,
+                "seconds": 12,
+                "percent": 2.31
+            },
+            {
+                "name": "ForumTab",
+                "total_seconds": 1752.862,
+                "digital": "0:29:12",
+                "decimal": "0.48",
+                "text": "29 mins",
+                "hours": 0,
+                "minutes": 29,
+                "seconds": 12,
+                "percent": 2.31
+            },
+            {
+                "name": "jwt-decode",
+                "total_seconds": 1564.821,
+                "digital": "0:26:04",
+                "decimal": "0.43",
+                "text": "26 mins",
+                "hours": 0,
+                "minutes": 26,
+                "seconds": 4,
+                "percent": 2.07
+            },
+            {
+                "name": "POST",
+                "total_seconds": 1415.524,
+                "digital": "0:23:35",
+                "decimal": "0.38",
+                "text": "23 mins",
+                "hours": 0,
+                "minutes": 23,
+                "seconds": 35,
+                "percent": 1.87
+            },
+            {
+                "name": "useAssetLoader",
+                "total_seconds": 1415.524,
+                "digital": "0:23:35",
+                "decimal": "0.38",
+                "text": "23 mins",
+                "hours": 0,
+                "minutes": 23,
+                "seconds": 35,
+                "percent": 1.87
+            },
+            {
+                "name": "GameBoard",
+                "total_seconds": 957.403,
+                "digital": "0:15:57",
+                "decimal": "0.25",
+                "text": "15 mins",
+                "hours": 0,
+                "minutes": 15,
+                "seconds": 57,
+                "percent": 1.26
+            },
+            {
+                "name": "GameBoardTestPage",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "JoinClassPage",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "ScrollToTop",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "LoginPage",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "ActivityBankPage",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "useAnalytics",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "SystemAnalyticsPage",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "UserProfilePage",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "Footer",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "NarrativeEditorPage",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "ClassManagementPage",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "NotFoundPage",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "ActivityEditPage",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "AdminPage",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "HomePage",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "RegisterPage",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "ActivityManagementPage",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "TeacherDashboardPage",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "ThemeToggleButton",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "UserManagementPage",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "AboutUsPage",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "ClassEditPage",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "TeacherRankingPage",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "PrivateRoute",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "AssignActivityToClass",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "QuizEditorPage",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "LogExplorerPage",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "ForgotPasswordPage",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "LocationMapPage",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "ActivityCreationPage",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "CreateClassPage",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "StudentPerformancePage",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "ClassDetailsPage",
+                "total_seconds": 592.482,
+                "digital": "0:09:52",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 52,
+                "percent": 0.78
+            },
+            {
+                "name": "DashboardOverviewPage",
+                "total_seconds": 479.252,
+                "digital": "0:07:59",
+                "decimal": "0.12",
+                "text": "7 mins",
+                "hours": 0,
+                "minutes": 7,
+                "seconds": 59,
+                "percent": 0.63
+            },
+            {
+                "name": "StudentDashboardPage",
+                "total_seconds": 405.945,
+                "digital": "0:06:45",
+                "decimal": "0.10",
+                "text": "6 mins",
+                "hours": 0,
+                "minutes": 6,
+                "seconds": 45,
+                "percent": 0.54
+            },
+            {
+                "name": "StudentActivityPage",
+                "total_seconds": 306.915,
+                "digital": "0:05:06",
+                "decimal": "0.08",
+                "text": "5 mins",
+                "hours": 0,
+                "minutes": 5,
+                "seconds": 6,
+                "percent": 0.41
+            },
+            {
+                "name": "lucide-react",
+                "total_seconds": 186.537,
+                "digital": "0:03:06",
+                "decimal": "0.05",
+                "text": "3 mins",
+                "hours": 0,
+                "minutes": 3,
+                "seconds": 6,
+                "percent": 0.25
+            },
+            {
+                "name": "FlowchartTheme",
+                "total_seconds": 102.924,
+                "digital": "0:01:42",
+                "decimal": "0.02",
+                "text": "1 min",
+                "hours": 0,
+                "minutes": 1,
+                "seconds": 42,
+                "percent": 0.14
+            },
+            {
+                "name": "VilaDaAventuraTheme",
+                "total_seconds": 102.924,
+                "digital": "0:01:42",
+                "decimal": "0.02",
+                "text": "1 min",
+                "hours": 0,
+                "minutes": 1,
+                "seconds": 42,
+                "percent": 0.14
+            },
+            {
+                "name": "framer-motion",
+                "total_seconds": 76.049,
+                "digital": "0:01:16",
+                "decimal": "0.02",
+                "text": "1 min",
+                "hours": 0,
+                "minutes": 1,
+                "seconds": 16,
+                "percent": 0.1
+            }
+        ],
+        "machines": [
+            {
+                "name": "julio-Inspiron-5421",
+                "total_seconds": 6466.357,
+                "machine_name_id": "fc46b7cc-b7ab-4c50-a66f-82c8cfebbdfb",
+                "digital": "1:47:46",
+                "decimal": "1.78",
+                "text": "1 hr 47 mins",
+                "hours": 1,
+                "minutes": 47,
+                "seconds": 46,
+                "percent": 100.0
+            }
+        ],
+        "projects": [
+            {
+                "name": "portal-gamificacao-educacional",
+                "total_seconds": 6466.357,
+                "ai_additions": 0,
+                "ai_deletions": 0,
+                "human_additions": 441,
+                "human_deletions": 299,
+                "color": null,
+                "digital": "1:47:46",
+                "decimal": "1.78",
+                "text": "1 hr 47 mins",
+                "hours": 1,
+                "minutes": 47,
+                "seconds": 46,
+                "percent": 100.0
+            }
+        ],
+        "range": {
+            "start": "2025-10-21T03:00:00Z",
+            "end": "2025-10-22T02:59:59Z",
+            "date": "2025-10-21",
+            "text": "Tue Oct 21st 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "ai_additions": 0,
+        "ai_deletions": 0,
+        "human_additions": 0,
+        "human_deletions": 0
+    },
+    {
+        "languages": [
+            {
+                "name": "JavaScript",
+                "total_seconds": 7773.419,
+                "digital": "2:09:33",
+                "decimal": "2.15",
+                "text": "2 hrs 9 mins",
+                "hours": 2,
+                "minutes": 9,
+                "seconds": 33,
+                "percent": 100.0
+            }
+        ],
+        "grand_total": {
+            "hours": 2,
+            "minutes": 9,
+            "total_seconds": 7773.419,
+            "digital": "2:09",
+            "decimal": "2.15",
+            "text": "2 hrs 9 mins",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 286,
+            "human_deletions": 274
+        },
+        "editors": [
+            {
+                "name": "VS Code",
+                "total_seconds": 7773.419,
+                "digital": "2:09:33",
+                "decimal": "2.15",
+                "text": "2 hrs 9 mins",
+                "hours": 2,
+                "minutes": 9,
+                "seconds": 33,
+                "percent": 100.0
+            }
+        ],
+        "operating_systems": [
+            {
+                "name": "Linux",
+                "total_seconds": 7773.419,
+                "digital": "2:09:33",
+                "decimal": "2.15",
+                "text": "2 hrs 9 mins",
+                "hours": 2,
+                "minutes": 9,
+                "seconds": 33,
+                "percent": 100.0
+            }
+        ],
+        "categories": [
+            {
+                "name": "Coding",
+                "total_seconds": 7773.419,
+                "digital": "2:09:33",
+                "decimal": "2.15",
+                "text": "2 hrs 9 mins",
+                "hours": 2,
+                "minutes": 9,
+                "seconds": 33,
+                "percent": 100.0
+            }
+        ],
+        "dependencies": [
+            {
+                "name": "react",
+                "total_seconds": 7331.461,
+                "digital": "2:02:11",
+                "decimal": "2.03",
+                "text": "2 hrs 2 mins",
+                "hours": 2,
+                "minutes": 2,
+                "seconds": 11,
+                "percent": 11.76
+            },
+            {
+                "name": "true",
+                "total_seconds": 4838.516,
+                "digital": "1:20:38",
+                "decimal": "1.33",
+                "text": "1 hr 20 mins",
+                "hours": 1,
+                "minutes": 20,
+                "seconds": 38,
+                "percent": 7.76
+            },
+            {
+                "name": "react-router-dom",
+                "total_seconds": 4076.872,
+                "digital": "1:07:56",
+                "decimal": "1.12",
+                "text": "1 hr 7 mins",
+                "hours": 1,
+                "minutes": 7,
+                "seconds": 56,
+                "percent": 6.54
+            },
+            {
+                "name": "GameBoardConfig",
+                "total_seconds": 3996.352,
+                "digital": "1:06:36",
+                "decimal": "1.10",
+                "text": "1 hr 6 mins",
+                "hours": 1,
+                "minutes": 6,
+                "seconds": 36,
+                "percent": 6.41
+            },
+            {
+                "name": "ActivityContext",
+                "total_seconds": 3903.408,
+                "digital": "1:05:03",
+                "decimal": "1.08",
+                "text": "1 hr 5 mins",
+                "hours": 1,
+                "minutes": 5,
+                "seconds": 3,
+                "percent": 6.26
+            },
+            {
+                "name": "AuthContext",
+                "total_seconds": 2735.629,
+                "digital": "0:45:35",
+                "decimal": "0.75",
+                "text": "45 mins",
+                "hours": 0,
+                "minutes": 45,
+                "seconds": 35,
+                "percent": 4.39
+            },
+            {
+                "name": "fa",
+                "total_seconds": 2668.994,
+                "digital": "0:44:28",
+                "decimal": "0.73",
+                "text": "44 mins",
+                "hours": 0,
+                "minutes": 44,
+                "seconds": 28,
+                "percent": 4.28
+            },
+            {
+                "name": "GameBoard",
+                "total_seconds": 2556.44,
+                "digital": "0:42:36",
+                "decimal": "0.70",
+                "text": "42 mins",
+                "hours": 0,
+                "minutes": 42,
+                "seconds": 36,
+                "percent": 4.1
+            },
+            {
+                "name": "POST",
+                "total_seconds": 1926.997,
+                "digital": "0:32:06",
+                "decimal": "0.53",
+                "text": "32 mins",
+                "hours": 0,
+                "minutes": 32,
+                "seconds": 6,
+                "percent": 3.09
+            },
+            {
+                "name": "Authorization",
+                "total_seconds": 1618.261,
+                "digital": "0:26:58",
+                "decimal": "0.43",
+                "text": "26 mins",
+                "hours": 0,
+                "minutes": 26,
+                "seconds": 58,
+                "percent": 2.59
+            },
+            {
+                "name": "QuizTab",
+                "total_seconds": 1341.243,
+                "digital": "0:22:21",
+                "decimal": "0.37",
+                "text": "22 mins",
+                "hours": 0,
+                "minutes": 22,
+                "seconds": 21,
+                "percent": 2.15
+            },
+            {
+                "name": "NarrativeTab",
+                "total_seconds": 1341.243,
+                "digital": "0:22:21",
+                "decimal": "0.37",
+                "text": "22 mins",
+                "hours": 0,
+                "minutes": 22,
+                "seconds": 21,
+                "percent": 2.15
+            },
+            {
+                "name": "MissionTab",
+                "total_seconds": 1341.243,
+                "digital": "0:22:21",
+                "decimal": "0.37",
+                "text": "22 mins",
+                "hours": 0,
+                "minutes": 22,
+                "seconds": 21,
+                "percent": 2.15
+            },
+            {
+                "name": "ForumTab",
+                "total_seconds": 1341.243,
+                "digital": "0:22:21",
+                "decimal": "0.37",
+                "text": "22 mins",
+                "hours": 0,
+                "minutes": 22,
+                "seconds": 21,
+                "percent": 2.15
+            },
+            {
+                "name": "useActivityLogic",
+                "total_seconds": 1341.243,
+                "digital": "0:22:21",
+                "decimal": "0.37",
+                "text": "22 mins",
+                "hours": 0,
+                "minutes": 22,
+                "seconds": 21,
+                "percent": 2.15
+            },
+            {
+                "name": "FinalRewardTab",
+                "total_seconds": 1341.243,
+                "digital": "0:22:21",
+                "decimal": "0.37",
+                "text": "22 mins",
+                "hours": 0,
+                "minutes": 22,
+                "seconds": 21,
+                "percent": 2.15
+            },
+            {
+                "name": "CustomizationTab",
+                "total_seconds": 1341.243,
+                "digital": "0:22:21",
+                "decimal": "0.37",
+                "text": "22 mins",
+                "hours": 0,
+                "minutes": 22,
+                "seconds": 21,
+                "percent": 2.15
+            },
+            {
+                "name": "ActivityPage",
+                "total_seconds": 1341.243,
+                "digital": "0:22:21",
+                "decimal": "0.37",
+                "text": "22 mins",
+                "hours": 0,
+                "minutes": 22,
+                "seconds": 21,
+                "percent": 2.15
+            },
+            {
+                "name": "GameBoardViewer",
+                "total_seconds": 1341.243,
+                "digital": "0:22:21",
+                "decimal": "0.37",
+                "text": "22 mins",
+                "hours": 0,
+                "minutes": 22,
+                "seconds": 21,
+                "percent": 2.15
+            },
+            {
+                "name": "StoreTab",
+                "total_seconds": 1341.243,
+                "digital": "0:22:21",
+                "decimal": "0.37",
+                "text": "22 mins",
+                "hours": 0,
+                "minutes": 22,
+                "seconds": 21,
+                "percent": 2.15
+            },
+            {
+                "name": "StatsModal",
+                "total_seconds": 1341.243,
+                "digital": "0:22:21",
+                "decimal": "0.37",
+                "text": "22 mins",
+                "hours": 0,
+                "minutes": 22,
+                "seconds": 21,
+                "percent": 2.15
+            },
+            {
+                "name": "LeaderboardTab",
+                "total_seconds": 1341.243,
+                "digital": "0:22:21",
+                "decimal": "0.37",
+                "text": "22 mins",
+                "hours": 0,
+                "minutes": 22,
+                "seconds": 21,
+                "percent": 2.15
+            },
+            {
+                "name": "StudentSidebar",
+                "total_seconds": 1341.243,
+                "digital": "0:22:21",
+                "decimal": "0.37",
+                "text": "22 mins",
+                "hours": 0,
+                "minutes": 22,
+                "seconds": 21,
+                "percent": 2.15
+            },
+            {
+                "name": "ProfessorSidebar",
+                "total_seconds": 1341.243,
+                "digital": "0:22:21",
+                "decimal": "0.37",
+                "text": "22 mins",
+                "hours": 0,
+                "minutes": 22,
+                "seconds": 21,
+                "percent": 2.15
+            },
+            {
+                "name": "PUT",
+                "total_seconds": 1286.383,
+                "digital": "0:21:26",
+                "decimal": "0.35",
+                "text": "21 mins",
+                "hours": 0,
+                "minutes": 21,
+                "seconds": 26,
+                "percent": 2.06
+            },
+            {
+                "name": "useAnalytics",
+                "total_seconds": 777.459,
+                "digital": "0:12:57",
+                "decimal": "0.20",
+                "text": "12 mins",
+                "hours": 0,
+                "minutes": 12,
+                "seconds": 57,
+                "percent": 1.25
+            },
+            {
+                "name": "AchievementsTab",
+                "total_seconds": 576.668,
+                "digital": "0:09:36",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 36,
+                "percent": 0.92
+            },
+            {
+                "name": "SlotMachineTab",
+                "total_seconds": 576.668,
+                "digital": "0:09:36",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 36,
+                "percent": 0.92
+            },
+            {
+                "name": "RouletteTab",
+                "total_seconds": 576.668,
+                "digital": "0:09:36",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 36,
+                "percent": 0.92
+            },
+            {
+                "name": "prop-types",
+                "total_seconds": 476.754,
+                "digital": "0:07:56",
+                "decimal": "0.12",
+                "text": "7 mins",
+                "hours": 0,
+                "minutes": 7,
+                "seconds": 56,
+                "percent": 0.76
+            },
+            {
+                "name": "useAssetLoader",
+                "total_seconds": 458.354,
+                "digital": "0:07:38",
+                "decimal": "0.12",
+                "text": "7 mins",
+                "hours": 0,
+                "minutes": 7,
+                "seconds": 38,
+                "percent": 0.73
+            },
+            {
+                "name": "Step1_Activity",
+                "total_seconds": 300.705,
+                "digital": "0:05:00",
+                "decimal": "0.08",
+                "text": "5 mins",
+                "hours": 0,
+                "minutes": 5,
+                "seconds": 0,
+                "percent": 0.48
+            },
+            {
+                "name": "Step7_Activity",
+                "total_seconds": 300.705,
+                "digital": "0:05:00",
+                "decimal": "0.08",
+                "text": "5 mins",
+                "hours": 0,
+                "minutes": 5,
+                "seconds": 0,
+                "percent": 0.48
+            },
+            {
+                "name": "Step3_Activity",
+                "total_seconds": 300.705,
+                "digital": "0:05:00",
+                "decimal": "0.08",
+                "text": "5 mins",
+                "hours": 0,
+                "minutes": 5,
+                "seconds": 0,
+                "percent": 0.48
+            },
+            {
+                "name": "Step5_Activity",
+                "total_seconds": 300.705,
+                "digital": "0:05:00",
+                "decimal": "0.08",
+                "text": "5 mins",
+                "hours": 0,
+                "minutes": 5,
+                "seconds": 0,
+                "percent": 0.48
+            },
+            {
+                "name": "GET",
+                "total_seconds": 300.705,
+                "digital": "0:05:00",
+                "decimal": "0.08",
+                "text": "5 mins",
+                "hours": 0,
+                "minutes": 5,
+                "seconds": 0,
+                "percent": 0.48
+            },
+            {
+                "name": "Step8_Activity",
+                "total_seconds": 300.705,
+                "digital": "0:05:00",
+                "decimal": "0.08",
+                "text": "5 mins",
+                "hours": 0,
+                "minutes": 5,
+                "seconds": 0,
+                "percent": 0.48
+            },
+            {
+                "name": "Step4_Activity",
+                "total_seconds": 300.705,
+                "digital": "0:05:00",
+                "decimal": "0.08",
+                "text": "5 mins",
+                "hours": 0,
+                "minutes": 5,
+                "seconds": 0,
+                "percent": 0.48
+            },
+            {
+                "name": "Step2_Activity",
+                "total_seconds": 300.705,
+                "digital": "0:05:00",
+                "decimal": "0.08",
+                "text": "5 mins",
+                "hours": 0,
+                "minutes": 5,
+                "seconds": 0,
+                "percent": 0.48
+            },
+            {
+                "name": "PATCH",
+                "total_seconds": 300.705,
+                "digital": "0:05:00",
+                "decimal": "0.08",
+                "text": "5 mins",
+                "hours": 0,
+                "minutes": 5,
+                "seconds": 0,
+                "percent": 0.48
+            },
+            {
+                "name": "Step6_Activity",
+                "total_seconds": 300.705,
+                "digital": "0:05:00",
+                "decimal": "0.08",
+                "text": "5 mins",
+                "hours": 0,
+                "minutes": 5,
+                "seconds": 0,
+                "percent": 0.48
+            },
+            {
+                "name": "GameBoardEditor",
+                "total_seconds": 158.228,
+                "digital": "0:02:38",
+                "decimal": "0.03",
+                "text": "2 mins",
+                "hours": 0,
+                "minutes": 2,
+                "seconds": 38,
+                "percent": 0.25
+            },
+            {
+                "name": "socket.io-client",
+                "total_seconds": 31.173,
+                "digital": "0:00:31",
+                "decimal": "0.00",
+                "text": "31 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 31,
+                "percent": 0.05
+            },
+            {
+                "name": "VilaDaAventuraTheme",
+                "total_seconds": 5.725,
+                "digital": "0:00:05",
+                "decimal": "0.00",
+                "text": "5 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 5,
+                "percent": 0.01
+            },
+            {
+                "name": "FlowchartTheme",
+                "total_seconds": 5.725,
+                "digital": "0:00:05",
+                "decimal": "0.00",
+                "text": "5 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 5,
+                "percent": 0.01
+            }
+        ],
+        "machines": [
+            {
+                "name": "julio-Inspiron-5421",
+                "total_seconds": 7773.419,
+                "machine_name_id": "d1685fec-56e1-4280-9dee-bb21953c308e",
+                "digital": "2:09:33",
+                "decimal": "2.15",
+                "text": "2 hrs 9 mins",
+                "hours": 2,
+                "minutes": 9,
+                "seconds": 33,
+                "percent": 100.0
+            }
+        ],
+        "projects": [
+            {
+                "name": "portal-gamificacao-educacional",
+                "total_seconds": 7773.419,
+                "ai_additions": 0,
+                "ai_deletions": 0,
+                "human_additions": 286,
+                "human_deletions": 274,
+                "color": null,
+                "digital": "2:09:33",
+                "decimal": "2.15",
+                "text": "2 hrs 9 mins",
+                "hours": 2,
+                "minutes": 9,
+                "seconds": 33,
+                "percent": 100.0
+            }
+        ],
+        "range": {
+            "start": "2025-10-22T03:00:00Z",
+            "end": "2025-10-23T02:59:59Z",
+            "date": "2025-10-22",
+            "text": "Wed Oct 22nd 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "ai_additions": 0,
+        "ai_deletions": 0,
+        "human_additions": 0,
+        "human_deletions": 0
+    },
+    {
+        "languages": [],
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "editors": [],
+        "operating_systems": [],
+        "categories": [],
+        "dependencies": [],
+        "machines": [],
+        "projects": [],
+        "range": {
+            "start": "2025-10-23T03:00:00Z",
+            "end": "2025-10-24T02:59:59Z",
+            "date": "2025-10-23",
+            "text": "Thu Oct 23rd 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "ai_additions": 0,
+        "ai_deletions": 0,
+        "human_additions": 0,
+        "human_deletions": 0
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2025-10-24T03:00:00Z",
+            "end": "2025-10-25T02:59:59Z",
+            "date": "2025-10-24",
+            "text": "Fri Oct 24th 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [],
+        "languages": [],
+        "dependencies": [],
+        "machines": [],
+        "editors": [],
+        "operating_systems": [],
+        "categories": []
+    }
+]

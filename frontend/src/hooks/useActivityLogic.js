@@ -143,6 +143,12 @@ export const useActivityLogic = (activityId) => {
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ step_id: completedStepId })
             });
+            debugLog("Passo concluído. Buscando progresso atualizado (pontos, moedas, etc)...");
+            const updatedProgress = await fetchWithAuth(`/api/progress/${activityId}`);
+            if (updatedProgress) {
+                setUserProgress(updatedProgress);
+                debugLog("Progresso do usuário atualizado com sucesso no estado.", updatedProgress);
+            }
         } catch (err) {
             console.error("Erro ao salvar progresso:", err);
         }
@@ -315,6 +321,7 @@ export const useActivityLogic = (activityId) => {
         handleStudentClick,
         handleOpenQuizEditor,
         handleOpenNarrativeEditor,
-        completeStep
+        completeStep,
+        fetchAllData
     };
 };
