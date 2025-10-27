@@ -113,6 +113,23 @@ export const useActivityLogic = (activityId) => {
             debugLog('Carregamento de dados finalizado');
         }
     }, [activityId, user?.role, fetchWithAuth]);
+    // ========================================================================
+    // NOVA FUNÇÃO PARA ATUALIZAÇÃO DE ESTADO DIRECIONADA
+    // ========================================================================
+    const handlePurchaseSuccess = useCallback((updatedProgressData) => {
+        debugLog('handlePurchaseSuccess: Atualizando o progresso do usuário com novos dados.', updatedProgressData);
+
+        // Atualiza apenas o progresso do usuário, mantendo o resto do estado estável
+        setUserProgress(prevProgress => ({
+            ...prevProgress,
+            ...updatedProgressData
+        }));
+
+        // Também é uma boa ideia recarregar a lista de itens da loja,
+        // pois futuramente você pode querer desabilitar itens já comprados.
+        fetchWithAuth(`/api/progress/${activityId}/store-items`).then(setStoreItems);
+
+    }, [activityId, fetchWithAuth]); // Adicione as dependências
 
     useEffect(() => {
         debugLog('useEffect principal (para buscar dados) DISPARADO.');
@@ -322,6 +339,8 @@ export const useActivityLogic = (activityId) => {
         handleOpenQuizEditor,
         handleOpenNarrativeEditor,
         completeStep,
-        fetchAllData
+        fetchAllData,
+        handlePurchaseSuccess,
+
     };
 };

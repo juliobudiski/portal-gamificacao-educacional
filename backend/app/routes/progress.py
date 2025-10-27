@@ -261,6 +261,7 @@ def purchase_store_item(activity_id):
             user_id=user_id, activity_id=activity_id, item_id=item.id,
             item_name=item.name, price_paid=item.price
         )
+        db.session.add(new_purchase) # Adiciona a compra
 
         if item.item_type == 'avatar':
             avatar_to_unlock = item.effect_id
@@ -274,9 +275,8 @@ def purchase_store_item(activity_id):
                 progress.unlocked_activity_avatars.append(avatar_to_unlock)
                 flag_modified(progress, "unlocked_activity_avatars")
 
-        if item.item_type == 'title':
+        elif item.item_type == 'title':
             clean_effect_id = item.effect_id.strip('"') if isinstance(item.effect_id, str) else item.effect_id
-            
             title_to_unlock = Title.query.filter_by(effect_id=clean_effect_id).first()
            
             if title_to_unlock:
@@ -286,15 +286,19 @@ def purchase_store_item(activity_id):
                 if not existing_unlock:
                     new_unlock = UserUnlockedTitle(user_id=user.id, activity_id=activity_id, title_id=title_to_unlock.id)
                     db.session.add(new_unlock)
-
-                # Regra MVP: auto-equipa o título recém-comprado
+                
                 progress.equipped_title_id = title_to_unlock.id
-        db.session.add(new_purchase)
+
         db.session.commit()
+        
+        # --- MUDANÇA PRINCIPAL AQUI ---
+        # Busque o progresso atualizado para obter todas as informações consistentes
+        updated_progress = ActivityProgress.query.filter_by(student_id=user_id, activity_id=activity_id).first()
         
         return jsonify({
             "message": "Compra realizada com sucesso!",
-            "new_total_points": progress.points_earned,
+            # Retorna o objeto de progresso completo
+            "updated_progress": updated_progress.to_dict() 
         }), 200
 
     except Exception as e:

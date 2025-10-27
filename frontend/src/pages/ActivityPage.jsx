@@ -108,6 +108,7 @@ const ViewRenderer = () => {
     loading,
     completeStep,
     handleReturnToBoard,
+    handlePurchaseSuccess,
     handleCollectFinalReward,
     handleCustomizationChange,
     fetchAllData,
@@ -145,7 +146,7 @@ const ViewRenderer = () => {
       return <StoreTab
         items={storeItems}
         userPoints={userProgress?.points_earned || 0}
-        onPurchase={fetchAllData}
+        onPurchaseSuccess={handlePurchaseSuccess}
         onAddItem={fetchAllData}
         onDeleteItem={fetchAllData}
         onReturn={handleReturnToBoard}

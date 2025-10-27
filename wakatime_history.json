@@ -2901,5 +2901,97 @@
         "editors": [],
         "operating_systems": [],
         "categories": []
+    },
+    {
+        "languages": [],
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "editors": [],
+        "operating_systems": [],
+        "categories": [],
+        "dependencies": [],
+        "machines": [],
+        "projects": [],
+        "range": {
+            "start": "2025-10-25T03:00:00Z",
+            "end": "2025-10-26T02:59:59Z",
+            "date": "2025-10-25",
+            "text": "Sat Oct 25th 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "ai_additions": 0,
+        "ai_deletions": 0,
+        "human_additions": 0,
+        "human_deletions": 0
+    },
+    {
+        "languages": [],
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "editors": [],
+        "operating_systems": [],
+        "categories": [],
+        "dependencies": [],
+        "machines": [],
+        "projects": [],
+        "range": {
+            "start": "2025-10-26T03:00:00Z",
+            "end": "2025-10-27T02:59:59Z",
+            "date": "2025-10-26",
+            "text": "Sun Oct 26th 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "ai_additions": 0,
+        "ai_deletions": 0,
+        "human_additions": 0,
+        "human_deletions": 0
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2025-10-27T03:00:00Z",
+            "end": "2025-10-28T02:59:59Z",
+            "date": "2025-10-27",
+            "text": "Mon Oct 27th 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [],
+        "languages": [],
+        "dependencies": [],
+        "machines": [],
+        "editors": [],
+        "operating_systems": [],
+        "categories": []
     }
 ]

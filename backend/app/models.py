@@ -198,6 +198,23 @@ class ActivityProgress(db.Model):
     equipped_title_cosmetic = db.relationship('StoreItem', foreign_keys=[equipped_title_cosmetic_id])
 
     __table_args__ = (db.UniqueConstraint('student_id', 'activity_id', name='_student_activity_uc'),)
+    
+    # --- ADICIONE ESTE MÉTODO ---
+    def to_dict(self):
+        """Converte o objeto ActivityProgress para um dicionário serializável."""
+        # A função calculate_level não está disponível aqui, então calculamos no endpoint.
+        # Aqui, retornamos os dados brutos que o frontend precisa.
+        return {
+            "points_earned": self.points_earned,
+            "total_xp_earned": self.total_xp_earned,
+            "coins": self.coins,
+            "status": self.status,
+            "attempts": self.attempts,
+            "completed_steps": self.completed_steps or [],
+            "unlocked_activity_avatars": self.unlocked_activity_avatars or [],
+            "equipped_activity_avatar_url": self.equipped_activity_avatar_url,
+            # Adicione outros campos se forem necessários no frontend após a compra
+        }
 
 
 class EventLog(db.Model):

@@ -142,22 +142,23 @@ const AddItemForm = ({ onAddItem, onCancel }) => {
 };
 
 // Componente principal da Loja
-const StoreTab = ({ items, userPoints, onPurchase, onAddItem, onDeleteItem, onReturn, userRole }) => {
+const StoreTab = ({ items, userPoints, onPurchaseSuccess, onAddItem, onDeleteItem, onReturn, userRole }) => {
     const [showAddForm, setShowAddForm] = useState(false);
     const [modalState, setModalState] = useState({ isOpen: false, title: '', message: '', onConfirm: null });
 
     // --- INÍCIO DA CORREÇÃO ---
     const { user } = useAuth();
     const { activityId } = useParams();
-
+    const { token } = useAuth();
     // Nova função que realiza a compra no backend
     const handlePurchaseItem = async (itemToBuy) => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/progress/${activityId}/purchase-item`, {
+            // 2. Garanta que o endpoint está correto (sem '-item')
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/progress/${activityId}/purchase`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${user.token}`,
+                    'Authorization': `Bearer ${token}`,
                 },
                 body: JSON.stringify({ item_id: itemToBuy.id }),
             });
@@ -168,14 +169,15 @@ const StoreTab = ({ items, userPoints, onPurchase, onAddItem, onDeleteItem, onRe
             }
 
             alert("Compra realizada com sucesso!");
-            // Chama a função 'onPurchase' (que é na verdade fetchAllData) para atualizar a UI
-            onPurchase();
+            console.log("[StoreTab] Compra realizada com sucesso!Resposta do servidor:", data);
 
+
+            // 3. CHAME A FUNÇÃO CORRETA ('onPurchaseSuccess') que veio pela prop
+            onPurchaseSuccess(data.updated_progress);
         } catch (err) {
             alert(`Erro: ${err.message}`);
         }
     };
-    // --- FIM DA CORREÇÃO ---
 
     const openConfirmationModal = (title, message, onConfirm) => {
         setModalState({ isOpen: true, title, message, onConfirm });
