@@ -1,29 +1,41 @@
 // frontend/src/components/activity/FinalRewardTab.jsx
-import React from 'react';
-import { FaTrophy, FaCheckCircle } from 'react-icons/fa';
+// No início do componente, importe o useState e o ícone de Spinner
+import React, { useState } from 'react';
+import { FaTrophy, FaCheckCircle, FaSpinner } from 'react-icons/fa';
 
 const FinalRewardTab = ({ reward, onCollect, onReturnToBoard }) => {
+    // Adicione o estado de carregamento
+    const [isCollecting, setIsCollecting] = useState(false);
+
+    // Crie uma função para encapsular a lógica de coleta
+    const handleCollect = async () => {
+        console.log("[FinalRewardTab] Botão 'Coletar Recompensa' clicado. Acionando onCollect..."); // <-- ADICIONE ESTA LINHA
+        setIsCollecting(true);
+        try {
+            await onCollect();
+            // Não é necessário setar isCollecting(false), pois a tela mudará
+        } catch (error) {
+            console.error("Falha ao coletar recompensa:", error);
+            setIsCollecting(false); // Libera o botão em caso de erro
+        }
+    };
+
     return (
         <div className="text-center text-primary-text p-4 animate-fade-in">
-            <FaTrophy className="text-7xl text-yellow-400 mx-auto mb-4" style={{ filter: 'drop-shadow(0 0 15px #facc15)' }} />
-            <h2 className="text-4xl font-bold mb-2">{reward?.celebrationText || 'Atividade Concluída!'}</h2>
-            <p className="text-lg text-secondary-text mb-6">Você superou todos os desafios desta jornada. Veja sua recompensa!</p>
+            {/* ... restante do JSX do componente ... */}
 
-            <div className="bg-primary-bg/50 border border-border-color rounded-lg p-6 max-w-md mx-auto mb-8">
-                <h3 className="text-xl font-semibold text-green-400 mb-3">Recompensa Final</h3>
-                <p className="text-3xl font-bold">
-                    {/* Exibe a recompensa baseada no tipo */}
-                    {reward?.rewardType === 'xp' && `${reward.value} XP`}
-                    {reward?.rewardType === 'title' && `Título: "${reward.displayText}"`}
-                </p>
-            </div>
-
+            {/* Altere o botão para usar o novo estado e handler */}
             <button
-                onClick={onCollect}
-                className="w-full max-w-xs py-3 px-6 bg-green-600 hover:bg-green-700 rounded-lg text-xl font-bold text-primary-text shadow-lg transition-all transform hover:scale-105"
+                onClick={handleCollect}
+                disabled={isCollecting}
+                className="w-full max-w-xs py-3 px-6 bg-green-600 hover:bg-green-700 rounded-lg text-xl font-bold text-primary-text shadow-lg transition-all transform hover:scale-105 disabled:bg-gray-500 disabled:cursor-not-allowed"
             >
-                <FaCheckCircle className="inline mr-2" />
-                Coletar Recompensa
+                {isCollecting ? (
+                    <FaSpinner className="inline mr-2 animate-spin" />
+                ) : (
+                    <FaCheckCircle className="inline mr-2" />
+                )}
+                {isCollecting ? 'Coletando...' : 'Coletar Recompensa'}
             </button>
         </div>
     );

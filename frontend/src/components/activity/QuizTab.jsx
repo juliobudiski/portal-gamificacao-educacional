@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useParams } from 'react-router-dom';
 import backgroundImage from '../../assets/quiz-background.webp';
 import useAnalytics from '../../hooks/useAnalytics';
+import { useActivity } from '../../context/ActivityContext';
 // Verifica se o modo debug está ativado
 const isDebugMode = import.meta.env.VITE_DEBUG_MODE === 'true';
 
@@ -47,7 +48,7 @@ const QuizTab = ({ content, onAnswerCorrect, onComplete, isReplay }) => {
 
   // Verifica se "Pressão de tempo" está habilitado
   const isTimed = gameElements.includes("Pressão de tempo");
-
+  const { updateUserProgress } = useActivity();
   const handleFinishQuiz = () => {
     setIsFinished(true);
     // Esta função agora vai funcionar, pois 'content.step_id' existirá.
@@ -91,7 +92,10 @@ const QuizTab = ({ content, onAnswerCorrect, onComplete, isReplay }) => {
     const isCorrect = answer === questions[currentIndex].correct_option;
     const points = isCorrect ? questions[currentIndex].points : 0;
     const coins = isCorrect ? questions[currentIndex].coins : 0;
-
+    console.log(`[QuizTab] Resposta ${isCorrect ? 'correta' : 'incorreta'}. Ganhos a serem processados:`, { points, coins });
+    if (isCorrect) {
+      await updateUserProgress(points, coins);
+    }
     const feedbackMessage = isCorrect
       ? (isReplay ? 'Resposta Correta!' : `+${points} Pontos!`)
       : 'Resposta Incorreta!';

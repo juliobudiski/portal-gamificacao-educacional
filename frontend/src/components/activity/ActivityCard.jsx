@@ -69,6 +69,9 @@ function ActivityCard({ activity, isOwner, onCopy, onDelete, onSelect, isSelecte
                         <button onClick={() => onDelete(activity.id)} className="p-2 bg-border-color hover:bg-red-500/30 rounded-full group" title="Deletar">
                             <FaTrash className="text-secondary-text group-hover:text-red-400" />
                         </button>
+                        <button onClick={() => onCopy(activity.id)} className="p-2 bg-border-color hover:bg-accent-purple/30 rounded-full group" title="Copiar e Editar">
+                            <FaCopy className="text-secondary-text group-hover:text-accent-purple" />
+                        </button>
                     </>
                 ) : (
                     <>

@@ -7,7 +7,11 @@ import RankingItem from './RankingItem'; // Importa o novo componente de item
 const LeaderboardTab = ({ leaderboardData, isLoading, onReturn }) => {
     // Pega o usuário logado do contexto para poder destacá-lo
     const { user } = useAuth();
-
+    React.useEffect(() => {
+        if (leaderboardData && leaderboardData.length > 0) {
+            console.log("[DEBUG_POINTS] Data received by LeaderboardTab:", JSON.stringify(leaderboardData, null, 2));
+        }
+    }, [leaderboardData]);
     // --- Componente para o Estado de Carregamento ---
     if (isLoading) {
         return (

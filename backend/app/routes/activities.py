@@ -195,12 +195,16 @@ def submit_answer(activity_id):
             is_correct=is_correct,
             score=points_earned
         )
+        current_app.logger.info(f"[DEBUG_POINTS] User {user.id} responding to activity {activity_id}.")
+        current_app.logger.info(f"[DEBUG_POINTS] Incoming points_earned from request: {points_earned}")
+        current_app.logger.info(f"[DEBUG_POINTS] Current progress.total_xp_earned BEFORE update: {progress.total_xp_earned or 0}")
         db.session.add(new_response)
 
         progress.points_earned = (progress.points_earned or 0) + points_earned
         progress.total_xp_earned = (progress.total_xp_earned or 0) + points_earned
         progress.attempts = (progress.attempts or 0) + 1
         
+        current_app.logger.info(f"[DEBUG_POINTS] New progress.total_xp_earned AFTER update: {progress.total_xp_earned}")
         # O gatilho agora tem acesso às variáveis 'is_correct' and 'question_text'
         try:
             check_and_award_medals(

@@ -272,14 +272,18 @@ def get_public_activities(current_user_id, search_term=None):
 
 
 def copy_activity(user, activity_id):
-    """Copia uma atividade pública para o professor logado, incluindo sua trilha e itens da loja."""
+    """Copia uma atividade, permitindo que o professor copie seus próprios templates ou atividades públicas."""
     original_activity = Activity.query.get(activity_id)
 
     if not original_activity:
         return {"message": "Atividade original não encontrada"}, 404
     
-    if not original_activity.is_public and original_activity.professor_id != user.id:
-        return {"message": "Só é possível copiar atividades públicas ou as suas próprias atividades."}, 403
+    # --- LÓGICA DE PERMISSÃO REATORADA PARA MAIOR CLAREZA ---
+    is_owner = original_activity.professor_id == user.id
+    is_public = original_activity.is_public
+
+    if not is_owner and not is_public:
+        return {"message": "Você não tem permissão para copiar esta atividade."}, 403
 
     try:
         # --- INÍCIO DA CORREÇÃO ---

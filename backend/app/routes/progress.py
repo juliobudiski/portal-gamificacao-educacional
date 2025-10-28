@@ -41,51 +41,68 @@ def calculate_level(total_points):
 @jwt_required()
 @cross_origin()
 def get_activity_progress(activity_id):
-    current_user_id = get_jwt_identity()
-    user = User.query.get(current_user_id)
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
 
     if not user or user.role != 'aluno':
         return jsonify({"message": "Apenas alunos podem ver o progresso."}), 403
 
-    progress = ActivityProgress.query.filter_by(
-        student_id=user.id,
-        activity_id=activity_id
-    ).first()
-
+    # Busca o progresso e a atividade
+    progress = ActivityProgress.query.filter_by(student_id=user.id, activity_id=activity_id).first()
     activity = Activity.query.get(activity_id)
+    if not activity:
+        return jsonify({"message": "Atividade não encontrada."}), 404
 
-    total_points = progress.points_earned if progress else 0
-    level_info = calculate_level(total_points)
-    
-    # --- LÓGICA DE ESTATÍSTICAS ATUALIZADA ---
+    # Se o progresso não existir, cria um registro inicial para o aluno
+    if not progress:
+        current_app.logger.info(f"Nenhum progresso encontrado para o usuário {user.id}. Criando novo registro para a turma {activity.class_id}.")
+        progress = ActivityProgress(
+            student_id=user.id,
+            activity_id=activity.id,
+            class_id=activity.class_id,
+            status='not_started'
+        )
+        db.session.add(progress)
+        db.session.commit()
+
+    # --- INÍCIO DA CORREÇÃO E LÓGICA UNIFICADA ---
+
+    # 1. Calcula o nível do aluno baseado no XP total
+    total_xp = progress.total_xp_earned if progress.total_xp_earned is not None else 0
+    level_info = calculate_level(total_xp) # Retorna um dicionário
+
+    # 2. Calcula as estatísticas (stats) dinamicamente
     total_possible_points = 0
     total_questions = 0
-    if activity and activity.game_elements and isinstance(activity.game_elements.get('questions'), list):
+    if activity.game_elements and isinstance(activity.game_elements.get('questions'), list):
         questions = activity.game_elements['questions']
         total_questions = len(questions)
-        # Soma os pontos de cada questão para obter o total possível
         total_possible_points = sum(int(q.get('points', 0)) for q in questions)
 
+    # Cria o objeto 'stats' manualmente
     stats = {
-        "scoreAchieved": total_points,
+        "scoreAchieved": progress.points_earned or 0,
         "totalPossibleScore": total_possible_points,
         "totalQuestions": total_questions,
-        "averageTime": 35,
-        "achievements": 3
+        "averageTime": 35,  # Mockado, como no seu código original
+        "achievements": 3     # Mockado, como no seu código original
     }
-    
+
+    # 3. Retorna o JSON completo e consistente
     return jsonify({
-        "points_earned": total_points,
-        "status": progress.status if progress else 'not_started',
-        "attempts": progress.attempts if progress else 0,
         "level": level_info["level"],
         "xp": level_info["xpEarnedForCurrentLevel"],
         "xpForNextLevel": level_info["xpForNextLevel"],
-        "stats": stats,
-        "completed_steps": progress.completed_steps if progress else [], 
-        "unlocked_activity_avatars": progress.unlocked_activity_avatars if progress else [],
-        "equipped_activity_avatar_url": progress.equipped_activity_avatar_url if progress else None
+        "points_earned": progress.points_earned or 0,
+        "coins": progress.coins or 0,  # Padronizado para 'coins' (conforme o models.py)
+        "status": progress.status,
+        "completed_steps": progress.completed_steps or [],
+        "attempts": progress.attempts or 0,
+        "stats": stats, # Usa o objeto 'stats' calculado
+        "unlocked_activity_avatars": progress.unlocked_activity_avatars or [],
+        "equipped_activity_avatar_url": progress.equipped_activity_avatar_url
     }), 200
+    # --- FIM DA CORREÇÃO ---
 
 
 @progress_bp.route('/<int:activity_id>/leaderboard', methods=['GET'])
@@ -93,7 +110,7 @@ def get_activity_progress(activity_id):
 @cross_origin()
 def get_leaderboard(activity_id):
     """Busca o ranking e enriquece com o título equipado e outros efeitos cosméticos."""
-    
+    current_app.logger.info(f"[DEBUG_POINTS] Gerando leaderboard para a atividade {activity_id}.")
     leaderboard_data = db.session.query(
         User,
         ActivityProgress,
@@ -107,11 +124,16 @@ def get_leaderboard(activity_id):
     ).order_by(
         ActivityProgress.total_xp_earned.desc()
     ).limit(10).all()
-
+    # Loga os dados brutos ANTES de qualquer processamento.
+    raw_data_log = [
+        {"user_id": p_obj.student_id, "total_xp_earned": p_obj.total_xp_earned} 
+        for u_obj, p_obj, t_text in leaderboard_data
+    ]
+    current_app.logger.info(f"[DEBUG_POINTS] Dados brutos do BD para o leaderboard: {raw_data_log}")
     leaderboard = []
     for index, (user_obj, progress_obj, title_text) in enumerate(leaderboard_data):
         
-        # --- CÓDIGO CORRIGIDO AQUI ---
+        
         # Query completa para buscar os efeitos cosméticos ativos (exceto títulos)
         active_purchases = db.session.query(StoreItem.effect_id).join(
             Purchase, Purchase.item_id == StoreItem.id
@@ -124,7 +146,7 @@ def get_leaderboard(activity_id):
             Purchase.is_consumed == False,
             ((Purchase.expires_at == None) | (Purchase.expires_at > datetime.utcnow()))
         ).order_by(Purchase.purchase_date.desc()).all()
-        # --- FIM DA CORREÇÃO ---
+        
         
         raw_effects = [effect[0] for effect in active_purchases if effect[0]]
         
@@ -153,7 +175,7 @@ def get_leaderboard(activity_id):
             "name_cosmetic": progress_obj.equipped_name_cosmetic.effect_id if progress_obj.equipped_name_cosmetic else None,
             "title_cosmetic": progress_obj.equipped_title_cosmetic.effect_id if progress_obj.equipped_title_cosmetic else None,
         })
-    
+    current_app.logger.info(f"[DEBUG_POINTS] Dados finais do leaderboard enviados para o frontend: {leaderboard}")
     return jsonify(leaderboard), 200
 
 
@@ -399,6 +421,8 @@ def delete_store_item(item_id):
 def update_activity_progress(activity_id):
     """
     Recebe os pontos ganhos por um aluno em uma atividade e atualiza o progresso.
+    ATUALIZAÇÃO: Esta rota agora só deve ser usada para moedas ou outros valores
+    que NÃO sejam os pontos principais do quiz (XP), que são tratados por /submit_answer.
     """
     current_user_id = get_jwt_identity()
     user = User.query.get(current_user_id)
@@ -407,17 +431,17 @@ def update_activity_progress(activity_id):
         return jsonify({"message": "Apenas alunos podem atualizar o progresso."}), 403
 
     data = request.get_json()
-    points_to_add = data.get('points', 0) # Pega os pontos, ou 0 se não for fornecido
-    coins_to_add = data.get('coins', 0)   # Pega as moedas, ou 0 se não for fornecido
+    current_app.logger.info(f"[PROGRESS_UPDATE] Dados recebidos para a atividade {activity_id}: {data}")
+    # A rota ainda pode receber 'points' do frontend, mas vamos ignorá-los deliberadamente.
+    coins_to_add = data.get('coins', 0)
 
-    if points_to_add is None and coins_to_add is None:
-        return jsonify({"message": "Nenhum ponto ou moeda fornecido."}), 400
+    if coins_to_add is None:
+        return jsonify({"message": "Nenhuma moeda fornecida."}), 400
 
     try:
-        points_to_add = int(points_to_add)
         coins_to_add = int(coins_to_add)
     except (ValueError, TypeError):
-        return jsonify({"message": "Valores de pontos ou moedas inválidos."}), 400
+        return jsonify({"message": "Valor de moedas inválido."}), 400
     
     activity = Activity.query.get(activity_id)
     if not activity or not activity.class_id:
@@ -431,42 +455,27 @@ def update_activity_progress(activity_id):
                 student_id=user.id,
                 activity_id=activity_id,
                 class_id=activity.class_id,
-                points_earned=points_to_add,
+                points_earned=0, # Inicia com 0
+                coins_earned=coins_to_add,
                 coins=coins_to_add,
                 attempts=1,
                 status='in_progress'
             )
             db.session.add(progress)
         else:
-            # Garante que os valores não sejam nulos antes de somar
-            progress.points_earned = (progress.points_earned or 0) + points_to_add
+            # REMOVEMOS A SOMA DE 'points_earned' e 'total_xp_earned' DESTA ROTA
             progress.coins = (progress.coins or 0) + coins_to_add
-            progress.total_xp_earned = (progress.total_xp_earned or 0) + points_to_add
         
         db.session.commit()
-        # --- INÍCIO DA INTEGRAÇÃO DO GATILHO DE MEDALHAS "FÊNIX" ---
-        try:
-            # Passamos o contexto extra (se a resposta foi correta e o texto da pergunta)
-            # para a função de verificação através de kwargs.
-            check_and_award_medals(
-                user_id=current_user_id,
-                activity_id=activity_id,
-                event_type='quiz_answer_submitted',
-                is_correct=data.get('is_correct', False),
-                question_text=data.get('question_text')
-            )
-        except Exception as e:
-            current_app.logger.error(f"Erro ao verificar medalhas 'on_submit' para user {current_user_id}: {str(e)}")
-        # --- FIM DA INTEGRAÇÃO ---
+        
         return jsonify({
             "message": "Progresso atualizado com sucesso.",
-            "new_total_points": progress.points_earned,
+            "new_total_points": progress.points_earned, # Retorna o total de pontos existente
             "new_total_coins": progress.coins
         }), 200
 
     except Exception as e:
         db.session.rollback()
-        # Adicione um log para depuração
         current_app.logger.error(f"Erro ao atualizar progresso para user {current_user_id} na atividade {activity_id}: {str(e)}")
         return jsonify({"message": "Erro interno ao salvar o progresso."}), 500
 
@@ -619,13 +628,13 @@ def play_slot_machine(activity_id):
         return jsonify({"message": "Você precisa iniciar a atividade antes de jogar."}), 404
         
     # Converte moedas nulas para 0 antes de comparar
-    current_coins = progress.coins if progress.coins is not None else 0
+    current_coins = progress.coins_earned if progress.coins_earned is not None else 0 # <-- CORRIJA AQUI
     
     if current_coins < spin_cost:
         return jsonify({"message": f"Moedas insuficientes! Você tem {current_coins} e precisa de {spin_cost}."}), 400
 
     # Deduz o custo
-    progress.coins = current_coins - spin_cost
+    progress.coins_earned = current_coins - spin_cost
     
     # --- FIM DA CORREÇÃO ---
     

@@ -271,6 +271,7 @@ function ActivityBankPage() {
                                                 activity={activity}
                                                 isOwner={true}
                                                 onDelete={handleDeleteActivity}
+                                                onCopy={handleCopyActivity}
                                                 // ===== 5. PASSANDO PROPS DE SELEÇÃO =====
                                                 isSelected={selectedActivities.includes(activity.id)}
                                                 onSelect={handleSelectActivity}

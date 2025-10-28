@@ -2993,5 +2993,33 @@
         "editors": [],
         "operating_systems": [],
         "categories": []
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2025-10-28T03:00:00Z",
+            "end": "2025-10-29T02:59:59Z",
+            "date": "2025-10-28",
+            "text": "Tue Oct 28th 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [],
+        "languages": [],
+        "dependencies": [],
+        "machines": [],
+        "editors": [],
+        "operating_systems": [],
+        "categories": []
     }
 ]

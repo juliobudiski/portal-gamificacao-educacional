@@ -196,7 +196,7 @@ class ActivityProgress(db.Model):
     # NOVAS RELAÇÕES: Usamos foreign_keys para resolver a ambiguidade de múltiplas FKs para a mesma tabela
     equipped_name_cosmetic = db.relationship('StoreItem', foreign_keys=[equipped_name_cosmetic_id])
     equipped_title_cosmetic = db.relationship('StoreItem', foreign_keys=[equipped_title_cosmetic_id])
-
+    coins_earned = db.Column(db.Integer, nullable=False, default=0, server_default='0')
     __table_args__ = (db.UniqueConstraint('student_id', 'activity_id', name='_student_activity_uc'),)
     
     # --- ADICIONE ESTE MÉTODO ---

@@ -29,82 +29,103 @@ export const useActivityLogic = (activityId) => {
     const [activeStepContent, setActiveStepContent] = useState(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-    const fetchWithAuth = useCallback(async (url) => {
-        debugLog(`fetchWithAuth: Iniciando para ${url}. Token atual: ${token ? '[TOKEN_EXISTS]' : null}`); // Log do token recebido
+
+    const fetchWithAuth = useCallback(async (url, options = {}) => {
+        const API_BASE = import.meta.env.VITE_API_URL;
+        const fullUrl = `${API_BASE}${url}`;
+        debugLog(`fetchWithAuth: Iniciando para ${fullUrl}. Método: ${options.method || 'GET'}`);
+
         if (!token) {
-            debugLog(`fetchWithAuth: CANCELADO - Token ausente para ${url}`);
             setError('Autenticação necessária.');
-            return null;
+            // Retornamos uma Promise rejeitada para que o 'catch' no chamador funcione
+            return Promise.reject(new Error('Autenticação necessária.'));
         }
+
+        // Configura os cabeçalhos, garantindo que o token de autorização sempre exista
+        // e que os cabeçalhos passados (como 'Content-Type') sejam mantidos.
+        const headers = {
+            ...options.headers,
+            'Authorization': `Bearer ${token}`
+        };
+
         try {
-            const API_BASE = import.meta.env.VITE_API_URL;
-            const fullUrl = `${API_BASE}${url}`; // Log da URL completa
-            debugLog(`fetchWithAuth: Tentando fetch em ${fullUrl}`);
+            // A requisição fetch agora usa as 'options' passadas diretamente
             const response = await fetch(fullUrl, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                ...options,
+                headers: headers
             });
 
-            // --- LOG DETALHADO DA RESPOSTA ---
             debugLog(`fetchWithAuth: Resposta recebida para ${url}. Status: ${response.status}`);
 
+            // Se a resposta não for OK, trata o erro
             if (!response.ok) {
-                let errorData = null;
-                try {
-                    errorData = await response.json(); // Tenta ler o corpo do erro como JSON
-                } catch (jsonError) {
-                    errorData = await response.text(); // Se não for JSON, lê como texto
-                    debugLog(`fetchWithAuth: Corpo do erro (não JSON) para ${url}:`, errorData);
-                }
-                // Log mais específico do erro
-                debugLog(`fetchWithAuth: Erro ${response.status} ao buscar ${url}. Dados do erro:`, errorData);
-                setError(prev => `${prev}\nFalha ao buscar ${url}: ${errorData?.message || response.statusText || 'Erro desconhecido'}`);
-                // --- LOG ANTES DE RETORNAR NULL (ERRO) ---
-                debugLog(`fetchWithAuth: Retornando NULL devido a erro ${response.status} para ${url}.`);
-                return null; // Retorna null em caso de erro
+                // Lê o corpo da resposta como texto para evitar o erro "body consumed"
+                const errorText = await response.text();
+                // Lança um erro para que seja capturado pelo bloco 'catch' da função que chamou
+                throw new Error(errorText || `Erro ${response.status}: ${response.statusText}`);
             }
 
+            // Para respostas de sucesso (como 200 OK ou 201 Created), lê como JSON.
             const data = await response.json();
             debugLog(`fetchWithAuth: Sucesso ao buscar ${url}. Dados:`, data);
             return data;
 
         } catch (err) {
-            // --- LOG DETALHADO DA EXCEÇÃO ---
             debugLog(`fetchWithAuth: Exceção CATCH ao buscar ${url}. Erro:`, err);
-            setError(prev => `${prev}\nExceção ao buscar ${url}: ${err.message}`);
-            // --- LOG ANTES DE RETORNAR NULL (EXCEÇÃO) ---
-            debugLog(`fetchWithAuth: Retornando NULL devido a exceção CATCH para ${url}.`);
-            return null; // Retorna null em caso de exceção
+            setError(`Falha ao buscar ${url}: ${err.message}`);
+            // Propaga o erro para que a função chamadora (ex: updateUserProgress) possa lidar com ele
+            throw err;
         }
-    }, [token]); // Mantenha apenas 'token' como dependência
+    }, [token]);
+
+
+    const fetchLeaderboard = useCallback(async () => {
+        debugLog('Buscando dados do leaderboard...');
+        try {
+            const data = await fetchWithAuth(`/api/progress/${activityId}/leaderboard`);
+            if (data) {
+                setLeaderboard(data); // <-- CORREÇÃO AQUI (de setLeaderboardData para setLeaderboard)
+                debugLog('Dados do leaderboard atualizados no estado.', data);
+            }
+        } catch (err) {
+            console.error('Falha ao buscar dados do leaderboard:', err);
+        }
+    }, [activityId, fetchWithAuth]);
+
+
 
     const fetchAllData = useCallback(async () => {
         setLoading(true);
         setError('');
         debugLog('fetchAllData: Iniciando carregamento de todos os dados');
         try {
-            const activityData = await fetchWithAuth(`/api/activities/${activityId}`);
+            // Buscas em paralelo para mais eficiência
+            const promises = [
+                fetchWithAuth(`/api/activities/${activityId}`),
+                user?.role === 'aluno' ? fetchWithAuth(`/api/progress/${activityId}`) : Promise.resolve(null),
+                fetchWithAuth(`/api/progress/${activityId}/leaderboard`),
+                fetchWithAuth(`/api/progress/${activityId}/store-items`)
+            ];
+
+            // Aguarda todas as buscas terminarem
+            const [activityData, progressData, leaderboardData, storeItemsData] = await Promise.all(promises);
+
             if (!activityData) {
-                // Se a atividade não for encontrada, definimos o erro e paramos
-                debugLog('fetchAllData: Atividade não encontrada ou falha ao carregar.');
-
-                setError(prev => prev || "Atividade não encontrada ou falha ao carregar.");
-                return;
-            };
-            setActivity(activityData);
-            debugLog('Atividade carregada:', activityData);
-
-            const fetchPromises = [];
-            if (user?.role === 'aluno') {
-                fetchPromises.push(fetchWithAuth(`/api/progress/${activityId}`).then(setUserProgress));
-            } else if (user?.role === 'professor') {
-                fetchPromises.push(fetchWithAuth(`/api/progress/${activityId}/analytics`).then(setAnalytics));
+                setError("Atividade não encontrada ou falha ao carregar.");
+                return; // Para a execução se a atividade principal falhar
             }
-            fetchPromises.push(
-                fetchWithAuth(`/api/progress/${activityId}/leaderboard`).then(setLeaderboard),
-                fetchWithAuth(`/api/progress/${activityId}/store-items`).then(setStoreItems)
-            );
-            await Promise.all(fetchPromises);
+
+            // Atualiza todos os estados
+            setActivity(activityData);
+            if (user?.role === 'aluno') setUserProgress(progressData);
+            setLeaderboard(leaderboardData || []);
+            setStoreItems(storeItemsData || []);
+
             debugLog('fetchAllData: Todos os dados carregados com sucesso.');
+
+            // *** MUDANÇA CRÍTICA 1: RETORNE OS DADOS BUSCADOS ***
+            return { activityData, progressData };
+
         } catch (err) {
             debugLog(`fetchAllData: Erro ao carregar dados:`, err);
             setError(`Erro ao carregar dados: ${err.message}`);
@@ -160,16 +181,22 @@ export const useActivityLogic = (activityId) => {
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ step_id: completedStepId })
             });
-            debugLog("Passo concluído. Buscando progresso atualizado (pontos, moedas, etc)...");
-            const updatedProgress = await fetchWithAuth(`/api/progress/${activityId}`);
+            debugLog("Passo concluído. Buscando progresso atualizado e leaderboard...");
+
+            // As duas chamadas podem rodar em paralelo para ser mais rápido
+            const [updatedProgress] = await Promise.all([
+                fetchWithAuth(`/api/progress/${activityId}`),
+                fetchLeaderboard() // <-- ADICIONE A CHAMADA AQUI
+            ]);
+
             if (updatedProgress) {
                 setUserProgress(updatedProgress);
-                debugLog("Progresso do usuário atualizado com sucesso no estado.", updatedProgress);
+                debugLog("Progresso do usuário e leaderboard atualizados com sucesso no estado.", updatedProgress);
             }
         } catch (err) {
             console.error("Erro ao salvar progresso:", err);
         }
-    }, [activityId, token, debugLog]);
+    }, [activityId, token, fetchWithAuth, fetchLeaderboard]);
 
     const finalState = { activity, userProgress, loading, error /* adicione outros estados relevantes */ };
     debugLog('Estado final do hook antes do return:', finalState);
@@ -280,9 +307,71 @@ export const useActivityLogic = (activityId) => {
     }, []);
 
     const handleCollectFinalReward = useCallback(async () => {
-        await fetchAllData();
-        handleReturnToBoard();
-    }, [fetchAllData, handleReturnToBoard]);
+        debugLog('Iniciando a coleta da recompensa final...');
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/progress/${activityId}/collect-final-reward`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                // Se o backend retornar um erro (ex: passos faltando), lança o erro
+                throw new Error(data.message || 'Falha ao coletar a recompensa final.');
+            }
+
+            debugLog('Recompensa final coletada com sucesso no backend. Atualizando dados...');
+
+            // Após coletar, busca TODOS os dados novamente. Isso irá atualizar o progresso,
+            // o status da atividade e as medalhas desbloqueadas.
+            await fetchAllData();
+
+            // LOG DE VERIFICAÇÃO: Veja o que está no estado logo após a busca
+            debugLog('Estado APÓS fetchAllData:', {
+                activity: activity,
+                userProgress: userProgress
+            });
+
+            // Opcional: Redireciona de volta para o tabuleiro após um pequeno delay
+            setTimeout(() => {
+                debugLog('Retornando para a visão do tabuleiro.'); // <-- Adicione este log
+                handleReturnToBoard();
+            }, 1000);
+
+        } catch (error) {
+            console.error('Erro detalhado ao coletar recompensa final:', error);
+            setError(`Erro ao coletar: ${error.message}`);
+            // Re-lança o erro para que o componente 'FinalRewardTab' possa parar o 'loading'
+            throw error;
+        }
+    }, [activityId, token, fetchAllData, handleReturnToBoard]);
+    const updateUserProgress = useCallback(async (points, coins) => {
+        debugLog(`Enviando atualização de progresso:`, { points, coins });
+        try {
+            await fetchWithAuth(`/api/progress/${activityId}/update`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ coins }),
+            });
+            // Após a atualização, buscamos o progresso novamente para ter os dados mais recentes
+            const progressData = await fetchWithAuth(`/api/progress/${activityId}`);
+            if (progressData) {
+                setUserProgress(progressData);
+                debugLog('Progresso do usuário atualizado com sucesso no estado.', progressData);
+            }
+            await fetchLeaderboard();
+        } catch (err) {
+            setError(err.message || 'Erro ao carregar dados da atividade.');
+            debugLog('fetchAllData: Erro encontrado.', err);
+        } finally {
+            setLoading(false);
+            debugLog('fetchAllData: Busca de dados finalizada.');
+        }
+    }, [activityId, fetchWithAuth, fetchLeaderboard]);
 
     const handleStudentClick = useCallback((student) => console.log('Clicked student:', student), []);
     const handleOpenQuizEditor = useCallback(() => navigate(`/professor/activity/${activityId}/quiz/edit`), [navigate, activityId]);
@@ -341,6 +430,6 @@ export const useActivityLogic = (activityId) => {
         completeStep,
         fetchAllData,
         handlePurchaseSuccess,
-
+        updateUserProgress,
     };
 };

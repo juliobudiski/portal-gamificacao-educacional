@@ -82,7 +82,7 @@ const Reel = ({ finalSymbol, isSpinning, delay }) => {
 const SlotMachineTab = ({ userCoins, onPrizeWon, onWin, onReturn }) => {
   const { user } = useAuth();
   const { activityId } = useParams();
-
+  console.log('[SlotMachineTab] Componente renderizado. Saldo de moedas recebido via props:', userCoins);
   // --- Estados do Componente ---
   const [reels, setReels] = useState([symbols[0], symbols[1], symbols[2]]);
   const [isSpinning, setIsSpinning] = useState(false);
@@ -90,7 +90,7 @@ const SlotMachineTab = ({ userCoins, onPrizeWon, onWin, onReturn }) => {
   const [prizeMessage, setPrizeMessage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const spinCost = 0;
+  const spinCost = 2;
 
   // --- INÍCIO DA CORREÇÃO: Estados e lógica para buscar ganhadores ---
   const [winners, setWinners] = useState([]);
