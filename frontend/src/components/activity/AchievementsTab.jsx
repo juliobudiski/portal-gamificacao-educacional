@@ -76,7 +76,7 @@ const AchievementsTab = ({ onReturn, activityId }) => {
                             onClick={() => setSelectedMedal(medal)}
                         >
                             <img
-                                src={medal.imageUrl}
+                                src={`${import.meta.env.VITE_API_URL}${medal.imageUrl}`}
                                 alt={medal.name}
                                 className={`w-24 h-24 transition-all duration-300 ${isUnlocked ? '' : 'filter grayscale opacity-60'}`}
                             />

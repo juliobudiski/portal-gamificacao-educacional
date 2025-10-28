@@ -1,11 +1,13 @@
 # backend/app/__init__.py
 
-from flask import Flask
+from flask import Flask, send_from_directory
 from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_socketio import SocketIO
-from app.commands import seed
+
+import os
+import logging
 
 # 1. Crie as instâncias das extensões FORA da função, sem associá-las a um app
 socketio = SocketIO(cors_allowed_origins="*")
@@ -21,13 +23,15 @@ def create_app():
     # 2. Carregue a configuração a partir de um arquivo/objeto
     from .config import Config
     app.config.from_object(Config)
-
+    from app.commands import seed, triggers, simulations
     # 3. Associe as instâncias das extensões com o objeto 'app'
     db.init_app(app)
     migrate.init_app(app, db)
     CORS(app, resources={r"/api/*": {"origins": "*"}}) # Habilita o CORS globalmente
     socketio.init_app(app)
     seed.init_app(app)
+    triggers.init_app(app)
+    simulations.init_app(app)
     # Importa e configura o JWT
     from .utils.auth_utils import configure_jwt
     configure_jwt(app)
@@ -109,7 +113,13 @@ def create_app():
             print(f"Limpeza concluída! {updated_count} ocorrências de caminhos foram corrigidas.")
         else:
             print("Nenhum caminho incorreto foi encontrado para corrigir.")
-
+    
+    # --- ROTA PARA SERVIR IMAGENS DAS MEDALHAS ---
+    @app.route('/medals/<path:filename>')
+    def serve_medal_image(filename):
+        directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'medals')
+        return send_from_directory(directory, filename)
+    
     # --- NOVO COMANDO PARA O SEEDING DAS MEDALHAS ---
     # --- COMANDO PARA O SEEDING DAS MEDALHAS (VERSÃO COMPLETA) ---
     @app.cli.command("seed-medals")

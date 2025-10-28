@@ -16,7 +16,7 @@ const MedalDetailModal = ({ medal, isUnlocked, onClose }) => {
                 <button onClick={onClose} className="absolute top-4 right-4 text-secondary-text hover:text-primary-text text-2xl">&times;</button>
 
                 <img
-                    src={medal.imageUrl}
+                    src={`${import.meta.env.VITE_API_URL}${medal.imageUrl}`}
                     alt={medal.name}
                     className={`w-48 h-48 mx-auto mb-4 transition-all duration-500 ${isUnlocked ? '' : 'filter grayscale'}`}
                 />

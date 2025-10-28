@@ -35,7 +35,7 @@ def _check_medal_explorador(user, activity_id, **kwargs):
     # .issubset() verifica se todos os elementos de all_step_ids estão em completed_steps_set
     return all_step_ids.issubset(completed_steps_set)
 
-def _check_medal_inspetor(user, activity_id):
+def _check_medal_inspetor(user, activity_id, **kwargs):
     """Verifica a Medalha do Inspetor: não ter cometido erros na atividade."""
     incorrect_response = StudentResponse.query.filter_by(
         student_id=user.id, activity_id=activity_id, is_correct=False
@@ -180,3 +180,42 @@ def get_my_unlocked_medals():
     unlocked_ids = [unlocked.medal_id for unlocked in unlocked_medals]
     
     return jsonify(unlocked_ids), 200
+
+# ==============================================================================
+# MAPA DE VERIFICAÇÃO DE MEDALHAS
+# ==============================================================================
+# Este dicionário mapeia o NOME da medalha (como está no DB) para a FUNÇÃO
+# que verifica se ela deve ser desbloqueada.
+# Isso torna o sistema de gatilhos centralizado e fácil de expandir.
+# ------------------------------------------------------------------------------
+MEDAL_CHECK_FUNCTIONS = {
+    # Medalhas de Atividade
+    "Medalha do Explorador": _check_medal_explorador,
+    "Medalha do Inspetor": _check_medal_inspetor,
+    "Medalha do Velocista": _check_medal_velocista,
+    "Medalha Fênix": _check_medal_fenix,
+    "Peça-Chave": _check_medal_peca_chave,
+    #"Diamante": _check_medal_diamante,
+
+    # Medalhas de Interação
+    #"Conector": _check_medal_conector,
+    #"Embaixador": _check_medal_embaixador,
+    #"Semear Saber": _check_medal_semear_saber,
+    #"Sinergia": _check_medal_sinergia,
+
+    # Medalhas de Performance
+    #"Mestre": _check_medal_mestre,
+    #"Maratonista": _check_medal_maratonista,
+
+    # Medalhas de Engajamento
+    #"Pioneiro": _check_medal_pioneiro,
+    #"Veterano": _check_medal_veterano,
+    #"Caçador": _check_medal_cacador,
+
+    # Medalhas Especiais/Complexas
+    #"Arquiteto": _check_medal_arquiteto,
+    #"Inovador": _check_medal_inovador,
+   # "Curioso": _check_medal_curioso,
+    #"Polimata": _check_medal_polimata,
+    #"Equipe": _check_medal_equipe,
+}
