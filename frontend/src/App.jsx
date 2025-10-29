@@ -2,7 +2,7 @@
 
 // --- 1. IMPORTAÇÕES ---
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { Routes, Route, Link, useNavigate, Outlet } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import useAnalytics from './hooks/useAnalytics';
 import PrivateRoute from './components/PrivateRoute';
@@ -10,7 +10,7 @@ import ScrollToTop from './components/ScrollToTop';
 import Footer from './components/Footer';
 import ThemeToggleButton from './components/ThemeToggleButton'; // <-- IMPORTAR O BOTÃO
 import { Home, LogIn, UserPlus, User, BookOpen, LayoutDashboard, PlusCircle, Users, BarChart2, Award, LogOut, Info, Settings, ShieldCheck } from 'lucide-react';
-
+import { ActivityCreationProvider } from './context/ActivityCreationContext'; // 👈 1. Importe o Provider
 // --- IMPORTAÇÃO DAS PÁGINAS ---
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
@@ -346,7 +346,11 @@ function AppContent() {
 
           <Route element={<PrivateRoute allowedRoles={['professor']} />}>
             <Route path="/professor/dashboard" element={<TeacherDashboardPage />} />
-            <Route path="/professor/criar-atividade" element={<ActivityCreationPage />} />
+            <Route path="/professor/criar-atividade/*" element={<ActivityCreationProvider><Outlet /></ActivityCreationProvider>} >
+              <Route index element={<ActivityCreationPage />} />
+              <Route path=":activityId/quiz/:stepId/edit" element={<QuizEditorPage />} />
+              <Route path=":activityId/narrative/:stepId/edit" element={<NarrativeEditorPage />} />
+            </Route>
             <Route path="/professor/atividades/:activityId/edit" element={<ActivityEditPage />} />
             <Route path="/professor/banco-atividades" element={<ActivityBankPage />} />
             <Route path="/professor/gerenciar-turmas" element={<ClassManagementPage />} />

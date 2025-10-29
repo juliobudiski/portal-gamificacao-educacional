@@ -18,11 +18,11 @@ const isDebugMode = import.meta.env.VITE_DEBUG_MODE === 'true';
  * @param {Array} props.gameElements - Elementos de jogo ativos
  * @returns {JSX.Element} Interface de quiz interativo
  */
-const QuizTab = ({ content, onAnswerCorrect, onComplete, isReplay }) => {
+const QuizTab = ({ content, gameElements, onAnswerCorrect, onComplete, isReplay }) => {
 
   // Acessa as perguntas e elementos de dentro do objeto 'content'
   const { questions = [], step_id } = content; // Pega 'questions' e o 'step_id' do nível superior
-  const gameElements = content.gameElements || []; // Pode ser útil se precisar no futuro
+
 
   // Log de inicialização do componente
   if (isDebugMode) {
@@ -359,8 +359,10 @@ QuizTab.propTypes = {
     ),
     gameElements: PropTypes.arrayOf(PropTypes.string)
   }).isRequired,
+  gameElements: PropTypes.arrayOf(PropTypes.string).isRequired,
   onAnswerCorrect: PropTypes.func.isRequired,
-  onComplete: PropTypes.func.isRequired
+  onComplete: PropTypes.func.isRequired,
+  isReplay: PropTypes.bool
 };
 
 

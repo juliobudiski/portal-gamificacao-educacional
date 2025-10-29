@@ -2,6 +2,7 @@
 from . import db # Importa a instância do db do __init__.py
 from sqlalchemy.dialects.postgresql import JSONB
 from flask_socketio import SocketIO
+from sqlalchemy.orm import validates
 # --- Modelos de Banco de Dados (SQLAlchemy) ---
 socketio = SocketIO(cors_allowed_origins="*")
 class User(db.Model):
@@ -24,10 +25,18 @@ class User(db.Model):
     last_known_longitude = db.Column(db.Float, nullable=True)
     last_location_update = db.Column(db.DateTime, nullable=True)
     unlocked_global_avatars = db.Column(JSONB, nullable=True, server_default='[]')
-    
     forum_topics = db.relationship('ForumTopic', backref='author', lazy=True, foreign_keys='ForumTopic.author_id')
     forum_posts = db.relationship('ForumPost', backref='author', lazy=True, foreign_keys='ForumPost.author_id')
 
+    @validates('name')
+    def validate_and_format_name(self, key, name):
+        """
+        Garante que o nome seja sempre salvo com as 
+        primeiras letras de cada palavra em maiúsculo (Title Case).
+        """
+        if not name:
+            return name 
+        return name.title()
     
 
     def to_dict(self):

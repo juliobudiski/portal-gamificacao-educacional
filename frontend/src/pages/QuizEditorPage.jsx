@@ -1,24 +1,42 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FaPlus, FaSave, FaTrash, FaEdit, FaQuestion, FaList, FaCheck, FaClock, FaStar, FaGem } from 'react-icons/fa';
-
+import { useActivityCreation } from '../context/ActivityCreationContext';
 function QuizEditorPage() {
     // --- ALTERAÇÃO: Lendo 'stepId' da URL ---
     const { activityId, stepId } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
+    const location = useLocation();
 
-    const [activityTitle, setActivityTitle] = useState('');
-    const [questions, setQuestions] = useState([]);
+    const { activityData, setActivityData } = useActivityCreation();
+    // Determina se estamos em modo de criação com base no state da navegação
+    const isCreationMode = activityId === 'criar' || location.state?.isCreationMode;
+    const [questions, setQuestions] = useState(() => {
+        // Encontra o conteúdo do passo específico dentro do rascunho do contexto
+        const stepContent = activityData.gamificationDesign?.progression_path?.find(p => p.id === stepId)?.content;
+        // Retorna as questões salvas ou um array vazio se for a primeira vez
+        return stepContent?.questions || [];
+    });
+
+    // O título também pode vir do contexto para consistência
+    const [activityTitle, setActivityTitle] = useState(activityData.title || 'Nova Atividade');
+    const [loading, setLoading] = useState(false); // Não precisa mais carregar no modo criação
     const [gameElements, setGameElements] = useState([]);
     const [currentQuestion, setCurrentQuestion] = useState({ text: '', options: ['', '', '', ''], correct_option: '', points: 10, coins: 5, timeLimit: 30 });
     const [editingIndex, setEditingIndex] = useState(null);
-    const [loading, setLoading] = useState(true);
+
+
     const [error, setError] = useState('');
     const [message, setMessage] = useState('');
-
     const fetchContent = useCallback(async () => {
+        // --- MODO CRIAÇÃO ---
+        if (isCreationMode) {
+
+            return; // Para a execução aqui, não precisa buscar na API
+        }
+        // --- MODO EDIÇÃO (Lógica antiga) ---
         if (!activityId || !stepId || !user.token) {
             setLoading(false);
             setError("IDs de atividade ou passo ausentes.");
@@ -30,7 +48,7 @@ function QuizEditorPage() {
             const activityResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${activityId}`, {
                 headers: { 'Authorization': `Bearer ${user.token}` },
             });
-            const activityData = await activityResponse.json();
+
             if (!activityResponse.ok) throw new Error(`Erro ao buscar atividade: ${activityData.message}`);
 
             setActivityTitle(activityData.title);
@@ -53,7 +71,7 @@ function QuizEditorPage() {
         } finally {
             setLoading(false);
         }
-    }, [activityId, stepId, user.token]); // Adiciona stepId como dependência
+    }, [activityId, stepId, user.token, isCreationMode]);
 
     useEffect(() => {
         fetchContent();
@@ -76,6 +94,12 @@ function QuizEditorPage() {
         if (currentQuestion.options.some(opt => opt.trim() === '') || !currentQuestion.correct_option) {
             alert('Preencha todas as opções e selecione a resposta correta.');
             return;
+        }
+
+        const uniqueOptions = new Set(currentQuestion.options.map(opt => opt.trim()));
+        if (uniqueOptions.size < currentQuestion.options.length) {
+            alert('Não é permitido ter duas ou mais opções de resposta com o mesmo texto.');
+            return; // Impede a função de continuar
         }
 
         if (editingIndex !== null) {
@@ -102,6 +126,26 @@ function QuizEditorPage() {
     };
 
     const handleSaveChanges = async () => {
+        if (isCreationMode) {
+            console.log("Salvando rascunho no Contexto e voltando...");
+
+            // Atualiza o rascunho no contexto (Lógica que você já deve ter)
+            setActivityData(prevData => {
+                const newDesign = JSON.parse(JSON.stringify(prevData.gamificationDesign));
+                const stepIndex = newDesign.progression_path.findIndex(step => step.id === stepId);
+                if (stepIndex !== -1) {
+                    newDesign.progression_path[stepIndex].content = { questions };
+                }
+                return { ...prevData, gamificationDesign: newDesign };
+            });
+
+            navigate(-1);
+
+            return;
+        }
+
+        // --- MODO EDIÇÃO ---
+
         setLoading(true);
         setMessage('');
         setError('');

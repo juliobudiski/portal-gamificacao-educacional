@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FaImage, FaUserCircle, FaSave, FaPlus, FaTrash, FaBookOpen } from 'react-icons/fa';
-
+import { useActivityCreation } from '../context/ActivityCreationContext';
 // Debug mode control
 const isDebugMode = import.meta.env.VITE_DEBUG_MODE === 'true';
 
@@ -31,28 +31,52 @@ function NarrativeEditorPage() {
     const { activityId, stepId } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
-    const [gameElements, setGameElements] = useState([]);
+    const location = useLocation();
 
-    const [activityTitle, setActivityTitle] = useState('');
-    const [narrativeConfig, setNarrativeConfig] = useState({ scenario: '', characters: [], dialogue: [] });
-    const [loading, setLoading] = useState(true);
+    // Determina se estamos em modo de criação com base no state da navegação
+    const isCreationMode = activityId === 'criar' || location.state?.isCreationMode;
+    const initialContent = location.state?.initialContent;
+    const [gameElements, setGameElements] = useState([]);
+    const { activityData, setActivityData } = useActivityCreation();
+    // --- INICIALIZAÇÃO DOS ESTADOS ---
+    // O título e a configuração inicial agora podem vir do estado da navegação
+    const [narrativeConfig, setNarrativeConfig] = useState(() => {
+        const stepContent = activityData.gamificationDesign?.progression_path?.find(p => p.id === stepId)?.content;
+        // Retorna a config salva ou um objeto padrão se for a primeira vez
+        return stepContent && Object.keys(stepContent).length > 0
+            ? stepContent
+            : { scenario: '', characters: [], dialogue: [] };
+    });
+
+    const [activityTitle, setActivityTitle] = useState(activityData.title || 'Nova Atividade');
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [message, setMessage] = useState('');
 
 
     const fetchContent = useCallback(async () => {
+        // --- MODO CRIAÇÃO ---
+        // Esta parte agora é tratada na inicialização do useState.
+        // O useEffect agora só precisa lidar com o MODO EDIÇÃO.
+        if (isCreationMode) {
+            // Já definimos o estado inicial, então não há nada a fazer aqui.
+            return;
+        }
+
+        // --- MODO EDIÇÃO (Lógica antiga, agora correta) ---
         if (!activityId || !stepId || !user.token) {
             setLoading(false);
             setError("IDs de atividade ou passo ausentes.");
             return;
         }
+
         setLoading(true);
         try {
             // 1. Busca os dados gerais da atividade (para o título)
             const activityResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${activityId}`, {
                 headers: { 'Authorization': `Bearer ${user.token}` },
             });
-            const activityData = await activityResponse.json();
+
             if (!activityResponse.ok) throw new Error(`Erro ao buscar atividade: ${activityData.message}`);
 
             setActivityTitle(activityData.title);
@@ -62,7 +86,14 @@ function NarrativeEditorPage() {
                 headers: { 'Authorization': `Bearer ${user.token}` },
             });
             const contentData = await contentResponse.json();
-            if (!contentResponse.ok) throw new Error(`Erro ao buscar conteúdo da narrativa: ${contentData.message}`);
+            if (!contentResponse.ok) {
+                // Se não encontrar conteúdo, não é um erro fatal, apenas não há nada para carregar.
+                if (contentResponse.status === 404) {
+                    console.log("Nenhum conteúdo de narrativa pré-existente encontrado para este passo.");
+                } else {
+                    throw new Error(`Erro ao buscar conteúdo da narrativa: ${contentData.message}`);
+                }
+            }
 
             // 3. Preenche o estado com a configuração da narrativa existente
             if (contentData) {
@@ -78,7 +109,7 @@ function NarrativeEditorPage() {
         } finally {
             setLoading(false);
         }
-    }, [activityId, stepId, user.token]);
+    }, [activityId, stepId, user.token, isCreationMode]);
 
     useEffect(() => {
         fetchContent();
@@ -155,6 +186,25 @@ function NarrativeEditorPage() {
 
     // --- Handler para Salvar ---
     const handleSaveChanges = async () => {
+        if (isCreationMode) {
+            console.log("Salvando rascunho no Contexto e voltando...");
+
+            // Atualiza o rascunho no contexto
+            setActivityData(prevData => {
+                const newDesign = JSON.parse(JSON.stringify(prevData.gamificationDesign));
+                const stepIndex = newDesign.progression_path.findIndex(step => step.id === stepId);
+                if (stepIndex !== -1) {
+                    newDesign.progression_path[stepIndex].content = narrativeConfig;
+                }
+                return { ...prevData, gamificationDesign: newDesign };
+            });
+
+            navigate(-1);
+
+            return;
+        }
+
+        // --- MODO EDIÇÃO ---
         setLoading(true);
         setMessage('');
         setError('');

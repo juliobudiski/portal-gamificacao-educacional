@@ -123,6 +123,7 @@ const ViewRenderer = () => {
         content={activeStepContent}
         onComplete={completeStep}
         isReplay={isStepCompleted}
+        gameElements={activity?.gameElements?.selectedElements || []}
         onAnswerCorrect={() => { }} // Adicionando uma função vazia para evitar erros
       />;
     case 'narrative':

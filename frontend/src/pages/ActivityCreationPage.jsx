@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import useAnalytics from '../hooks/useAnalytics';
-
+import { useActivityCreation } from '../context/ActivityCreationContext';
 // 1. Importação dos novos componentes de etapa filhos
 import Step1_InitialDetails from '../components/activity/creation_steps/Step1_Activity';
 import Step2_DesiredScenario from '../components/activity/creation_steps/Step2_Activity';
@@ -41,34 +41,29 @@ const hubElementCardMap = {
 function ActivityCreationPage({ existingActivity }) {
   // --- TODA A LÓGICA DE ESTADO, HOOKS E HANDLERS É MANTIDA AQUI ---
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(1);
+
   const totalSteps = 8;
   const { user } = useAuth();
   const formStartedRef = useRef(false);
   const { activityId } = useParams();
   const isEditMode = !!activityId || !!existingActivity;
   const { logEvent } = useAnalytics('activity_creation', user?.token, activityId);
-  const [showInitialSelection, setShowInitialSelection] = useState(!isEditMode);
+
   const [showTemplateList, setShowTemplateList] = useState(false);
   const [templates, setTemplates] = useState([]);
   const [loadingTemplates, setLoadingTemplates] = useState(true);
   const [templateError, setTemplateError] = useState(null);
 
-  const [activityData, setActivityData] = useState({
-    title: '',
-    description: '',
-    areaKnowledge: '',
-    isPublic: true,
-    currentScenario: { problems: [], otherProblem: '' },
-    desiredScenario: { objectives: [], otherObjective: '' },
-    activityPlanning: { characteristics: [], participantsQuantity: '', expectedDuration: '', location: '', otherInfo: '' },
-    playerProfile: { selectedProfiles: [] },
-    gameElements: { selectedElements: [], otherElement: '', narrativeTitle: '', narrativeContent: '' },
-    gamificationDesign: { theme: 'vila_da_aventura', progression_path: [], hub_elements: [] },
-    rewardsOffered: { selectedRewards: [], otherReward: '' },
-    rewardedActions: { selectedActions: [], otherAction: '' },
-    gamificationRules: { generalRules: [], specificRules: '' },
-  });
+  const {
+    activityData,
+    setActivityData,
+    currentStep,
+    setCurrentStep,
+    showInitialSelection,
+    setShowInitialSelection,
+    startNewActivity,
+    resetCreation
+  } = useActivityCreation();
 
   const stepStartTimeRef = useRef(Date.now());
   const previousStepRef = useRef(currentStep);
@@ -79,17 +74,82 @@ function ActivityCreationPage({ existingActivity }) {
 
   // (Todos os useEffects e handlers como handleNext, handlePrevious, handleInputChange, etc. são mantidos)
 
-  useEffect(() => {
-    // ... (lógica de rastreamento de tempo mantida)
-  }, [currentStep, logEvent]);
+
+
+
 
   useEffect(() => {
-    // ... (lógica de abandono de formulário mantida)
+
+    const startTime = stepStartTimeRef.current;
+
+    const previousStep = previousStepRef.current;
+
+
+
+    // Calcula a duração na etapa anterior
+
+    const durationInSeconds = Math.round((Date.now() - startTime) / 1000);
+
+
+
+    // Evita logar na primeira renderização (duração de 0s)
+
+    if (durationInSeconds > 0 && previousStep !== currentStep) {
+
+      console.log(`Logando duração da Etapa ${previousStep}: ${durationInSeconds}s`);
+
+      logEvent("step_view_duration", {
+
+        step: previousStep,
+
+        duration_seconds: durationInSeconds
+
+      });
+
+    }
+
+
+
+    // Reseta o timer para a nova etapa
+
+    stepStartTimeRef.current = Date.now();
+
+    previousStepRef.current = currentStep;
+
+
+
+  }, [currentStep, logEvent]); // O efeito roda sempre que a etapa muda
+
+
+
+
+
+
+
+  useEffect(() => {
+
+    // A função de retorno (cleanup) é executada quando o componente é desmontado
+
     return () => {
+
+      // Só loga abandono se o formulário não foi concluído e não está no processo de submissão
+
+
       if (formStartedRef.current && !isSubmittingRef.current) {
-        logEvent("form_abandoned", { last_step: previousStepRef.current });
+
+
+        console.log(`Usuário abandonou o formulário INICIADO na etapa ${previousStepRef.current}`);
+
+        logEvent("form_abandoned", {
+
+          last_step: previousStepRef.current
+
+        });
+
       }
+
     };
+
   }, [logEvent]);
 
   useEffect(() => {
@@ -123,14 +183,8 @@ function ActivityCreationPage({ existingActivity }) {
 
   const location = useLocation();
 
-  useEffect(() => {
-    // Verifica se recebemos um "recado" para ir para uma etapa específica
-    const targetStep = location.state?.fromStep;
-    if (targetStep) {
-      console.log(`[ActivityCreationPage] Navegação recebida com lembrete para ir para a etapa: ${targetStep}`);
-      setCurrentStep(targetStep);
-    }
-  }, []);
+
+
 
   useEffect(() => {
     console.log("ActivityCreationPage: Verificando autenticação do usuário...", user);
@@ -287,18 +341,11 @@ function ActivityCreationPage({ existingActivity }) {
   }, [activityData.gameElements.selectedElements]);
 
 
-  /**
-   * handleSelectTemplate: Preenche o formulário com os dados do template selecionado
-   * e muda para a tela de criação da atividade.
-   * @param {object} templateData - Os dados do template a serem usados para pré-preencher o formulário.
-   */
   const handleSelectTemplate = (templateData) => {
     console.log("handleSelectTemplate: Selecionando template e preenchendo dados...", templateData);
     formStartedRef.current = true;
-    setActivityData(templateData); // Preenche o estado com os dados do template
-    setShowInitialSelection(false); // Esconde a tela de seleção inicial
-    setShowTemplateList(false); // Esconde a lista de templates
-    setCurrentStep(1); // Volta para a primeira etapa do formulário
+
+    startNewActivity(templateData);
   };
 
   /**
@@ -307,21 +354,7 @@ function ActivityCreationPage({ existingActivity }) {
   const handleStartFromScratch = () => {
     console.log("handleStartFromScratch: Iniciando atividade do zero.");
     formStartedRef.current = true;
-    // Reseta activityData para o estado inicial vazio
-    setActivityData({
-      title: '', description: '', areaKnowledge: '', isPublic: false,
-      currentScenario: { problems: [], otherProblem: '' },
-      desiredScenario: { objectives: [], otherObjective: '' },
-      activityPlanning: { characteristics: [], participantsQuantity: '', expectedDuration: '', location: '', otherInfo: '' },
-      playerProfile: { selectedProfiles: [] },
-      gameElements: { selectedElements: [], otherElement: '', narrativeTitle: '', narrativeContent: '' },
-      rewardsOffered: { selectedRewards: [], otherReward: '' },
-      rewardedActions: { selectedActions: [], otherAction: '' },
-      gamificationRules: { generalRules: [], specificRules: '' },
-    });
-    setShowInitialSelection(false); // Esconde a tela de seleção inicial
-    setShowTemplateList(false); // Esconde a lista de templates
-    setCurrentStep(1); // Volta para a primeira etapa do formulário
+    startNewActivity();
   };
 
   /**
@@ -329,8 +362,8 @@ function ActivityCreationPage({ existingActivity }) {
    */
   const handleShowTemplates = () => {
     console.log("handleShowTemplates: Exibindo a lista de templates.");
-    setShowInitialSelection(true); // Garante que a seção principal de seleção esteja visível
-    setShowTemplateList(true); // Mostra a lista de templates
+    setShowInitialSelection(true);
+    setShowTemplateList(true);
   };
 
 
@@ -347,16 +380,17 @@ function ActivityCreationPage({ existingActivity }) {
   const handleOpenContentEditor = (step) => {
     const effectiveActivityId = activityId || existingActivity?.id;
 
-    if (!effectiveActivityId) {
-      alert("Você precisa salvar a atividade pelo menos uma vez antes de poder editar o conteúdo.");
-      return;
+    // Se temos um ID, estamos em modo de EDIÇÃO. O comportamento antigo continua.
+    if (effectiveActivityId) {
+      navigate(`/professor/atividades/${effectiveActivityId}/${step.type}/${step.id}/edit`);
+    } else {
+      // MODO CRIAÇÃO: Não temos ID, então passamos o conteúdo do rascunho via state.
+
+      // Encontra o conteúdo ATUAL do passo que está no estado "activityData"
+      const stepContent = activityData.gamificationDesign?.progression_path?.find(p => p.id === step.id)?.content || {};
+
+      navigate(`/professor/criar-atividade/criar/${step.type}/${step.id}/edit`);
     }
-
-    // --- ADICIONE ESTA LINHA ---
-    console.log(`Tentando navegar para: /professor/atividades/${effectiveActivityId}/${step.type}/${step.id}/edit`);
-
-    // A linha original de navegação
-    navigate(`/professor/atividades/${effectiveActivityId}/${step.type}/${step.id}/edit`);
   };
 
 

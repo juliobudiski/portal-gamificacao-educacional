@@ -3021,5 +3021,574 @@
         "editors": [],
         "operating_systems": [],
         "categories": []
+    },
+    {
+        "grand_total": {
+            "hours": 1,
+            "minutes": 0,
+            "total_seconds": 3606.177,
+            "digital": "1:00",
+            "decimal": "1.00",
+            "text": "1 hr",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 98,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2025-10-29T03:00:00Z",
+            "end": "2025-10-30T02:59:59Z",
+            "date": "2025-10-29",
+            "text": "Wed Oct 29th 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [
+            {
+                "name": "portal-gamificacao-educacional",
+                "total_seconds": 3606.177,
+                "ai_additions": 0,
+                "ai_deletions": 0,
+                "human_additions": 98,
+                "human_deletions": 0,
+                "color": null,
+                "digital": "1:00:06",
+                "decimal": "1.00",
+                "text": "1 hr",
+                "hours": 1,
+                "minutes": 0,
+                "seconds": 6,
+                "percent": 100.0
+            }
+        ],
+        "languages": [
+            {
+                "name": "JavaScript",
+                "total_seconds": 3284.865,
+                "digital": "0:54:44",
+                "decimal": "0.90",
+                "text": "54 mins",
+                "hours": 0,
+                "minutes": 54,
+                "seconds": 44,
+                "percent": 91.09
+            },
+            {
+                "name": "Python",
+                "total_seconds": 321.312,
+                "digital": "0:05:21",
+                "decimal": "0.08",
+                "text": "5 mins",
+                "hours": 0,
+                "minutes": 5,
+                "seconds": 21,
+                "percent": 8.91
+            }
+        ],
+        "dependencies": [
+            {
+                "name": "react",
+                "total_seconds": 3284.865,
+                "digital": "0:54:44",
+                "decimal": "0.90",
+                "text": "54 mins",
+                "hours": 0,
+                "minutes": 54,
+                "seconds": 44,
+                "percent": 11.47
+            },
+            {
+                "name": "react-router-dom",
+                "total_seconds": 3284.865,
+                "digital": "0:54:44",
+                "decimal": "0.90",
+                "text": "54 mins",
+                "hours": 0,
+                "minutes": 54,
+                "seconds": 44,
+                "percent": 11.47
+            },
+            {
+                "name": "AuthContext",
+                "total_seconds": 3235.313,
+                "digital": "0:53:55",
+                "decimal": "0.88",
+                "text": "53 mins",
+                "hours": 0,
+                "minutes": 53,
+                "seconds": 55,
+                "percent": 11.3
+            },
+            {
+                "name": "Authorization",
+                "total_seconds": 2737.858,
+                "digital": "0:45:37",
+                "decimal": "0.75",
+                "text": "45 mins",
+                "hours": 0,
+                "minutes": 45,
+                "seconds": 37,
+                "percent": 9.56
+            },
+            {
+                "name": "POST",
+                "total_seconds": 2683.914,
+                "digital": "0:44:43",
+                "decimal": "0.73",
+                "text": "44 mins",
+                "hours": 0,
+                "minutes": 44,
+                "seconds": 43,
+                "percent": 9.37
+            },
+            {
+                "name": "fa",
+                "total_seconds": 2683.914,
+                "digital": "0:44:43",
+                "decimal": "0.73",
+                "text": "44 mins",
+                "hours": 0,
+                "minutes": 44,
+                "seconds": 43,
+                "percent": 9.37
+            },
+            {
+                "name": "true",
+                "total_seconds": 1087.212,
+                "digital": "0:18:07",
+                "decimal": "0.30",
+                "text": "18 mins",
+                "hours": 0,
+                "minutes": 18,
+                "seconds": 7,
+                "percent": 3.8
+            },
+            {
+                "name": "useAnalytics",
+                "total_seconds": 1048.854,
+                "digital": "0:17:28",
+                "decimal": "0.28",
+                "text": "17 mins",
+                "hours": 0,
+                "minutes": 17,
+                "seconds": 28,
+                "percent": 3.66
+            },
+            {
+                "name": "Step1_Activity",
+                "total_seconds": 551.399,
+                "digital": "0:09:11",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 11,
+                "percent": 1.93
+            },
+            {
+                "name": "Step7_Activity",
+                "total_seconds": 551.399,
+                "digital": "0:09:11",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 11,
+                "percent": 1.93
+            },
+            {
+                "name": "Step3_Activity",
+                "total_seconds": 551.399,
+                "digital": "0:09:11",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 11,
+                "percent": 1.93
+            },
+            {
+                "name": "Step5_Activity",
+                "total_seconds": 551.399,
+                "digital": "0:09:11",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 11,
+                "percent": 1.93
+            },
+            {
+                "name": "GET",
+                "total_seconds": 551.399,
+                "digital": "0:09:11",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 11,
+                "percent": 1.93
+            },
+            {
+                "name": "Step8_Activity",
+                "total_seconds": 551.399,
+                "digital": "0:09:11",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 11,
+                "percent": 1.93
+            },
+            {
+                "name": "Step4_Activity",
+                "total_seconds": 551.399,
+                "digital": "0:09:11",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 11,
+                "percent": 1.93
+            },
+            {
+                "name": "Step2_Activity",
+                "total_seconds": 551.399,
+                "digital": "0:09:11",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 11,
+                "percent": 1.93
+            },
+            {
+                "name": "PATCH",
+                "total_seconds": 551.399,
+                "digital": "0:09:11",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 11,
+                "percent": 1.93
+            },
+            {
+                "name": "Step6_Activity",
+                "total_seconds": 551.399,
+                "digital": "0:09:11",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 11,
+                "percent": 1.93
+            },
+            {
+                "name": "ActivityContext",
+                "total_seconds": 547.007,
+                "digital": "0:09:07",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 7,
+                "percent": 1.91
+            },
+            {
+                "name": "quiz-background",
+                "total_seconds": 497.455,
+                "digital": "0:08:17",
+                "decimal": "0.13",
+                "text": "8 mins",
+                "hours": 0,
+                "minutes": 8,
+                "seconds": 17,
+                "percent": 1.74
+            },
+            {
+                "name": "prop-types",
+                "total_seconds": 497.455,
+                "digital": "0:08:17",
+                "decimal": "0.13",
+                "text": "8 mins",
+                "hours": 0,
+                "minutes": 8,
+                "seconds": 17,
+                "percent": 1.74
+            },
+            {
+                "name": "sqlalchemy",
+                "total_seconds": 321.312,
+                "digital": "0:05:21",
+                "decimal": "0.08",
+                "text": "5 mins",
+                "hours": 0,
+                "minutes": 5,
+                "seconds": 21,
+                "percent": 1.12
+            },
+            {
+                "name": "flask_socketio",
+                "total_seconds": 321.312,
+                "digital": "0:05:21",
+                "decimal": "0.08",
+                "text": "5 mins",
+                "hours": 0,
+                "minutes": 5,
+                "seconds": 21,
+                "percent": 1.12
+            },
+            {
+                "name": "QuizTab",
+                "total_seconds": 49.552,
+                "digital": "0:00:49",
+                "decimal": "0.00",
+                "text": "49 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 49,
+                "percent": 0.17
+            },
+            {
+                "name": "NarrativeTab",
+                "total_seconds": 49.552,
+                "digital": "0:00:49",
+                "decimal": "0.00",
+                "text": "49 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 49,
+                "percent": 0.17
+            },
+            {
+                "name": "MissionTab",
+                "total_seconds": 49.552,
+                "digital": "0:00:49",
+                "decimal": "0.00",
+                "text": "49 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 49,
+                "percent": 0.17
+            },
+            {
+                "name": "ForumTab",
+                "total_seconds": 49.552,
+                "digital": "0:00:49",
+                "decimal": "0.00",
+                "text": "49 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 49,
+                "percent": 0.17
+            },
+            {
+                "name": "AchievementsTab",
+                "total_seconds": 49.552,
+                "digital": "0:00:49",
+                "decimal": "0.00",
+                "text": "49 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 49,
+                "percent": 0.17
+            },
+            {
+                "name": "useActivityLogic",
+                "total_seconds": 49.552,
+                "digital": "0:00:49",
+                "decimal": "0.00",
+                "text": "49 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 49,
+                "percent": 0.17
+            },
+            {
+                "name": "SlotMachineTab",
+                "total_seconds": 49.552,
+                "digital": "0:00:49",
+                "decimal": "0.00",
+                "text": "49 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 49,
+                "percent": 0.17
+            },
+            {
+                "name": "FinalRewardTab",
+                "total_seconds": 49.552,
+                "digital": "0:00:49",
+                "decimal": "0.00",
+                "text": "49 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 49,
+                "percent": 0.17
+            },
+            {
+                "name": "CustomizationTab",
+                "total_seconds": 49.552,
+                "digital": "0:00:49",
+                "decimal": "0.00",
+                "text": "49 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 49,
+                "percent": 0.17
+            },
+            {
+                "name": "ChatTab",
+                "total_seconds": 49.552,
+                "digital": "0:00:49",
+                "decimal": "0.00",
+                "text": "49 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 49,
+                "percent": 0.17
+            },
+            {
+                "name": "ActivityPage",
+                "total_seconds": 49.552,
+                "digital": "0:00:49",
+                "decimal": "0.00",
+                "text": "49 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 49,
+                "percent": 0.17
+            },
+            {
+                "name": "GameBoardViewer",
+                "total_seconds": 49.552,
+                "digital": "0:00:49",
+                "decimal": "0.00",
+                "text": "49 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 49,
+                "percent": 0.17
+            },
+            {
+                "name": "RouletteTab",
+                "total_seconds": 49.552,
+                "digital": "0:00:49",
+                "decimal": "0.00",
+                "text": "49 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 49,
+                "percent": 0.17
+            },
+            {
+                "name": "StoreTab",
+                "total_seconds": 49.552,
+                "digital": "0:00:49",
+                "decimal": "0.00",
+                "text": "49 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 49,
+                "percent": 0.17
+            },
+            {
+                "name": "StatsModal",
+                "total_seconds": 49.552,
+                "digital": "0:00:49",
+                "decimal": "0.00",
+                "text": "49 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 49,
+                "percent": 0.17
+            },
+            {
+                "name": "LeaderboardTab",
+                "total_seconds": 49.552,
+                "digital": "0:00:49",
+                "decimal": "0.00",
+                "text": "49 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 49,
+                "percent": 0.17
+            },
+            {
+                "name": "StudentSidebar",
+                "total_seconds": 49.552,
+                "digital": "0:00:49",
+                "decimal": "0.00",
+                "text": "49 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 49,
+                "percent": 0.17
+            },
+            {
+                "name": "ProfessorSidebar",
+                "total_seconds": 49.552,
+                "digital": "0:00:49",
+                "decimal": "0.00",
+                "text": "49 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 49,
+                "percent": 0.17
+            }
+        ],
+        "machines": [
+            {
+                "name": "julio-Inspiron-5421",
+                "total_seconds": 3606.177,
+                "machine_name_id": "31c8097d-6b9c-47f6-84e6-9e2f2be4fe63",
+                "digital": "1:00:06",
+                "decimal": "1.00",
+                "text": "1 hr",
+                "hours": 1,
+                "minutes": 0,
+                "seconds": 6,
+                "percent": 100.0
+            }
+        ],
+        "editors": [
+            {
+                "name": "VS Code",
+                "total_seconds": 3606.177,
+                "digital": "1:00:06",
+                "decimal": "1.00",
+                "text": "1 hr",
+                "hours": 1,
+                "minutes": 0,
+                "seconds": 6,
+                "percent": 100.0
+            }
+        ],
+        "operating_systems": [
+            {
+                "name": "Linux",
+                "total_seconds": 3606.177,
+                "digital": "1:00:06",
+                "decimal": "1.00",
+                "text": "1 hr",
+                "hours": 1,
+                "minutes": 0,
+                "seconds": 6,
+                "percent": 100.0
+            }
+        ],
+        "categories": [
+            {
+                "name": "Coding",
+                "total_seconds": 3606.177,
+                "digital": "1:00:06",
+                "decimal": "1.00",
+                "text": "1 hr",
+                "hours": 1,
+                "minutes": 0,
+                "seconds": 6,
+                "percent": 100.0
+            }
+        ]
     }
 ]
