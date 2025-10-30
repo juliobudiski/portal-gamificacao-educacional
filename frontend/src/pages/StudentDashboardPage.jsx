@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { AuthContext } from '../context/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   FaBook, FaChalkboardTeacher, FaChevronRight,
   FaStar, FaTrophy, FaTasks, FaUserGraduate
@@ -64,19 +64,43 @@ const ActivityCard = ({ activity }) => {
   if (import.meta.env.VITE_DEBUG_MODE) {
     console.debug('[ActivityCard] Renderizando atividade:', activity.id);
   }
+  const navigate = useNavigate();
+
+  // 2. Calcule se a atividade expirou (mesma lógica do filtro)
+  const isExpired = activity.expiresAt ? new Date(activity.expiresAt) < new Date() : false; // <-- CORRIGIDO
+
+  const handleAccess = () => {
+    // 3. Apenas navegue se não estiver expirado
+    if (!isExpired) {
+      navigate(`/activities/${activity.id}`);
+    }
+  };
+
+  if (import.meta.env.VITE_DEBUG_MODE) {
+    console.debug('[ActivityCard] Renderizando atividade:', activity.id, 'Expirada:', isExpired);
+  }
 
   return (
-    <div className="bg-secondary-bg p-4 rounded-xl flex items-center justify-between hover:bg-hover-bg-color transition-colors">
+    // 4. Adicione um estilo visual para atividades expiradas
+    <div className={`bg-secondary-bg p-4 rounded-xl flex items-center justify-between transition-all ${isExpired ? 'opacity-50' : 'hover:bg-hover-bg-color'}`}>
       <div>
         <p className="font-bold text-primary-text">{activity.title}</p>
         <p className="text-sm text-secondary-text">{activity.class_name}</p>
+        {isExpired && (
+          <p className="text-xs text-red-400 mt-1">Prazo encerrado em: {new Date(activity.expiresAt).toLocaleDateString('pt-BR')}</p> // <-- CORRIGIDO
+        )}
       </div>
-      <Link
-        to={`/activities/${activity.id}`}
-        className="py-2 px-4 bg-gradient-to-r from-[#69e8cb] to-[#4dd1b3] text-[#2c3135] font-bold rounded-lg text-sm"
+      {/* 5. Substitua o <Link> por um <button> com lógica condicional */}
+      <button
+        onClick={handleAccess}
+        disabled={isExpired}
+        className={`font-bold rounded-lg text-sm py-2 px-4 transition-colors ${isExpired
+          ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+          : 'bg-gradient-to-r from-[#69e8cb] to-[#4dd1b3] text-[#2c3135]'
+          }`}
       >
-        Ver Atividade
-      </Link>
+        {isExpired ? 'Encerrada' : 'Ver Atividade'}
+      </button>
     </div>
   );
 };
@@ -184,6 +208,26 @@ function StudentDashboardPage() {
     console.debug('[StudentDashboardPage] Renderizando dashboard');
   }
 
+  const relevantActivities = dashboardData?.pendingActivities
+    // 1. Filtra para manter apenas atividades não concluídas e dentro do prazo
+    .filter(activity => {
+      const isAvailable = activity.expiresAt ? new Date(activity.expiresAt) > new Date() : true;
+      // Assumindo que o backend envia 'is_completed'. Se não enviar, consideramos 'false'.
+      const isNotCompleted = !activity.is_completed;
+      return isAvailable && isNotCompleted;
+    })
+    // 2. Ordena as atividades restantes, colocando as com prazo mais próximo primeiro
+    .sort((a, b) => {
+      // Se 'a' não tiver prazo, ele vai para o fim da lista.
+      if (!a.expiresAt) return 1;
+      // Se 'b' não tiver prazo, ele vai para o fim da lista.
+      if (!b.expiresAt) return -1;
+      // Ordena pela data de expiração, da mais próxima para a mais distante.
+      return new Date(a.expiresAt) - new Date(b.expiresAt);
+    })
+    // 3. Limita a lista para os 5 primeiros itens
+    .slice(0, 5);
+
 
   return (
     <div className="min-h-screen bg-primary-bg p-4 md:p-8 text-primary-text">
@@ -222,9 +266,9 @@ function StudentDashboardPage() {
                 <FaTasks className="text-3xl text-[#69e8cb] mr-4" />
                 <h2 className="text-3xl font-bold">Minhas Atividades</h2>
               </div>
-              {dashboardData.pendingActivities.length > 0 ? (
+              {relevantActivities.length > 0 ? (
                 <div className="space-y-4">
-                  {dashboardData.pendingActivities.map(activity => (
+                  {relevantActivities.map(activity => (
                     <ActivityCard key={activity.id} activity={activity} />
                   ))}
                 </div>

@@ -346,20 +346,22 @@ function AppContent() {
 
           <Route element={<PrivateRoute allowedRoles={['professor']} />}>
             <Route path="/professor/dashboard" element={<TeacherDashboardPage />} />
-            <Route path="/professor/criar-atividade/*" element={<ActivityCreationProvider><Outlet /></ActivityCreationProvider>} >
-              <Route index element={<ActivityCreationPage />} />
-              <Route path=":activityId/quiz/:stepId/edit" element={<QuizEditorPage />} />
-              <Route path=":activityId/narrative/:stepId/edit" element={<NarrativeEditorPage />} />
+            {/* 1. Crie uma rota "pai" que simplesmente fornece o contexto para as rotas filhas */}
+            <Route element={<ActivityCreationProvider><Outlet /></ActivityCreationProvider>}>
+              <Route path="/professor/criar-atividade" element={<ActivityCreationPage />} />
+              <Route path="/professor/atividades/:activityId/edit" element={<ActivityEditPage />} />
+              <Route path="/professor/criar-atividade/criar/:type/:stepId/edit" element={<QuizEditorPage />} /> {/* Exemplo, ajuste se necessário */}
+              <Route path="/professor/atividades/:activityId/quiz/:stepId/edit" element={<QuizEditorPage />} />
+              <Route path="/professor/atividades/:activityId/narrative/:stepId/edit" element={<NarrativeEditorPage />} />
             </Route>
-            <Route path="/professor/atividades/:activityId/edit" element={<ActivityEditPage />} />
+
             <Route path="/professor/banco-atividades" element={<ActivityBankPage />} />
             <Route path="/professor/gerenciar-turmas" element={<ClassManagementPage />} />
             <Route path="/professor/ranking" element={<TeacherRankingPage />} />
             <Route path="/professor/turmas/nova" element={<CreateClassPage />} />
             <Route path="/classes/:class_id/edit" element={<ClassEditPage />} />
             <Route path="/assign-activity-to-class/:activityId" element={<AssignActivityToClass />} />
-            <Route path="/professor/atividades/:activityId/quiz/:stepId/edit" element={<QuizEditorPage />} />
-            <Route path="/professor/atividades/:activityId/narrative/:stepId/edit" element={<NarrativeEditorPage />} />
+
             <Route path="/professor/desempenho-alunos" element={<StudentPerformancePage />} />
           </Route>
 

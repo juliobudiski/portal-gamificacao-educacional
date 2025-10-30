@@ -53,6 +53,13 @@ def get_activity_progress(activity_id):
     if not activity:
         return jsonify({"message": "Atividade não encontrada."}), 404
 
+    now = datetime.utcnow()
+    if activity.available_from and now < activity.available_from:
+        return jsonify({"message": f"Esta atividade estará disponível em {activity.available_from.strftime('%d/%m/%Y às %H:%M')}."}), 403
+    
+    if activity.expires_at and now > activity.expires_at:
+        return jsonify({"message": "O prazo para esta atividade já encerrou."}), 403
+    
     # Se o progresso não existir, cria um registro inicial para o aluno
     if not progress:
         current_app.logger.info(f"Nenhum progresso encontrado para o usuário {user.id}. Criando novo registro para a turma {activity.class_id}.")

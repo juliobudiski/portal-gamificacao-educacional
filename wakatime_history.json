@@ -3590,5 +3590,134 @@
                 "percent": 100.0
             }
         ]
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2025-10-30T03:00:00Z",
+            "end": "2025-10-31T02:59:59Z",
+            "date": "2025-10-30",
+            "text": "Thu Oct 30th 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [
+            {
+                "name": "portal-gamificacao-educacional",
+                "total_seconds": 0.0,
+                "ai_additions": 0,
+                "ai_deletions": 0,
+                "human_additions": 0,
+                "human_deletions": 0,
+                "color": null,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            }
+        ],
+        "languages": [
+            {
+                "name": "Python",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            }
+        ],
+        "dependencies": [
+            {
+                "name": "sqlalchemy",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            },
+            {
+                "name": "flask_socketio",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            }
+        ],
+        "machines": [
+            {
+                "name": "julio-Inspiron-5421",
+                "total_seconds": 0.0,
+                "machine_name_id": "5f1077a6-c482-4529-baab-bda0fd3f04dd",
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            }
+        ],
+        "editors": [
+            {
+                "name": "VS Code",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            }
+        ],
+        "operating_systems": [
+            {
+                "name": "Linux",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            }
+        ],
+        "categories": [
+            {
+                "name": "Coding",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            }
+        ]
     }
 ]

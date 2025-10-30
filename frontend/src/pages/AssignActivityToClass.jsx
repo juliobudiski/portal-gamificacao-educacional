@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { AuthContext } from '../context/AuthContext';
 import { useParams } from 'react-router-dom';
@@ -19,6 +19,10 @@ function AssignActivityToClass({ onAssignSuccess }) {
     const [selectedClassId, setSelectedClassId] = useState('');
     const [message, setMessage] = useState('');
     const [isLoading, setIsLoading] = useState(true);
+    const [availableFromDate, setAvailableFromDate] = useState('');
+    const [availableFromTime, setAvailableFromTime] = useState('');
+    const [expiresAtDate, setExpiresAtDate] = useState('');
+    const [expiresAtTime, setExpiresAtTime] = useState('');
 
     useEffect(() => {
         if (isDebugMode) {
@@ -99,7 +103,7 @@ function AssignActivityToClass({ onAssignSuccess }) {
         fetchAvailableClasses();
     }, [user, user?.token]);
 
-    const handleAssign = async () => {
+    const handleAssign = useCallback(async () => {
         if (isDebugMode) {
             console.log(`[AssignActivityToClass] Iniciando atribuição. Atividade: ${activityId}, Turma: ${selectedClassId}`);
         }
@@ -108,13 +112,11 @@ function AssignActivityToClass({ onAssignSuccess }) {
         setIsLoading(true);
 
         const token = user?.token;
+
         if (!token) {
-            const errorMsg = 'Token de autenticação não encontrado';
-            setMessage(errorMsg);
+            setMessage('Erro: Usuário não autenticado. Faça login novamente.');
             setIsLoading(false);
-            if (isDebugMode) {
-                console.error('[AssignActivityToClass] Erro de autenticação:', errorMsg);
-            }
+            console.error('[AssignActivityToClass] Erro fatal: Token de autenticação não encontrado.');
             return;
         }
 
@@ -135,13 +137,21 @@ function AssignActivityToClass({ onAssignSuccess }) {
         }
 
         try {
+            const available_from = availableFromDate ? `${availableFromDate}T${availableFromTime || '00:00:00'}` : null;
+            const expires_at = expiresAtDate ? `${expiresAtDate}T${expiresAtTime || '00:00:00'}` : null;
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${activityId}/assign`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${token}`, // Esta linha é a que resolve o problema
                 },
-                body: JSON.stringify({ class_id: selectedClassId }),
+                body: JSON.stringify({
+                    class_id: selectedClassId,
+                    available_from_date: availableFromDate,
+                    available_from_time: availableFromTime,
+                    expires_at_date: expiresAtDate,
+                    expires_at_time: expiresAtTime,
+                }),
             });
 
             if (isDebugMode) {
@@ -177,7 +187,16 @@ function AssignActivityToClass({ onAssignSuccess }) {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [
+        user,
+        activityId,
+        selectedClassId,
+        availableFromDate,
+        availableFromTime,
+        expiresAtDate,
+        expiresAtTime,
+        onAssignSuccess
+    ]);
 
     // Renderização condicional para estados de erro/carregamento
     const renderContent = () => {
@@ -224,7 +243,7 @@ function AssignActivityToClass({ onAssignSuccess }) {
                 <button
                     onClick={handleAssign}
                     className="relative w-full sm:w-auto bg-gradient-to-r from-accent-yellow to-accent-teal text-primary-text font-bold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl hover:from-accent-yellow/90 hover:to-accent-teal/90 transform hover:-translate-y-0.5 transition-all duration-300 ease-out disabled:opacity-70 disabled:cursor-not-allowed group"
-                    disabled={isLoading}
+                    disabled={isLoading || !selectedClassId || !user?.token}
                 >
                     <div className="absolute inset-0 bg-secondary-bg opacity-0 group-hover:opacity-10 rounded-xl transition-opacity"></div>
                     <span className="flex items-center justify-center">
@@ -269,6 +288,48 @@ function AssignActivityToClass({ onAssignSuccess }) {
                     <h3 className="text-xl font-bold bg-gradient-to-r from-accent-yellow to-accent-teal bg-clip-text text-transparent">
                         Atribuir Atividade a uma Turma
                     </h3>
+
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+                    {/* Campos de Data de Início */}
+                    <div>
+                        <label htmlFor="availableFrom" className="block text-sm font-medium text-secondary-text mb-1">Disponível a partir de (Data):</label>
+                        <input
+                            type="date"
+                            value={availableFromDate}
+                            onChange={(e) => setAvailableFromDate(e.target.value)}
+                            className="w-full pl-3 pr-3 py-2 bg-secondary-bg border-2 border-[#4a525a] rounded-xl text-secondary-text focus:outline-none focus:ring-2 focus:ring-accent-yellow"
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="expiresAt" className="block text-sm font-medium text-secondary-text mb-1">Horário de Início (Opcional):</label>
+                        <input
+                            type="time"
+                            value={availableFromTime}
+                            onChange={(e) => setAvailableFromTime(e.target.value)}
+                            className="w-full pl-3 pr-3 py-2 bg-secondary-bg border-2 border-[#4a525a] rounded-xl text-secondary-text focus:outline-none focus:ring-2 focus:ring-accent-yellow"
+                        />
+                    </div>
+
+                    {/* Campos de Prazo Final */}
+                    <div>
+                        <label htmlFor="availableFrom" className="block text-sm font-medium text-secondary-text mb-1">Prazo final (Data):</label>
+                        <input
+                            type="date"
+                            value={expiresAtDate}
+                            onChange={(e) => setExpiresAtDate(e.target.value)}
+                            className="w-full pl-3 pr-3 py-2 bg-secondary-bg border-2 border-[#4a525a] rounded-xl text-secondary-text focus:outline-none focus:ring-2 focus:ring-accent-yellow"
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="expiresAt" className="block text-sm font-medium text-secondary-text mb-1">Horário Final (Opcional):</label>
+                        <input
+                            type="time"
+                            value={expiresAtTime}
+                            onChange={(e) => setExpiresAtTime(e.target.value)}
+                            className="w-full pl-3 pr-3 py-2 bg-secondary-bg border-2 border-[#4a525a] rounded-xl text-secondary-text focus:outline-none focus:ring-2 focus:ring-accent-yellow"
+                        />
+                    </div>
                 </div>
 
                 {message && (

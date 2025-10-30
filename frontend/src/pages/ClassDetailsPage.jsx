@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 import {
@@ -11,7 +11,7 @@ import {
     FaUserGraduate,
     FaChevronDown,
     FaChevronUp,
-    FaUsers
+    FaUsers, FaClock, FaCheckCircle, FaTimesCircle, FaHourglassStart
 } from "react-icons/fa";
 
 // --- COMPONENTE INTERNO PARA O CARD DA ATIVIDADE ---
@@ -22,6 +22,8 @@ function ActivityCard({ activity }) {
         gameElements: false,
         rewards: false,
     });
+    // 1. Adicione o hook de navegação
+    const navigate = useNavigate();
 
     const toggleSection = (section) => {
         setIsExpanded(prev => ({ ...prev, [section]: !prev[section] }));
@@ -29,6 +31,31 @@ function ActivityCard({ activity }) {
 
     const hasGameElements = activity.gameElements && activity.gameElements.selectedElements?.length > 0;
     const hasRewards = activity.rewardsOffered && activity.rewardsOffered.selectedRewards?.length > 0;
+
+    const getStatus = () => {
+        const now = new Date();
+        const availableFrom = activity.availableFrom ? new Date(activity.availableFrom) : null;
+        const expiresAt = activity.expiresAt ? new Date(activity.expiresAt) : null;
+
+        if (expiresAt && now > expiresAt) {
+            return { text: "Encerrada", color: "red", icon: <FaTimesCircle /> };
+        }
+        if (availableFrom && now < availableFrom) {
+            return { text: "Em breve", color: "blue", icon: <FaHourglassStart /> };
+        }
+        return { text: "Disponível", color: "green", icon: <FaCheckCircle /> };
+    };
+
+    const status = getStatus();
+    // A variável que decide se o botão funciona já está aqui!
+    const isActionable = status.text === "Disponível";
+
+    // 2. Crie a função para navegar
+    const handleAccess = () => {
+        if (isActionable) {
+            navigate(`/activities/${activity.id}`);
+        }
+    };
 
     return (
         <div
@@ -53,6 +80,28 @@ function ActivityCard({ activity }) {
                         </span>
                     </div>
                 )}
+
+                {/* --- SEÇÃO DE STATUS E PRAZO --- */}
+                <div className="flex items-center justify-between mb-4 text-sm">
+                    <span className={`flex items-center gap-2 font-semibold px-2 py-1 rounded-full bg-${status.color}-500/20 text-${status.color}-400`}>
+                        {status.icon}
+                        {status.text}
+                    </span>
+                    {/* Exibe o prazo se a data de expiração existir, mostrando data e hora */}
+                    {activity.expiresAt && (
+                        <span className="flex items-center gap-2 text-secondary-text">
+                            <FaClock />
+                            Prazo: {new Date(activity.expiresAt).toLocaleString('pt-BR', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            })}
+                        </span>
+                    )}
+                </div>
+                {/* --- FIM DA SEÇÃO --- */}
 
                 {/* Seção de Descrição Expansível */}
                 <div
@@ -122,12 +171,16 @@ function ActivityCard({ activity }) {
             </div>
 
             <div className="mt-6 text-right border-t border-border-color pt-4">
-                <Link
-                    to={`/activities/${activity.id}`}
-                    className="inline-block bg-gradient-to-r from-[#69e8cb] to-[#4dd1b3] hover:from-[#4dd1b3] hover:to-[#69e8cb] text-[#2c3135] font-bold py-2 px-4 rounded-xl text-sm transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg"
+                <button
+                    onClick={handleAccess}
+                    disabled={!isActionable}
+                    className={`inline-block font-bold py-2 px-4 rounded-xl text-sm transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg ${isActionable
+                            ? 'bg-gradient-to-r from-[#69e8cb] to-[#4dd1b3] text-[#2c3135] hover:from-[#4dd1b3] hover:to-[#69e8cb]'
+                            : 'bg-red-800/50 text-red-300 cursor-not-allowed border border-red-500/50'
+                        }`}
                 >
-                    Ver Atividade
-                </Link>
+                    {status.text === 'Encerrada' ? 'Prazo Encerrado' : (status.text === 'Em breve' ? 'Aguarde' : 'Ver Atividade')}
+                </button>
             </div>
         </div>
     );

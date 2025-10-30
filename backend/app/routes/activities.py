@@ -8,7 +8,7 @@ from ..models import db, Activity, Tag, activity_tag, ActivityRevision, User, Cl
 from ..services import activity_service
 from ..utils.logging import _log_system_event
 from .medals import check_and_award_medals
-
+from datetime import datetime, time
 activity_bp = Blueprint('activities', __name__)
 logger = logging.getLogger(__name__)
 
@@ -307,6 +307,36 @@ def assign_activity_to_class(activity_id):
 
     data = request.get_json()
     class_id = data.get('class_id')
+    
+    available_from_date_str = data.get('available_from_date')
+    available_from_time_str = data.get('available_from_time')
+    expires_at_date_str = data.get('expires_at_date')
+    expires_at_time_str = data.get('expires_at_time')
+
+    available_from = None
+    expires_at = None
+
+    # Processa a data/hora de TÉRMINO
+    if expires_at_date_str:
+        expires_date = datetime.strptime(expires_at_date_str, '%Y-%m-%d').date()
+        # Se o professor NÃO informou a hora, assume 23:59:59
+        if not expires_at_time_str:
+            expires_time = time(23, 59, 59)
+        else:
+            expires_time = datetime.strptime(expires_at_time_str, '%H:%M').time()
+        expires_at = datetime.combine(expires_date, expires_time)
+
+    # Processa a data/hora de INÍCIO
+    if available_from_date_str:
+        available_date = datetime.strptime(available_from_date_str, '%Y-%m-%d').date()
+        # Se o professor NÃO informou a hora, assume a hora atual
+        if not available_from_time_str:
+            available_time = datetime.utcnow().time()
+        else:
+            available_time = datetime.strptime(available_from_time_str, '%H:%M').time()
+        available_from = datetime.combine(available_date, available_time)
+
+    
 
     if not class_id:
         return jsonify({"message": "O ID da turma é obrigatório para atribuir a atividade."}), 400
@@ -329,6 +359,8 @@ def assign_activity_to_class(activity_id):
             # Apenas atualiza a atividade original com o ID da turma
             original_activity.class_id = class_id
             original_activity.assignment_count += 1 # Incrementa o contador
+            original_activity.available_from = available_from
+            original_activity.expires_at = expires_at
             
             db.session.add(original_activity)
             db.session.commit()
@@ -366,7 +398,9 @@ def assign_activity_to_class(activity_id):
                 gamification_rules=deepcopy(original_activity.gamification_rules),
                 area_knowledge=original_activity.area_knowledge,
                 is_public=False,
-                class_id=class_id # Atribui a cópia à nova turma
+                class_id=class_id, # Atribui a cópia à nova turma
+                available_from=available_from,
+                expires_at=expires_at
             )
 
             # Incrementa o contador da atividade original

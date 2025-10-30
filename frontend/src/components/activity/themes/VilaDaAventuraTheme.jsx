@@ -2,7 +2,30 @@ import React, { useRef, useState, useLayoutEffect, useMemo } from 'react';
 import { elementConfig } from '../GameBoardConfig';
 import '../GameBoard.css';
 import { useActivity } from '../../../context/ActivityContext';
+function getCatmullRomPath(points, tension = 0.5) {
+    if (!points || points.length < 2) {
+        return "";
+    }
 
+    let path = `M ${points[0].x} ${points[0].y}`;
+    const n = points.length;
+
+    for (let i = 0; i < n - 1; i++) {
+        const p0 = i === 0 ? points[i] : points[i - 1];
+        const p1 = points[i];
+        const p2 = points[i + 1];
+        const p3 = i === n - 2 ? points[i + 1] : points[i + 2];
+
+        const cp1x = p1.x + (p2.x - p0.x) / 6 * tension;
+        const cp1y = p1.y + (p2.y - p0.y) / 6 * tension;
+        const cp2x = p2.x - (p3.x - p1.x) / 6 * tension;
+        const cp2y = p2.y - (p3.y - p1.y) / 6 * tension;
+
+        path += ` C ${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
+    }
+
+    return path;
+}
 const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === 'true';
 const debugLog = (message, ...optionalParams) => {
     if (DEBUG_MODE) {
@@ -11,85 +34,81 @@ const debugLog = (message, ...optionalParams) => {
 };
 
 // ========================================================================
-// LÓGICA DE CÁLCULO DE LAYOUT (REFEITA PARA SERPENTEAR)
+// LÓGICA DE CÁLCULO DE LAYOUT (VERSÃO FINAL COM CURVAS ABERTAS)
 // ========================================================================
 const calculateStepCoordinates = (activity, boardSize) => {
     const design = activity?.gamificationDesign;
     if (!design || !boardSize) return { missionNode: null, pathNodes: [], finalRewardNode: null };
 
-    const itemsPerRow = 4;
-    const path = design.progression_path || [];
-
+    // --- PASSO 1: Criar uma lista única com TODOS os nós na ordem correta ---
+    const allNodesInOrder = [];
     const missionElement = design.hub_elements?.find(el => el.type === 'mission' && el.enabled);
     const finalRewardElement = design.hub_elements?.find(el => el.type === 'final_reward' && el.enabled);
+    const path = design.progression_path || [];
 
+    if (missionElement) allNodesInOrder.push({ nodeType: 'mission' });
+    path.forEach(() => allNodesInOrder.push({ nodeType: 'path' }));
+    if (finalRewardElement) allNodesInOrder.push({ nodeType: 'final_reward' });
+
+    // --- PASSO 2: Calcular as coordenadas com uma fórmula aprimorada ---
+    const itemsPerRow = 4;
     const pathAreaWidth = boardSize.width * 0.8;
     const offsetX = boardSize.width * 0.1;
-    const offsetY = boardSize.height * 0.15;
-    const rowHeight = 120; // Espaçamento vertical entre as linhas
+    const offsetY = boardSize.height * 0.15; // Ajuste inicial do topo
+    const rowHeight = 130;
+
+    // AQUI ESTÁ A MÁGICA PARA A CURVA "C": Um empurrãozinho vertical nas pontas
+    const turnDrop = 40; // Aumente este valor para uma curva ainda mais aberta
 
     let missionNode = null;
-    if (missionElement) {
-        missionNode = { x: offsetX, y: offsetY };
-    }
-
     const pathNodes = [];
-    path.forEach((step, index) => {
+    let finalRewardNode = null;
+
+    allNodesInOrder.forEach((node, index) => {
         const row = Math.floor(index / itemsPerRow);
         const col = index % itemsPerRow;
+        const isReversedRow = row % 2 !== 0;
 
-        // Se a linha for par (0, 2, ...), vai da esquerda para a direita.
-        // Se for ímpar (1, 3, ...), vai da direita para a esquerda.
-        const effectiveCol = row % 2 === 0 ? col : (itemsPerRow - 1 - col);
-
+        const effectiveCol = isReversedRow ? (itemsPerRow - 1 - col) : col;
         const x = offsetX + (pathAreaWidth / (itemsPerRow > 1 ? itemsPerRow - 1 : 1)) * effectiveCol;
-        const y = offsetY + (missionNode ? rowHeight : 0) + (row * rowHeight);
 
-        pathNodes.push({ x, y });
-    });
+        // Adicionamos o "turnDrop" apenas no primeiro e último item de cada fileira
+        const yAdjustment = (col === 0 || col === itemsPerRow - 1) ? turnDrop : 0;
+        const y = offsetY + (row * rowHeight) + yAdjustment;
 
-    let finalRewardNode = null;
-    if (finalRewardElement) {
-        // Pega a posição do último nó da trilha, ou da missão se a trilha estiver vazia
-        const lastNodePosition = pathNodes[pathNodes.length - 1] || missionNode;
+        const calculatedPosition = { x, y };
 
-        if (lastNodePosition) {
-            const lastNodeIndex = path.length - 1;
-            const lastNodeRow = Math.floor(lastNodeIndex / itemsPerRow);
-
-            let finalX;
-            // Se a última linha tiver espaço, coloca ao lado
-            if (path.length % itemsPerRow !== 0) {
-                finalX = lastNodeRow % 2 === 0 ? lastNodePosition.x + (pathAreaWidth / (itemsPerRow - 1)) : lastNodePosition.x - (pathAreaWidth / (itemsPerRow - 1));
-            } else { // Se a última linha estiver cheia, desce
-                finalX = lastNodePosition.x;
-            }
-
-            const finalY = lastNodePosition.y + (path.length % itemsPerRow === 0 ? rowHeight : 0);
-
-            finalRewardNode = { x: finalX, y: finalY };
-
-        } else { // Se não houver nem missão nem passos, coloca no centro
-            finalRewardNode = { x: boardSize.width / 2, y: boardSize.height / 2 };
+        if (node.nodeType === 'mission') {
+            missionNode = calculatedPosition;
+        } else if (node.nodeType === 'path' && pathNodes.length < path.length) {
+            pathNodes.push(calculatedPosition);
+        } else if (node.nodeType === 'final_reward') {
+            finalRewardNode = calculatedPosition;
         }
-    }
+    });
 
     return { missionNode, pathNodes, finalRewardNode };
 };
 
 
 const generateSvgPath = (missionNode, pathNodes, finalRewardNode) => {
-    const allPoints = [];
-    if (missionNode) allPoints.push(missionNode);
-    allPoints.push(...pathNodes);
-    if (finalRewardNode) allPoints.push(finalRewardNode);
+    const allPointsRaw = [];
+    if (missionNode) allPointsRaw.push(missionNode);
+    allPointsRaw.push(...pathNodes);
+    if (finalRewardNode) allPointsRaw.push(finalRewardNode);
 
-    if (allPoints.length < 2) return "";
-    let pathString = `M ${allPoints[0].x} ${allPoints[0].y}`;
-    for (let i = 1; i < allPoints.length; i++) {
-        pathString += ` L ${allPoints[i].x} ${allPoints[i].y}`;
-    }
-    return pathString;
+    if (allPointsRaw.length < 2) return "";
+
+    // A MÁGICA ACONTECE AQUI:
+    // 1. Definimos o quanto a linha passará ABAIXO do centro de cada casa.
+    //    Como a casa tem 90px de altura, 45px coloca a linha na borda inferior.
+    const verticalOffset = 45;
+
+    // 2. Criamos uma nova lista de pontos já com o deslocamento aplicado.
+    const pointsWithOffset = allPointsRaw.map(p => ({ x: p.x, y: p.y + verticalOffset }));
+
+    // 3. Geramos o caminho suave usando a nova função.
+    return getCatmullRomPath(pointsWithOffset);
 };
 
 const VilaDaAventuraTheme = ({ children }) => {
@@ -122,7 +141,19 @@ const VilaDaAventuraTheme = ({ children }) => {
 
     const { missionNode, pathNodes, finalRewardNode } = useMemo(() => calculateStepCoordinates(activity, boardSize), [activity, boardSize]);
     const svgPath = useMemo(() => generateSvgPath(missionNode, pathNodes, finalRewardNode), [missionNode, pathNodes, finalRewardNode]);
+    const requiredHeight = useMemo(() => {
+        if (!boardSize) return 600; // Altura padrão enquanto carrega
 
+        const allNodes = [missionNode, ...pathNodes, finalRewardNode].filter(Boolean);
+        if (allNodes.length === 0) return 300; // Altura mínima se não houver nós
+
+        // Encontra a coordenada Y mais baixa entre todos os nós
+        const maxY = Math.max(...allNodes.map(node => node.y));
+
+        // Retorna a posição Y mais baixa + um preenchimento para não cortar o ícone
+        // (90px é a altura do ícone, então 45px é a metade)
+        return maxY + 45;
+    }, [boardSize, missionNode, pathNodes, finalRewardNode]);
     const villageHubElements = hubElementsToRender.filter(el => el.type !== 'mission' && el.type !== 'final_reward');
     const missionConfig = elementConfig.hub.mission;
     const finalRewardConfig = elementConfig.hub.final_reward;
@@ -138,12 +169,12 @@ const VilaDaAventuraTheme = ({ children }) => {
 
     return (
         <div className="rpg-map-board" ref={boardRef}>
-            <div className="progress-path-area">
+            <div className="progress-path-area" style={{ height: `${requiredHeight}px` }}>
                 {renderedDecorations.map(deco => (
                     <img key={deco.id} src={deco.src} alt="Decoração" className={`board-decoration ${deco.className}`} style={deco.style} />
                 ))}
 
-                <svg className="path-svg" viewBox={`0 0 ${boardSize.width} ${boardSize.height}`} preserveAspectRatio="none">
+                <svg className="path-svg">
                     <path d={svgPath} className="path-line" />
                 </svg>
 

@@ -265,8 +265,15 @@ function ActivityCreationPage({ existingActivity }) {
         gamificationRules: existingActivity.gamificationRules || { generalRules: [], specificRules: '' },
       });
       setShowInitialSelection(false); // Garante que o formulário seja exibido diretamente
+      setCurrentStep(1);
     }
-  }, [isEditMode, existingActivity]);
+  }, [
+    isEditMode,
+    existingActivity,
+    setActivityData,        // <-- Adicionada
+    setShowInitialSelection,  // <-- Adicionada
+    setCurrentStep          // <-- Adicionada
+  ]);
 
   useEffect(() => {
     const fetchTemplates = async () => {
@@ -585,7 +592,7 @@ function ActivityCreationPage({ existingActivity }) {
           </p>
         </div>
 
-        {showInitialSelection ? (
+        {(showInitialSelection && !isEditMode) ? (
           // O JSX para a seleção inicial (Iniciar do Zero / Templates) é mantido
           <div className="bg-secondary-bg dark:bg-primary-bg p-8 rounded-lg shadow-md">
             <h3 className="text-2xl font-bold text-center mb-8 bg-gradient-to-r from-accent-purple to-accent-teal bg-clip-text text-transparent">

@@ -62,7 +62,7 @@
 .progress-path-area {
     position: relative;
     width: 100%;
-    aspect-ratio: 9 / 5;
+    /*aspect-ratio: 9 / 5;*/
     margin-bottom: 1rem;
 }
 

@@ -77,7 +77,9 @@ class Activity(db.Model):
     class_obj = db.relationship('Class', backref='assigned_activities', lazy=True)
     gamification_design = db.Column(JSONB, nullable=True)
     forum_topics = db.relationship('ForumTopic', backref='activity', lazy=True, cascade="all, delete-orphan")
-
+    available_from = db.Column(db.DateTime, nullable=True) # Data de início da disponibilidade
+    expires_at = db.Column(db.DateTime, nullable=True)     # Data final (prazo)
+    
     def to_dict(self):
         design = self.gamification_design or {}
         return {
@@ -104,6 +106,8 @@ class Activity(db.Model):
             'class_name': self.class_obj.name if self.class_obj else None,
             'copy_count': self.copy_count,
             'assignment_count': self.assignment_count,
+            'availableFrom': self.available_from.isoformat() if self.available_from else None,
+            'expiresAt': self.expires_at.isoformat() if self.expires_at else None,
             'gamificationDesign': {
                 'theme': design.get('theme', 'vila_da_aventura'), # Adicione um padrão
                 'progression_path': design.get('progression_path', []),
