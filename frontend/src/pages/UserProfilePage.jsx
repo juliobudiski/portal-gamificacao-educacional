@@ -145,10 +145,10 @@ function UserProfilePage() {
         />
       )}
 
-      <div className="min-h-screen bg-gradient-to-br from-primary-bg to-[#1a1e22] py-12 px-4">
+      <div className="min-h-screen bg-primary-bg py-12 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#69e8cb] to-[#9570d9]">
+            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-accent-teal to-accent-purple">
               Minhas Configurações
             </h1>
             <p className="text-secondary-text mt-2">Gerencie suas informações, avatares e segurança.</p>
@@ -162,7 +162,7 @@ function UserProfilePage() {
                   <img src={displayAvatar} alt="Avatar" className="w-28 h-28 rounded-full border-4 border-accent-teal object-cover mb-4" />
                   <h2 className="text-2xl font-bold text-primary-text">{user.name}</h2>
                   <p className="text-secondary-text">{user.email}</p>
-                  <button onClick={() => setShowAvatarModal(true)} className="mt-4 w-full py-2 px-4 bg-accent-yellow text-primary-text font-semibold rounded-lg hover:bg-yellow-600 transition-colors">
+                  <button onClick={() => setShowAvatarModal(true)} className="mt-4 w-full py-2 px-4 bg-accent-yellow text-white dark:text-gray-900 font-semibold rounded-lg hover:bg-accent-yellow/90 transition-colors">
                     Alterar Avatar
                   </button>
                 </div>
@@ -170,10 +170,11 @@ function UserProfilePage() {
 
               <ProfileCard icon={<FaSignOutAlt className="mr-3" />} title="Ações da Conta">
                 <div className="space-y-4">
-                  <button onClick={handleLogout} className="w-full py-2 px-4 border border-transparent rounded-xl text-sm font-medium text-primary-text bg-gradient-to-r from-[#ff6b6b] to-[#ff4f4f] hover:from-[#ff4f4f] hover:to-[#ff6b6b]">
+                  <button onClick={handleLogout} className="w-full py-2 px-4 border border-transparent rounded-xl text-sm font-medium text-white dark:text-gray-900 bg-danger hover:bg-danger/90 transition-colors">
                     Sair
                   </button>
-                  <button className="w-full py-2 px-4 rounded-xl text-sm font-medium text-red-300 bg-red-500/20 border border-red-500/50 hover:bg-red-500/30">
+                  {/* --- CORREÇÃO: Botão de excluir ciente do tema --- */}
+                  <button className="w-full py-2 px-4 rounded-xl text-sm font-medium text-danger bg-danger-bg border border-danger/50 hover:bg-danger-bg/80">
                     <FaTrashAlt className="inline mr-2" /> Excluir Conta
                   </button>
                 </div>
@@ -199,14 +200,14 @@ function UserProfilePage() {
                   // CASO 2: O usuário AINDA NÃO TEM o avatar "Explorador"
                   // Mostra o card de recompensa com o botão
                   <div>
-                    <div className="flex items-center p-4 bg-yellow-500/10 border-l-4 border-yellow-400 rounded-lg">
-                      <FaGift className="text-yellow-400 text-2xl mr-4" />
+                    <div className="flex items-center p-4 bg-accent-yellow/10 border-l-4 border-accent-yellow rounded-lg">
+                      <FaGift className="text-accent-yellow text-2xl mr-4" />
                       <div>
                         <h4 className="font-bold text-primary-text">Ganhe um Avatar Exclusivo!</h4>
                         <p className="text-secondary-text text-sm">Compartilhe sua localização para desbloquear o avatar "Explorador".</p>
                       </div>
                     </div>
-                    <button onClick={handleForceLocationRequest} className="mt-4 w-full py-2 px-4 bg-accent-teal text-primary-text font-semibold rounded-lg hover:bg-accent-teal/80">
+                    <button onClick={handleForceLocationRequest} className="mt-4 w-full py-2 px-4 bg-accent-teal text-white dark:text-gray-900 font-semibold rounded-lg hover:bg-accent-teal/80">
                       Liberar Localização e Resgatar
                     </button>
                     {locationStatus && <p className="mt-2 text-sm text-accent-yellow">{locationStatus}</p>}
@@ -219,7 +220,7 @@ function UserProfilePage() {
                   <h4 className="font-semibold text-secondary-text border-b border-border-color pb-2 mb-4">Avatares Especiais</h4>
                   <div className="flex flex-wrap gap-4">
                     {specialAvatars.length > 0 ? specialAvatars.map(avatar => (
-                      <img key={avatar.url} src={avatar.url} alt={avatar.name} title={avatar.name} className="w-16 h-16 rounded-full border-2 border-yellow-400 object-cover" />
+                      <img key={avatar.url} src={avatar.url} alt={avatar.name} title={avatar.name} className="w-16 h-16 rounded-full border-2 border-accent-yellow object-cover" />
                     )) : <p className="text-sm text-secondary-text">Nenhum avatar especial desbloqueado.</p>}
                   </div>
                 </div>

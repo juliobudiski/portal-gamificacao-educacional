@@ -26,24 +26,25 @@ function Homepage() {
 
         {/* Botões de ação com feedback visual */}
         <div className="flex flex-col sm:flex-row justify-center gap-6 mb-16">
+
           <Link
             to="/login"
-            className="relative group bg-gradient-to-br from-gray-100 to-white dark:bg-primary-bg dark: px-8 py-4 rounded-xl shadow-2xl border border-accent-teal/30 hover:border-accent-teal transition-all duration-300"
+            className="relative group bg-secondary-bg px-8 py-4 rounded-xl shadow-lg border border-accent-teal transition-all duration-300 hover:border-accent-teal/60"
           >
-            <span className="text-lg font-bold text-accent-teal group-hover:text-primary-text transition-colors">
+            <span className="text-lg font-bold text-accent-teal transition-colors">
               Entrar
             </span>
+            {/* Efeito de brilho interno no hover */}
             <div className="absolute inset-0 bg-accent-teal/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           </Link>
 
           <Link
             to="/cadastro"
-            className="relative group bg-gradient-to-br from-accent-yellow to-[#ffa000] px-8 py-4 rounded-xl shadow-2xl hover:shadow-[0_0_25px_rgba(255,189,48,0.4)] transition-all duration-300"
+            className="relative bg-accent-yellow px-8 py-4 rounded-xl shadow-lg hover:shadow-xl hover:bg-accent-yellow/90 transition-all duration-300"
           >
-            <span className="text-lg font-bold text-primary-text">
+            <span className="text-lg font-bold text-white dark:text-gray-900 transition-colors">
               Cadastre-se
             </span>
-            <div className="absolute inset-0 rounded-xl bg-secondary-bg/0 group-hover:bg-secondary-bg/10 transition-all duration-300"></div>
           </Link>
         </div>
 

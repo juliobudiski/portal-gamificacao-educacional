@@ -9,7 +9,7 @@ export const useTheme = () => useContext(ThemeContext);
 // Componente Provedor que irá encapsular a aplicação
 export const ThemeProvider = ({ children }) => {
     // Inicializa o estado buscando o tema no localStorage ou usando 'light' como padrão
-    const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
+    const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
 
     // Efeito que é executado sempre que o estado 'theme' muda
     useEffect(() => {

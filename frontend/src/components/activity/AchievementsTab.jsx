@@ -55,10 +55,18 @@ const AchievementsTab = ({ onReturn, activityId }) => {
     }
 
     return (
-        <div className="w-full max-w-5xl mx-auto p-4 text-primary-text">
-            <button onClick={onReturn} className="absolute top-4 left-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200">
-                <FaArrowLeft /> Voltar
-            </button>
+        <div className="relative pt-16 w-full max-w-5xl mx-auto p-4 text-primary-text">
+            <div className='flex-shrink-0'>
+                <button
+                    onClick={onReturn}
+                    className="absolute top-4 left-4 z-20 flex items-center gap-2 py-2 px-4 
+                                bg-secondary-bg text-secondary-text 
+                                border border-border-color rounded-full shadow-lg 
+                                hover:bg-primary-bg hover:shadow-xl transition-all"
+                >
+                    <FaArrowLeft /> Voltar ao Tabuleiro
+                </button>
+            </div>
             <header className="text-center mb-8 pt-8">
                 <h1 className="text-4xl font-bold text-yellow-300 flex items-center justify-center gap-3">
                     <FaMedal />

@@ -17,10 +17,20 @@ export default {
         'header-bg': 'var(--header-background)',
         'card-bg': 'var(--card-background)',
         'secondary-text': 'var(--text-secondary)',
-        // Mantém suas cores de acentuação
-        'accent-yellow': '#ffbd30',
-        'accent-teal': '#69e8cb',
-        'accent-purple': '#9570d9',
+
+        // --- CORES DE DESTAQUE ATUALIZADAS ---
+        // Em vez de um valor fixo, agora usam as variáveis do index.css
+        'accent-yellow': 'var(--color-accent-yellow)',
+        'accent-teal': 'var(--color-accent-teal)',
+        'accent-purple': 'var(--color-accent-purple)',
+
+        // --- NOVAS CORES SEMÂNTICAS ---
+        'success': 'var(--color-success)',
+        'success-bg': 'var(--color-success-bg)',
+        'danger': 'var(--color-danger)',
+        'danger-bg': 'var(--color-danger-bg)',
+        'info': 'var(--color-info)',
+        'info-bg': 'var(--color-info-bg)',
       },
       // Adiciona uma animação sutil para a entrada dos menus
       keyframes: {

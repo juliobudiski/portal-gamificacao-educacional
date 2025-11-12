@@ -4,9 +4,9 @@
 @tailwind utilities;
 
 /* Definição de variáveis de cor para o tema claro (padrão).
-  :root é equivalente a aplicar no elemento <html>.
 */
 :root {
+  /* Cores Neutras (Já existentes) */
   --background-primary: #f4f4f5;
   /* Fundo geral claro */
   --background-secondary: #ffffff;
@@ -19,12 +19,34 @@
   /* Cor da borda padrão */
   --hover-bg-color: #e5e7eb;
   /* Fundo do hover */
+
+  /* --- NOVAS CORES DE DESTAQUE (Versão Escura para Tema Claro) --- */
+  --color-accent-teal: #0D9488;
+  /* Verde-água escuro (legível) */
+  --color-accent-yellow: #B45309;
+  /* Amarelo/Laranja escuro (legível) */
+  --color-accent-purple: #7E22CE;
+  /* Roxo escuro (legível) */
+
+  /* --- NOVAS CORES SEMÂNTICAS (Versões para Tema Claro) --- */
+  --color-success: #15803D;
+  /* Texto Verde Escuro */
+  --color-success-bg: #DCFCE7;
+  /* Fundo Verde Claro */
+  --color-danger: #B91C1C;
+  /* Texto Vermelho Escuro */
+  --color-danger-bg: #FEE2E2;
+  /* Fundo Vermelho Claro */
+  --color-info: #0369A1;
+  /* Texto Azul Escuro */
+  --color-info-bg: #E0F2FE;
+  /* Fundo Azul Claro */
 }
 
 /* Definição de variáveis de cor para o tema escuro.
-  Estas serão aplicadas quando o elemento <html> tiver a classe "dark".
 */
 html.dark {
+  /* Cores Neutras (Já existentes) */
   --background-primary: #2c3135;
   /* Fundo geral escuro */
   --background-secondary: #343a40;
@@ -37,11 +59,31 @@ html.dark {
   /* Cor da borda padrão */
   --hover-bg-color: #3f474e;
   /* Fundo do hover */
+
+  /* --- NOVAS CORES DE DESTAQUE (Versão Clara para Tema Escuro) --- */
+  --color-accent-teal: #69e8cb;
+  /* Verde-água claro (brilhante) */
+  --color-accent-yellow: #ffbd30;
+  /* Amarelo claro (brilhante) */
+  --color-accent-purple: #9570d9;
+  /* Roxo claro (brilhante) */
+
+  /* --- NOVAS CORES SEMÂNTICAS (Versões para Tema Escuro) --- */
+  --color-success: #4ADE80;
+  /* Texto Verde Claro */
+  --color-success-bg: #166534;
+  /* Fundo Verde Escuro */
+  --color-danger: #F87171;
+  /* Texto Vermelho Claro */
+  --color-danger-bg: #991B1B;
+  /* Fundo Vermelho Escuro */
+  --color-info: #38BDF8;
+  /* Texto Azul Claro */
+  --color-info-bg: #075985;
+  /* Fundo Azul Escuro */
 }
 
-/* Estilo base para o body, utilizando as variáveis.
-  Adiciona uma transição suave para a mudança de cores.
-*/
+/* Estilo base para o body, utilizando as variáveis. */
 body {
   background-color: var(--background-primary);
   color: var(--text-primary);

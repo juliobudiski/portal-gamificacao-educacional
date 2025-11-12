@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FaGem, FaStar, FaTrophy, FaGift, FaSyncAlt, FaSpinner, FaCoins } from 'react-icons/fa';
+import { FaGem, FaStar, FaTrophy, FaGift, FaSyncAlt, FaSpinner, FaCoins, FaArrowLeft } from 'react-icons/fa';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
@@ -173,12 +173,19 @@ const SlotMachineTab = ({ userCoins, onPrizeWon, onWin, onReturn }) => {
   };
 
   return (
-    <div className="w-full flex flex-col items-center p-4 text-primary-text">
+    <div className="w-full relative pt-16 flex flex-col items-center p-4 text-primary-text">
       <style>{style}</style>
-      <button onClick={onReturn} className="absolute top-4 left-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200 transition-colors z-20">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" /></svg>
-        Voltar
-      </button>
+      <div className='flex-shrink-0'>
+        <button
+          onClick={onReturn}
+          className="absolute top-4 left-4 z-20 flex items-center gap-2 py-2 px-4 
+                                 bg-secondary-bg text-secondary-text 
+                                 border border-border-color rounded-full shadow-lg 
+                                 hover:bg-primary-bg hover:shadow-xl transition-all"
+        >
+          <FaArrowLeft /> Voltar ao Tabuleiro
+        </button>
+      </div>
 
       {/* Layout principal com duas colunas em telas grandes */}
       <div className="w-full flex flex-col lg:flex-row items-center lg:items-start justify-center gap-8">

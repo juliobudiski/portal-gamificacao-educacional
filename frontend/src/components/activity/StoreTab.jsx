@@ -1,6 +1,6 @@
 // frontend/src/components/activity/StoreTab.jsx
 import React, { useState } from 'react';
-import { FaCoins, FaPlus, FaTimes, FaExclamationTriangle } from 'react-icons/fa';
+import { FaCoins, FaPlus, FaTimes, FaExclamationTriangle, FaArrowLeft } from 'react-icons/fa';
 import ItemCard from './ItemCard';
 import { HexColorPicker } from 'react-colorful';
 import { useAuth } from '../../context/AuthContext'; // <-- IMPORTADO
@@ -195,11 +195,18 @@ const StoreTab = ({ items, userPoints, onPurchaseSuccess, onAddItem, onDeleteIte
     };
 
     return (
-        <div className="w-full max-w-5xl mx-auto p-4 text-primary-text">
-            <button onClick={onReturn} className="absolute top-4 left-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200 transition-colors z-20">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" /></svg>
-                Voltar
-            </button>
+        <div className="w-full max-w-5xl mx-auto p-4 relative pt-16 text-primary-text">
+            <div className='flex-shrink-0'>
+                <button
+                    onClick={onReturn}
+                    className="absolute top-4 left-4 z-20 flex items-center gap-2 py-2 px-4 
+                           bg-secondary-bg text-secondary-text 
+                           border border-border-color rounded-full shadow-lg 
+                           hover:bg-primary-bg hover:shadow-xl transition-all"
+                >
+                    <FaArrowLeft /> Voltar ao Tabuleiro
+                </button>
+            </div>
 
             <header className="flex justify-between items-center mb-8 pt-8">
                 <h1 className="text-4xl font-bold">Loja</h1>
