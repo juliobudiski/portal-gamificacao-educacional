@@ -160,7 +160,7 @@ function AppContent() {
             <li>
               <Link
                 to="/"
-                className="flex items-center space-x-1 px-3 py-2 rounded-lg hover:bg-primary-bg text-[#ffbd30] transition-colors duration-200"
+                className="flex items-center space-x-1 px-3 py-2 rounded-lg hover:bg-primary-bg text-accent-yellow transition-colors duration-200"
                 onClick={closeAllMenus}
               >
                 <Home size={20} />
@@ -170,7 +170,7 @@ function AppContent() {
             <li>
               <Link
                 to="/sobre-nos"
-                className="flex items-center space-x-1 px-3 py-2 rounded-lg hover:bg-primary-bg text-[#69e8cb] transition-colors duration-200"
+                className="flex items-center space-x-1 px-3 py-2 rounded-lg hover:bg-primary-bg text-accent-teal transition-colors duration-200"
                 onClick={closeAllMenus}
               >
                 <Info size={20} />
@@ -183,7 +183,7 @@ function AppContent() {
                 <li>
                   <Link
                     to="/login"
-                    className="flex items-center space-x-1 px-3 py-2 rounded-lg hover:bg-primary-bg text-[#69e8cb] transition-colors duration-200"
+                    className="flex items-center space-x-1 px-3 py-2 rounded-lg hover:bg-primary-bg text-accent-teal transition-colors duration-200"
                     onClick={closeAllMenus}
                   >
                     <LogIn size={20} />
@@ -193,7 +193,7 @@ function AppContent() {
                 <li>
                   <Link
                     to="/cadastro"
-                    className="flex items-center space-x-1 px-3 py-2 rounded-lg hover:bg-primary-bg text-[#b39ddb] hover:text-[#d1c4e9] transition-colors duration-200"
+                    className="flex items-center space-x-1 px-3 py-2 rounded-lg hover:bg-primary-bg text-accent-purple hover:text-accent-purple/80 transition-colors duration-200"
                     onClick={closeAllMenus}
                   >
                     <UserPlus size={20} />
@@ -213,8 +213,8 @@ function AppContent() {
                       setIsStudentMenuOpen(false);
                     }}
                     className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-colors duration-200 ${isProfileMenuOpen
-                      ? 'bg-[#ffbd30]/20 text-[#ffbd30]'
-                      : 'hover:bg-primary-bg text-[#ffbd30]'
+                      ? 'bg-accent-yellow/20 text-accent-yellow'
+                      : 'hover:bg-primary-bg text-accent-yellow'
                       }`}
                   >
                     <User size={20} />
@@ -222,7 +222,7 @@ function AppContent() {
                   </button>
                   {isProfileMenuOpen && (
                     <ul
-                      className="absolute right-0 mt-2 w-52 bg-primary-bg rounded-xl shadow-2xl z-10 border border-[#3e4a52] animate-fadeIn"
+                      className="absolute right-0 mt-2 w-52 bg-primary-bg rounded-xl shadow-2xl z-10 border border-border-color animate-fadeIn"
                       onMouseLeave={() => setIsProfileMenuOpen(false)}
                     >
                       <li>
@@ -238,7 +238,7 @@ function AppContent() {
                       <li>
                         <button
                           onClick={handleLogout}
-                          className="w-full flex items-center px-4 py-3 text-left hover:bg-secondary-bg transition-colors rounded-b-xl text-[#ff6b6b]"
+                          className="w-full flex items-center px-4 py-3 text-left hover:bg-secondary-bg transition-colors rounded-b-xl text-danger"
                         >
                           <LogOut size={18} className="mr-2" />
                           Sair
@@ -266,7 +266,10 @@ function AppContent() {
                     </button>
                     {isTeacherMenuOpen && (
                       <ul
-                        className="absolute right-0 mt-2 w-56 bg-primary-bg rounded-xl shadow-2xl z-10 border border-[#3e4a52] animate-fadeIn"
+                        /* --- CORREÇÃO: Borda Adaptável ---
+                           Substituído border-[#3e4a52] por border-border-color.
+                        */
+                        className="absolute right-0 mt-2 w-56 bg-primary-bg rounded-xl shadow-2xl z-10 border border-border-color animate-fadeIn"
                         onMouseLeave={() => setIsTeacherMenuOpen(false)}
                       >
                         <li><Link to="/professor/dashboard" className="flex items-center px-4 py-3 text-secondary-text hover:bg-secondary-bg transition-colors rounded-t-xl" onClick={closeAllMenus}><LayoutDashboard size={18} className="mr-2 text-accent-yellow" />Dashboard</Link></li>
@@ -297,7 +300,10 @@ function AppContent() {
                     </button>
                     {isStudentMenuOpen && (
                       <ul
-                        className="absolute right-0 mt-2 w-52 bg-primary-bg rounded-xl shadow-2xl z-10 border border-[#3e4a52] animate-fadeIn"
+                        /* --- CORREÇÃO: Borda Adaptável ---
+                           Substituído border-[#3e4a52] por border-border-color.
+                        */
+                        className="absolute right-0 mt-2 w-52 bg-primary-bg rounded-xl shadow-2xl z-10 border border-border-color animate-fadeIn"
                         onMouseLeave={() => setIsStudentMenuOpen(false)}
                       >
                         <li><Link to="/aluno/dashboard" className="flex items-center px-4 py-3 text-secondary-text hover:bg-secondary-bg transition-colors rounded-t-xl" onClick={closeAllMenus}><LayoutDashboard size={18} className="mr-2 text-accent-yellow" />Dashboard</Link></li>
@@ -313,7 +319,11 @@ function AppContent() {
                   <li>
                     <Link
                       to="/admin"
-                      className="flex items-center space-x-1 px-3 py-2 rounded-lg hover:bg-primary-bg text-[#ff416c] transition-colors duration-200"
+                      /* --- CORREÇÃO: Cor Adaptável ---
+                         Substituído text-[#ff416c] (rosa fixo) por text-danger (vermelho semântico).
+                         Isso garante legibilidade em ambos os temas.
+                      */
+                      className="flex items-center space-x-1 px-3 py-2 rounded-lg hover:bg-primary-bg text-danger hover:text-danger/80 transition-colors duration-200"
                       onClick={closeAllMenus}
                     >
                       <ShieldCheck size={20} />

@@ -26,94 +26,49 @@ const CHARACTERS = [
  * @desc Página de edição de narrativa para atividades gamificadas
  * Permite configurar cenários, personagens e diálogos para atividades
  */
-function NarrativeEditorPage() {
-    // --- ALTERAÇÃO: Lendo 'stepId' da URL ---
+function NarrativeEditorPage({ initialData, onSave, onCancel, isOfflineMode = false }) {
     const { activityId, stepId } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
-    const location = useLocation();
+    const { activityData } = useActivityCreation();
 
-    // Determina se estamos em modo de criação com base no state da navegação
-    const isCreationMode = activityId === 'criar' || location.state?.isCreationMode;
-    const initialContent = location.state?.initialContent;
-    const [gameElements, setGameElements] = useState([]);
-    const { activityData, setActivityData } = useActivityCreation();
-    // --- INICIALIZAÇÃO DOS ESTADOS ---
-    // O título e a configuração inicial agora podem vir do estado da navegação
+    // ESTADO HÍBRIDO
     const [narrativeConfig, setNarrativeConfig] = useState(() => {
-        const stepContent = activityData.gamificationDesign?.progression_path?.find(p => p.id === stepId)?.content;
-        // Retorna a config salva ou um objeto padrão se for a primeira vez
-        return stepContent && Object.keys(stepContent).length > 0
-            ? stepContent
-            : { scenario: '', characters: [], dialogue: [] };
+        if (initialData && Object.keys(initialData).length > 0) return initialData;
+        // Fallback
+        const stepContent = activityData?.gamificationDesign?.progression_path?.find(p => p.id === stepId)?.content;
+        return stepContent || { scenario: '', characters: [], dialogue: [] };
     });
 
-    const [activityTitle, setActivityTitle] = useState(activityData.title || 'Nova Atividade');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [message, setMessage] = useState('');
 
-
+    // FETCH (Apenas Online)
     const fetchContent = useCallback(async () => {
-        // --- MODO CRIAÇÃO ---
-        // Esta parte agora é tratada na inicialização do useState.
-        // O useEffect agora só precisa lidar com o MODO EDIÇÃO.
-        if (isCreationMode) {
-            // Já definimos o estado inicial, então não há nada a fazer aqui.
-            return;
-        }
-
-        // --- MODO EDIÇÃO (Lógica antiga, agora correta) ---
-        if (!activityId || !stepId || !user.token) {
-            setLoading(false);
-            setError("IDs de atividade ou passo ausentes.");
-            return;
-        }
+        if (isOfflineMode || !activityId || !stepId || !user?.token) return;
 
         setLoading(true);
         try {
-            // 1. Busca os dados gerais da atividade (para o título)
-            const activityResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${activityId}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/content_editor/activity/${activityId}/step/${stepId}/content?type=narrative`, {
                 headers: { 'Authorization': `Bearer ${user.token}` },
             });
-
-            if (!activityResponse.ok) throw new Error(`Erro ao buscar atividade: ${activityData.message}`);
-
-            setActivityTitle(activityData.title);
-
-            // 2. Busca o conteúdo específico deste passo (a narrativa já existente)
-            const contentResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/content_editor/activity/${activityId}/step/${stepId}/content?type=narrative`, {
-                headers: { 'Authorization': `Bearer ${user.token}` },
-            });
-            const contentData = await contentResponse.json();
-            if (!contentResponse.ok) {
-                // Se não encontrar conteúdo, não é um erro fatal, apenas não há nada para carregar.
-                if (contentResponse.status === 404) {
-                    console.log("Nenhum conteúdo de narrativa pré-existente encontrado para este passo.");
-                } else {
-                    throw new Error(`Erro ao buscar conteúdo da narrativa: ${contentData.message}`);
-                }
-            }
-
-            // 3. Preenche o estado com a configuração da narrativa existente
-            if (contentData) {
+            const data = await response.json();
+            if (response.ok && data) {
                 setNarrativeConfig({
-                    scenario: contentData.scenario || '',
-                    characters: contentData.characters || [],
-                    dialogue: contentData.dialogue || [],
+                    scenario: data.scenario || '',
+                    characters: data.characters || [],
+                    dialogue: data.dialogue || [],
                 });
             }
-
         } catch (err) {
-            setError(err.message);
+            console.error(err);
         } finally {
             setLoading(false);
         }
-    }, [activityId, stepId, user.token, isCreationMode]);
+    }, [activityId, stepId, user?.token, isOfflineMode]);
 
-    useEffect(() => {
-        fetchContent();
-    }, [fetchContent]);
+    useEffect(() => { fetchContent(); }, [fetchContent]);
 
     // --- Handlers para as mudanças no formulário ---
 
@@ -186,84 +141,32 @@ function NarrativeEditorPage() {
 
     // --- Handler para Salvar ---
     const handleSaveChanges = async () => {
-        if (isCreationMode) {
-            console.log("Salvando rascunho no Contexto e voltando...");
-
-            // Atualiza o rascunho no contexto
-            setActivityData(prevData => {
-                const newDesign = JSON.parse(JSON.stringify(prevData.gamificationDesign));
-                const stepIndex = newDesign.progression_path.findIndex(step => step.id === stepId);
-                if (stepIndex !== -1) {
-                    newDesign.progression_path[stepIndex].content = narrativeConfig;
-                }
-                return { ...prevData, gamificationDesign: newDesign };
-            });
-
-            navigate(-1);
-
+        // 1. OFFLINE
+        if (isOfflineMode) {
+            if (onSave) onSave(narrativeConfig);
             return;
         }
 
-        // --- MODO EDIÇÃO ---
+        // 2. ONLINE
         setLoading(true);
-        setMessage('');
-        setError('');
-
-        if (isDebugMode) {
-            console.log('[NarrativeEditorPage] Iniciando salvamento...');
-            console.log('[NarrativeEditorPage] Dados a serem enviados:', narrativeConfig);
-            console.log('[NarrativeEditorPage] IDs:', { activityId, stepId });
-        }
-        const apiUrl = `${import.meta.env.VITE_API_URL}/api/content_editor/activity/${activityId}/step/${stepId}/content`;
-        console.log(`[NarrativeEditorPage] URL de salvamento que será usada: ${apiUrl}`);
-
-
         try {
-            const payload = {
-                type: 'narrative', // Adiciona o tipo explicitamente
-                ...narrativeConfig // Usa o spread operator para incluir scenario, characters e dialogue
-            };
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/content_editor/activity/${activityId}/step/${stepId}/content`, {
+            const payload = { type: 'narrative', ...narrativeConfig };
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/content_editor/activity/${activityId}/step/${stepId}/content`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${user.token}`
-                },
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` },
                 body: JSON.stringify(payload)
             });
-
-            const data = await response.json();
-
-            if (isDebugMode) {
-                console.log(`[NarrativeEditorPage] Resposta do servidor - Status: ${response.status}`);
-                console.log('[NarrativeEditorPage] Dados recebidos:', data);
-            }
-
-            if (!response.ok) {
-                throw new Error(data.message || `Erro HTTP: ${response.status}`);
-            }
-
-            if (isDebugMode) {
-                console.log('[NarrativeEditorPage] Salvamento realizado com sucesso');
-            }
-
-            setMessage('Narrativa salva com sucesso!');
-            setTimeout(() => navigate(`/professor/atividades/${activityId}/edit`, { state: { fromStep: 5 } }), 2000);
-
+            if (!res.ok) throw new Error('Falha ao salvar');
+            setMessage('Salvo com sucesso!');
+            setTimeout(() => navigate(`/professor/atividades/${activityId}/edit`, { state: { fromStep: 5 } }), 1500);
         } catch (err) {
-            if (isDebugMode) {
-                console.error('[NarrativeEditorPage] Erro no salvamento:', err);
-                console.error('[NarrativeEditorPage] Stack trace:', err.stack);
-            }
-
-            setError(err.message || 'Erro ao salvar narrativa. Verifique o console para mais detalhes.');
+            setError(err.message);
         } finally {
             setLoading(false);
-            if (isDebugMode) {
-                console.log('[NarrativeEditorPage] Operação de salvamento finalizada');
-            }
         }
     };
+
+    if (loading) return <div>Carregando...</div>;
 
     // Renderização condicional para estados de UI
     const renderContent = () => {
@@ -377,7 +280,7 @@ function NarrativeEditorPage() {
                     </div>
                     <div>
                         <h1 className="text-2xl md:text-3xl font-bold">Editor de Narrativa</h1>
-                        <h2 className="text-lg md:text-xl text-[#ffbd30]">{activityTitle}</h2>
+
                     </div>
                 </div>
 

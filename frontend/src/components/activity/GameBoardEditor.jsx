@@ -46,6 +46,14 @@ function GameBoardEditor({ gamificationDesign = { theme: 'vila_da_aventura', pro
         updateDesign('hub_elements', newHubElements);
     };
 
+    console.log("--- DEBUG DESIGN ---");
+    console.log("Progression Path:", gamificationDesign?.progression_path);
+
+    // Verifique se dentro de cada passo existe a chave 'content' preenchida
+    gamificationDesign?.progression_path?.forEach((step, index) => {
+        console.log(`Passo ${index + 1} (${step.type}):`, step.content);
+    });
+
     return (
         <div className="mt-8 p-6 border border-teal-300 dark:border-teal-800 rounded-lg bg-teal-50 dark:bg-teal-900/20">
             <h3 className="text-xl font-bold text-teal-800 dark:text-teal-200 mb-2">Editor do Tabuleiro da Atividade</h3>

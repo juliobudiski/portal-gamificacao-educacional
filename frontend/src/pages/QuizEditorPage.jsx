@@ -3,23 +3,20 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FaPlus, FaSave, FaTrash, FaEdit, FaQuestion, FaList, FaCheck, FaClock, FaStar, FaGem } from 'react-icons/fa';
 import { useActivityCreation } from '../context/ActivityCreationContext';
-function QuizEditorPage() {
-    // --- ALTERAÇÃO: Lendo 'stepId' da URL ---
+function QuizEditorPage({ initialData, onSave, onCancel, isOfflineMode = false }) {
     const { activityId, stepId } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
     const location = useLocation();
+    const { activityData } = useActivityCreation();
 
-    const { activityData, setActivityData } = useActivityCreation();
-    // Determina se estamos em modo de criação com base no state da navegação
-    const isCreationMode = activityId === 'criar' || location.state?.isCreationMode;
+    // INICIALIZAÇÃO DO ESTADO: Prioriza initialData (Modo Offline), depois tenta Contexto, depois array vazio
     const [questions, setQuestions] = useState(() => {
-        // Encontra o conteúdo do passo específico dentro do rascunho do contexto
-        const stepContent = activityData.gamificationDesign?.progression_path?.find(p => p.id === stepId)?.content;
-        // Retorna as questões salvas ou um array vazio se for a primeira vez
+        if (initialData) return initialData;
+        // Fallback para modo legado (URL)
+        const stepContent = activityData?.gamificationDesign?.progression_path?.find(p => p.id === stepId)?.content;
         return stepContent?.questions || [];
     });
-
     // O título também pode vir do contexto para consistência
     const [activityTitle, setActivityTitle] = useState(activityData.title || 'Nova Atividade');
     const [loading, setLoading] = useState(false); // Não precisa mais carregar no modo criação
@@ -30,48 +27,36 @@ function QuizEditorPage() {
 
     const [error, setError] = useState('');
     const [message, setMessage] = useState('');
+    // --- FETCH DE DADOS (Apenas no modo Online/Edição via URL) ---
     const fetchContent = useCallback(async () => {
-        // --- MODO CRIAÇÃO ---
-        if (isCreationMode) {
+        if (isOfflineMode) return; // Não busca nada se for offline/modal
 
-            return; // Para a execução aqui, não precisa buscar na API
-        }
-        // --- MODO EDIÇÃO (Lógica antiga) ---
-        if (!activityId || !stepId || !user.token) {
-            setLoading(false);
-            setError("IDs de atividade ou passo ausentes.");
-            return;
-        }
+        if (!activityId || !stepId || !user?.token) return;
+
         setLoading(true);
         try {
-            // 1. Busca os dados gerais da atividade (para o título e gameElements)
             const activityResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${activityId}`, {
                 headers: { 'Authorization': `Bearer ${user.token}` },
             });
+            if (activityResponse.ok) {
+                const actData = await activityResponse.json();
+                setActivityTitle(actData.title);
+            }
 
-            if (!activityResponse.ok) throw new Error(`Erro ao buscar atividade: ${activityData.message}`);
-
-            setActivityTitle(activityData.title);
-            setGameElements(activityData.gameElements?.selectedElements || []);
-
-            // 2. Busca o conteúdo específico deste passo (o quiz já existente)
             const contentResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/content_editor/activity/${activityId}/step/${stepId}/content?type=quiz`, {
                 headers: { 'Authorization': `Bearer ${user.token}` },
             });
             const contentData = await contentResponse.json();
-            if (!contentResponse.ok) throw new Error(`Erro ao buscar conteúdo do quiz: ${contentData.message}`);
-
-            // 3. Preenche o estado com as perguntas existentes
-            if (contentData && contentData.questions) {
+            if (contentResponse.ok && contentData.questions) {
                 setQuestions(contentData.questions);
             }
-
         } catch (err) {
-            setError(err.message);
+            console.error(err);
+            // Não bloqueia se falhar, apenas segue com vazio
         } finally {
             setLoading(false);
         }
-    }, [activityId, stepId, user.token, isCreationMode]);
+    }, [activityId, stepId, user?.token, isOfflineMode]);
 
     useEffect(() => {
         fetchContent();
@@ -126,50 +111,28 @@ function QuizEditorPage() {
     };
 
     const handleSaveChanges = async () => {
-        if (isCreationMode) {
-            console.log("Salvando rascunho no Contexto e voltando...");
-
-            // Atualiza o rascunho no contexto (Lógica que você já deve ter)
-            setActivityData(prevData => {
-                const newDesign = JSON.parse(JSON.stringify(prevData.gamificationDesign));
-                const stepIndex = newDesign.progression_path.findIndex(step => step.id === stepId);
-                if (stepIndex !== -1) {
-                    newDesign.progression_path[stepIndex].content = { questions };
-                }
-                return { ...prevData, gamificationDesign: newDesign };
-            });
-
-            navigate(-1);
-
+        // 1. MODO OFFLINE (MODAL)
+        if (isOfflineMode) {
+            console.log("Salvando Quiz localmente...");
+            if (onSave) onSave(questions); // Devolve os dados para o pai
             return;
         }
 
-        // --- MODO EDIÇÃO ---
-
+        // 2. MODO ONLINE (API DIRECT)
         setLoading(true);
         setMessage('');
-        setError('');
         try {
-            const apiUrl = `${import.meta.env.VITE_API_URL}/api/content_editor/activity/${activityId}/step/${stepId}/content`;
-            console.log(`[QuizEditorPage] URL de salvamento que será usada: ${apiUrl}`);
-            const payload = {
-                type: 'quiz', // Adiciona o tipo explicitamente
-                questions: questions
-            };
-
-            // --- ALTERAÇÃO: Salva o conteúdo na nova rota específica do passo ---
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/content_editor/activity/${activityId}/step/${stepId}/content`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${user.token}`
                 },
-                body: JSON.stringify(payload)
+                body: JSON.stringify({ type: 'quiz', questions })
             });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message);
+            if (!response.ok) throw new Error('Falha ao salvar quiz.');
             setMessage('Quiz salvo com sucesso!');
-            setTimeout(() => navigate(`/professor/atividades/${activityId}/edit`, { state: { fromStep: 5 } }), 2000);
+            setTimeout(() => navigate(`/professor/atividades/${activityId}/edit`, { state: { fromStep: 5 } }), 1500);
         } catch (err) {
             setError(err.message);
         } finally {

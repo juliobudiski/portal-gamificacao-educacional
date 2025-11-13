@@ -4,7 +4,7 @@ from flask_jwt_extended import jwt_required, current_user, get_jwt_identity
 from flask_cors import cross_origin
 from copy import deepcopy
 import logging
-from ..models import db, Activity, Tag, activity_tag, ActivityRevision, User, Class, ActivityProgress, StudentResponse, EventLog
+from ..models import db, Activity, ActivityRating, Tag, activity_tag, ActivityRevision, User, Class, ActivityProgress, StudentResponse, EventLog, Conversation, ChatMessage, ActivityRating
 from ..services import activity_service
 from ..utils.logging import _log_system_event
 from .medals import check_and_award_medals
@@ -466,7 +466,6 @@ def copy_activity_route(activity_id):
 @activity_bp.route('/<int:activity_id>', methods=['DELETE'])
 @jwt_required()
 def delete_activity(activity_id):
-    """Rota para deletar uma atividade."""
     activity = Activity.query.get(activity_id)
     if not activity:
         return jsonify({"message": "Atividade não encontrada"}), 404
@@ -478,19 +477,28 @@ def delete_activity(activity_id):
             user_id=current_user.id,
             action='activity_deleted',
             activity_id=activity.id,
-            details={'title': activity.title} # Salva o título antes de ser deletado
+            details={'title': activity.title}
         )
-        # 1. Deleta todos os registros de progresso associados a esta atividade primeiro.
+        
+        # 1. Limpa Conversas de Chat vinculadas a esta atividade
+        conversation = Conversation.query.filter_by(activity_id=activity_id).first()
+        if conversation:
+            ChatMessage.query.filter_by(conversation_id=conversation.id).delete()
+            db.session.delete(conversation)
+
+        # 2. Limpa Avaliações (Ratings)
+        ActivityRating.query.filter_by(activity_id=activity_id).delete()
+
+        # 3. Deleta registros de progresso
         ActivityProgress.query.filter_by(activity_id=activity_id).delete()
         
-        # 2. Agora, deleta a atividade com segurança.
+        # 4. Deleta a atividade
         db.session.delete(activity)
 
         db.session.commit()
         return jsonify({"message": "Atividade deletada com sucesso"}), 200
     except Exception as e:
         db.session.rollback()
-        # Adiciona um log do erro para facilitar a depuração futura
         current_app.logger.error(f"Erro ao deletar atividade ID {activity_id}: {str(e)}")
         return jsonify({"message": f"Erro ao deletar: {str(e)}"}), 500
 
@@ -573,3 +581,34 @@ def update_activity_structure_route(activity_id):
     
     data = request.get_json()
     return activity_service.update_activity_structure(current_user, activity_id, data)
+
+
+@activity_bp.route('/<int:activity_id>/rate', methods=['POST'])
+@jwt_required()
+def rate_activity(activity_id):
+    user_id = get_jwt_identity()
+    data = request.get_json()
+    score = data.get('score')
+
+    if not score or not isinstance(score, int) or not (1 <= score <= 5):
+        return jsonify({"message": "Nota inválida. Deve ser entre 1 e 5."}), 400
+
+    try:
+        # Verifica se já existe avaliação para atualizar ou criar nova
+        existing_rating = ActivityRating.query.filter_by(user_id=user_id, activity_id=activity_id).first()
+
+        if existing_rating:
+            existing_rating.score = score
+            existing_rating.created_at = db.func.current_timestamp() # Atualiza data
+            message = "Avaliação atualizada."
+        else:
+            new_rating = ActivityRating(user_id=user_id, activity_id=activity_id, score=score)
+            db.session.add(new_rating)
+            message = "Avaliação registrada."
+
+        db.session.commit()
+        return jsonify({"message": message}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": f"Erro ao salvar avaliação: {str(e)}"}), 500

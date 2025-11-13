@@ -156,6 +156,7 @@ const ViewRenderer = () => {
     case 'final_reward':
       return <FinalRewardTab
         reward={activity?.gamificationDesign?.finalReward}
+        activityId={activity.id}
         onCollect={handleCollectFinalReward}
         onReturnToBoard={handleReturnToBoard}
       />;

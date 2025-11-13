@@ -189,13 +189,15 @@ def get_system_logs():
     per_page = request.args.get('limit', 15, type=int)
     search_user = request.args.get('user', None, type=str)
     filter_action = request.args.get('action', None, type=str)
-    
+    start_date_str = request.args.get('startDate', None)
+    end_date_str = request.args.get('endDate', None)
     query = db.session.query(
         EventLog, 
         User.name, 
         User.email, 
-        User.last_known_latitude, 
-        User.last_known_longitude
+        User.cached_city,   # Lendo direto do banco! Zero delay.
+        User.cached_state,
+        User.cached_country
     ).join(User, User.id == EventLog.user_id)
 
     if search_user:
@@ -203,13 +205,29 @@ def get_system_logs():
     if filter_action:
         query = query.filter(EventLog.action == filter_action)
     
+    # Filtro de Data (YYYY-MM-DD)
+    if start_date_str:
+        try:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
+            query = query.filter(EventLog.created_at >= start_date)
+        except ValueError:
+            pass # Ignora data inválida
+            
+    if end_date_str:
+        try:
+            # Ajusta para o final do dia (23:59:59)
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d') + timedelta(days=1)
+            query = query.filter(EventLog.created_at < end_date)
+        except ValueError:
+            pass
+    
     query = query.order_by(EventLog.created_at.desc())
     
     paginated_logs = query.paginate(page=page, per_page=per_page, error_out=False)
     
     logs_data = []
     # --- LÓGICA DE GEOLOCALIZAÇÃO CORRIGIDA ---
-    for log, user_name, user_email, lat, lon in paginated_logs.items:
+    for log, user_name, user_email, city, state, country in paginated_logs.items:
         log_data = {
             "id": log.id,
             "user_name": user_name,
@@ -219,28 +237,12 @@ def get_system_logs():
             "details": log.details,
             "ip_address": log.ip_address,
             "timestamp": log.created_at.isoformat(),
-            "location": None # Começa como nulo
+            "location": {
+                'city': city or 'N/A',
+                'state': state or 'N/A',
+                'country': country or 'Brasil' # Fallback seguro
+            } if city else None
         }
-
-        # Se o usuário tiver uma lat/lon registrada, buscamos a cidade
-        if lat and lon:
-            try:
-                geo_url = f"https://nominatim.openstreetmap.org/reverse?format=json&lat={lat}&lon={lon}"
-                headers = {'User-Agent': 'GamificaEduPortal/1.0'}
-                geo_res = requests.get(geo_url, headers=headers, timeout=5)
-                geo_res.raise_for_status()
-                geo_data = geo_res.json()
-                address = geo_data.get('address', {})
-                
-                log_data['location'] = {
-                    'city': address.get('city') or address.get('town') or address.get('village', 'N/A'),
-                    'state': address.get('state', 'N/A'),
-                    'country': address.get('country', 'N/A')
-                }
-            except requests.exceptions.RequestException as e:
-                current_app.logger.error(f"Falha na geocodificação para o log ID {log.id}: {e}")
-                log_data['location'] = None
-            
         logs_data.append(log_data)
         
     return jsonify({

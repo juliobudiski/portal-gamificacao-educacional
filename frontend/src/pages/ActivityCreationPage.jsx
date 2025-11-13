@@ -13,6 +13,8 @@ import Step5_GameElements from '../components/activity/creation_steps/Step5_Acti
 import Step6_RewardsOffered from '../components/activity/creation_steps/Step6_Activity';
 import Step7_RewardedActions from '../components/activity/creation_steps/Step7_Activity';
 import Step8_RulesAndSharing from '../components/activity/creation_steps/Step8_Activity';
+import QuizEditor from './QuizEditorPage';
+import NarrativeEditor from './NarrativeEditorPage';
 // Nota: O GameBoardEditor é usado dentro do Step5, mas o mantemos importado aqui
 // caso seja necessário em outro local ou para referência.
 //import GameBoardEditor from '../../components/activity/GameBoardEditor';
@@ -71,7 +73,7 @@ function ActivityCreationPage({ existingActivity }) {
 
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [helpContent, setHelpContent] = useState({ title: '', text: '' });
-
+  const [isSaving, setIsSaving] = useState(false);
   // (Todos os useEffects e handlers como handleNext, handlePrevious, handleInputChange, etc. são mantidos)
 
 
@@ -384,20 +386,41 @@ function ActivityCreationPage({ existingActivity }) {
   };
 
 
+  const [editingStep, setEditingStep] = useState(null); // Guarda o passo sendo editado {id, type, content}
+
+  // 2. ATUALIZAR A FUNÇÃO DE ABRIR EDITOR
   const handleOpenContentEditor = (step) => {
-    const effectiveActivityId = activityId || existingActivity?.id;
+    // Em vez de navegar, abrimos o modal localmente com o conteúdo atual do estado
+    const currentContent = activityData.gamificationDesign?.progression_path?.find(p => p.id === step.id)?.content || {};
 
-    // Se temos um ID, estamos em modo de EDIÇÃO. O comportamento antigo continua.
-    if (effectiveActivityId) {
-      navigate(`/professor/atividades/${effectiveActivityId}/${step.type}/${step.id}/edit`);
-    } else {
-      // MODO CRIAÇÃO: Não temos ID, então passamos o conteúdo do rascunho via state.
+    setEditingStep({
+      ...step,
+      content: currentContent
+    });
+  };
 
-      // Encontra o conteúdo ATUAL do passo que está no estado "activityData"
-      const stepContent = activityData.gamificationDesign?.progression_path?.find(p => p.id === step.id)?.content || {};
+  // 3. FUNÇÃO PARA SALVAR O CONTEÚDO NO ESTADO (SEM API)
+  const handleSaveContentLocally = (newContent) => {
+    if (!editingStep) return;
 
-      navigate(`/professor/criar-atividade/criar/${step.type}/${step.id}/edit`);
-    }
+    setActivityData(prev => {
+      const newPath = prev.gamificationDesign.progression_path.map(step => {
+        if (step.id === editingStep.id) {
+          return { ...step, content: newContent }; // Injeta o conteúdo no passo
+        }
+        return step;
+      });
+
+      return {
+        ...prev,
+        gamificationDesign: {
+          ...prev.gamificationDesign,
+          progression_path: newPath
+        }
+      };
+    });
+
+    setEditingStep(null); // Fecha o modal
   };
 
 
@@ -407,36 +430,41 @@ function ActivityCreationPage({ existingActivity }) {
    * Se for a última etapa, envia os dados para o backend via API.
    */
   const handleNext = async () => {
-    console.log(`%c[handleNext] Botão clicado na Etapa ${currentStep}. Total de etapas: ${totalSteps}.`, "background: #FFD700; color: black;");
-    console.log(`handleNext: Tentando avançar da etapa ${currentStep}.`);
+    // --- TRAVA DE SEGURANÇA 1: Se já estiver enviando, PARE IMEDIATAMENTE ---
+    if (isSubmittingRef.current) return;
+
+    console.log(`%c[handleNext] Botão clicado na Etapa ${currentStep}.`, "background: #FFD700; color: black;");
+
     if (currentStep < totalSteps) {
       setCurrentStep(prevStep => prevStep + 1);
     } else {
-      console.log("%c[handleNext] CONDIÇÃO DE SALVAMENTO ATINGIDA. INICIANDO REQUISIÇÃO PUT...", "background: #28a745; color: white;");
+      // --- TRAVA DE SEGURANÇA 2: Ativa o bloqueio ---
+      isSubmittingRef.current = true;
+      setIsSaving(true); // Atualiza a UI para mostrar "Salvando..." e desabilitar botão
 
+      console.log("%c[handleNext] INICIANDO SALVAMENTO...", "background: #28a745; color: white;");
+
+      // Log de duração da última etapa
       const finalStepDuration = Math.round((Date.now() - stepStartTimeRef.current) / 1000);
       if (finalStepDuration > 0) {
-        console.log(`Logando duração da Etapa FINAL ${currentStep}: ${finalStepDuration}s`);
         logEvent("step_view_duration", {
           step: currentStep,
           duration_seconds: finalStepDuration
         });
       }
+
       const url = isEditMode
         ? `${import.meta.env.VITE_API_URL}/api/activities/${activityId}`
         : `${import.meta.env.VITE_API_URL}/api/activities`;
 
       const method = isEditMode ? 'PUT' : 'POST';
-      isSubmittingRef.current = true;
-      console.log(`Submetendo formulário em modo de ${isEditMode ? 'EDIÇÃO' : 'CRIAÇÃO'}`);
-      console.log(`URL: ${method} ${url}`);
 
       try {
         const response = await fetch(url, {
           method: method,
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${user.token}` // Adiciona o token de autenticação
+            'Authorization': `Bearer ${user.token}`
           },
           body: JSON.stringify(activityData),
         });
@@ -445,12 +473,20 @@ function ActivityCreationPage({ existingActivity }) {
 
         if (response.ok) {
           alert(isEditMode ? 'Atividade atualizada com sucesso!' : 'Atividade criada com sucesso!');
-          navigate('/professor/banco-atividades'); // Redireciona para o banco de atividades após sucesso
+          navigate('/professor/banco-atividades');
+          // Não precisamos destravar o ref aqui porque vamos sair da página
         } else {
           alert('Erro: ' + (result.message || 'Erro desconhecido do servidor.'));
+          // Se deu erro, destravamos para o usuário tentar de novo
+          isSubmittingRef.current = false;
+          setIsSaving(false);
         }
       } catch (error) {
+        console.error(error);
         alert('Ocorreu um erro de rede. Verifique sua conexão.');
+        // Se deu erro de rede, destravamos
+        isSubmittingRef.current = false;
+        setIsSaving(false);
       }
     }
   };
@@ -748,7 +784,9 @@ function ActivityCreationPage({ existingActivity }) {
                 )}
                 <button
                   onClick={handleNext}
-                  className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-text bg-teal-600 hover:bg-teal-700"
+                  disabled={isSaving}
+                  className={`py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-text 
+                  ${isSaving ? 'bg-gray-500 cursor-not-allowed' : 'bg-teal-600 hover:bg-teal-700'}`} // <--- Mude a classe condicionalmente
                 >
                   {currentStep === totalSteps ? 'Concluir e Salvar' : 'Próximo'}
                 </button>
@@ -774,6 +812,33 @@ function ActivityCreationPage({ existingActivity }) {
                   Entendi
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+        {/* MODAL DE EDIÇÃO DE QUIZ */}
+        {editingStep?.type === 'quiz' && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
+            <div className="bg-white dark:bg-primary-bg p-6 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+              <QuizEditor
+                initialData={editingStep.content?.questions || []}
+                onSave={(questions) => handleSaveContentLocally({ type: 'quiz', questions })}
+                onCancel={() => setEditingStep(null)}
+                isOfflineMode={true} // Flag importante para o componente saber que não deve chamar API
+              />
+            </div>
+          </div>
+        )}
+
+        {/* MODAL DE EDIÇÃO DE NARRATIVA */}
+        {editingStep?.type === 'narrative' && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
+            <div className="bg-white dark:bg-primary-bg p-6 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+              <NarrativeEditor
+                initialData={editingStep.content}
+                onSave={(data) => handleSaveContentLocally({ type: 'narrative', ...data })}
+                onCancel={() => setEditingStep(null)}
+                isOfflineMode={true}
+              />
             </div>
           </div>
         )}

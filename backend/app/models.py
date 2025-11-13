@@ -28,6 +28,11 @@ class User(db.Model):
     forum_topics = db.relationship('ForumTopic', backref='author', lazy=True, foreign_keys='ForumTopic.author_id')
     forum_posts = db.relationship('ForumPost', backref='author', lazy=True, foreign_keys='ForumPost.author_id')
 
+    cached_city = db.Column(db.String(100), nullable=True)
+    cached_state = db.Column(db.String(100), nullable=True)
+    cached_country = db.Column(db.String(100), nullable=True)
+    cached_suburb = db.Column(db.String(100), nullable=True)
+    
     @validates('name')
     def validate_and_format_name(self, key, name):
         """
@@ -47,7 +52,12 @@ class User(db.Model):
             'role': self.role,
             'institution_name': self.institution_name,
             'discipline': self.discipline,
-            'profile_picture': self.profile_picture
+            'profile_picture': self.profile_picture,
+            'location': {
+                'city': self.cached_city,
+                'state': self.cached_state,
+                'country': self.cached_country
+            } if self.cached_city else None
         }
 
 
@@ -79,9 +89,12 @@ class Activity(db.Model):
     forum_topics = db.relationship('ForumTopic', backref='activity', lazy=True, cascade="all, delete-orphan")
     available_from = db.Column(db.DateTime, nullable=True) # Data de início da disponibilidade
     expires_at = db.Column(db.DateTime, nullable=True)     # Data final (prazo)
+    ratings = db.relationship('ActivityRating', backref='activity', lazy=True)
     
     def to_dict(self):
         design = self.gamification_design or {}
+        ratings_count = len(self.ratings)
+        average_rating = sum(r.score for r in self.ratings) / ratings_count if ratings_count > 0 else 0
         return {
             'id': self.id,
             'professor_id': self.professor_id,
@@ -108,6 +121,8 @@ class Activity(db.Model):
             'assignment_count': self.assignment_count,
             'availableFrom': self.available_from.isoformat() if self.available_from else None,
             'expiresAt': self.expires_at.isoformat() if self.expires_at else None,
+            'average_rating': round(average_rating, 1), # Arredonda para 1 casa decimal (ex: 4.5)
+            'rating_count': ratings_count,
             'gamificationDesign': {
                 'theme': design.get('theme', 'vila_da_aventura'), # Adicione um padrão
                 'progression_path': design.get('progression_path', []),
@@ -586,3 +601,15 @@ class ChatMessage(db.Model):
             'content': self.content,
             'created_at': self.created_at.isoformat()
         }
+
+
+class ActivityRating(db.Model):
+    __tablename__ = 'activity_rating'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=False)
+    score = db.Column(db.Integer, nullable=False) # 1 a 5
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    # Restrição: Um aluno só pode avaliar uma atividade uma vez (opcional)
+    __table_args__ = (db.UniqueConstraint('user_id', 'activity_id', name='_user_activity_rating_uc'),)

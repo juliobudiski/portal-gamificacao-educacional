@@ -1,5 +1,5 @@
 from .. import db
-from ..models import Activity, ActivityRevision, Tag, EventLog, ActivityProgress 
+from ..models import Activity, ActivityRevision, Tag, EventLog, ActivityProgress, Conversation, ChatMessage, ActivityRating 
 from flask import jsonify
 import logging
 from flask_jwt_extended import jwt_required, current_user, get_jwt_identity
@@ -12,13 +12,13 @@ logger = logging.getLogger(__name__)
 from ..utils.logging import _log_system_event
 
 def create_activity(user, data):
-    logger.info(f"Usuário ID {user.id} tentando criar uma nova atividade.")
+    logger.info(f"Usuário ID {user.id} tentando criar uma nova atividade (Batch Creation).")
 
     if user.role != 'professor':
         return {"message": "Acesso negado"}, 403
     
     try:
-        # A lógica para narrative_image_url é removida daqui
+        # 1. Cria a Atividade Principal
         new_activity = Activity(
             professor_id=user.id,
             title=data.get('title'),
@@ -27,14 +27,16 @@ def create_activity(user, data):
             desired_scenario=data.get('desiredScenario', {}),
             activity_planning=data.get('activityPlanning', {}),
             player_profile=data.get('playerProfile', {}),
-            game_elements=data.get('gameElements', {}), # A nova estrutura da narrativa virá aqui dentro
+            game_elements=data.get('gameElements', {}), 
             rewards_offered=data.get('rewardsOffered', {}),
             rewarded_actions=data.get('rewardedActions', {}),
             gamification_rules=data.get('gamificationRules', {}),
+            gamification_design=data.get('gamificationDesign', {}), # Importante pegar o design aqui
             area_knowledge=data.get('areaKnowledge'),
             is_public=data.get('isPublic', False)
         )
         
+        # Tratamento de Tags
         if 'tags' in data:
             for tag_name in data['tags']:
                 tag = Tag.query.filter_by(name=tag_name).first()
@@ -44,20 +46,60 @@ def create_activity(user, data):
                 new_activity.tags.append(tag)
         
         db.session.add(new_activity)
+        
+        # 2. FLUSH: Gera o ID da atividade sem fechar a transação
+        db.session.flush() 
+        
+        # 3. PROCESSAMENTO DE CONTEÚDO (Quiz e Narrativa)
+        # O frontend deve enviar o conteúdo EMBUTIDO dentro de gamificationDesign -> progression_path -> step -> content
+        gamification_design = data.get('gamificationDesign', {})
+        progression_path = gamification_design.get('progression_path', [])
+
+        if progression_path and isinstance(progression_path, list):
+            for step in progression_path:
+                # Verifica se o passo tem conteúdo vinculado
+                content = step.get('content')
+                step_id = step.get('id')
+
+                if content and step_id:
+                    content_type = content.get('type')
+
+                    if content_type == 'quiz':
+                        new_quiz = QuizContent(
+                            activity_id=new_activity.id, # Usa o ID gerado pelo flush
+                            step_id=str(step_id),
+                            questions=content.get('questions', [])
+                        )
+                        db.session.add(new_quiz)
+                        logger.info(f"Quiz adicionado ao passo {step_id} da nova atividade {new_activity.id}")
+
+                    elif content_type == 'narrative':
+                        new_narrative = NarrativeContent(
+                            activity_id=new_activity.id,
+                            step_id=str(step_id),
+                            scenario=content.get('scenario', ''),
+                            characters=content.get('characters', []),
+                            dialogue=content.get('dialogue', [])
+                        )
+                        db.session.add(new_narrative)
+                        logger.info(f"Narrativa adicionada ao passo {step_id} da nova atividade {new_activity.id}")
+
+        # 4. COMMIT FINAL: Salva atividade + tags + conteúdos de uma vez só
         db.session.commit()
+        
         _log_system_event(
             user_id=user.id,
             action='activity_created',
             activity_id=new_activity.id,
-            details={'title': new_activity.title}
+            details={'title': new_activity.title, 'steps_count': len(progression_path)}
         )
         
-        
-        return {"message": "Atividade criada", "activity": new_activity.to_dict()}, 201
+        return {"message": "Atividade criada com sucesso!", "activity": new_activity.to_dict()}, 201
     
     except Exception as e:
         db.session.rollback()
-        return {"message": str(e)}, 500
+        logger.error(f"Erro ao criar atividade (Batch): {str(e)}")
+        return {"message": f"Erro ao salvar atividade: {str(e)}"}, 500
 
 def update_activity_structure(user, activity_id, data):
     """Atualiza apenas o campo gamification_design de uma atividade."""
@@ -367,7 +409,7 @@ def bulk_delete_activities(user, activity_ids):
     ids_to_delete = [act.id for act in activities_to_delete]
 
     try:
-        # 1. "Desequipar" itens da loja para evitar erros de FK.
+        # 1. Limpeza de Itens da Loja (Cosméticos equipados)
         item_ids_to_delete = [item.id for item in StoreItem.query.filter(StoreItem.activity_id.in_(ids_to_delete)).all()]
         
         if item_ids_to_delete:
@@ -379,23 +421,32 @@ def bulk_delete_activities(user, activity_ids):
                 ActivityProgress.equipped_title_cosmetic_id.in_(item_ids_to_delete)
             ).update({'equipped_title_cosmetic_id': None}, synchronize_session=False)
         
-        # 2. Agora deletamos todos os registros "filhos" na ordem correta.
+        # 2. Limpeza de CHAT (Conversas e Mensagens) - CORREÇÃO DO ERRO
+        conversations = Conversation.query.filter(Conversation.activity_id.in_(ids_to_delete)).all()
+        conv_ids = [c.id for c in conversations]
+        if conv_ids:
+            ChatMessage.query.filter(ChatMessage.conversation_id.in_(conv_ids)).delete(synchronize_session=False)
+            Conversation.query.filter(Conversation.id.in_(conv_ids)).delete(synchronize_session=False)
+
+        # 3. Limpeza de AVALIAÇÕES (Ratings) - NOVA FUNCIONALIDADE
+        ActivityRating.query.filter(ActivityRating.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
+
+        # 4. Deleta os demais registros filhos
         Purchase.query.filter(Purchase.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
         StoreItem.query.filter(StoreItem.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
         SlotWin.query.filter(SlotWin.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
         RouletteWin.query.filter(RouletteWin.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
         StudentResponse.query.filter(StudentResponse.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
         
-        # --- NOVA LINHA ADICIONADA AQUI ---
-        # Deleta os registros de títulos desbloqueados associados às atividades.
+        QuizContent.query.filter(QuizContent.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
+        NarrativeContent.query.filter(NarrativeContent.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
         UserUnlockedTitle.query.filter(UserUnlockedTitle.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
-        
         ActivityProgress.query.filter(ActivityProgress.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
         EventLog.query.filter(EventLog.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
         ActivityRevision.query.filter(ActivityRevision.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
         UserUnlockedMedal.query.filter(UserUnlockedMedal.activity_id.in_(ids_to_delete)).delete(synchronize_session=False)
         
-        # 3. Finalmente, apaga as atividades "mães"
+        # 5. Apaga as atividades
         for activity in activities_to_delete:
             db.session.delete(activity)
 
@@ -407,10 +458,8 @@ def bulk_delete_activities(user, activity_ids):
             details={'deleted_count': deleted_count, 'deleted_ids': ids_to_delete}
         )
 
-        logger.info(f"Usuário ID {user.id} deletou {deleted_count} atividades em massa.")
         return {"message": f"{deleted_count} atividades foram deletadas com sucesso!"}, 200
 
     except Exception as e:
         db.session.rollback()
-        logger.error(f"Erro ao deletar atividades em massa para o usuário ID {user.id}: {str(e)}")
-        return {"message": "Erro interno ao deletar atividades."}, 500
+        return {"message": f"Erro interno ao deletar atividades: {str(e)}"}, 500

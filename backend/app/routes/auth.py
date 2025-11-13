@@ -11,6 +11,9 @@ from google.auth.transport import requests
 import requests
 from datetime import datetime
 from sqlalchemy.orm.attributes import flag_modified
+from ..utils.geo import update_user_location_data  # <--- ADICIONE ISSO
+
+
 auth_bp = Blueprint('auth', __name__)
 # --- ESTRUTURA DOS AVATARES PADRÃO ---
 # Defina esta lista no topo do arquivo para ser reutilizada
@@ -425,34 +428,25 @@ def delete_account():
 @auth_bp.route('/user/location-info', methods=['GET'])
 @jwt_required()
 def get_user_location_info():
+    """
+    Retorna a localização salva no banco (cache), sem chamar API externa.
+    Muito mais rápido e evita bloqueios.
+    """
     current_user_id = get_jwt_identity()
     user = User.query.get(current_user_id)
 
-    if not user or not user.last_known_latitude:
-        return jsonify(None), 200 # Retorna nulo se não houver localização
+    # Se o usuário não existe ou ainda não tem cidade salva no cache
+    if not user or not user.cached_city:
+        return jsonify(None), 200 
 
-    try:
-        lat = user.last_known_latitude
-        lon = user.last_known_longitude
-        
-        # Chamada para a API Nominatim (gratuita e sem chave)
-        geo_url = f"https://nominatim.openstreetmap.org/reverse?format=json&lat={lat}&lon={lon}"
-        headers = {'User-Agent': 'GamificaEduPortal/1.0'}
-        geo_res = requests.get(geo_url, headers=headers, timeout=5)
-        geo_res.raise_for_status()
-        address = geo_res.json().get('address', {})
-        
-        location_info = {
-            'city': address.get('city') or address.get('town') or address.get('village', 'N/A'),
-            'state': address.get('state', 'N/A'),
-            'country': address.get('country', 'N/A')
-        }
-        return jsonify(location_info), 200
-
-    except requests.exceptions.RequestException as e:
-        current_app.logger.error(f"Falha na geocodificação para o usuário {user.id}: {e}")
-        return jsonify({"message": "Erro ao buscar informações de localização."}), 500
-    
+    # Retorna direto das colunas do banco
+    location_info = {
+        "city": user.cached_city,
+        "state": user.cached_state,
+        "country": user.cached_country,
+        "suburb": user.cached_suburb
+    }
+    return jsonify(location_info), 200
     
 @auth_bp.route('/user/avatar', methods=['PUT'])
 @jwt_required()
@@ -491,49 +485,65 @@ def update_avatar():
 @jwt_required()
 def unlock_location_avatar():
     user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    
+    if not user:
+        return jsonify({"msg": "Usuário não encontrado."}), 404
+
     data = request.get_json()
     latitude = data.get('latitude')
     longitude = data.get('longitude')
 
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({"msg": "Usuário não encontrado."}), 404
+    if latitude is None or longitude is None:
+        return jsonify({"msg": "Coordenadas inválidas."}), 400
 
-    # --- INÍCIO DA MODIFICAÇÃO ---
-    # Salva as coordenadas e a data da atualização no perfil do usuário
-    if latitude and longitude:
-        user.last_known_latitude = latitude
-        user.last_known_longitude = longitude
-        user.last_location_update = datetime.utcnow()
-    # --- FIM DA MODIFICAÇÃO ---
+    try:
+        # --- A MÁGICA ACONTECE AQUI ---
+        # Chamamos a função do geo.py. Ela salva Lat/Lon E preenche cidade/estado/país
+        update_user_location_data(user, latitude, longitude)
+        
+        # --- LÓGICA DO AVATAR (Atualizada para Avatar 3 / Explorador) ---
+        location_avatar = {
+            "url": "/avatars/avatar3.webp", # Certifique-se que a imagem existe na pasta static
+            "name": "Explorador",
+            "type": "special",
+            "promotable": True
+        }
 
-    # Lógica para desbloquear o avatar (permanece a mesma)
-    location_avatar = {
-        "url": "/avatars/avatar_special.webp",
-        "name": "Explorador",
-        "type": "special"
-    }
+        if user.unlocked_global_avatars is None:
+            user.unlocked_global_avatars = []
 
-    if not user.unlocked_global_avatars:
-        user.unlocked_global_avatars = []
+        # Verifica se já tem o avatar (comparando URL para evitar duplicatas)
+        has_avatar = any(a.get('url') == location_avatar['url'] for a in user.unlocked_global_avatars)
 
-    if location_avatar not in user.unlocked_global_avatars:
-        from sqlalchemy.orm.attributes import flag_modified
-        user.unlocked_global_avatars.append(location_avatar)
-        flag_modified(user, "unlocked_global_avatars")
-    
-    db.session.commit() # Salva as alterações (localização e avatar) no banco
+        if not has_avatar:
+            user.unlocked_global_avatars.append(location_avatar)
+            flag_modified(user, "unlocked_global_avatars")
+        
+        db.session.commit() # Salva TUDO: localização, cache de cidade e o novo avatar
 
-    # Geração do novo token (permanece a mesma)
-    additional_claims = {
-        "email": user.email,
-        "name": user.name,
-        "role": user.role,
-        "profile_picture": user.profile_picture,
-        "institutionName": user.institution_name,
-        "discipline": user.discipline,
-        "unlocked_global_avatars": user.unlocked_global_avatars
-    }
-    access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
-    
-    return jsonify(access_token=access_token), 200
+        # Gera novo token para o frontend atualizar o contexto imediatamente
+        additional_claims = {
+            "email": user.email,
+            "name": user.name,
+            "role": user.role,
+            "profile_picture": user.profile_picture,
+            "institutionName": user.institution_name,
+            "discipline": user.discipline,
+            "unlocked_global_avatars": user.unlocked_global_avatars
+        }
+        access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
+        
+        return jsonify({
+            "message": "Localização atualizada e recompensa desbloqueada!",
+            "access_token": access_token,
+            "user": { # Retorna dados úteis para atualização imediata da UI sem precisar decodificar o token
+                "cached_city": user.cached_city,
+                "cached_state": user.cached_state
+            }
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Erro ao processar localização: {str(e)}")
+        return jsonify({"msg": "Erro interno ao salvar localização."}), 500
