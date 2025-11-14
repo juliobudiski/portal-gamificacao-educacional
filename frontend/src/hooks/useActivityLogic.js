@@ -309,55 +309,51 @@ export const useActivityLogic = (activityId) => {
     const handleCollectFinalReward = useCallback(async () => {
         debugLog('Iniciando a coleta da recompensa final...');
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/progress/${activityId}/collect-final-reward`, {
+            // A função 'fetchWithAuth' já lida com o token
+            const data = await fetchWithAuth(`/api/progress/${activityId}/collect-final-reward`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
+                headers: { 'Content-Type': 'application/json' },
             });
 
-            const data = await response.json();
+            debugLog('Recompensa final coletada com sucesso no backend.', data);
 
-            if (!response.ok) {
-                // Se o backend retornar um erro (ex: passos faltando), lança o erro
-                throw new Error(data.message || 'Falha ao coletar a recompensa final.');
+            // *** CORREÇÃO AQUI ***
+            // Atualiza o estado local IMEDIATAMENTE com os dados retornados
+            if (data.updated_progress) {
+                setUserProgress(data.updated_progress);
             }
 
-            debugLog('Recompensa final coletada com sucesso no backend. Atualizando dados...');
+            // (Opcional: Atualizar o XP Global no AuthContext - se/quando implementado)
+            // if (data.global_xp) {
+            //     auth.updateGlobalXp(data.global_xp);
+            // }
 
-            // Após coletar, busca TODOS os dados novamente. Isso irá atualizar o progresso,
-            // o status da atividade e as medalhas desbloqueadas.
-            await fetchAllData();
+            // Não precisamos mais do fetchAllData(), mas o leaderboard sim.
+            fetchLeaderboard();
 
-            // LOG DE VERIFICAÇÃO: Veja o que está no estado logo após a busca
-            debugLog('Estado APÓS fetchAllData:', {
-                activity: activity,
-                userProgress: userProgress
-            });
-
-            // Opcional: Redireciona de volta para o tabuleiro após um pequeno delay
             setTimeout(() => {
-                debugLog('Retornando para a visão do tabuleiro.'); // <-- Adicione este log
+                debugLog('Retornando para a visão do tabuleiro.');
                 handleReturnToBoard();
             }, 1000);
 
         } catch (error) {
             console.error('Erro detalhado ao coletar recompensa final:', error);
             setError(`Erro ao coletar: ${error.message}`);
-            // Re-lança o erro para que o componente 'FinalRewardTab' possa parar o 'loading'
-            throw error;
+            throw error; // Re-lança para o <FinalRewardTab> parar o loading
         }
-    }, [activityId, token, fetchAllData, handleReturnToBoard]);
+    }, [activityId, fetchWithAuth, fetchLeaderboard, handleReturnToBoard]);
+
     const updateUserProgress = useCallback(async (points, coins) => {
         debugLog(`Enviando atualização de progresso:`, { points, coins });
         try {
-            await fetchWithAuth(`/api/progress/${activityId}/update`, {
+            // O fetchWithAuth já lida com o token
+            const data = await fetchWithAuth(`/api/progress/${activityId}/update`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ coins }),
+                body: JSON.stringify({ coins }), // A API só aceita 'coins' agora
             });
-            // Após a atualização, buscamos o progresso novamente para ter os dados mais recentes
+
+            // A rota /update não retorna o progresso, então buscamos manualmente
             const progressData = await fetchWithAuth(`/api/progress/${activityId}`);
             if (progressData) {
                 setUserProgress(progressData);
@@ -365,11 +361,58 @@ export const useActivityLogic = (activityId) => {
             }
             await fetchLeaderboard();
         } catch (err) {
-            setError(err.message || 'Erro ao carregar dados da atividade.');
-            debugLog('fetchAllData: Erro encontrado.', err);
-        } finally {
-            setLoading(false);
-            debugLog('fetchAllData: Busca de dados finalizada.');
+            // O erro já é setado dentro do fetchWithAuth
+            debugLog('updateUserProgress: Erro encontrado.', err);
+        }
+    }, [activityId, fetchWithAuth, fetchLeaderboard]);
+
+
+    // --- FUNÇÕES NOVAS PARA ROLETA E SLOT ---
+
+    const handleSpin = useCallback(async () => {
+        debugLog('Acionando a Roleta...');
+        try {
+            // A função 'fetchWithAuth' já lida com o token e erros
+            const data = await fetchWithAuth(`/api/progress/${activityId}/spin`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+            });
+
+            if (data.updated_progress) {
+                setUserProgress(data.updated_progress); // ATUALIZA O ESTADO
+                debugLog('Progresso atualizado após Roleta.', data.updated_progress);
+            }
+
+            fetchLeaderboard(); // Atualiza o ranking se o XP mudou
+            return data; // Retorna os dados do prêmio para o <RouletteTab>
+
+        } catch (error) {
+            console.error('Erro ao girar roleta:', error);
+            setError(`Erro na roleta: ${error.message}`);
+            throw error; // Re-lança para o <RouletteTab>
+        }
+    }, [activityId, fetchWithAuth, fetchLeaderboard]);
+
+    const handlePlaySlot = useCallback(async () => {
+        debugLog('Acionando o Caça-Níquel...');
+        try {
+            const data = await fetchWithAuth(`/api/progress/${activityId}/play-slot`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+            });
+
+            if (data.updated_progress) {
+                setUserProgress(data.updated_progress); // ATUALIZA O ESTADO
+                debugLog('Progresso atualizado após Caça-Níquel.', data.updated_progress);
+            }
+
+            fetchLeaderboard(); // Atualiza o ranking se o XP mudou
+            return data; // Retorna os dados do prêmio para o <SlotMachineTab>
+
+        } catch (error) {
+            console.error('Erro ao jogar caça-níquel:', error);
+            setError(`Erro no caça-níquel: ${error.message}`);
+            throw error; // Re-lança para o <SlotMachineTab>
         }
     }, [activityId, fetchWithAuth, fetchLeaderboard]);
 
@@ -431,5 +474,7 @@ export const useActivityLogic = (activityId) => {
         fetchAllData,
         handlePurchaseSuccess,
         updateUserProgress,
+        handleSpin,
+        handlePlaySlot,
     };
 };

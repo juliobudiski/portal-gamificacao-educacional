@@ -26,7 +26,7 @@ const basePrizes = [
   { id: "prize-6", text: "150 XP", icon: FaTrophy, type: "xp", value: 150 },
 ];
 
-const RouletteTab = ({ onPrizeWon, onReturn, onPrizeUnlocked }) => {
+const RouletteTab = ({ onReturn, onSpin }) => {
   const { user } = useAuth();
   const { activityId } = useParams();
 
@@ -58,11 +58,12 @@ const RouletteTab = ({ onPrizeWon, onReturn, onPrizeUnlocked }) => {
     setLoading(true);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/progress/${activityId}/spin`, { method: "POST", headers: { Authorization: `Bearer ${user.token}` } });
-      const result = await response.json();
+      // Chama a função onSpin vinda do useActivityLogic
+      // Ela já atualiza o estado global e trata erros de API
+      const result = await onSpin();
 
-      if (response.ok) {
-        setApiPrize(result.prize);
+      if (result && result.prize) {
+        setApiPrize(result.prize); // Guarda o prêmio retornado
         const prizeText = result.prize.label.trim();
         const prizeIndex = segments.findIndex(s => s.trim() === prizeText);
 
@@ -73,33 +74,24 @@ const RouletteTab = ({ onPrizeWon, onReturn, onPrizeUnlocked }) => {
           setError(`Prêmio inesperado: ${prizeText}`);
         }
       } else {
-        setError(result.message || "Não foi possível girar.");
+        throw new Error("Resposta inválida do servidor.");
       }
     } catch (err) {
-      setError("Erro de conexão ao tentar girar a roleta.");
+      // O erro da API já foi tratado no hook, aqui tratamos o erro visual
+      setError(err.message || "Não foi possível girar.");
     } finally {
       setLoading(false);
     }
   };
 
-
-
+  // --- 3. ATUALIZE A FUNÇÃO handleWheelStop ---
   const handleWheelStop = () => {
-    // A Causa Raiz nº 2 está aqui: Em vez de buscar em um array local,
-    // usamos o estado 'apiPrize', que contém a resposta exata do servidor.
-    // Isso evita problemas com divergência de texto.
     if (!apiPrize) {
       console.error("O prêmio da API não foi definido. A exibição falhou.");
       return;
     }
 
-    // O objeto 'apiPrize' tem o formato: { type, value, label }
     setRevealedPrize(apiPrize); // Mostra o modal de prêmio
-
-    // Agora, tratamos o prêmio de XP aqui, com base na resposta da API
-    if (apiPrize.type === "xp") {
-      onPrizeWon?.(apiPrize.value);
-    }
 
     // Fecha o modal e atualiza a lista após alguns segundos
     setTimeout(() => {
@@ -107,8 +99,7 @@ const RouletteTab = ({ onPrizeWon, onReturn, onPrizeUnlocked }) => {
       setIsSpinning(false);
       setWinningPrizeIndex(null);
       setApiPrize(null);
-      onPrizeUnlocked?.();
-      fetchWinners();
+      fetchWinners(); // Atualiza a lista de ganhadores
     }, 3000);
   };
 

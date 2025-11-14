@@ -4,8 +4,8 @@ import { ActivityProvider, useActivity } from '../context/ActivityContext.jsx';
 import { useActivityLogic } from '../hooks/useActivityLogic';
 
 // Componentes de UI
-import StudentSidebar from '../components/activity/StudentSidebar';
-import ProfessorSidebar from '../components/activity/ProfessorSidebar';
+
+
 import StatsModal from '../components/activity/StatsModal';
 import NarrativeTab from '../components/activity/NarrativeTab';
 import QuizTab from '../components/activity/QuizTab';
@@ -71,26 +71,7 @@ const ActivityHeader = () => {
   );
 };
 
-const SidebarWrapper = () => {
-  const { user, isSidebarOpen, userProgress, analytics, handleShowStats, handleStudentClick, handleOpenQuizEditor, handleOpenNarrativeEditor } = useActivity();
-  if (user.role === 'aluno') {
-    return (
-      <aside className={`bg-primary-bg p-4 border-r border-border-color transition-all duration-300 ease-in-out transform flex-shrink-0 ${isSidebarOpen ? 'w-1/4 translate-x-0' : 'w-0 -translate-x-full'}`}>
-        <div className={`${isSidebarOpen ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200`}>
-          {userProgress && <StudentSidebar progress={userProgress} onShowStats={handleShowStats} />}
-        </div>
-      </aside>
-    );
-  }
-  if (user.role === 'professor') {
-    return (
-      <aside className="w-1/4 bg-primary-bg p-4 border-r border-border-color">
-        {analytics && <ProfessorSidebar analytics={analytics} onStudentClick={handleStudentClick} onOpenQuizEditor={handleOpenQuizEditor} onOpenNarrativeEditor={handleOpenNarrativeEditor} />}
-      </aside>
-    );
-  }
-  return null;
-};
+
 
 // ========================================================================
 // CORREÇÃO PRINCIPAL APLICADA AQUI
@@ -112,6 +93,8 @@ const ViewRenderer = () => {
     handleCollectFinalReward,
     handleCustomizationChange,
     fetchAllData,
+    handleSpin,
+    handlePlaySlot
   } = useActivity();
 
   const isStepCompleted = userProgress?.completed_steps?.includes(activeStepContent?.step_id);
@@ -170,18 +153,16 @@ const ViewRenderer = () => {
       />;
     case 'roulette':
       return <RouletteTab
-        onPrizeWon={fetchAllData}
-        onPrizeUnlocked={fetchAllData}
         onReturn={handleReturnToBoard}
+        onSpin={handleSpin} // <-- CORRETO
       />;
     case 'chat':
       return <ChatTab onReturn={handleReturnToBoard} />;
     case 'slot_machine':
       return <SlotMachineTab
         userCoins={userProgress?.coins || 0}
-        onPrizeWon={fetchAllData}
-        onWin={fetchAllData}
         onReturn={handleReturnToBoard}
+        onPlay={handlePlaySlot} // <-- CORRETO
       />;
     case 'badges':
       return <AchievementsTab
@@ -214,8 +195,8 @@ const ActivityPageContent = () => {
 
   return (
     <div className="flex min-h-screen bg-primary-bg text-primary-text relative">
-      {user.role === 'aluno' && <ToggleSidebarButton />}
-      <SidebarWrapper />
+
+
       <main className="flex-1 w-3/4 p-8">
         <ActivityHeader />
         {activity?.gamificationDesign && (

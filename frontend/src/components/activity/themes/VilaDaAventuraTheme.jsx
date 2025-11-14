@@ -2,6 +2,8 @@ import React, { useRef, useState, useLayoutEffect, useMemo } from 'react';
 import { elementConfig } from '../GameBoardConfig';
 import '../GameBoard.css';
 import { useActivity } from '../../../context/ActivityContext';
+import GameHUD from '../GameHUD';
+
 function getCatmullRomPath(points, tension = 0.5) {
     if (!points || points.length < 2) {
         return "";
@@ -54,7 +56,7 @@ const calculateStepCoordinates = (activity, boardSize) => {
     const itemsPerRow = 4;
     const pathAreaWidth = boardSize.width * 0.8;
     const offsetX = boardSize.width * 0.1;
-    const offsetY = boardSize.height * 0.15; // Ajuste inicial do topo
+    const offsetY = boardSize.height * 0.25; // Ajuste inicial do topo
     const rowHeight = 130;
 
     // AQUI ESTÁ A MÁGICA PARA A CURVA "C": Um empurrãozinho vertical nas pontas
@@ -122,6 +124,7 @@ const VilaDaAventuraTheme = ({ children }) => {
         finalRewardStatus,
         hubElementsToRender,
         renderedDecorations,
+        userProgress
     } = useActivity();
 
     const boardRef = useRef(null);
@@ -169,6 +172,7 @@ const VilaDaAventuraTheme = ({ children }) => {
 
     return (
         <div className="rpg-map-board" ref={boardRef}>
+            <GameHUD progress={userProgress} />
             <div className="progress-path-area" style={{ height: `${requiredHeight}px` }}>
                 {renderedDecorations.map(deco => (
                     <img key={deco.id} src={deco.src} alt="Decoração" className={`board-decoration ${deco.className}`} style={deco.style} />

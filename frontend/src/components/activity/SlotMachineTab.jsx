@@ -79,7 +79,7 @@ const Reel = ({ finalSymbol, isSpinning, delay }) => {
 // ====================================================================
 // 4. COMPONENTE PRINCIPAL 'SlotMachineTab' COM A CORREÇÃO
 // ====================================================================
-const SlotMachineTab = ({ userCoins, onPrizeWon, onWin, onReturn }) => {
+const SlotMachineTab = ({ userCoins, onReturn, onPlay }) => {
   const { user } = useAuth();
   const { activityId } = useParams();
   console.log('[SlotMachineTab] Componente renderizado. Saldo de moedas recebido via props:', userCoins);
@@ -90,7 +90,7 @@ const SlotMachineTab = ({ userCoins, onPrizeWon, onWin, onReturn }) => {
   const [prizeMessage, setPrizeMessage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const spinCost = 2;
+  const spinCost = 0;
 
   // --- INÍCIO DA CORREÇÃO: Estados e lógica para buscar ganhadores ---
   const [winners, setWinners] = useState([]);
@@ -123,6 +123,7 @@ const SlotMachineTab = ({ userCoins, onPrizeWon, onWin, onReturn }) => {
 
 
   const handleSpinClick = async () => {
+    // Verificação visual rápida
     if (userCoins < spinCost) {
       setError(`Moedas insuficientes. Custo: ${spinCost}`);
       return;
@@ -134,18 +135,16 @@ const SlotMachineTab = ({ userCoins, onPrizeWon, onWin, onReturn }) => {
     setLoading(true);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/progress/${activityId}/play-slot`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${user.token}` },
-      });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.message || 'Não foi possível jogar.');
+      // Chama a função onPlay vinda do useActivityLogic
+      const result = await onPlay();
 
+      // 'result' contém { result, prize, updated_progress }
       setIsSpinning(true);
       setLoading(false);
 
       const finalSymbols = result.result.map(symbolName => symbols.find(s => s.name === symbolName));
 
+      // Delay para a animação visual
       setTimeout(() => {
         setReels(finalSymbols);
         setIsSpinning(false);
@@ -153,21 +152,17 @@ const SlotMachineTab = ({ userCoins, onPrizeWon, onWin, onReturn }) => {
         if (result.prize) {
           setResultState('win');
           setPrizeMessage(result.prize.description);
-          if (result.prize.type === 'xp') {
-            onPrizeWon(result.prize.value);
-          }
-          // --- CORREÇÃO: Chama fetchWinners após ganhar ---
           fetchWinners(); // Atualiza a lista de ganhadores
         } else {
           setResultState('lose');
           setPrizeMessage("Não foi dessa vez!");
         }
-        // Chama onWin para que o componente pai possa atualizar o saldo de moedas, se necessário
-        onWin?.();
-      }, 3000);
+      }, 3000); // 3 segundos de animação
 
     } catch (err) {
-      setError(err.message);
+      // O hook já atualizou o estado global,
+      // mas precisamos mostrar o erro da API (ex: "Moedas insuficientes")
+      setError(err.message || "Erro desconhecido.");
       setLoading(false);
     }
   };

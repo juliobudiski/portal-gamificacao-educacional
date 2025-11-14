@@ -4,12 +4,37 @@ from flask import Blueprint, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 # Importe o SQLAlchemy para usar funções de join mais avançadas
 from .. import db 
-from ..models import User, Class, Enrollment, Activity, ActivityProgress
+from ..models import User, Class, Enrollment, Activity, ActivityProgress, UserUnlockedMedal
+from flask_cors import cross_origin
+
 
 student_bp = Blueprint('student', __name__)
 
+def calculate_global_level(total_xp):
+    """Calcula o nível global do aluno (curva mais lenta)."""
+    if total_xp is None:
+        total_xp = 0
+        
+    level = 1
+    xp_needed = 250 # Nível 1 para 2 -> 250 XP
+    xp_cumulative = 0
+
+    while total_xp >= xp_needed:
+        total_xp -= xp_needed
+        xp_cumulative += xp_needed
+        level += 1
+        xp_needed = int(xp_needed * 1.5) # Próximo nível custa 50% a mais
+    
+    return {
+        "level": level,
+        "xp_to_next_level": xp_needed,
+        "xp_current": total_xp,
+        "xp_cumulative": xp_cumulative
+    }
+
 @student_bp.route('/dashboard', methods=['GET'])
 @jwt_required()
+@cross_origin()
 def student_dashboard():
     current_user_id = get_jwt_identity()
     user = User.query.get(current_user_id)
@@ -64,11 +89,16 @@ def student_dashboard():
             "is_completed": progress_status == 'completed'
         })
 
+    # Busca o nível global usando a função auxiliar
+    global_level_info = calculate_global_level(user.global_xp)
+    
+    # Busca o total de medalhas (conquistas)
+    total_achievements = UserUnlockedMedal.query.filter_by(user_id=user.id).count()
+    
     # --- Lógica de Performance (pode ser aprimorada no futuro) ---
     performance_data = {
-        "totalPoints": 1250, # Exemplo mockado
-        "level": 8,        # Exemplo mockado
-        "achievements": 12 # Exemplo mockado
+        "global_level_info": global_level_info, # Objeto com level, xp_current, etc.
+        "total_achievements": total_achievements # Contagem real
     }
 
     dashboard_data = {

@@ -37,28 +37,30 @@ def calculate_level(total_points):
         "xpAccumulatedUntilCurrentLevel": xp_required_for_current_level
     }
 
-@progress_bp.route('/<int:activity_id>', methods=['GET'])
-@jwt_required()
-@cross_origin()
-def get_activity_progress(activity_id):
-    user_id = get_jwt_identity()
+def _get_progress_json(user_id, activity_id):
+    """
+    Função auxiliar que busca, calcula e retorna o JSON
+    completo do progresso de um aluno para uma atividade.
+    (Agora retorna um DICIONÁRIO ou levanta uma EXCEÇÃO)
+    """
     user = User.query.get(user_id)
-
     if not user or user.role != 'aluno':
-        return jsonify({"message": "Apenas alunos podem ver o progresso."}), 403
+        # Erro de permissão
+        raise Exception("Acesso negado: Apenas alunos podem ver o progresso.")
 
     # Busca o progresso e a atividade
     progress = ActivityProgress.query.filter_by(student_id=user.id, activity_id=activity_id).first()
     activity = Activity.query.get(activity_id)
     if not activity:
-        return jsonify({"message": "Atividade não encontrada."}), 404
+        raise Exception("Atividade não encontrada.")
 
+    # Validações de data
     now = datetime.utcnow()
     if activity.available_from and now < activity.available_from:
-        return jsonify({"message": f"Esta atividade estará disponível em {activity.available_from.strftime('%d/%m/%Y às %H:%M')}."}), 403
+        raise Exception(f"Esta atividade estará disponível em {activity.available_from.strftime('%d/%m/%Y às %H:%M')}.")
     
     if activity.expires_at and now > activity.expires_at:
-        return jsonify({"message": "O prazo para esta atividade já encerrou."}), 403
+        raise Exception("O prazo para esta atividade já encerrou.")
     
     # Se o progresso não existir, cria um registro inicial para o aluno
     if not progress:
@@ -70,9 +72,7 @@ def get_activity_progress(activity_id):
             status='not_started'
         )
         db.session.add(progress)
-        db.session.commit()
-
-    # --- INÍCIO DA CORREÇÃO E LÓGICA UNIFICADA ---
+        db.session.commit() # Commita aqui para que 'progress' tenha um ID
 
     # 1. Calcula o nível do aluno baseado no XP total
     total_xp = progress.total_xp_earned if progress.total_xp_earned is not None else 0
@@ -91,26 +91,43 @@ def get_activity_progress(activity_id):
         "scoreAchieved": progress.points_earned or 0,
         "totalPossibleScore": total_possible_points,
         "totalQuestions": total_questions,
-        "averageTime": 35,  # Mockado, como no seu código original
-        "achievements": 3     # Mockado, como no seu código original
+        "averageTime": 35,  # Mockado
+        "achievements": 3     # Mockado
     }
 
-    # 3. Retorna o JSON completo e consistente
-    return jsonify({
+    # 3. Retorna um DICIONÁRIO (não um jsonify)
+    return {
         "level": level_info["level"],
         "xp": level_info["xpEarnedForCurrentLevel"],
         "xpForNextLevel": level_info["xpForNextLevel"],
         "points_earned": progress.points_earned or 0,
-        "coins": progress.coins or 0,  # Padronizado para 'coins' (conforme o models.py)
+        "coins": progress.coins or 0,
         "status": progress.status,
         "completed_steps": progress.completed_steps or [],
         "attempts": progress.attempts or 0,
-        "stats": stats, # Usa o objeto 'stats' calculado
+        "stats": stats,
         "unlocked_activity_avatars": progress.unlocked_activity_avatars or [],
         "equipped_activity_avatar_url": progress.equipped_activity_avatar_url
-    }), 200
-    # --- FIM DA CORREÇÃO ---
-
+    }
+    
+@progress_bp.route('/<int:activity_id>', methods=['GET'])
+@jwt_required()
+@cross_origin()
+def get_activity_progress(activity_id):
+    user_id = get_jwt_identity()
+    
+    try:
+        # 1. Chama a função auxiliar que retorna um DICIONÁRIO
+        progress_data_dict = _get_progress_json(user_id, activity_id)
+        
+        # 2. Transforma o DICIONÁRIO em JSON
+        return jsonify(progress_data_dict), 200
+        
+    except Exception as e:
+        # 3. Pega qualquer exceção (Ex: "Prazo encerrado") e transforma em JSON
+        db.session.rollback()
+        # Aqui o str(e) funciona porque 'e' é um objeto Exception
+        return jsonify({"message": f"Erro ao buscar progresso: {str(e)}"}), 500
 
 @progress_bp.route('/<int:activity_id>/leaderboard', methods=['GET'])
 @jwt_required()
@@ -583,7 +600,12 @@ def spin_roulette_for_activity(activity_id):
     # --- LOG DE DEPURAÇÃO 8 ---
     current_app.logger.info("[SPIN_DEBUG] db.session.commit() foi executado.")
 
-    return jsonify({"message": f"Você ganhou {prize['label']}!", "prize": prize, "new_total_points": progress.points_earned}), 200
+    updated_progress_data = _get_progress_json(user_id, activity_id)
+    return jsonify({
+        "message": f"Você ganhou {prize['label']}!", 
+        "prize": prize, 
+        "updated_progress": updated_progress_data # Retorna o JSON completo
+    }), 200
 
 
 # --- NOVA ROTA PARA BUSCAR OS VENCEDORES ---
@@ -628,20 +650,19 @@ def play_slot_machine(activity_id):
     
     progress = ActivityProgress.query.filter_by(student_id=user_id, activity_id=activity_id).first()
     
-    # --- INÍCIO DA CORREÇÃO DEFINITIVA ---
-    
+        
     # Se não houver registro de progresso, ou se as moedas forem Nulas, não pode jogar.
     if not progress:
         return jsonify({"message": "Você precisa iniciar a atividade antes de jogar."}), 404
         
     # Converte moedas nulas para 0 antes de comparar
-    current_coins = progress.coins_earned if progress.coins_earned is not None else 0 # <-- CORRIJA AQUI
+    current_coins = progress.coins if progress.coins is not None else 0
     
     if current_coins < spin_cost:
         return jsonify({"message": f"Moedas insuficientes! Você tem {current_coins} e precisa de {spin_cost}."}), 400
 
     # Deduz o custo
-    progress.coins_earned = current_coins - spin_cost
+    progress.coins = current_coins - spin_cost
     
     # --- FIM DA CORREÇÃO ---
     
@@ -681,10 +702,11 @@ def play_slot_machine(activity_id):
 
     db.session.commit()
     
+    updated_progress_data = _get_progress_json(user_id, activity_id)
     return jsonify({
         "result": result,
         "prize": prize_data,
-        "new_coin_balance": progress.coins
+        "updated_progress": updated_progress_data # Retorna o JSON completo
     }), 200
 
 @progress_bp.route('/<int:activity_id>/slot-winners', methods=['GET'])
@@ -834,6 +856,8 @@ def collect_final_reward(activity_id):
                 # Equipa o título final
                 progress.equipped_title_id = title_to_unlock.id
     
+    GLOBAL_XP_AWARD = 100 
+    user.global_xp = (user.global_xp or 0) + GLOBAL_XP_AWARD
     # 3. ATUALIZAÇÃO DE STATUS
     progress.status = 'completed'
     progress.completed_at = datetime.utcnow()
@@ -857,7 +881,12 @@ def collect_final_reward(activity_id):
 
     db.session.commit()
 
-    return jsonify({"message": "Atividade concluída e recompensa coletada com sucesso!"}), 200
+    updated_progress_data = _get_progress_json(user_id, activity_id)
+    return jsonify({
+        "message": "Atividade concluída e recompensa coletada com sucesso!",
+        "updated_progress": updated_progress_data, # Retorna o JSON completo (Micro)
+        "global_xp": user.global_xp # Retorna o XP Global (Macro)
+    }), 200
 
 @progress_bp.route('/<int:activity_id>/avatar', methods=['PUT'])
 @jwt_required()

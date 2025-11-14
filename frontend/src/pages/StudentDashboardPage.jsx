@@ -280,38 +280,58 @@ function StudentDashboardPage() {
 
           {/* Coluna Lateral (Desempenho e Ações Rápidas) */}
           <aside className="space-y-8">
-            {/* Card de Desempenho */}
+            {/* Card de Desempenho (AGORA COM DADOS REAIS) */}
             <section className="bg-secondary-bg p-6 rounded-2xl shadow-xl border-t-4 border-[#9570d9]">
-              <h2 className="text-2xl font-bold mb-6 text-center">Meu Desempenho</h2>
-              <div className="space-y-5">
-                <div className="flex items-center p-4 bg-primary-bg rounded-lg">
-                  <FaStar className="text-3xl text-yellow-400 mr-4" />
-                  <div>
-                    <p className="text-sm text-secondary-text">Pontuação Total</p>
-                    <p className="text-2xl font-bold">{dashboardData.performance.totalPoints}</p>
+              <h2 className="text-2xl font-bold mb-6 text-center">Meu Desempenho Global</h2>
+
+              {(() => {
+                // Puxa os dados reais que o backend enviou
+                const { global_level_info, total_achievements } = dashboardData.performance;
+                const progressPercent = (global_level_info.xp_current / global_level_info.xp_to_next_level) * 100;
+
+                return (
+                  <div className="space-y-5">
+                    {/* Bloco de Nível Atual */}
+                    <div className="flex items-center p-4 bg-primary-bg rounded-lg">
+                      <FaUserGraduate className="text-3xl text-green-400 mr-4" />
+                      <div>
+                        <p className="text-sm text-secondary-text">Nível Global</p>
+                        <p className="text-2xl font-bold">{global_level_info.level}</p>
+                      </div>
+                    </div>
+
+                    {/* Bloco de Progresso de XP */}
+                    <div className="p-4 bg-primary-bg rounded-lg">
+                      <div className="flex justify-between text-sm text-secondary-text mb-1 font-semibold">
+                        <span>Progresso</span>
+                        <span className="text-primary-text">{global_level_info.xp_current} / {global_level_info.xp_to_next_level} XP</span>
+                      </div>
+                      <div className="h-4 bg-border-color rounded-full overflow-hidden border border-gray-600">
+                        <div
+                          className="h-full bg-gradient-to-r from-green-400 to-accent-teal transition-all duration-500"
+                          style={{ width: `${progressPercent}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Bloco de Conquistas */}
+                    <div className="flex items-center p-4 bg-primary-bg rounded-lg">
+                      <FaTrophy className="text-3xl text-purple-400 mr-4" />
+                      <div>
+                        <p className="text-sm text-secondary-text">Conquistas</p>
+                        <p className="text-2xl font-bold">{total_achievements}</p>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center p-4 bg-primary-bg rounded-lg">
-                  <FaUserGraduate className="text-3xl text-green-400 mr-4" />
-                  <div>
-                    <p className="text-sm text-secondary-text">Nível Atual</p>
-                    <p className="text-2xl font-bold">{dashboardData.performance.level}</p>
-                  </div>
-                </div>
-                <div className="flex items-center p-4 bg-primary-bg rounded-lg">
-                  <FaTrophy className="text-3xl text-purple-400 mr-4" />
-                  <div>
-                    <p className="text-sm text-secondary-text">Conquistas</p>
-                    <p className="text-2xl font-bold">{dashboardData.performance.achievements}</p>
-                  </div>
-                </div>
-              </div>
+                );
+              })()}
+
               <Link to="/aluno/desempenho" className="block w-full text-center mt-6 py-2 px-4 bg-[#9570d9] hover:bg-purple-600 rounded-lg font-semibold">
                 Ver Detalhes
               </Link>
             </section>
 
-            {/* Card de Ações Rápidas */}
+            {/* Card de Ações Rápidas (sem alteração) */}
             <section className="bg-secondary-bg p-6 rounded-2xl shadow-xl">
               <h2 className="text-2xl font-bold mb-4 text-center">Ações Rápidas</h2>
               <Link to="/aluno/entrar-turma" className="block w-full text-center mb-3 py-3 px-4 bg-gradient-to-r from-[#ffbd30] to-[#ffa000] text-[#2c3135] hover:opacity-90 rounded-lg font-bold">

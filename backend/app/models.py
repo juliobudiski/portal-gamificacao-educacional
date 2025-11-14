@@ -27,7 +27,7 @@ class User(db.Model):
     unlocked_global_avatars = db.Column(JSONB, nullable=True, server_default='[]')
     forum_topics = db.relationship('ForumTopic', backref='author', lazy=True, foreign_keys='ForumTopic.author_id')
     forum_posts = db.relationship('ForumPost', backref='author', lazy=True, foreign_keys='ForumPost.author_id')
-
+    global_xp = db.Column(db.Integer, default=0, nullable=False, server_default='0')
     cached_city = db.Column(db.String(100), nullable=True)
     cached_state = db.Column(db.String(100), nullable=True)
     cached_country = db.Column(db.String(100), nullable=True)
