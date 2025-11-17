@@ -3,13 +3,53 @@ from ..models import Activity, ActivityRevision, Tag, EventLog, ActivityProgress
 from flask import jsonify
 import logging
 from flask_jwt_extended import jwt_required, current_user, get_jwt_identity
-from ..models import UserUnlockedTitle, UserUnlockedMedal, db, Activity, Tag, activity_tag, ActivityRevision, User, Class, Enrollment, Purchase, StoreItem, SlotWin, RouletteWin, StudentResponse, QuizContent, NarrativeContent
+from ..models import StoreItem, Title, UserUnlockedTitle, UserUnlockedMedal, db, Activity, Tag, activity_tag, ActivityRevision, User, Class, Enrollment, Purchase, StoreItem, SlotWin, RouletteWin, StudentResponse, QuizContent, NarrativeContent
 from sqlalchemy.orm import noload
 from copy import deepcopy
 from sqlalchemy import or_
 import json
 logger = logging.getLogger(__name__)
 from ..utils.logging import _log_system_event
+
+
+DEFAULT_COSMETICS = [
+    {
+        "name": "Nome Dourado (Neon)",
+        "description": "Destaque seu nome no ranking com um brilho dourado.",
+        "price": 750, "icon": "🌟", "item_type": "cosmetic",
+        "effect_id": json.dumps({ "type": "color", "color": "#FBBF24", "effect": "neon" }) # Usamos json.dumps
+    },
+    {
+        "name": "Nome Prateado (Neon)",
+        "description": "Um visual elegante e prateado para o seu nome no ranking.",
+        "price": 500, "icon": "✨", "item_type": "cosmetic",
+        "effect_id": json.dumps({ "type": "color", "color": "#D1D5DB", "effect": "neon" })
+    }
+]
+
+DEFAULT_AVATARS = [
+    {
+        "name": "Gato Mago",
+        "description": "Um companheiro místico para suas aventuras.",
+        "price": 300, "icon": "😺", "item_type": "avatar",
+        "effect_id": json.dumps({ "url": "/avatars/wizard_cat.webp", "name": "Gato Mago", "promotable": True })
+    },
+    {
+        "name": "Robô Futurista",
+        "description": "Tecnologia de ponta para o aluno moderno.",
+        "price": 300, "icon": "🤖", "item_type": "avatar",
+        "effect_id": json.dumps({ "url": "/avatars/robot.webp", "name": "Robô Futurista", "promotable": False })
+    }
+]
+
+DEFAULT_TITLES = [
+    {
+        "name": "O Grande Comprador",
+        "description": "Um título para aqueles que investem em seu sucesso na loja.",
+        "price": 1200, "icon": "👑", "item_type": "title",
+        "effect_id": "TITLE_GRANDE_COMPRADOR" # effect_id simples para o Título
+    }
+]
 
 def create_activity(user, data):
     logger.info(f"Usuário ID {user.id} tentando criar uma nova atividade (Batch Creation).")
@@ -84,7 +124,43 @@ def create_activity(user, data):
                         db.session.add(new_narrative)
                         logger.info(f"Narrativa adicionada ao passo {step_id} da nova atividade {new_activity.id}")
 
-        # 4. COMMIT FINAL: Salva atividade + tags + conteúdos de uma vez só
+        # --- INÍCIO DA NOVA LÓGICA: POPULAR A LOJA ---
+        logger.info(f"Populando loja padrão para a nova atividade ID {new_activity.id}")
+        
+        # Adiciona Cosméticos Padrão
+        for item_data in DEFAULT_COSMETICS:
+            db.session.add(StoreItem(activity_id=new_activity.id, **item_data))
+            
+        # Adiciona Avatares Padrão
+        for item_data in DEFAULT_AVATARS:
+            db.session.add(StoreItem(activity_id=new_activity.id, **item_data))
+        
+        # Adiciona Títulos Padrão
+        for item_data in DEFAULT_TITLES:
+            # Títulos precisam ser criados na tabela 'Title' primeiro
+            title_effect_id = item_data["effect_id"]
+            existing_title = Title.query.filter_by(effect_id=title_effect_id).first()
+            if not existing_title:
+                db.session.add(Title(
+                    effect_id=title_effect_id,
+                    display_text=item_data["name"],
+                    description=item_data["description"]
+                ))
+            
+            # Adiciona o item na loja
+            db.session.add(StoreItem(
+                activity_id=new_activity.id,
+                name=item_data["name"],
+                description=item_data["description"],
+                price=item_data["price"],
+                icon=item_data["icon"],
+                item_type=item_data["item_type"],
+                effect_id=title_effect_id # Salva o ID string, não o JSON
+            ))
+        
+        # --- FIM DA NOVA LÓGICA ---
+
+        # 4. COMMIT FINAL: Salva atividade + tags + conteúdos + itens da loja
         db.session.commit()
         
         _log_system_event(

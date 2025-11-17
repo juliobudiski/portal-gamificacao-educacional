@@ -4279,5 +4279,209 @@
         "editors": [],
         "operating_systems": [],
         "categories": []
+    },
+    {
+        "languages": [],
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "editors": [],
+        "operating_systems": [],
+        "categories": [],
+        "dependencies": [],
+        "machines": [],
+        "projects": [],
+        "range": {
+            "start": "2025-11-15T03:00:00Z",
+            "end": "2025-11-16T02:59:59Z",
+            "date": "2025-11-15",
+            "text": "Sat Nov 15th 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "ai_additions": 0,
+        "ai_deletions": 0,
+        "human_additions": 0,
+        "human_deletions": 0
+    },
+    {
+        "languages": [],
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "editors": [],
+        "operating_systems": [],
+        "categories": [],
+        "dependencies": [],
+        "machines": [],
+        "projects": [],
+        "range": {
+            "start": "2025-11-16T03:00:00Z",
+            "end": "2025-11-17T02:59:59Z",
+            "date": "2025-11-16",
+            "text": "Sun Nov 16th 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "ai_additions": 0,
+        "ai_deletions": 0,
+        "human_additions": 0,
+        "human_deletions": 0
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2025-11-17T03:00:00Z",
+            "end": "2025-11-18T02:59:59Z",
+            "date": "2025-11-17",
+            "text": "Mon Nov 17th 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [
+            {
+                "name": "portal-gamificacao-educacional",
+                "total_seconds": 0.0,
+                "ai_additions": 0,
+                "ai_deletions": 0,
+                "human_additions": 0,
+                "human_deletions": 0,
+                "color": null,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            }
+        ],
+        "languages": [
+            {
+                "name": "Python",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            }
+        ],
+        "dependencies": [
+            {
+                "name": "flask",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            },
+            {
+                "name": "flask_cors",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            },
+            {
+                "name": "flask_jwt_extended",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            }
+        ],
+        "machines": [
+            {
+                "name": "julio-Inspiron-5421",
+                "total_seconds": 0.0,
+                "machine_name_id": "f2763117-e9f2-4fbd-a455-bf0b0bf5ab7b",
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            }
+        ],
+        "editors": [
+            {
+                "name": "VS Code",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            }
+        ],
+        "operating_systems": [
+            {
+                "name": "Linux",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            }
+        ],
+        "categories": [
+            {
+                "name": "Coding",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            }
+        ]
     }
 ]

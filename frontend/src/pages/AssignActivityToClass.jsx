@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { AuthContext } from '../context/AuthContext';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 // Debug mode control
 const isDebugMode = import.meta.env.VITE_DEBUG_MODE === 'true';
@@ -23,7 +23,7 @@ function AssignActivityToClass({ onAssignSuccess }) {
     const [availableFromTime, setAvailableFromTime] = useState('');
     const [expiresAtDate, setExpiresAtDate] = useState('');
     const [expiresAtTime, setExpiresAtTime] = useState('');
-
+    const navigate = useNavigate();
     useEffect(() => {
         if (isDebugMode) {
             console.log('[AssignActivityToClass] Componente montado para atividade ID:', activityId);
@@ -166,6 +166,9 @@ function AssignActivityToClass({ onAssignSuccess }) {
                 if (isDebugMode) {
                     console.log('[AssignActivityToClass] Atribuição bem-sucedida');
                 }
+                setTimeout(() => {
+                    navigate('/professor/banco-atividades');
+                }, 2000); // 2000ms = 2 segundos
                 onAssignSuccess?.();
             } else {
                 const errorMsg = data.message || 'Erro ao atribuir atividade';
@@ -185,7 +188,9 @@ function AssignActivityToClass({ onAssignSuccess }) {
                 );
             }
         } finally {
-            setIsLoading(false);
+            if (!message.includes('sucesso')) {
+                setIsLoading(false);
+            }
         }
     }, [
         user,
@@ -195,7 +200,8 @@ function AssignActivityToClass({ onAssignSuccess }) {
         availableFromTime,
         expiresAtDate,
         expiresAtTime,
-        onAssignSuccess
+        onAssignSuccess,
+        navigate
     ]);
 
     // Renderização condicional para estados de erro/carregamento

@@ -131,7 +131,10 @@ const ChatTab = ({ onReturn }) => {
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
           placeholder="Digite sua mensagem..."
-          className="flex-grow bg-border-color p-2 rounded-lg focus:outline-none"
+          className="flex-grow p-2 rounded-lg focus:outline-none 
+             bg-white dark:bg-gray-700 
+             text-gray-900 dark:text-gray-100 
+             placeholder-gray-500 dark:placeholder-gray-400"
           disabled={isLoading || !!error} // Desabilita o input durante o loading ou em caso de erro
         />
         <button type="submit" className="bg-teal-600 px-4 py-2 rounded-lg font-bold" disabled={isLoading || !!error}>Enviar</button>

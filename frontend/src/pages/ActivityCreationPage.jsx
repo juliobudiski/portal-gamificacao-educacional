@@ -315,30 +315,47 @@ function ActivityCreationPage({ existingActivity }) {
     fetchTemplates();
   }, [user]);
 
+  // useEffect para sincronizar os elementos do hub baseados nas seleções da Etapa 5
   useEffect(() => {
+    // Pega os nomes dos cards selecionados (ex: "Economia (sistema monetário)")
     const selectedCards = activityData.gameElements.selectedElements;
+    // Pega os elementos do hub que JÁ existem na atividade
     const currentHubElements = activityData.gamificationDesign?.hub_elements || [];
 
-    // Usamos um Set para garantir que cada tipo de hub apareça apenas uma vez
+    // Mapeia os nomes dos cards para os tipos de hub (ex: "store")
     const targetHubTypes = new Set();
     selectedCards.forEach(cardName => {
-      const types = hubElementCardMap[cardName];
+      const types = hubElementCardMap[cardName]; // hubElementCardMap está na linha 24
       if (types) {
         types.forEach(type => targetHubTypes.add(type));
       }
     });
 
-    const newHubElements = Array.from(targetHubTypes).map(type => {
-      const existingElement = currentHubElements.find(el => el.type === type);
-      return {
-        id: `hub_${type}`,
-        type: type,
-        enabled: existingElement ? existingElement.enabled : true,
-        config: existingElement ? existingElement.config : {},
-      };
+    // --- LÓGICA CORRIGIDA (ADITIVA, NÃO DESTRUTIVA) ---
+
+    // 1. Copia os elementos que já existem
+    const newHubElements = [...currentHubElements];
+    let changed = false;
+
+    // 2. Itera nos tipos de hub que *deveriam* existir
+    targetHubTypes.forEach(type => {
+      // Verifica se ele já está na lista
+      const exists = currentHubElements.some(el => el.type === type);
+
+      // 3. Se não existir, ADICIONA
+      if (!exists) {
+        newHubElements.push({
+          id: `hub_${type}`,
+          type: type,
+          enabled: true, // Habilitado por padrão
+          config: {},
+        });
+        changed = true; // Marca que a lista mudou
+      }
     });
 
-    if (JSON.stringify(newHubElements) !== JSON.stringify(currentHubElements)) {
+    // 4. Só atualiza o estado se um novo elemento foi realmente adicionado
+    if (changed) {
       setActivityData(prev => ({
         ...prev,
         gamificationDesign: {
@@ -347,7 +364,7 @@ function ActivityCreationPage({ existingActivity }) {
         }
       }));
     }
-  }, [activityData.gameElements.selectedElements]);
+  }, [activityData.gameElements.selectedElements, setActivityData]);
 
 
   const handleSelectTemplate = (templateData) => {

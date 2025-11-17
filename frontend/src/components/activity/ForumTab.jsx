@@ -315,12 +315,20 @@ const ForumTab = ({ onReturn }) => {
     };
 
     return (
-        <div className="bg-primary-bg p-6 rounded-lg text-primary-text flex flex-col" style={{ height: '80vh', maxHeight: '700px' }}>
+        <div className="relative pt-16 bg-primary-bg p-6 rounded-lg text-primary-text flex flex-col" style={{ height: '80vh', maxHeight: '700px' }}>
+
             <div className='flex-shrink-0'>
-                <button onClick={onReturn} className="absolute top-4 left-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200 transition-colors z-20">
+                <button
+                    onClick={onReturn}
+                    className="absolute top-4 left-4 z-20 flex items-center gap-2 py-2 px-4 
+               bg-secondary-bg text-secondary-text 
+               border border-border-color rounded-full shadow-lg 
+               hover:bg-primary-bg hover:shadow-xl transition-all"
+                >
                     <FaArrowLeft /> Voltar ao Tabuleiro
                 </button>
             </div>
+
             <div className="flex-grow relative mt-8 min-h-0">
                 {renderContent()}
             </div>

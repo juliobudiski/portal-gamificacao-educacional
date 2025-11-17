@@ -25,11 +25,18 @@ const LeaderboardTab = ({ leaderboardData, isLoading, onReturn }) => {
     // --- Componente para o Estado Vazio ---
     if (!leaderboardData || leaderboardData.length === 0) {
         return (
-            <div className="w-full max-w-2xl mx-auto flex flex-col items-center justify-center p-8 text-primary-text min-h-[400px]">
-                <button onClick={onReturn} className="absolute top-4 left-4 flex items-center gap-2 text-yellow-400 hover:text-yellow-200 transition-colors z-20">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" /></svg>
-                    Voltar
-                </button>
+            <div className="relative pt-16 w-full max-w-2xl mx-auto flex flex-col items-center justify-center p-8 text-primary-text min-h-[400px]">
+                <div className='flex-shrink-0'>
+                    <button
+                        onClick={onReturn}
+                        className="absolute top-4 left-4 z-20 flex items-center gap-2 py-2 px-4 
+                                bg-secondary-bg text-secondary-text 
+                                border border-border-color rounded-full shadow-lg 
+                                hover:bg-primary-bg hover:shadow-xl transition-all"
+                    >
+                        <FaArrowLeft /> Voltar ao Tabuleiro
+                    </button>
+                </div>
                 <FaExclamationCircle className="text-5xl text-yellow-500 mb-4" />
                 <h2 className="text-2xl font-bold mb-2">Ranking Vazio</h2>
                 <p className="text-secondary-text">Ainda não há pontuações registradas. Seja o primeiro a jogar!</p>
