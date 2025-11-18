@@ -108,3 +108,86 @@ def student_dashboard():
     }
 
     return jsonify(dashboard_data), 200
+
+
+@student_bp.route('/activities/all', methods=['GET'])
+@jwt_required()
+@cross_origin()
+def get_all_student_activities():
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+
+    if not user or user.role != 'aluno':
+        return jsonify({"message": "Acesso não autorizado"}), 403
+
+    # 1. Query Complexa:
+    # Busca Atividades das turmas onde o aluno tem matrícula
+    # Faz Left Join com ActivityProgress para pegar dados de quem já começou/terminou
+    activities_query = db.session.query(
+        Activity,
+        ActivityProgress
+    ).join(
+        Enrollment, Activity.class_id == Enrollment.class_id
+    ).outerjoin(
+        ActivityProgress,
+        db.and_(
+            ActivityProgress.activity_id == Activity.id,
+            ActivityProgress.student_id == user.id
+        )
+    ).filter(
+        Enrollment.student_id == user.id
+    ).all()
+
+    activities_list = []
+
+    for activity, progress in activities_query:
+        # --- LÓGICA DE CÁLCULO DE PROGRESSO (NOVA) ---
+        total_steps = 0
+        completed_steps_count = 0
+        percentage = 0
+
+        # 1. Conta quantos passos existem no design da atividade
+        if activity.gamification_design and 'progression_path' in activity.gamification_design:
+            total_steps = len(activity.gamification_design['progression_path'])
+
+        # 2. Conta quantos passos o aluno completou (se houver registro de progresso)
+        if progress and progress.completed_steps:
+            completed_steps_count = len(progress.completed_steps)
+
+        # 3. Calcula a porcentagem (regra de 3 simples)
+        if total_steps > 0:
+            percentage = int((completed_steps_count / total_steps) * 100)
+        
+        # Trava em 100% se o status já estiver explicitamente como concluído 
+        # (Isso evita casos onde o arredondamento daria 99% ou algo assim)
+        if progress and progress.status == 'completed':
+            percentage = 100
+        # -----------------------------------------------
+
+        # Tenta extrair o XP de recompensa das regras da atividade
+        xp_reward = 0
+        if activity.gamification_rules and 'reward_xp' in activity.gamification_rules:
+             xp_reward = int(activity.gamification_rules['reward_xp'])
+        elif activity.rewards_offered and 'completion_xp' in activity.rewards_offered:
+             xp_reward = int(activity.rewards_offered['completion_xp'])
+        else:
+            xp_reward = 100 
+
+        activities_list.append({
+            "id": activity.id,
+            "title": activity.title,
+            "description": activity.description,
+            "class_name": activity.class_obj.name if activity.class_obj else "Turma Desconhecida",
+            "expiresAt": activity.expires_at.isoformat() if activity.expires_at else None,
+            
+            # Dados de Progresso (pode ser None se o aluno nunca abriu a atividade)
+            "is_completed": progress.status == 'completed' if progress else False,
+            "xp_earned": progress.total_xp_earned if progress else 0,
+            "xp_reward": xp_reward,
+            "grade": progress.points_earned if progress else None,
+            
+            # CAMPO NOVO
+            "progress_percentage": percentage 
+        })
+
+    return jsonify(activities_list), 200

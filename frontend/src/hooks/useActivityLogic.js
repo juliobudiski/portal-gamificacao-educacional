@@ -28,7 +28,7 @@ export const useActivityLogic = (activityId) => {
     const [showStatsModal, setShowStatsModal] = useState(false);
     const [activeStepContent, setActiveStepContent] = useState(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
+    const [medalManifest, setMedalManifest] = useState([]);
 
     const fetchWithAuth = useCallback(async (url, options = {}) => {
         const API_BASE = import.meta.env.VITE_API_URL;
@@ -104,11 +104,12 @@ export const useActivityLogic = (activityId) => {
                 fetchWithAuth(`/api/activities/${activityId}`),
                 user?.role === 'aluno' ? fetchWithAuth(`/api/progress/${activityId}`) : Promise.resolve(null),
                 fetchWithAuth(`/api/progress/${activityId}/leaderboard`),
-                fetchWithAuth(`/api/progress/${activityId}/store-items`)
+                fetchWithAuth(`/api/progress/${activityId}/store-items`),
+                fetchWithAuth(`/api/medals`)
             ];
 
             // Aguarda todas as buscas terminarem
-            const [activityData, progressData, leaderboardData, storeItemsData] = await Promise.all(promises);
+            const [activityData, progressData, leaderboardData, storeItemsData, medalManifestData] = await Promise.all(promises);
 
             if (!activityData) {
                 setError("Atividade não encontrada ou falha ao carregar.");
@@ -120,10 +121,11 @@ export const useActivityLogic = (activityId) => {
             if (user?.role === 'aluno') setUserProgress(progressData);
             setLeaderboard(leaderboardData || []);
             setStoreItems(storeItemsData || []);
+            setMedalManifest(medalManifestData || []);
 
             debugLog('fetchAllData: Todos os dados carregados com sucesso.');
 
-            // *** MUDANÇA CRÍTICA 1: RETORNE OS DADOS BUSCADOS ***
+
             return { activityData, progressData };
 
         } catch (err) {
@@ -219,14 +221,84 @@ export const useActivityLogic = (activityId) => {
         return allStepsCompleted ? 'active' : 'locked';
     }, [activity, userProgress, completedStepsSet]);
 
-    const allImageUrls = useMemo(() => {
+    const criticalImageUrls = useMemo(() => {
         if (!activity) return [];
-        const urls = new Set(boardStructuralImages);
+
+        const urls = new Set();
+
+        // 1. Imagens Estruturais do Board (Fundo, bordas)
+        boardStructuralImages.forEach(url => urls.add(url));
+
+        // 2. Ícones dos Passos (Quiz, Narrativa, Missão, Recompensa Final)
         Object.values(elementConfig.path).forEach(p => urls.add(p.icon));
+
+        // 3. Ícones do Hub (Store, Ranking, Chat, etc.)
         Object.values(elementConfig.hub).forEach(h => urls.add(h.icon));
-        decorationConfig.forEach(d => urls.add(d.src));
+
+        // 4. Avatares básicos (Pode haver um avatar default necessário para o HUD)
+        // Se o avatar padrão for usado no HUD antes do progresso carregar, ele é CRÍTICO.
+        urls.add('/avatars/default_avatar.webp');
+
+        // URLs Fixas Críticas Adicionais (Roleta/Slot/HUD)
+        urls.add('/board/roleta_board.webp');
+        urls.add('/board/slotmachine_board.webp');
+
         return Array.from(urls);
     }, [activity]);
+
+    // Manifesto manual dos fundos de tabs e outros assets públicos
+    const TAB_BACKGROUND_ASSETS = [
+        '/assets/slot-background.webp',
+        '/assets/quiz-background.webp',
+        '/assets/store-background.webp',
+        '/assets/roulette-wallpaper.webp',
+        '/assets/mission-background.webp',
+        '/assets/store-background2.webp',
+        '/assets/leaderboard-background.webp',
+        '/assets/quizz-background2.webp',
+    ];
+
+    // Manifesto manual de cenários e personagens de narrativa
+    const NARRATIVE_ASSETS = [
+        '/narrativa/cenarios/cenario1.webp',
+        '/narrativa/cenarios/cenario2.webp',
+        '/narrativa/cenarios/cenario3.webp',
+        '/narrativa/cenarios/cenario4.webp',
+        '/narrativa/personagens/aluno1.webp',
+        '/narrativa/personagens/aluno2.webp',
+        '/narrativa/personagens/instrutor1.webp',
+        '/narrativa/personagens/instrutor2.webp',
+    ];
+
+
+    // Lista de assets NÃO-CRÍTICOS
+    const nonCriticalImageUrls = useMemo(() => {
+        if (!activity) return [];
+        const urls = new Set();
+
+        // 1. Decorações (Árvores e Rochas)
+        decorationConfig.forEach(d => urls.add(d.src)); // ~12 itens
+
+        // 2. Fundos de Tabs (Arquivos em /src/assets)
+        TAB_BACKGROUND_ASSETS.forEach(url => urls.add(url)); // ~8 itens
+
+        // 3. Cenários de Narrativa (Arquivos em /public/narrativa)
+        NARRATIVE_ASSETS.forEach(url => urls.add(url)); // ~8 itens
+        // 4. Imagens de Medalhas (Manifesto vindo do Backend)
+        if (medalManifest.length > 0) {
+            medalManifest.forEach(medal => urls.add(medal.imageUrl)); // Puxa o imageUrl da API
+        }
+        // 4. Avatares Adicionais (Se não estiverem em store_items)
+        // Se avatares forem compráveis, o item da loja deve ter o URL.
+        // Caso contrário, adicione a lista de avatares aqui:
+        // Avatares Fixos Adicionais:
+        // ['/avatars/robot.webp', '/avatars/wizard_cat.webp', ... etc]
+
+        // **NOTA CRÍTICA SOBRE MEDALHAS:** // O URL das medalhas virá do `get_all_medals` no backend (medals.py).
+        // Implementaremos a busca dessa lista a seguir.
+
+        return Array.from(urls);
+    }, [activity, medalManifest]);
 
     const stepCoordinates = useMemo(() => {
         const path = activity?.gamificationDesign?.progression_path;
@@ -268,8 +340,22 @@ export const useActivityLogic = (activityId) => {
         });
     }, [activity, stepCoordinates, shuffleArray]);
 
-    const { loadingProgress: assetsProgress, isLoaded: assetsAreLoaded, etr: estimatedTimeRemaining } = useAssetLoader(allImageUrls);
+    const { loadingProgress: assetsProgress, isLoaded: assetsAreLoaded, etr: estimatedTimeRemaining } = useAssetLoader(criticalImageUrls);
 
+    // EFEITO PARA FASE 2: Carregamento silencioso em background
+    useEffect(() => {
+        // Função "fantasma" que carrega imagens no cache do navegador
+        const preloadImage = (url) => {
+            const img = new Image();
+            img.src = url;
+        };
+
+        // Se a carga crítica terminou E temos uma lista de assets não-críticos
+        if (assetsAreLoaded && nonCriticalImageUrls.length > 0) {
+            debugLog(`Fase 2: Iniciando pré-carga de ${nonCriticalImageUrls.length} assets não-críticos em background.`);
+            nonCriticalImageUrls.forEach(preloadImage);
+        }
+    }, [assetsAreLoaded, nonCriticalImageUrls]); // Dispara quando a F1 terminar
 
     //========================================================================
     // MANIPULADORES DE EVENTOS (HANDLERS)

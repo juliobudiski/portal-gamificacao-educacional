@@ -63,7 +63,8 @@ echo "4. Atualizando arquivos de configuração..."
 sed -i.bak "s#^$ENV_VAR_NAME=.*#$ENV_VAR_NAME=$BACKEND_URL_FULL#" $ENV_FILE
 
 # Atualiza o vite.config.js
-sed -i.bak "s#allowedHosts: \[ *'.*' *\]#allowedHosts: [ '$FRONTEND_HOSTNAME' ]#" $VITE_CONFIG_FILE
+#sed -i.bak "s#allowedHosts: \[ *'.*' *\]#allowedHosts: [ '$FRONTEND_HOSTNAME' ]#" $VITE_CONFIG_FILE
+sed -i.bak "s#allowedHosts: \[ *'.*' *\]#allowedHosts: [ '*' ]#" $VITE_CONFIG_FILE
 
 # Remove os arquivos de backup criados pelo sed
 rm -f "$ENV_FILE.bak" "$VITE_CONFIG_FILE.bak"

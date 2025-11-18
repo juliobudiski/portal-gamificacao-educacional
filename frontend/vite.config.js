@@ -6,9 +6,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: true, // Garante que o servidor seja acessível na rede
-    allowedHosts: [
-      'specified-celebrities-history-titles.trycloudflare.com'
-    ]
+    allowedHosts: true
   }
 })
 
