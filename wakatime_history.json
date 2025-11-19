@@ -4511,5 +4511,200 @@
         "editors": [],
         "operating_systems": [],
         "categories": []
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2025-11-19T03:00:00Z",
+            "end": "2025-11-20T02:59:59Z",
+            "date": "2025-11-19",
+            "text": "Wed Nov 19th 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [
+            {
+                "name": "portal-gamificacao-educacional",
+                "total_seconds": 0.0,
+                "ai_additions": 0,
+                "ai_deletions": 0,
+                "human_additions": 0,
+                "human_deletions": 0,
+                "color": null,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            }
+        ],
+        "languages": [
+            {
+                "name": "JavaScript",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            }
+        ],
+        "dependencies": [
+            {
+                "name": "lucide-react",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            },
+            {
+                "name": "locale",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            },
+            {
+                "name": "react",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            },
+            {
+                "name": "date-fns",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            },
+            {
+                "name": "framer-motion",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            },
+            {
+                "name": "recharts",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            },
+            {
+                "name": "AuthContext",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            },
+            {
+                "name": "react-router-dom",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            }
+        ],
+        "machines": [
+            {
+                "name": "julio-Inspiron-5421",
+                "total_seconds": 0.0,
+                "machine_name_id": "a4197a37-6370-4ce5-ad3e-2ae7f82aafa2",
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            }
+        ],
+        "editors": [
+            {
+                "name": "VS Code",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            }
+        ],
+        "operating_systems": [
+            {
+                "name": "Linux",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            }
+        ],
+        "categories": [
+            {
+                "name": "Coding",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            }
+        ]
     }
 ]

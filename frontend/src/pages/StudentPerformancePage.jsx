@@ -1,417 +1,374 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  BarChart, Bar, Cell, PieChart, Pie
-} from 'recharts';
-import { motion } from 'framer-motion';
-import {
-  Trophy, Star, Target, BookOpen, Sword, Shield, Zap,
-  Clock, CheckCircle, TrendingUp, Crosshair, Activity as ActivityIcon
-} from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import React, { useState, useEffect, useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
+import { Search, Award, Clock, CheckCircle, BookOpen, Target, TrendingUp, XCircle } from 'lucide-react';
 
-// Componentes UI
-const Card = ({ children, className = "" }) => (
-  <div className={`bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden ${className}`}>
-    {children}
-  </div>
-);
 
-const StatBox = ({ label, value, subtext, icon: Icon, color }) => (
-  <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl flex items-start justify-between relative overflow-hidden group hover:shadow-md transition-all border border-transparent hover:border-gray-200 dark:hover:border-gray-600">
-    <div className="z-10">
-      <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{label}</p>
-      <h4 className="text-2xl font-black text-gray-800 dark:text-white">{value}</h4>
-      {subtext && <p className="text-xs text-gray-400 mt-1">{subtext}</p>}
+// Componente de Badge Refatorado para usar cores semânticas
+const StatusBadge = ({ status }) => {
+  const styles = {
+    // Usando as variáveis semânticas definidas no tailwind.config.js
+    completed: "bg-success-bg text-success border border-success/20",
+    in_progress: "bg-yellow-100 text-accent-yellow dark:bg-yellow-900/30 border border-accent-yellow/20",
+    not_started: "bg-primary-bg text-secondary-text border border-secondary-text/20",
+  };
+
+  const labels = {
+    completed: "Concluído",
+    in_progress: "Em Andamento",
+    not_started: "Não Iniciado"
+  };
+
+  return (
+    <span className={`px-2 py-1 rounded-full text-xs font-bold ${styles[status] || styles.not_started}`}>
+      {labels[status] || "Não Iniciado"}
+    </span>
+  );
+};
+
+// NOVO COMPONENTE: Gráfico de Distribuição de Notas (Visualização Rápida)
+const ScoreDistributionChart = ({ students, maxScore }) => {
+  const activeStudents = students.filter(s => s.status !== 'not_started');
+  if (activeStudents.length === 0) return null;
+
+  // Se maxScore for 0 (erro ou atividade sem pontos), evita divisão por zero
+  const safeMaxScore = maxScore > 0 ? maxScore : 100;
+
+  const distribution = {
+    low: 0,    // < 50%
+    medium: 0, // 50% - 79%
+    high: 0    // >= 80%
+  };
+
+  activeStudents.forEach(s => {
+    const percentage = (s.points_earned / safeMaxScore) * 100;
+    if (percentage >= 80) distribution.high++;
+    else if (percentage >= 50) distribution.medium++;
+    else distribution.low++;
+  });
+
+  const total = activeStudents.length;
+  const getPct = (val) => total > 0 ? (val / total) * 100 : 0;
+
+  return (
+    <div className="bg-secondary-bg p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm mb-6">
+      <h3 className="text-sm font-semibold text-secondary-text mb-3 flex items-center gap-2">
+        <TrendingUp size={16} /> Distribuição de Desempenho
+        <span className="text-xs font-normal text-gray-500">(Baseado no total de {safeMaxScore} pontos)</span>
+      </h3>
+      <div className="flex h-4 w-full rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
+        <div style={{ width: `${getPct(distribution.high)}%` }} className="bg-success h-full" title={`Alta Performance: ${distribution.high}`} />
+        <div style={{ width: `${getPct(distribution.medium)}%` }} className="bg-accent-yellow h-full" title={`Média Performance: ${distribution.medium}`} />
+        <div style={{ width: `${getPct(distribution.low)}%` }} className="bg-red-400 h-full" title={`Baixa Performance: ${distribution.low}`} />
+      </div>
+      <div className="flex justify-between mt-2 text-xs text-secondary-text">
+        <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-success"></div>Alta (80%+)</div>
+        <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-accent-yellow"></div>Média (50-79%)</div>
+        <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-red-400"></div>Baixa (&lt;50%)</div>
+      </div>
     </div>
-    <div className={`p-3 rounded-lg bg-white dark:bg-gray-800 text-${color}-500 shadow-sm group-hover:scale-110 transition-transform`}>
-      <Icon size={24} />
-    </div>
-    {/* Background decoration */}
-    <div className={`absolute -bottom-4 -right-4 opacity-5 text-${color}-500/10 transform rotate-12 scale-150`}>
-      <Icon size={80} />
-    </div>
-  </div>
-);
+  );
+};
 
 const StudentPerformancePage = () => {
-  const [loading, setLoading] = useState(true);
-  const [dashboardData, setDashboardData] = useState(null);
+  const { user, logout } = useContext(AuthContext); // Pegamos o logout do contexto
+
+  // Estados de Filtro
+  const [classes, setClasses] = useState([]);
   const [activities, setActivities] = useState([]);
-  const [activeTab, setActiveTab] = useState('all');
+  const [selectedClass, setSelectedClass] = useState('');
+  const [selectedActivity, setSelectedActivity] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
 
-  // Mock de Medalhas
-  const medalsCatalog = [
-    { id: 1, name: "Primeira Vitória", description: "Concluiu 1 atividade", icon: <Star />, requiredXP: 100 },
-    { id: 2, name: "Nota 100", description: "Acertou tudo em uma atividade", icon: <Target />, requiredXP: 500 },
-    { id: 3, name: "Veterano", description: "Nível 5 alcançado", icon: <Shield />, requiredXP: 2500 },
-    { id: 4, name: "Lenda", description: "Top 1 no Ranking", icon: <Trophy />, requiredXP: 5000 },
-  ];
+  // Estados de Dados (Inicializado com estrutura segura)
+  const [performanceData, setPerformanceData] = useState({ stats: { total_students: 0 }, students: [] });
+  const [loading, setLoading] = useState(false);
 
+  // Função auxiliar para lidar com erros de Token (401)
+  const handleFetchError = (response) => {
+    if (response.status === 401) {
+      console.warn("Sessão expirada. Redirecionando para login...");
+      logout(); // Desloga o usuário e força novo login
+      return true; // Indica que houve erro crítico
+    }
+    return false;
+  };
+
+  // 1. Carregar Filtros (Turmas e Atividades)
   useEffect(() => {
-    const fetchData = async () => {
+    if (!user) return;
+
+    const fetchFilters = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const headers = {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        };
+        const response = await fetch(`/api/analytics/professor/filters`, {
+          headers: { 'Authorization': `Bearer ${user.token}` }
+        });
 
-        const dashRes = await fetch('http://localhost:5000/student/dashboard', { headers });
-        const dashData = await dashRes.json();
+        if (handleFetchError(response)) return;
+        if (!response.ok) throw new Error("Falha ao buscar filtros");
 
-        const actRes = await fetch('http://localhost:5000/student/activities/all', { headers });
-        const actData = await actRes.json();
+        const data = await response.json();
+        setClasses(data.classes || []);
+        setActivities(data.activities || []);
 
-        setDashboardData(dashData);
-        setActivities(actData);
+        // Seleciona a primeira turma automaticamente se houver
+        if (data.classes && data.classes.length > 0) setSelectedClass(data.classes[0].id);
       } catch (error) {
-        console.error("Erro ao carregar dados:", error);
+        console.error("Erro ao carregar filtros", error);
+      }
+    };
+
+    fetchFilters();
+  }, [user, logout]); // Adicionado logout nas dependências
+
+  // 2. Carregar Dados de Desempenho
+  useEffect(() => {
+    if (!selectedClass) return;
+
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        let url = `/api/analytics/professor/performance?class_id=${selectedClass}`;
+        if (selectedActivity) url += `&activity_id=${selectedActivity}`;
+        if (searchTerm) url += `&search=${searchTerm}`;
+
+        const response = await fetch(url, {
+          headers: { 'Authorization': `Bearer ${user.token}` }
+        });
+
+        if (handleFetchError(response)) return;
+        if (!response.ok) throw new Error("Falha ao buscar desempenho");
+
+        const data = await response.json();
+        setPerformanceData(data);
+      } catch (error) {
+        console.error("Erro ao carregar desempenho", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
-  }, []);
+    const timeoutId = setTimeout(() => {
+      fetchData();
+    }, 300);
 
-  // --- CÁLCULOS ESTATÍSTICOS CONCRETOS ---
-  const stats = useMemo(() => {
-    if (!activities.length) return null;
-
-    const completed = activities.filter(a => a.is_completed);
-    const total = activities.length;
-
-    // Média de Notas (Considerando apenas atividades completas que têm nota)
-    const grades = completed.map(a => a.grade).filter(g => g !== null);
-    const avgGrade = grades.length > 0
-      ? Math.round(grades.reduce((a, b) => a + b, 0) / grades.length)
-      : 0;
-
-    // Taxa de Conclusão
-    const completionRate = Math.round((completed.length / total) * 100);
-
-    // XP Total Acumulado (Soma de xp_earned das atividades)
-    const totalXPFromActivities = completed.reduce((sum, a) => sum + (a.xp_earned || 0), 0);
-
-    // Melhor Desempenho (Maior nota)
-    const bestGrade = grades.length > 0 ? Math.max(...grades) : 0;
-
-    return {
-      totalMissions: total,
-      completedMissions: completed.length,
-      avgGrade,
-      completionRate,
-      totalXP: totalXPFromActivities,
-      bestGrade
-    };
-  }, [activities]);
-
-  // Dados para o Gráfico de Evolução (Histórico de Notas)
-  const evolutionData = useMemo(() => {
-    return activities
-      .filter(a => a.is_completed && a.grade !== null)
-      // Ordenar por ID ou data se disponível (assumindo ID incremental como ordem cronológica por enquanto)
-      .sort((a, b) => a.id - b.id)
-      .map(a => ({
-        name: a.title.length > 15 ? a.title.substring(0, 12) + '...' : a.title,
-        nota: a.grade,
-        fullTitle: a.title
-      }));
-  }, [activities]);
-
-  const filteredActivities = useMemo(() => {
-    if (activeTab === 'pending') return activities.filter(a => !a.is_completed);
-    if (activeTab === 'completed') return activities.filter(a => a.is_completed);
-    return activities;
-  }, [activities, activeTab]);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
-      </div>
-    );
-  }
-
-  const { performance } = dashboardData || {};
-  const levelInfo = performance?.global_level_info || { level: 1, xp_current: 0, xp_to_next_level: 100 };
-  const xpPercentage = Math.min((levelInfo.xp_current / (levelInfo.xp_current + levelInfo.xp_to_next_level)) * 100, 100);
+    return () => clearTimeout(timeoutId);
+  }, [selectedClass, selectedActivity, searchTerm, user, logout]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 md:p-8 text-gray-800 dark:text-gray-100 font-sans">
+    <div className="p-6 min-h-screen bg-primary-bg text-primary-text transition-colors duration-300">
 
-      {/* --- HEADER: IDENTIDADE DO JOGADOR --- */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
-      >
-        <div className="flex flex-col md:flex-row items-end gap-6 mb-6">
-          <div className="relative">
-            <img
-              src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
-              alt="Avatar"
-              className="w-24 h-24 rounded-xl border-4 border-white dark:border-gray-800 shadow-lg bg-gray-200"
-            />
-            <div className="absolute -top-3 -right-3 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-md shadow-md border-2 border-white dark:border-gray-800">
-              Nvl. {levelInfo.level}
-            </div>
-          </div>
-          <div className="flex-1">
-            <h1 className="text-3xl font-black text-gray-800 dark:text-white uppercase tracking-tight">
-              Estatísticas de Combate
-            </h1>
-            <p className="text-gray-500 dark:text-gray-400 font-mono text-sm">
-              Matrícula: #2025-DEV • Classe: Engenheiro de Software
-            </p>
-          </div>
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">Desempenho da Turma</h1>
+        <p className="text-secondary-text">
+          Acompanhe métricas detalhadas de engajamento e aprendizado.
+        </p>
+      </div>
 
-          {/* Barra de XP Discreta */}
-          <div className="w-full md:w-1/3">
-            <div className="flex justify-between text-xs font-bold text-gray-400 mb-1 uppercase">
-              <span>XP Atual</span>
-              <span>{levelInfo.xp_current} / {levelInfo.xp_cumulative + levelInfo.xp_to_next_level}</span>
-            </div>
-            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-blue-500 rounded-full"
-                style={{ width: `${xpPercentage}%` }}
-              />
-            </div>
+      {/* Filtros */}
+      <div className="bg-secondary-bg p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-6 flex flex-col md:flex-row gap-4 items-end md:items-center justify-between transition-colors duration-300">
+        <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+          <div className="flex flex-col">
+            <label className="text-sm font-medium text-secondary-text mb-1">Turma</label>
+            <select
+              className="p-2 border rounded bg-primary-bg text-primary-text border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-accent-teal focus:outline-none"
+              value={selectedClass}
+              onChange={(e) => setSelectedClass(e.target.value)}
+            >
+              <option value="" disabled>Selecione uma turma</option>
+              {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </div>
+          <div className="flex flex-col">
+            <label className="text-sm font-medium text-secondary-text mb-1">Atividade</label>
+            <select
+              className="p-2 border rounded bg-primary-bg text-primary-text border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-accent-teal focus:outline-none"
+              value={selectedActivity}
+              onChange={(e) => setSelectedActivity(e.target.value)}
+            >
+              <option value="">Visão Geral (Todas)</option>
+              {activities.map(a => <option key={a.id} value={a.id}>{a.title}</option>)}
+            </select>
           </div>
         </div>
-
-        {/* --- GRID DE MÉTRICAS (KPIs) --- */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <StatBox
-            label="Missões Cumpridas"
-            value={`${stats?.completedMissions} / ${stats?.totalMissions}`}
-            subtext="Atividades finalizadas"
-            icon={CheckCircle}
-            color="green"
-          />
-          <StatBox
-            label="Precisão Média"
-            value={`${stats?.avgGrade}%`}
-            subtext="Média de acertos (Notas)"
-            icon={Crosshair}
-            color="blue"
-          />
-          <StatBox
-            label="Melhor Desempenho"
-            value={`${stats?.bestGrade}%`}
-            subtext="Maior nota registrada"
-            icon={Trophy}
-            color="yellow"
-          />
-          <StatBox
-            label="XP de Atividades"
-            value={stats?.totalXP}
-            subtext="Pontos ganhos em missões"
-            icon={Zap}
-            color="purple"
+        <div className="relative w-full md:w-64">
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-secondary-text" />
+          <input
+            type="text"
+            placeholder="Buscar aluno..."
+            className="pl-10 p-2 border rounded w-full bg-primary-bg text-primary-text border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-accent-teal focus:outline-none"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-      </motion.div>
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* DASHBOARD DE MÉTRICAS (Agora com 4 Colunas) */}
+      {!loading && performanceData?.stats?.total_students > 0 && (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
 
-        {/* --- ESQUERDA: GRÁFICOS ANALÍTICOS --- */}
-        <div className="lg:col-span-2 space-y-8">
-
-          {/* GRÁFICO DE EVOLUÇÃO */}
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold flex items-center gap-2 text-gray-800 dark:text-white">
-                <TrendingUp className="text-blue-500" />
-                Histórico de Desempenho
-              </h3>
-              {/* Pequena legenda */}
-              <div className="flex items-center gap-2 text-xs text-gray-500">
-                <span className="w-3 h-3 bg-blue-500 rounded-full"></span> Nota da Atividade
+            {/* 1. Engajamento / Narrativas */}
+            <div className="bg-secondary-bg p-4 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center gap-3 shadow-sm">
+              <div className="p-3 rounded-full bg-info-bg text-info">
+                {selectedActivity ? <BookOpen size={24} /> : <Clock size={24} />}
               </div>
-            </div>
-
-            <div className="h-[300px] w-full">
-              {evolutionData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={evolutionData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" opacity={0.5} />
-                    <XAxis
-                      dataKey="name"
-                      tick={{ fontSize: 12, fill: '#9ca3af' }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <YAxis
-                      domain={[0, 100]}
-                      tick={{ fontSize: 12, fill: '#9ca3af' }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <Tooltip
-                      contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
-                      cursor={{ stroke: '#3b82f6', strokeWidth: 2 }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="nota"
-                      stroke="#3b82f6"
-                      strokeWidth={3}
-                      dot={{ r: 4, fill: '#3b82f6', strokeWidth: 2, stroke: '#fff' }}
-                      activeDot={{ r: 6 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-full flex flex-col items-center justify-center text-gray-400">
-                  <ActivityIcon size={48} className="mb-2 opacity-20" />
-                  <p>Complete atividades para ver seu gráfico de evolução.</p>
-                </div>
-              )}
-            </div>
-          </Card>
-
-          {/* LISTA DE ATIVIDADES (TABELA DETALHADA) */}
-          <Card className="flex flex-col">
-            <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-              <h3 className="text-lg font-bold flex items-center gap-2 text-gray-800 dark:text-white">
-                <BookOpen className="text-gray-500" />
-                Log de Missões
-              </h3>
-              <div className="flex bg-gray-100 dark:bg-gray-700 p-1 rounded-lg">
-                {['all', 'pending', 'completed'].map(tab => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className={`px-3 py-1 text-xs font-bold uppercase rounded transition-all ${activeTab === tab
-                        ? 'bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-300 shadow-sm'
-                        : 'text-gray-400 hover:text-gray-600'
-                      }`}
-                  >
-                    {tab === 'all' ? 'Todas' : tab === 'pending' ? 'Pendentes' : 'Concluídas'}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="text-xs font-bold text-gray-400 uppercase border-b border-gray-100 dark:border-gray-700">
-                    <th className="p-4 font-semibold">Atividade</th>
-                    <th className="p-4 font-semibold">Turma</th>
-                    <th className="p-4 font-semibold text-center">Prazo</th>
-                    <th className="p-4 font-semibold text-center">Nota</th>
-                    <th className="p-4 font-semibold text-center">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="text-sm">
-                  {filteredActivities.map(activity => (
-                    <tr key={activity.id} className="border-b border-gray-50 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-                      <td className="p-4">
-                        <p className="font-bold text-gray-800 dark:text-gray-200">{activity.title}</p>
-                        <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[200px]">{activity.description}</p>
-                      </td>
-                      <td className="p-4 text-gray-500 dark:text-gray-400">
-                        {activity.class_name}
-                      </td>
-                      <td className="p-4 text-center">
-                        {activity.expiresAt ? (
-                          <span className={`text-xs font-mono ${new Date(activity.expiresAt) < new Date() && !activity.is_completed ? 'text-red-500' : 'text-gray-500'}`}>
-                            {format(new Date(activity.expiresAt), "dd/MM")}
-                          </span>
-                        ) : <span className="text-gray-300">-</span>}
-                      </td>
-                      <td className="p-4 text-center">
-                        {activity.grade !== null ? (
-                          <span className={`font-bold ${activity.grade >= 70 ? 'text-green-600' : 'text-yellow-600'}`}>
-                            {activity.grade}
-                          </span>
-                        ) : <span className="text-gray-300">-</span>}
-                      </td>
-                      <td className="p-4 text-center">
-                        {activity.is_completed ? (
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                            Concluída
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
-                            Em Andamento
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                  {filteredActivities.length === 0 && (
-                    <tr>
-                      <td colSpan="5" className="p-8 text-center text-gray-400 italic">
-                        Nenhuma atividade encontrada neste filtro.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-        </div>
-
-        {/* --- DIREITA: RESUMO E CONQUISTAS --- */}
-        <div className="lg:col-span-1 space-y-6">
-
-          {/* Elemento Mais Jogado (Mockado por enquanto, mas pronto para lógica) */}
-          <Card className="p-6 bg-gradient-to-br from-blue-600 to-purple-700 text-white border-none">
-            <div className="flex items-start justify-between mb-4">
               <div>
-                <p className="text-blue-200 text-xs font-bold uppercase">Estilo de Jogo</p>
-                <h3 className="text-xl font-bold">Explorador de Quizzes</h3>
-              </div>
-              <div className="bg-white/20 p-2 rounded-lg">
-                <Target size={24} className="text-white" />
-              </div>
-            </div>
-            <div className="space-y-3">
-              <div className="bg-black/20 rounded-lg p-3 flex justify-between items-center">
-                <span className="text-sm text-blue-100">Respostas Corretas</span>
-                <span className="font-bold text-white">85%</span>
-              </div>
-              <div className="bg-black/20 rounded-lg p-3 flex justify-between items-center">
-                <span className="text-sm text-blue-100">Tipo Favorito</span>
-                <span className="font-bold text-white">Múltipla Escolha</span>
+                <p className="text-xs text-secondary-text uppercase font-bold">
+                  {selectedActivity ? "Narrativas Lidas" : "Total de Alunos"}
+                </p>
+                <p className="text-2xl font-bold text-info">
+                  {selectedActivity
+                    ? performanceData.stats.total_narratives_read
+                    : performanceData.stats.total_students}
+                </p>
               </div>
             </div>
-            <p className="mt-4 text-xs text-blue-200 text-center opacity-80">
-              Você tende a ter melhor desempenho em desafios lógicos.
-            </p>
-          </Card>
 
-          {/* Sala de Troféus Simplificada */}
-          <Card className="p-6">
-            <h3 className="text-md font-bold mb-4 text-gray-800 dark:text-white flex items-center gap-2">
-              <Trophy size={18} className="text-yellow-500" />
-              Conquistas Recentes
-            </h3>
-            <div className="space-y-4">
-              {medalsCatalog.slice(0, 3).map((medal, idx) => {
-                const isUnlocked = idx < (performance?.total_achievements || 0);
-                return (
-                  <div key={medal.id} className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${isUnlocked ? 'bg-yellow-50 dark:bg-yellow-900/20' : 'opacity-50'}`}>
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isUnlocked ? 'bg-yellow-100 text-yellow-600' : 'bg-gray-200 text-gray-400'}`}>
-                      {React.cloneElement(medal.icon, { size: 18 })}
-                    </div>
-                    <div>
-                      <p className={`text-sm font-bold ${isUnlocked ? 'text-gray-800 dark:text-white' : 'text-gray-500'}`}>{medal.name}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{medal.description}</p>
-                    </div>
-                  </div>
-                )
-              })}
+            {/* 2. Pontuação Média */}
+            <div className="bg-secondary-bg p-4 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center gap-3 shadow-sm">
+              <div className="p-3 rounded-full bg-primary-bg text-accent-purple">
+                <Award size={24} />
+              </div>
+              <div>
+                <p className="text-xs text-secondary-text uppercase font-bold">
+                  {selectedActivity ? "Média de Pontos" : "XP Médio"}
+                </p>
+                <p className="text-2xl font-bold text-accent-purple">
+                  {performanceData.stats.average_score ?? 0}
+                </p>
+              </div>
             </div>
-          </Card>
-        </div>
 
+            {/* 3. Precisão / Conclusão */}
+            <div className="bg-secondary-bg p-4 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center gap-3 shadow-sm">
+              <div className="p-3 rounded-full bg-primary-bg text-success">
+                {selectedActivity ? <Target size={24} /> : <CheckCircle size={24} />}
+              </div>
+              <div>
+                <p className="text-xs text-secondary-text uppercase font-bold">
+                  {selectedActivity ? "Precisão Média" : "Conclusão Geral"}
+                </p>
+                <p className="text-2xl font-bold text-success">
+                  {selectedActivity
+                    ? `${performanceData.stats.average_accuracy}%`
+                    : "N/A"}
+                </p>
+              </div>
+            </div>
+
+            {/* 4. Status Conclusão (Contagem) */}
+            <div className="bg-secondary-bg p-4 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center gap-3 shadow-sm">
+              <div className="p-3 rounded-full bg-primary-bg text-accent-yellow">
+                <CheckCircle size={24} />
+              </div>
+              <div>
+                <p className="text-xs text-secondary-text uppercase font-bold">Alunos Concluídos</p>
+                <p className="text-2xl font-bold text-accent-yellow">
+                  {performanceData.stats.completed_count} <span className="text-sm text-secondary-text font-normal">/ {performanceData.stats.total_students}</span>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* NOVO: Gráfico de Distribuição (Só aparece se tiver atividade selecionada) */}
+          {selectedActivity && (
+            <ScoreDistributionChart students={performanceData.students} />
+          )}
+        </>
+      )}
+
+      {/* TABELA */}
+      <div className="bg-secondary-bg rounded-lg shadow overflow-hidden border border-gray-200 dark:border-gray-700">
+        {loading ? (
+          <div className="p-12 text-center text-secondary-text">Carregando dados...</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="bg-primary-bg text-secondary-text uppercase text-xs font-semibold border-b border-gray-200 dark:border-gray-700">
+                <tr>
+                  <th className="p-4">Aluno</th>
+                  {selectedActivity ? (
+                    <>
+                      <th className="p-4 text-center">Status</th>
+                      <th className="p-4 text-center bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300" title="Questões respondidas corretamente">Acertos</th>
+                      <th className="p-4 text-center bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300" title="Questões respondidas incorretamente">Erros</th>
+                      <th className="p-4 text-center" title="Total de vezes que respondeu (inclui repetições)">Tentativas (Quiz)</th>
+                      <th className="p-4 text-center" title="Porcentagem de acerto">Precisão</th>
+                      <th className="p-4 text-center" title="Quantas vezes abriu telas de história">Leituras</th>
+                      <th className="p-4 text-center">Pontos</th>
+                    </>
+                  ) : (
+                    <>
+                      <th className="p-4 text-center">Nível Global (XP)</th>
+                      <th className="p-4 text-right">Localização</th>
+                    </>
+                  )}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                {performanceData?.students && performanceData.students.length > 0 ? (
+                  performanceData.students.map((student) => (
+                    <tr key={student.id} className="hover:bg-primary-bg transition-colors">
+                      <td className="p-4 flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden text-secondary-text">
+                          {student.avatar ? <img src={student.avatar} alt={student.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center font-bold">{student.name.charAt(0)}</div>}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-primary-text">{student.name}</p>
+                          <p className="text-xs text-secondary-text">{student.email}</p>
+                        </div>
+                      </td>
+                      {selectedActivity ? (
+                        <>
+                          <td className="p-4 text-center"><StatusBadge status={student.status} /></td>
+
+                          {/* ACERTOS */}
+                          <td className="p-4 text-center bg-green-50/50 dark:bg-green-900/10">
+                            <div className="flex items-center justify-center gap-1 text-success font-bold">
+                              <CheckCircle size={14} /> {student.correct_count}
+                            </div>
+                          </td>
+
+                          {/* ERROS */}
+                          <td className="p-4 text-center bg-red-50/50 dark:bg-red-900/10">
+                            <div className="flex items-center justify-center gap-1 text-red-500 font-bold">
+                              <XCircle size={14} /> {student.wrong_count}
+                            </div>
+                          </td>
+
+                          {/* TENTATIVAS TOTAIS */}
+                          <td className="p-4 text-center text-secondary-text font-mono">
+                            {student.total_responses}
+                          </td>
+
+                          {/* PRECISÃO */}
+                          <td className="p-4 text-center">
+                            <span className={`font-mono font-bold ${student.accuracy >= 70 ? 'text-success' : student.accuracy >= 50 ? 'text-accent-yellow' : 'text-red-400'}`}>{student.accuracy}%</span>
+                          </td>
+
+                          {/* LEITURAS */}
+                          <td className="p-4 text-center text-secondary-text">
+                            <div className="flex items-center justify-center gap-1"><BookOpen size={14} /> {student.narratives_read}</div>
+                          </td>
+
+                          <td className="p-4 text-center font-mono text-primary-text font-bold">{student.points_earned}</td>
+                        </>
+                      ) : (
+                        <>
+                          <td className="p-4 text-center font-mono text-accent-purple font-bold">XP: {student.global_xp}</td>
+                          <td className="p-4 text-right text-sm text-secondary-text">{student.last_location || 'Desconhecido'}</td>
+                        </>
+                      )}
+                    </tr>
+                  ))
+                ) : (
+                  <tr><td colSpan="8" className="p-8 text-center text-secondary-text">{classes.length === 0 ? "Nenhuma turma." : "Nenhum aluno."}</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
