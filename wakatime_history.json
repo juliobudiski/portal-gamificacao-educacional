@@ -4706,5 +4706,791 @@
                 "percent": 0
             }
         ]
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2025-11-20T03:00:00Z",
+            "end": "2025-11-21T02:59:59Z",
+            "date": "2025-11-20",
+            "text": "Thu Nov 20th 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [],
+        "languages": [],
+        "dependencies": [],
+        "machines": [],
+        "editors": [],
+        "operating_systems": [],
+        "categories": []
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2025-11-21T03:00:00Z",
+            "end": "2025-11-22T02:59:59Z",
+            "date": "2025-11-21",
+            "text": "Fri Nov 21st 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [],
+        "languages": [],
+        "dependencies": [],
+        "machines": [],
+        "editors": [],
+        "operating_systems": [],
+        "categories": []
+    },
+    {
+        "languages": [],
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "editors": [],
+        "operating_systems": [],
+        "categories": [],
+        "dependencies": [],
+        "machines": [],
+        "projects": [],
+        "range": {
+            "start": "2025-11-22T03:00:00Z",
+            "end": "2025-11-23T02:59:59Z",
+            "date": "2025-11-22",
+            "text": "Sat Nov 22nd 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "ai_additions": 0,
+        "ai_deletions": 0,
+        "human_additions": 0,
+        "human_deletions": 0
+    },
+    {
+        "languages": [],
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "editors": [],
+        "operating_systems": [],
+        "categories": [],
+        "dependencies": [],
+        "machines": [],
+        "projects": [],
+        "range": {
+            "start": "2025-11-23T03:00:00Z",
+            "end": "2025-11-24T02:59:59Z",
+            "date": "2025-11-23",
+            "text": "Sun Nov 23rd 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "ai_additions": 0,
+        "ai_deletions": 0,
+        "human_additions": 0,
+        "human_deletions": 0
+    },
+    {
+        "languages": [],
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "editors": [],
+        "operating_systems": [],
+        "categories": [],
+        "dependencies": [],
+        "machines": [],
+        "projects": [],
+        "range": {
+            "start": "2025-11-24T03:00:00Z",
+            "end": "2025-11-25T02:59:59Z",
+            "date": "2025-11-24",
+            "text": "Mon Nov 24th 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "ai_additions": 0,
+        "ai_deletions": 0,
+        "human_additions": 0,
+        "human_deletions": 0
+    },
+    {
+        "languages": [],
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "editors": [],
+        "operating_systems": [],
+        "categories": [],
+        "dependencies": [],
+        "machines": [],
+        "projects": [],
+        "range": {
+            "start": "2025-11-25T03:00:00Z",
+            "end": "2025-11-26T02:59:59Z",
+            "date": "2025-11-25",
+            "text": "Tue Nov 25th 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "ai_additions": 0,
+        "ai_deletions": 0,
+        "human_additions": 0,
+        "human_deletions": 0
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 16,
+            "total_seconds": 1013.083,
+            "digital": "0:16",
+            "decimal": "0.27",
+            "text": "16 mins",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 1,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2025-11-26T03:00:00Z",
+            "end": "2025-11-27T02:59:59Z",
+            "date": "2025-11-26",
+            "text": "Wed Nov 26th 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [
+            {
+                "name": "portal-gamificacao-educacional",
+                "total_seconds": 1013.083,
+                "ai_additions": 0,
+                "ai_deletions": 0,
+                "human_additions": 1,
+                "human_deletions": 0,
+                "color": null,
+                "digital": "0:16:53",
+                "decimal": "0.27",
+                "text": "16 mins",
+                "hours": 0,
+                "minutes": 16,
+                "seconds": 53,
+                "percent": 100.0
+            }
+        ],
+        "languages": [
+            {
+                "name": "JavaScript",
+                "total_seconds": 1013.083,
+                "digital": "0:16:53",
+                "decimal": "0.27",
+                "text": "16 mins",
+                "hours": 0,
+                "minutes": 16,
+                "seconds": 53,
+                "percent": 100.0
+            }
+        ],
+        "dependencies": [
+            {
+                "name": "react",
+                "total_seconds": 80.274,
+                "digital": "0:01:20",
+                "decimal": "0.02",
+                "text": "1 min",
+                "hours": 0,
+                "minutes": 1,
+                "seconds": 20,
+                "percent": 4.13
+            },
+            {
+                "name": "react-router-dom",
+                "total_seconds": 80.274,
+                "digital": "0:01:20",
+                "decimal": "0.02",
+                "text": "1 min",
+                "hours": 0,
+                "minutes": 1,
+                "seconds": 20,
+                "percent": 4.13
+            },
+            {
+                "name": "LogExplorerPage",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "StudentPerformancePage",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "PrivateRoute",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "ClassEditPage",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "UserProfilePage",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "RegisterPage",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "NotFoundPage",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "ThemeToggleButton",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "AuthContext",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "ActivityEditPage",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "ClassDetailsPage",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "ScrollToTop",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "TeacherRankingPage",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "ActivityManagementPage",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "LoginPage",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "CreateClassPage",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "StudentDashboardPage",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "ForgotPasswordPage",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "NarrativeEditorPage",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "useAnalytics",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "JoinClassPage",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "UserManagementPage",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "AssignActivityToClass",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "HomePage",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "AdminPage",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "true",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "ActivityCreationContext",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "ActivityPage",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "lucide-react",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "ActivityCreationPage",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "ClassManagementPage",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "TeacherDashboardPage",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "QuizEditorPage",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "SystemAnalyticsPage",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "StudentActivityPage",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "AboutUsPage",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "ActivityBankPage",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "Footer",
+                "total_seconds": 42.997,
+                "digital": "0:00:42",
+                "decimal": "0.00",
+                "text": "42 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 42,
+                "percent": 2.21
+            },
+            {
+                "name": "App",
+                "total_seconds": 37.277,
+                "digital": "0:00:37",
+                "decimal": "0.00",
+                "text": "37 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 37,
+                "percent": 1.92
+            },
+            {
+                "name": "index",
+                "total_seconds": 37.277,
+                "digital": "0:00:37",
+                "decimal": "0.00",
+                "text": "37 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 37,
+                "percent": 1.92
+            },
+            {
+                "name": "client",
+                "total_seconds": 37.277,
+                "digital": "0:00:37",
+                "decimal": "0.00",
+                "text": "37 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 37,
+                "percent": 1.92
+            },
+            {
+                "name": "ThemeContext",
+                "total_seconds": 37.277,
+                "digital": "0:00:37",
+                "decimal": "0.00",
+                "text": "37 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 37,
+                "percent": 1.92
+            },
+            {
+                "name": "fa",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0.0
+            }
+        ],
+        "machines": [
+            {
+                "name": "julio-Inspiron-5421",
+                "total_seconds": 1013.083,
+                "machine_name_id": "70f2a743-d039-4a51-bcd0-8d8ee53a53bf",
+                "digital": "0:16:53",
+                "decimal": "0.27",
+                "text": "16 mins",
+                "hours": 0,
+                "minutes": 16,
+                "seconds": 53,
+                "percent": 100.0
+            }
+        ],
+        "editors": [
+            {
+                "name": "VS Code",
+                "total_seconds": 1013.083,
+                "digital": "0:16:53",
+                "decimal": "0.27",
+                "text": "16 mins",
+                "hours": 0,
+                "minutes": 16,
+                "seconds": 53,
+                "percent": 100.0
+            }
+        ],
+        "operating_systems": [
+            {
+                "name": "Linux",
+                "total_seconds": 1013.083,
+                "digital": "0:16:53",
+                "decimal": "0.27",
+                "text": "16 mins",
+                "hours": 0,
+                "minutes": 16,
+                "seconds": 53,
+                "percent": 100.0
+            }
+        ],
+        "categories": [
+            {
+                "name": "Coding",
+                "total_seconds": 1013.083,
+                "digital": "0:16:53",
+                "decimal": "0.27",
+                "text": "16 mins",
+                "hours": 0,
+                "minutes": 16,
+                "seconds": 53,
+                "percent": 100.0
+            }
+        ]
     }
 ]

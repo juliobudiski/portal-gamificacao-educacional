@@ -10,7 +10,7 @@ import {
   FaUsers,
   FaProjectDiagram
 } from 'react-icons/fa';
-
+import { useHelpModal } from "../../../context/HelpModalContext";
 /**
  * Componente para a Etapa 2 do formulário de criação de atividades.
  * Coleta os objetivos de aprendizagem e metas a serem alcançadas.
@@ -32,7 +32,7 @@ function Step2_DesiredScenario({ activityData, handleInputChange, setActivityDat
     { text: "Melhorar a colaboração e o trabalho em equipe", icon: <FaUsers /> },
     { text: "Incentivar a aplicação prática dos conhecimentos teóricos", icon: <FaProjectDiagram /> },
   ];
-
+  const { openHelp } = useHelpModal();
   /**
    * Manipula a seleção de objetivos a partir dos cards.
    * Adiciona ou remove o objetivo do array no estado pai usando setActivityData
@@ -112,8 +112,9 @@ function Step2_DesiredScenario({ activityData, handleInputChange, setActivityDat
       </div>
 
       <button
-        onClick={() => openHelpModal("Ajuda - Cenário Desejado", `Definir objetivos claros e específicos requer algumas etapas...`)}
-        className="mt-4 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-text bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        onClick={() => openHelp('cenario_desejado')} // Chama pelo ID
+        className="bg-blue-500 text-white px-4 py-2 rounded"
+      >
         Ajuda
       </button>
     </div>

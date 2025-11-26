@@ -44,6 +44,7 @@ import ActivityManagementPage from './pages/admin/ActivityManagementPage';
 import SystemAnalyticsPage from './pages/admin/SystemAnalyticsPage';
 import LogExplorerPage from './pages/admin/LogExplorerPage';
 import LocationMapPage from './pages/admin/LocationMapPage';
+
 // --- 2. COMPONENTES AUXILIARES ---
 const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === 'true';
 const debugLog = (message, ...optionalParams) => {

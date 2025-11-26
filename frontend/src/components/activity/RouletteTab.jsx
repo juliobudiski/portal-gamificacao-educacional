@@ -29,6 +29,7 @@ const basePrizes = [
 const RouletteTab = ({ onReturn, onSpin }) => {
   const { user } = useAuth();
   const { activityId } = useParams();
+  const [retryAvailable, setRetryAvailable] = useState(false);
 
   const [isSpinning, setIsSpinning] = useState(false);
   const [winningPrizeIndex, setWinningPrizeIndex] = useState(null);
@@ -58,12 +59,14 @@ const RouletteTab = ({ onReturn, onSpin }) => {
     setLoading(true);
 
     try {
-      // Chama a função onSpin vinda do useActivityLogic
-      // Ela já atualiza o estado global e trata erros de API
-      const result = await onSpin();
+      // Passamos para a função onSpin se é um retry ou não
+      // O backend deve esperar um payload { is_retry: true/false }
+      const result = await onSpin(retryAvailable);
 
       if (result && result.prize) {
-        setApiPrize(result.prize); // Guarda o prêmio retornado
+        setApiPrize(result.prize);
+
+        // Mapeia o nome do prêmio para o índice da roleta
         const prizeText = result.prize.label.trim();
         const prizeIndex = segments.findIndex(s => s.trim() === prizeText);
 
@@ -71,36 +74,45 @@ const RouletteTab = ({ onReturn, onSpin }) => {
           setIsSpinning(true);
           setWinningPrizeIndex(prizeIndex);
         } else {
-          setError(`Prêmio inesperado: ${prizeText}`);
+          // Fallback visual caso o texto não bata exatamente (evita travar a roleta)
+          // Em prod, idealmente usamos IDs, mas seguindo sua lógica atual:
+          setWinningPrizeIndex(0);
         }
       } else {
         throw new Error("Resposta inválida do servidor.");
       }
     } catch (err) {
-      // O erro da API já foi tratado no hook, aqui tratamos o erro visual
       setError(err.message || "Não foi possível girar.");
-    } finally {
-      setLoading(false);
+      setLoading(false); // Reseta loading se der erro imediato
     }
+    // Nota: O setLoading(false) final acontece no handleWheelStop agora
   };
 
   // --- 3. ATUALIZE A FUNÇÃO handleWheelStop ---
   const handleWheelStop = () => {
-    if (!apiPrize) {
-      console.error("O prêmio da API não foi definido. A exibição falhou.");
-      return;
+    setLoading(false); // Libera o botão
+    setIsSpinning(false); // Para animação visual
+
+    if (!apiPrize) return;
+
+    // LÓGICA PRINCIPAL DE RETRY
+    if (apiPrize.is_duplicate) {
+      setRetryAvailable(true);
+      setWinningPrizeIndex(null); // Reseta posição visual suavemente
+      // Feedback visual rápido sem modal intrusivo
+      setError(null); // Limpa erros antigos
+    } else {
+      // Sucesso Real (XP ou Item Novo)
+      setRetryAvailable(false);
+      setRevealedPrize(apiPrize); // Mostra o Modal de Vitória
+
+      setTimeout(() => {
+        setRevealedPrize(null);
+        setWinningPrizeIndex(null);
+        setApiPrize(null);
+        fetchWinners();
+      }, 3000);
     }
-
-    setRevealedPrize(apiPrize); // Mostra o modal de prêmio
-
-    // Fecha o modal e atualiza a lista após alguns segundos
-    setTimeout(() => {
-      setRevealedPrize(null);
-      setIsSpinning(false);
-      setWinningPrizeIndex(null);
-      setApiPrize(null);
-      fetchWinners(); // Atualiza a lista de ganhadores
-    }, 3000);
   };
 
 
@@ -122,7 +134,14 @@ const RouletteTab = ({ onReturn, onSpin }) => {
       {/* Coluna da Roleta */}
       <div className="flex flex-col items-center gap-4 flex-shrink-0">
         <h2 className="text-3xl font-bold text-primary-text">Roda da Fortuna</h2>
-        <p className="text-secondary-text">Teste sua sorte uma vez por dia!</p>
+        {/* Texto dinâmico de status */}
+        {!retryAvailable ? (
+          <p className="text-secondary-text">Teste sua sorte uma vez por dia!</p>
+        ) : (
+          <p className="text-yellow-400 font-bold animate-pulse flex items-center gap-2">
+            <FaRedo /> Ops! Item repetido. Gire novamente GRÁTIS!
+          </p>
+        )}
         <CustomWheel
           segments={segments}
           winningSegmentIndex={winningPrizeIndex}
@@ -131,6 +150,13 @@ const RouletteTab = ({ onReturn, onSpin }) => {
           isSpinning={isSpinning}
           isLoading={loading}
         />
+        {/* Mensagem de Feedback de Duplicata (Aparece abaixo da roleta) */}
+        {retryAvailable && !isSpinning && (
+          <div className="mt-2 bg-yellow-500/20 border border-yellow-500 text-yellow-200 px-4 py-2 rounded-lg animate-fadeIn text-center">
+            Você caiu em <strong>{apiPrize?.label}</strong>, mas já possui este item.<br />
+            Aproveite sua segunda chance!
+          </div>
+        )}
         {error && <div className="mt-4 text-red-400 animate-fadeIn">{error}</div>}
       </div>
 

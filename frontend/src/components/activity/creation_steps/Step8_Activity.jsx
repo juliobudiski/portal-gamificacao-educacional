@@ -11,7 +11,10 @@ import {
   FaComments,
   FaSyncAlt,
   FaUserTie,
+  FaGlobeAmericas, // Novo: Para representar Público
+  FaLock,          // Novo: Para representar Privado
 } from 'react-icons/fa';
+import { useHelpModal } from "../../../context/HelpModalContext";
 
 /**
  * Componente para a Etapa 8 do formulário de criação de atividades.
@@ -35,7 +38,7 @@ function Step8_RulesAndSharing({ activityData, handleInputChange, setActivityDat
     { text: "Mantenha-se atualizado com as atualizações nas regras.", icon: <FaSyncAlt /> },
     { text: "Busque sempre a supervisão do professor quando necessário.", icon: <FaUserTie /> },
   ];
-
+  const { openHelp } = useHelpModal();
   /**
    * Manipula a seleção de regras a partir dos cards.
    * Adiciona ou remove a regra do array no estado pai.
@@ -120,25 +123,68 @@ function Step8_RulesAndSharing({ activityData, handleInputChange, setActivityDat
           ></textarea>
         </div>
 
-        <div className="relative flex items-start">
-          <div className="flex h-6 items-center">
-            <input
-              id="isPublic"
-              name="isPublic"
-              type="checkbox"
-              checked={activityData.isPublic}
-              onChange={handleInputChange}
-              className="h-4 w-4 rounded border-border-color text-teal-600 focus:ring-teal-500"
-            />
-          </div>
-          <div className="ml-3 text-sm leading-6">
-            <label htmlFor="isPublic" className="font-medium text-primary-text dark:text-secondary-text">
-              Compartilhar esta atividade?
-            </label>
-            <p className="text-secondary-text dark:text-secondary-text">Ao marcar, sua atividade ficará pública para outros professores usarem como modelo.</p>
-          </div>
+        {/* SEÇÃO: Toggle de Compartilhamento Moderno */}
+        <div className="pt-2">
+          <label
+            htmlFor="isPublic"
+            className={`
+              relative flex cursor-pointer items-center justify-between rounded-xl border p-6 transition-all duration-300
+              ${activityData.isPublic
+                ? 'border-[#69e8cb] bg-[#69e8cb]/10 shadow-[0_0_15px_rgba(105,232,203,0.15)]' // Estado Ativo (Teal + Glow)
+                : 'border-gray-600 bg-secondary-bg hover:border-gray-500 dark:bg-[#2c3135]' // Estado Inativo
+              }
+            `}
+          >
+            <div className="flex items-center gap-4 pr-4">
+              {/* Ícone Dinâmico: Muda conforme o estado */}
+              <div
+                className={`flex h-12 w-12 items-center justify-center rounded-full text-2xl transition-colors duration-300
+                  ${activityData.isPublic
+                    ? 'bg-[#69e8cb] text-[#2c3135]' // Fundo Teal, ícone escuro
+                    : 'bg-gray-700 text-gray-400'   // Fundo cinza, ícone cinza
+                  }
+                `}
+              >
+                {activityData.isPublic ? <FaGlobeAmericas /> : <FaLock />}
+              </div>
+
+              {/* Textos */}
+              <div className="flex flex-col">
+                <span className={`text-lg font-bold transition-colors duration-300 ${activityData.isPublic ? 'text-[#69e8cb]' : 'text-primary-text'}`}>
+                  {activityData.isPublic ? 'Atividade Pública' : 'Atividade Privada'}
+                </span>
+                <span className="text-sm text-secondary-text dark:text-gray-400">
+                  {activityData.isPublic
+                    ? 'Sua atividade ficará visível para outros professores usarem como inspiração.'
+                    : 'Apenas você e seus alunos terão acesso a esta atividade.'}
+                </span>
+              </div>
+            </div>
+
+            {/* O Switch Visual (Toggle) */}
+            <div className="relative">
+              <input
+                id="isPublic"
+                name="isPublic"
+                type="checkbox"
+                checked={activityData.isPublic}
+                onChange={handleInputChange}
+                className="peer sr-only" // Oculta o checkbox nativo visualmente, mas mantém acessível
+              />
+              {/* Trilho do Switch */}
+              <div className="h-8 w-14 rounded-full bg-gray-700 transition-colors duration-300 peer-focus:ring-4 peer-focus:ring-[#69e8cb]/40 peer-checked:bg-[#69e8cb]"></div>
+              {/* Bolinha do Switch */}
+              <div className="absolute left-1 top-1 h-6 w-6 rounded-full bg-white transition-all duration-300 peer-checked:translate-x-6 peer-checked:bg-[#2c3135]"></div>
+            </div>
+          </label>
         </div>
       </div>
+      <button
+        onClick={() => openHelp('regras_gamificacao')} // Chama pelo ID
+        className="bg-blue-500 text-white px-4 py-2 rounded"
+      >
+        Ajuda
+      </button>
     </div>
   );
 }

@@ -15,7 +15,7 @@ import {
   FaBoxOpen,
   FaUserTie,
 } from 'react-icons/fa';
-
+import { useHelpModal } from "../../../context/HelpModalContext";
 /**
  * Componente para a Etapa 7 do formulário de criação de atividades.
  * Focado na seleção das ações dos alunos que serão elegíveis para recompensas.
@@ -41,7 +41,7 @@ function Step7_RewardedActions({ activityData, handleInputChange, setActivityDat
     { text: "Cuidar e organizar o material escolar.", icon: <FaBoxOpen /> },
     { text: "Demonstrar habilidades de liderança.", icon: <FaUserTie /> },
   ];
-
+  const { openHelp } = useHelpModal();
   /**
    * Manipula a seleção de ações a partir dos cards.
    * Adiciona ou remove a ação do array no estado pai.
@@ -119,6 +119,12 @@ function Step7_RewardedActions({ activityData, handleInputChange, setActivityDat
           placeholder="Descreva uma ação personalizada"
         />
       </div>
+      <button
+        onClick={() => openHelp('acoes_recompensadas')} // Chama pelo ID
+        className="bg-blue-500 text-white px-4 py-2 rounded"
+      >
+        Ajuda
+      </button>
     </div>
   );
 }

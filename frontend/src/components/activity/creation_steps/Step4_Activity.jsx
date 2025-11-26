@@ -7,6 +7,7 @@ import {
   FaAward,
   FaComments
 } from 'react-icons/fa';
+import { useHelpModal } from "../../../context/HelpModalContext";
 
 /**
  * Componente para a Etapa 4 do formulário de criação de atividades.
@@ -45,6 +46,7 @@ function Step4_PlayerProfile({ activityData, setActivityData, openHelpModal }) {
       icon: <FaComments />
     },
   ];
+  const { openHelp } = useHelpModal();
 
   /**
    * Manipula a seleção de perfis de jogador a partir dos cards.
@@ -111,13 +113,14 @@ function Step4_PlayerProfile({ activityData, setActivityData, openHelpModal }) {
       </div>
 
       {/* SEÇÃO 3: Botão de Ajuda */}
-      <div className="pt-4 text-center">
-        <button
-          onClick={() => openHelpModal("Ajuda - Perfil do Jogador", `A seguir, listo alguns dos elementos de jogos ideais...`)}
-          className="py-2 px-5 border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-text bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-          Precisa de ajuda para escolher?
-        </button>
-      </div>
+
+      <button
+        onClick={() => openHelp('perfil_jogador')} // Chama pelo ID
+        className="bg-blue-500 text-white px-4 py-2 rounded"
+      >
+        Ajuda
+      </button>
+
     </div>
   );
 }

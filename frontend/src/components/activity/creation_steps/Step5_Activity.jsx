@@ -8,6 +8,7 @@ import {
   FaStar, FaProjectDiagram, FaCodeBranch, FaUsers, FaComments
 } from 'react-icons/fa';
 import GameBoardEditor from '../../activity/GameBoardEditor';
+import { useHelpModal } from "../../../context/HelpModalContext";
 
 /**
  * Componente para a Etapa 5 do formulário de criação de atividades.
@@ -62,6 +63,7 @@ function Step5_GameElements({ activityData, handleInputChange, setActivityData, 
     { name: "Recompensas atraentes", icon: <FaGift /> },
     { name: "Conquistas digitais para metas alcançadas", icon: <FaAward /> },
   ].sort((a, b) => a.name.localeCompare(b.name));
+  const { openHelp } = useHelpModal();
 
   /**
    * Manipula a seleção de elementos de jogo a partir dos cards.
@@ -171,6 +173,12 @@ function Step5_GameElements({ activityData, handleInputChange, setActivityData, 
           </div>
         </div>
       )}
+      <button
+        onClick={() => openHelp('elementos_jogos')} // Chama pelo ID
+        className="bg-blue-500 text-white px-4 py-2 rounded"
+      >
+        Ajuda
+      </button>
     </div>
   );
 }

@@ -12,7 +12,7 @@ import {
   FaCloud,
   FaTrophy
 } from 'react-icons/fa';
-
+import { useHelpModal } from "../../../context/HelpModalContext";
 /**
  * Componente para a Etapa 3 do formulário de criação de atividades.
  * Coleta informações sobre o planejamento logístico da atividade.
@@ -35,6 +35,7 @@ function Step3_ActivityPlanning({ activityData, handleInputChange, setActivityDa
     { text: "Uso de plataformas de aprendizado", icon: <FaCloud /> },
     { text: "Níveis de dificuldade progressivos", icon: <FaTrophy /> },
   ];
+  const { openHelp } = useHelpModal();
 
   /**
    * Manipula a seleção de características a partir dos cards.

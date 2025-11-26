@@ -17,7 +17,7 @@ import {
   FaHandsHelping,
   FaMoneyBillWave,
 } from 'react-icons/fa';
-
+import { useHelpModal } from "../../../context/HelpModalContext";
 /**
  * Componente para a Etapa 6 do formulário de criação de atividades.
  * Focado na seleção das recompensas que serão oferecidas aos alunos.
@@ -45,7 +45,7 @@ function Step6_RewardsOffered({ activityData, handleInputChange, setActivityData
     { text: "Oportunidades para mentorar colegas.", icon: <FaHandsHelping /> },
     { text: "Prêmios em dinheiro ou descontos.", icon: <FaMoneyBillWave /> },
   ];
-
+  const { openHelp } = useHelpModal();
   /**
    * Manipula a seleção de recompensas a partir dos cards.
    * Adiciona ou remove a recompensa do array no estado pai.
@@ -123,6 +123,12 @@ function Step6_RewardsOffered({ activityData, handleInputChange, setActivityData
           placeholder="Descreva uma recompensa personalizada"
         />
       </div>
+      <button
+        onClick={() => openHelp('recompensas_oferecidas')} // Chama pelo ID
+        className="bg-blue-500 text-white px-4 py-2 rounded"
+      >
+        Ajuda
+      </button>
     </div>
   );
 }

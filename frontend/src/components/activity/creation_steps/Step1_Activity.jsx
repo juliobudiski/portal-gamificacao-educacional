@@ -5,7 +5,7 @@ import {
   FaRocket, FaComments, FaBalanceScale, FaHeartbeat, FaCogs,
   FaBriefcase, FaCalendarTimes
 } from 'react-icons/fa';
-
+import { useHelpModal } from "../../../context/HelpModalContext";
 /**
  * Componente para a Etapa 1 do formulário de criação de atividades.
  * Coleta o título, a descrição e os principais desafios enfrentados pelos alunos.
@@ -31,6 +31,7 @@ function Step1_InitialDetails({ activityData, handleInputChange, setActivityData
     { text: "Dificuldades em encontrar oportunidades de estágio ou experiência profissional.", icon: <FaBriefcase /> },
     { text: "Dificuldades em trabalhar com prazos apertados em projetos acadêmicos.", icon: <FaCalendarTimes /> },
   ];
+  const { openHelp } = useHelpModal();
 
   /**
    * Manipula a seleção de problemas a partir dos cards.
@@ -148,6 +149,12 @@ function Step1_InitialDetails({ activityData, handleInputChange, setActivityData
           placeholder="Descreva outro problema específico"
         />
       </div>
+      <button
+        onClick={() => openHelp('analise_preliminar')} // Chama pelo ID
+        className="bg-blue-500 text-white px-4 py-2 rounded"
+      >
+        Ajuda
+      </button>
     </div>
   );
 }

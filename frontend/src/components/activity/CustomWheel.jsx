@@ -1,9 +1,9 @@
 // frontend/src/components/activity/CustomWheel.jsx
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { FaDice } from 'react-icons/fa';
+import { FaDice, FaRedo } from 'react-icons/fa';
 
-const CustomWheel = ({ segments, winningSegmentIndex, onFinished, onSpin, isSpinning, isLoading }) => {
+const CustomWheel = ({ isRetry, segments, winningSegmentIndex, onFinished, onSpin, isSpinning, isLoading }) => {
   const [rotation, setRotation] = useState(0);
   const [internalSpin, setInternalSpin] = useState(false);
 
@@ -100,23 +100,36 @@ const CustomWheel = ({ segments, winningSegmentIndex, onFinished, onSpin, isSpin
       <div style={{
         position: 'absolute', width: '100px', height: '100px',
         borderRadius: '50%', background: '#111827',
-        border: '5px solid #ffbd30',
-        boxShadow: '0 0 15px #ffbd30, inset 0 0 10px rgba(0,0,0,0.5)',
+        // Muda a cor da borda se for Retry (Amarelo/Laranja) ou Normal (Dourado padrão)
+        border: isRetry ? '5px solid #ef4444' : '5px solid #ffbd30',
+        boxShadow: isRetry ? '0 0 20px #ef4444' : '0 0 15px #ffbd30, inset 0 0 10px rgba(0,0,0,0.5)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        zIndex: 5
+        zIndex: 5,
+        transition: 'all 0.5s ease'
       }}>
         <button
           onClick={onSpin}
           disabled={isSpinning || isLoading}
           style={{
             width: '80px', height: '80px', borderRadius: '50%',
-            background: '#374151', border: 'none', color: 'white',
-            cursor: 'pointer', transition: 'all 0.2s',
+            // Muda o fundo do botão para vermelho/laranja se for Retry
+            background: isRetry ? '#7f1d1d' : '#374151',
+            border: 'none', color: 'white',
+            cursor: isSpinning || isLoading ? 'not-allowed' : 'pointer',
+            transition: 'all 0.2s',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: '1.2rem'
           }}
+          className={isRetry ? "animate-pulse" : ""} // Classe tailwind para pulsar se for retry
         >
-          <FaDice />
+          {/* Troca o ícone: Dado para giro normal, Setas para Retry */}
+          {isLoading ? (
+            <div className="animate-spin text-xl">⏳</div>
+          ) : isRetry ? (
+            <FaRedo size={24} />
+          ) : (
+            <FaDice size={30} />
+          )}
         </button>
       </div>
     </div>
