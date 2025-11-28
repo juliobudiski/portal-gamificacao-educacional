@@ -5492,5 +5492,206 @@
                 "percent": 100.0
             }
         ]
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2025-11-27T03:00:00Z",
+            "end": "2025-11-28T02:59:59Z",
+            "date": "2025-11-27",
+            "text": "Thu Nov 27th 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [],
+        "languages": [],
+        "dependencies": [],
+        "machines": [],
+        "editors": [],
+        "operating_systems": [],
+        "categories": []
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 3,
+            "total_seconds": 184.337,
+            "digital": "0:03",
+            "decimal": "0.05",
+            "text": "3 mins",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 73,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2025-11-28T03:00:00Z",
+            "end": "2025-11-29T02:59:59Z",
+            "date": "2025-11-28",
+            "text": "Fri Nov 28th 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [
+            {
+                "name": "portal-gamificacao-educacional",
+                "total_seconds": 184.337,
+                "ai_additions": 0,
+                "ai_deletions": 0,
+                "human_additions": 73,
+                "human_deletions": 0,
+                "color": null,
+                "digital": "0:03:04",
+                "decimal": "0.05",
+                "text": "3 mins",
+                "hours": 0,
+                "minutes": 3,
+                "seconds": 4,
+                "percent": 100.0
+            }
+        ],
+        "languages": [
+            {
+                "name": "Python",
+                "total_seconds": 138.473,
+                "digital": "0:02:18",
+                "decimal": "0.03",
+                "text": "2 mins",
+                "hours": 0,
+                "minutes": 2,
+                "seconds": 18,
+                "percent": 75.12
+            },
+            {
+                "name": "JavaScript",
+                "total_seconds": 45.864,
+                "digital": "0:00:45",
+                "decimal": "0.00",
+                "text": "45 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 45,
+                "percent": 24.88
+            }
+        ],
+        "dependencies": [
+            {
+                "name": "flask",
+                "total_seconds": 116.806,
+                "digital": "0:01:56",
+                "decimal": "0.02",
+                "text": "1 min",
+                "hours": 0,
+                "minutes": 1,
+                "seconds": 56,
+                "percent": 31.47
+            },
+            {
+                "name": "flask_jwt_extended",
+                "total_seconds": 116.806,
+                "digital": "0:01:56",
+                "decimal": "0.02",
+                "text": "1 min",
+                "hours": 0,
+                "minutes": 1,
+                "seconds": 56,
+                "percent": 31.47
+            },
+            {
+                "name": "fa",
+                "total_seconds": 45.864,
+                "digital": "0:00:45",
+                "decimal": "0.00",
+                "text": "45 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 45,
+                "percent": 12.36
+            },
+            {
+                "name": "prop-types",
+                "total_seconds": 45.864,
+                "digital": "0:00:45",
+                "decimal": "0.00",
+                "text": "45 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 45,
+                "percent": 12.36
+            },
+            {
+                "name": "react",
+                "total_seconds": 45.864,
+                "digital": "0:00:45",
+                "decimal": "0.00",
+                "text": "45 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 45,
+                "percent": 12.36
+            }
+        ],
+        "machines": [
+            {
+                "name": "julio-Inspiron-5421",
+                "total_seconds": 184.337,
+                "machine_name_id": "2d60ff15-d3e6-4cc0-801a-412fc4bd9da4",
+                "digital": "0:03:04",
+                "decimal": "0.05",
+                "text": "3 mins",
+                "hours": 0,
+                "minutes": 3,
+                "seconds": 4,
+                "percent": 100.0
+            }
+        ],
+        "editors": [
+            {
+                "name": "VS Code",
+                "total_seconds": 184.337,
+                "digital": "0:03:04",
+                "decimal": "0.05",
+                "text": "3 mins",
+                "hours": 0,
+                "minutes": 3,
+                "seconds": 4,
+                "percent": 100.0
+            }
+        ],
+        "operating_systems": [
+            {
+                "name": "Linux",
+                "total_seconds": 184.337,
+                "digital": "0:03:04",
+                "decimal": "0.05",
+                "text": "3 mins",
+                "hours": 0,
+                "minutes": 3,
+                "seconds": 4,
+                "percent": 100.0
+            }
+        ],
+        "categories": [
+            {
+                "name": "Coding",
+                "total_seconds": 184.337,
+                "digital": "0:03:04",
+                "decimal": "0.05",
+                "text": "3 mins",
+                "hours": 0,
+                "minutes": 3,
+                "seconds": 4,
+                "percent": 100.0
+            }
+        ]
     }
 ]

@@ -152,6 +152,8 @@ function Step5_GameElements({ activityData, handleInputChange, setActivityData, 
         setActivityData={setActivityData}
         onEditContent={onEditContent}
         onStructureChange={onStructureChange}
+        activityId={activityData.id} // Pode ser undefined, não tem problema mais
+        fullActivityData={activityData}
       />
 
       {/* SEÇÃO 4: Detalhes da Narrativa (Condicional) */}

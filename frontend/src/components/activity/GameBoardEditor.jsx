@@ -1,20 +1,20 @@
-import React from 'react';
-import { FaPlus, FaTrash, FaPen, FaToggleOn, FaToggleOff, FaRoute, FaCity } from 'react-icons/fa';
-import { elementConfig } from './GameBoardConfig';
+import React, { useState } from 'react';
+import { FaPlus, FaTrash, FaPen, FaToggleOn, FaToggleOff, FaRoute, FaCity, FaMagic } from 'react-icons/fa';
+import { elementConfig } from '../../components/activity/GameBoardConfig'; // Ajuste o caminho conforme sua estrutura
+import { useParams } from 'react-router-dom';
+import AIConfigModal from '../activity/AIConfigModal'; // <--- Importamos o novo modal
 
-function GameBoardEditor({ gamificationDesign = { theme: 'vila_da_aventura', progression_path: [], hub_elements: [] }, setActivityData, onEditContent, onStructureChange }) {
+function GameBoardEditor({ gamificationDesign, setActivityData, onEditContent, onStructureChange, activityId, fullActivityData }) {
+
+    const [isAIModalOpen, setIsAIModalOpen] = useState(false);
 
     const updateDesign = (key, value) => {
         const newDesign = { ...(gamificationDesign || {}), [key]: value };
-        setActivityData(prev => ({
-            ...prev,
-            gamificationDesign: newDesign,
-        }));
-        if (['progression_path', 'hub_elements'].includes(key)) {
-            onStructureChange(newDesign);
-        }
+        setActivityData(prev => ({ ...prev, gamificationDesign: newDesign }));
+        if (['progression_path', 'hub_elements'].includes(key)) onStructureChange(newDesign);
     };
 
+    // --- MANIPULAÇÃO DA TRILHA ---
     const addPathStep = (type) => {
         const newStep = { id: `step_${new Date().getTime()}`, type, isMandatory: true, content: {} };
         const newPath = [...(gamificationDesign.progression_path || []), newStep];
@@ -28,99 +28,155 @@ function GameBoardEditor({ gamificationDesign = { theme: 'vila_da_aventura', pro
 
     const toggleMandatory = (stepId) => {
         const newPath = (gamificationDesign.progression_path || []).map(step => {
-            if (step.id === stepId) {
-                return { ...step, isMandatory: !step.isMandatory };
-            }
+            if (step.id === stepId) return { ...step, isMandatory: !step.isMandatory };
             return step;
         });
         updateDesign('progression_path', newPath);
     };
 
+    // --- MANIPULAÇÃO DO HUB ---
     const toggleHubElement = (elementType) => {
         const newHubElements = (gamificationDesign.hub_elements || []).map(element => {
-            if (element.type === elementType) {
-                return { ...element, enabled: !element.enabled };
-            }
+            if (element.type === elementType) return { ...element, enabled: !element.enabled };
             return element;
         });
         updateDesign('hub_elements', newHubElements);
     };
 
-    console.log("--- DEBUG DESIGN ---");
-    console.log("Progression Path:", gamificationDesign?.progression_path);
+    // --- CALLBACK DO SUCESSO DA IA ---
+    // Esta função é chamada pelo AIConfigModal quando o backend devolve o JSON completo
+    const handleAIContentApplied = (contentMap) => {
+        const currentPath = gamificationDesign.progression_path || [];
 
-    // Verifique se dentro de cada passo existe a chave 'content' preenchida
-    gamificationDesign?.progression_path?.forEach((step, index) => {
-        console.log(`Passo ${index + 1} (${step.type}):`, step.content);
-    });
+        const newPath = currentPath.map(step => {
+            // Se o ID do passo estiver no mapa retornado pela IA, atualizamos o conteúdo
+            if (contentMap[step.id]) {
+                return {
+                    ...step,
+                    content: contentMap[step.id]
+                };
+            }
+            return step;
+        });
+
+        updateDesign('progression_path', newPath);
+        alert("Roteiro aplicado com sucesso! Clique nos lápis para ver os detalhes de cada passo.");
+    };
 
     return (
         <div className="mt-8 p-6 border border-teal-300 dark:border-teal-800 rounded-lg bg-teal-50 dark:bg-teal-900/20">
-            <h3 className="text-xl font-bold text-teal-800 dark:text-teal-200 mb-2">Editor do Tabuleiro da Atividade</h3>
-            <p className="text-sm text-secondary-text dark:text-secondary-text mb-6">Construa a jornada do aluno e ative os pontos de interesse na vila.</p>
 
-            <div className="mb-8">
-                <label className="block text-sm font-medium text-secondary-text dark:text-secondary-text mb-2">Tema Visual do Tabuleiro</label>
-                <select
-                    value={gamificationDesign.theme || 'vila_da_aventura'}
-                    onChange={(e) => updateDesign('theme', e.target.value)}
-                    className="w-full md:w-1/3 p-2 bg-secondary-bg rounded-md border border-border-color focus:ring-2 focus:ring-teal-500"
-                >
-                    <option value="vila_da_aventura">Vila da Aventura (Imersivo)</option>
-                    <option value="fluxograma">Fluxograma Simples</option>
-                </select>
-            </div>
+            {/* --- COMPONENTE DO MODAL --- */}
+            <AIConfigModal
+                isOpen={isAIModalOpen}
+                onClose={() => setIsAIModalOpen(false)}
+                onSuccess={handleAIContentApplied}
+                activityId={activityId}
+                // Passamos o contexto manual para caso não tenha ID salvo
+                contextData={{
+                    title: fullActivityData?.title || "Nova Atividade",
+                    description: fullActivityData?.description || "Sem descrição",
+                    area_knowledge: fullActivityData?.areaKnowledge || "Geral",
+                    player_profile: fullActivityData?.playerProfile?.selectedProfiles?.join(", ") || "Geral"
+                }}
+                structure={gamificationDesign.progression_path || []}
+            />
+
+            <h3 className="text-xl font-bold text-teal-800 dark:text-teal-200 mb-2">Editor do Tabuleiro</h3>
+            <p className="text-sm text-secondary-text mb-6">Construa a jornada. Use a IA para conectar a história entre os passos.</p>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Coluna da Esquerda: Trilha */}
                 <div>
-                    <h4 className="flex items-center text-lg font-semibold mb-4 text-primary-text dark:text-secondary-text"><FaRoute className="mr-3 text-blue-500" /> Trilha de Progressão</h4>
-                    <div className="p-4 bg-secondary-bg/50 dark:bg-primary-bg/30 rounded-lg">
-                        <p className="text-xs text-secondary-text dark:text-secondary-text mb-4">Adicione os passos sequenciais da atividade (Quiz, Narrativa, etc.).</p>
+                    <div className="flex justify-between items-center mb-4">
+                        <h4 className="flex items-center text-lg font-semibold text-primary-text dark:text-secondary-text">
+                            <FaRoute className="mr-3 text-blue-500" /> Trilha de Progressão
+                        </h4>
 
+                        {/* Botão para abrir o Modal de IA */}
+                        {(gamificationDesign.progression_path?.length > 1) && (
+                            <button
+                                onClick={() => setIsAIModalOpen(true)}
+                                className="flex items-center gap-2 text-xs font-bold bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg shadow-md transition-transform hover:scale-105"
+                                title="Gerar roteiro conectado para todos os passos"
+                            >
+                                <FaMagic /> Preencher Trilha com IA
+                            </button>
+                        )}
+                    </div>
+
+                    <div className="p-4 bg-secondary-bg/50 dark:bg-primary-bg/30 rounded-lg min-h-[300px]">
+
+                        {/* Botões de Adicionar */}
                         <div className="flex flex-wrap gap-2 mb-4">
                             {Object.entries(elementConfig.path).map(([type, config]) => (
-                                <button key={type} onClick={() => addPathStep(type)} className="flex items-center p-2 text-sm bg-blue-100 dark:bg-blue-900/50 rounded-md hover:bg-blue-200 dark:hover:bg-blue-900">
-                                    <img src={config.icon} alt="" className="w-5 h-5 mr-2" /> Adicionar {config.name}
+                                <button key={type} onClick={() => addPathStep(type)} className="flex items-center p-2 text-sm bg-blue-100 dark:bg-blue-900/50 rounded-md hover:bg-blue-200 dark:hover:bg-blue-900 transition-colors">
+                                    <img src={config.icon} alt="" className="w-5 h-5 mr-2" /> + {config.name}
                                 </button>
                             ))}
                         </div>
 
+                        {/* Lista de Passos */}
                         <div className="space-y-3">
                             {(gamificationDesign.progression_path || []).map((step, index) => (
-                                <div key={step.id} className="flex items-center p-2 bg-secondary-bg dark:bg-primary-bg rounded-md shadow-sm">
-                                    <span className="font-bold text-secondary-text dark:text-secondary-text mr-3">{index + 1}</span>
+                                <div key={step.id} className="flex items-center p-3 bg-secondary-bg dark:bg-primary-bg rounded-md shadow-sm border border-transparent hover:border-blue-300 transition-all group">
+                                    <span className="font-bold text-secondary-text mr-3 bg-gray-200 dark:bg-gray-700 w-6 h-6 flex items-center justify-center rounded-full text-xs">{index + 1}</span>
                                     <img src={elementConfig.path[step.type]?.icon} alt="" className="w-8 h-8 mr-3" />
+
                                     <div className="flex-grow">
-                                        <p className="font-semibold text-primary-text dark:text-secondary-text">{elementConfig.path[step.type]?.name}</p>
-                                        <p className={`text-xs font-bold ${step.isMandatory ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}`}>{step.isMandatory ? 'Obrigatório' : 'Opcional'}</p>
+                                        <p className="font-semibold text-primary-text text-sm">{elementConfig.path[step.type]?.name}</p>
+                                        <div className="flex gap-2 text-[10px] uppercase font-bold tracking-wide mt-1">
+                                            <span className={`${step.isMandatory ? 'text-green-600' : 'text-yellow-600'}`}>
+                                                {step.isMandatory ? 'Obrigatório' : 'Opcional'}
+                                            </span>
+                                            {/* Indicador de Conteúdo Preenchido */}
+                                            {step.content && Object.keys(step.content).length > 0 && (
+                                                <span className="text-purple-500 flex items-center gap-1">
+                                                    • Conteúdo OK
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
-                                    <button onClick={() => toggleMandatory(step.id)} title={step.isMandatory ? 'Marcar como opcional' : 'Marcar como obrigatório'}>
-                                        {step.isMandatory ? <FaToggleOn className="text-green-500 h-5 w-5" /> : <FaToggleOff className="text-secondary-text h-5 w-5" />}
-                                    </button>
-                                    <button onClick={() => onEditContent(step)} className="ml-2 p-1 hover:text-primary-text dark:hover:bg-border-color rounded-full" title="Editar conteúdo">
-                                        <FaPen className="text-blue-500 h-4 w-4" />
-                                    </button>
-                                    <button onClick={() => removePathStep(step.id)} className="ml-2 p-1 hover:text-primary-text dark:hover:bg-border-color rounded-full" title="Remover passo"><FaTrash className="text-red-500 h-4 w-4" /></button>
+
+                                    <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                        <button onClick={() => toggleMandatory(step.id)} className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg text-gray-500">
+                                            {step.isMandatory ? <FaToggleOn className="text-green-500" /> : <FaToggleOff />}
+                                        </button>
+                                        <button onClick={() => onEditContent(step)} className="p-2 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg text-blue-500" title="Editar Conteúdo">
+                                            <FaPen />
+                                        </button>
+                                        <button onClick={() => removePathStep(step.id)} className="p-2 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg text-red-500" title="Remover">
+                                            <FaTrash />
+                                        </button>
+                                    </div>
                                 </div>
                             ))}
-                            {(!gamificationDesign.progression_path || gamificationDesign.progression_path.length === 0) && <p className="text-center text-sm text-secondary-text py-4">A trilha está vazia.</p>}
+                            {(!gamificationDesign.progression_path || gamificationDesign.progression_path.length === 0) && (
+                                <div className="text-center py-10 text-gray-400 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
+                                    <p>A trilha está vazia.</p>
+                                    <p className="text-xs mt-1">Adicione passos acima para começar.</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
 
+                {/* Coluna da Direita: Hub (Sem alterações lógicas) */}
                 <div>
-                    <h4 className="flex items-center text-lg font-semibold mb-4 text-primary-text dark:text-secondary-text"><FaCity className="mr-3 text-yellow-500" /> Hub e Elementos do Tabuleiro</h4>
+                    <h4 className="flex items-center text-lg font-semibold mb-4 text-primary-text dark:text-secondary-text">
+                        <FaCity className="mr-3 text-yellow-500" /> Hub e Elementos
+                    </h4>
                     <div className="p-4 bg-secondary-bg/50 dark:bg-primary-bg/30 rounded-lg">
-                        <p className="text-xs text-secondary-text dark:text-secondary-text mb-4">Ative ou desative os pontos de interesse que foram selecionados nos cards de elementos.</p>
+                        <p className="text-xs text-secondary-text mb-4">Ative os pontos de interesse da vila.</p>
                         <div className="space-y-3">
                             {(gamificationDesign.hub_elements || []).map((element) => {
                                 const config = elementConfig.hub[element.type];
                                 if (!config) return null;
                                 return (
-                                    <div key={element.id} onClick={() => toggleHubElement(element.type)} className="flex items-center p-3 bg-secondary-bg dark:bg-primary-bg rounded-lg shadow-sm cursor-pointer hover:bg-primary-bg dark:hover:bg-border-color">
+                                    <div key={element.id} onClick={() => toggleHubElement(element.type)} className="flex items-center p-3 bg-secondary-bg dark:bg-primary-bg rounded-lg shadow-sm cursor-pointer hover:bg-white dark:hover:bg-gray-700 transition-colors">
                                         <img src={config.icon} alt={config.name} className="w-8 h-8 mr-3" />
-                                        <span className="flex-grow font-medium text-primary-text dark:text-secondary-text">{config.name}</span>
-                                        {element.enabled ? <FaToggleOn className="text-green-500 h-6 w-6" /> : <FaToggleOff className="text-secondary-text h-6 w-6" />}
+                                        <span className="flex-grow font-medium text-primary-text text-sm">{config.name}</span>
+                                        {element.enabled ? <FaToggleOn className="text-green-500 h-6 w-6" /> : <FaToggleOff className="text-gray-400 h-6 w-6" />}
                                     </div>
                                 );
                             })}
