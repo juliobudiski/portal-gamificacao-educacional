@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { FaMagic, FaTimes, FaRobot, FaBook, FaUsers, FaPlus, FaTrash, FaSlidersH } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
-
+import { io } from 'socket.io-client';
 const PERSONALITIES = [
     { id: 'Socrático', label: 'Mestre Socrático (Faz pensar)', desc: 'Foca em perguntas reflexivas e aprendizado guiado.' },
     { id: 'Hardcore', label: 'Desafiador (Hardcore)', desc: 'Perguntas difíceis, tom sério de urgência.' },
@@ -13,7 +13,10 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
     const { user } = useAuth();
     const [loading, setLoading] = useState(false);
     const [step, setStep] = useState(1); // 1 = Config Básica, 2 = Personagens/Avançado
-
+    const [progress, setProgress] = useState(0);
+    const [progressMessage, setProgressMessage] = useState("Iniciando...");
+    const socketRef = useRef(null); // Referência para o socket
+    const progressInterval = useRef(null); // Referência para o intervalo de progresso
     // Estado complexo de configuração
     const [config, setConfig] = useState({
         narrativeGoal: "",
@@ -26,6 +29,25 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
             { role: "Recruta Zero", type: "Aluno" }
         ]
     });
+    useEffect(() => {
+        if (isOpen) {
+            const socketUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+            socketRef.current = io(socketUrl, {
+                transports: ['websocket', 'polling'],
+                reconnectionAttempts: 3
+            });
+
+            socketRef.current.on('ai_progress', (data) => {
+                console.log("Progresso recebido:", data);
+                // A barra pula diretamente para a porcentagem real enviada pelo backend
+                setProgress(data.percent);
+                if (data.message) setProgressMessage(data.message);
+            });
+        }
+        return () => {
+            if (socketRef.current) socketRef.current.disconnect();
+        };
+    }, [isOpen]);
 
     if (!isOpen) return null;
 
@@ -56,38 +78,49 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
 
     const handleOrchestrate = async () => {
         if (!config.narrativeGoal.trim()) return alert("Descreva o enredo.");
-        if (config.charactersList.some(c => !c.role.trim())) return alert("Dê nomes a todos os personagens.");
 
         setLoading(true);
+        setProgress(0);
+        // REMOVIDO: setInterval e cálculos falsos de tempo.
 
         try {
             const skeletonPath = structure.map(step => ({ id: step.id, type: step.type }))
                 .filter(s => ['quiz', 'narrative'].includes(s.type));
+
+            const socketId = socketRef.current?.id;
 
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/content_editor/orchestrate`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${user.token}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     structure: skeletonPath,
-                    config: config, // Envia o objeto config completo e expandido
-                    context: contextData
+                    config: config,
+                    context: contextData,
+                    socket_id: socketId
                 })
             });
 
             const data = await response.json();
+
             if (response.ok) {
-                onSuccess(data);
-                onClose();
+                // Força 100% no sucesso, caso o último evento de socket tenha se perdido
+                setProgress(100);
+                setTimeout(() => {
+                    onSuccess(data);
+                    onClose();
+                }, 600);
             } else {
                 alert(`Erro na IA: ${data.message}`);
+                setLoading(false);
             }
+
         } catch (error) {
             console.error(error);
             alert("Erro de conexão.");
-        } finally {
             setLoading(false);
         }
     };
+    if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
@@ -107,8 +140,22 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
 
                 {/* Body com Scroll */}
                 <div className="p-6 overflow-y-auto flex-grow">
-
-                    {step === 1 ? (
+                    {/* BARRA DE PROGRESSO REAL */}
+                    {loading && (
+                        <div className="mb-8 animate-pulse">
+                            <div className="flex justify-between text-sm font-bold text-purple-700 dark:text-purple-300 mb-2">
+                                <span>{progressMessage}</span>
+                                <span>{Math.round(progress)}%</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-5 dark:bg-gray-700 overflow-hidden shadow-inner">
+                                <div className="bg-gradient-to-r from-purple-500 to-pink-500 h-5 rounded-full transition-all duration-300 ease-out flex items-center justify-end pr-2" style={{ width: `${progress}%` }}>
+                                    {progress > 5 && <FaMagic className="text-white text-xs animate-spin-slow" />}
+                                </div>
+                            </div>
+                            <p className="text-xs text-center mt-3 text-gray-500 dark:text-gray-400">A IA está pensando...</p>
+                        </div>
+                    )}
+                    {!loading && step === 1 ? (
                         <div className="space-y-6">
                             {/* Enredo */}
                             <div>
@@ -159,7 +206,7 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                                 {PERSONALITIES.find(p => p.id === config.personality)?.desc}
                             </div>
                         </div>
-                    ) : (
+                    ) : !loading && (
                         <div className="space-y-6">
                             {/* Gestão de Personagens */}
                             <div>

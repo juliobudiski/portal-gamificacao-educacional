@@ -15,6 +15,8 @@ import Step7_RewardedActions from '../components/activity/creation_steps/Step7_A
 import Step8_RulesAndSharing from '../components/activity/creation_steps/Step8_Activity';
 import QuizEditor from './QuizEditorPage';
 import NarrativeEditor from './NarrativeEditorPage';
+import LearningContentEditor from './LearningContentEditorPage';
+
 // Nota: O GameBoardEditor é usado dentro do Step5, mas o mantemos importado aqui
 // caso seja necessário em outro local ou para referência.
 //import GameBoardEditor from '../../components/activity/GameBoardEditor';
@@ -854,6 +856,27 @@ function ActivityCreationPage({ existingActivity }) {
                 initialData={editingStep.content}
                 onSave={(data) => handleSaveContentLocally({ type: 'narrative', ...data })}
                 onCancel={() => setEditingStep(null)}
+                isOfflineMode={true}
+              />
+            </div>
+          </div>
+        )}
+        {editingStep?.type === 'content' && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
+            <div className="bg-white dark:bg-primary-bg p-6 rounded-xl w-full max-w-5xl max-h-[90vh] overflow-y-auto relative">
+
+              {/* Botão de Fechar Rápido (Opcional, mas bom para UX) */}
+              <button
+                onClick={() => setEditingStep(null)}
+                className="absolute top-4 right-4 text-gray-500 hover:text-red-500 font-bold text-xl z-10"
+              >
+                ✕
+              </button>
+
+              <LearningContentEditor
+                initialData={editingStep.content}
+                // Ao salvar, chamamos a função local que atualiza o estado da criação
+                onSave={(data) => handleSaveContentLocally({ type: 'content', ...data })}
                 isOfflineMode={true}
               />
             </div>

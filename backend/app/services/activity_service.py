@@ -3,7 +3,7 @@ from ..models import Activity, ActivityRevision, Tag, EventLog, ActivityProgress
 from flask import jsonify
 import logging
 from flask_jwt_extended import jwt_required, current_user, get_jwt_identity
-from ..models import StoreItem, Title, UserUnlockedTitle, UserUnlockedMedal, db, Activity, Tag, activity_tag, ActivityRevision, User, Class, Enrollment, Purchase, StoreItem, SlotWin, RouletteWin, StudentResponse, QuizContent, NarrativeContent
+from ..models import StoreItem, Title, UserUnlockedTitle, UserUnlockedMedal, db, Activity, Tag, activity_tag, ActivityRevision, User, Class, Enrollment, Purchase, StoreItem, SlotWin, RouletteWin, StudentResponse, QuizContent, NarrativeContent, LearningContent
 from sqlalchemy.orm import noload
 from copy import deepcopy
 from sqlalchemy import or_
@@ -319,7 +319,8 @@ def get_activity(user, activity_id):
     # 2. Busca todos os conteúdos de quiz e narrativa associados a esta atividade
     quiz_contents = QuizContent.query.filter_by(activity_id=activity_id).all()
     narrative_contents = NarrativeContent.query.filter_by(activity_id=activity_id).all()
-
+    learning_contents = LearningContent.query.filter_by(activity_id=activity_id).all()
+    
     # 3. Cria um mapa (dicionário) para acesso rápido ao conteúdo pelo step_id
     content_map = {}
     for qc in quiz_contents:
@@ -334,13 +335,23 @@ def get_activity(user, activity_id):
             'characters': nc.characters,
             'dialogue': nc.dialogue
         }
+    
+    for lc in learning_contents:
+        content_map[lc.step_id] = {
+            'type': 'content', # Identificador que usaremos no Frontend
+            'video_url': lc.video_url,
+            'text_content': lc.text_content,
+            'material_link': lc.material_link
+        }
 
-    # 4. Anexa o conteúdo a cada passo correspondente na trilha de progressão
+    # 4. Anexa o conteúdo (O código existente já resolve isso pq usamos o content_map genérico)
     if activity_dict.get('gamificationDesign') and 'progression_path' in activity_dict['gamificationDesign']:
         for step in activity_dict['gamificationDesign']['progression_path']:
             step_id = step.get('id')
             if step_id in content_map:
                 step['content'] = content_map[step_id]
+                # Força o tipo do passo a ser o tipo do conteúdo para garantir consistência
+                step['type'] = content_map[step_id]['type']
     
 
     # 5. Retorna o dicionário da atividade agora "enriquecido" com o conteúdo

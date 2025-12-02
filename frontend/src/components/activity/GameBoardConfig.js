@@ -7,6 +7,8 @@ export const elementConfig = {
         // 'mission' e 'final_reward' foram removidos daqui
         narrative: { icon: '/board/narrative_board.webp', name: 'Narrativa' },
         quiz: { icon: '/board/quiz_board.webp', name: 'Quiz' },
+        content: { icon: '/board/content_board.webp', name: 'Conteúdo' },
+
     },
     hub: {
         // Adicionados aqui para serem tratados como elementos do hub/tabuleiro

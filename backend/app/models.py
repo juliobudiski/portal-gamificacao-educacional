@@ -1,10 +1,10 @@
 # backend/app/models.py
 from . import db # Importa a instância do db do __init__.py
 from sqlalchemy.dialects.postgresql import JSONB
-from flask_socketio import SocketIO
+from .extensions import socketio
 from sqlalchemy.orm import validates
 # --- Modelos de Banco de Dados (SQLAlchemy) ---
-socketio = SocketIO(cors_allowed_origins="*")
+
 class User(db.Model):
     __tablename__ = 'user'
 
@@ -60,6 +60,19 @@ class User(db.Model):
             } if self.cached_city else None
         }
 
+class LearningContent(db.Model):
+    __tablename__ = 'learning_content'
+    id = db.Column(db.Integer, primary_key=True)
+    activity_id = db.Column(db.Integer, db.ForeignKey('activity.id', ondelete='CASCADE'), nullable=False)
+    step_id = db.Column(db.String(50), nullable=False)
+    
+    # Conteúdo Educacional
+    video_url = db.Column(db.String(255), nullable=True) # YouTube/Vimeo
+    text_content = db.Column(db.Text, nullable=True)     # Markdown
+    material_link = db.Column(db.String(255), nullable=True) # Link extra (PDF, Slide)
+
+    activity = db.relationship('Activity', backref=db.backref('learning_contents', cascade="all, delete-orphan"))
+    __table_args__ = (db.UniqueConstraint('activity_id', 'step_id', name='_activity_step_uc_learning'),)
 
 class Activity(db.Model):
     __tablename__ = 'activity'

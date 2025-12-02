@@ -20,6 +20,7 @@ import SlotMachineTab from '../components/activity/SlotMachineTab';
 import GameBoardViewer from '../components/activity/GameBoardViewer';
 import AchievementsTab from '../components/activity/AchievementsTab';
 import ChatTab from '../components/activity/ChatTab';
+import LearningMaterialViewer from '../components/activity/LearningMaterialViewer';
 
 import './ActivityPage.css';
 
@@ -111,6 +112,11 @@ const ViewRenderer = () => {
       />;
     case 'narrative':
       return <NarrativeTab
+        content={activeStepContent}
+        onComplete={completeStep}
+      />;
+    case 'content':
+      return <LearningMaterialViewer
         content={activeStepContent}
         onComplete={completeStep}
       />;

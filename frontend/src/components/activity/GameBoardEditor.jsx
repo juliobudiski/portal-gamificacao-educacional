@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FaPlus, FaTrash, FaPen, FaToggleOn, FaToggleOff, FaRoute, FaCity, FaMagic } from 'react-icons/fa';
 import { elementConfig } from '../../components/activity/GameBoardConfig'; // Ajuste o caminho conforme sua estrutura
 import { useParams } from 'react-router-dom';
@@ -107,13 +107,34 @@ function GameBoardEditor({ gamificationDesign, setActivityData, onEditContent, o
 
                     <div className="p-4 bg-secondary-bg/50 dark:bg-primary-bg/30 rounded-lg min-h-[300px]">
 
-                        {/* Botões de Adicionar */}
-                        <div className="flex flex-wrap gap-2 mb-4">
-                            {Object.entries(elementConfig.path).map(([type, config]) => (
-                                <button key={type} onClick={() => addPathStep(type)} className="flex items-center p-2 text-sm bg-blue-100 dark:bg-blue-900/50 rounded-md hover:bg-blue-200 dark:hover:bg-blue-900 transition-colors">
-                                    <img src={config.icon} alt="" className="w-5 h-5 mr-2" /> + {config.name}
-                                </button>
-                            ))}
+                        {/* --- BOTÕES DE ADICIONAR COM CONTADORES --- */}
+                        <div className="flex flex-wrap gap-3 mb-6">
+                            {Object.entries(elementConfig.path).map(([type, config]) => {
+                                // Conta quantos passos desse tipo já existem na trilha
+                                const count = (gamificationDesign.progression_path || []).filter(s => s.type === type).length;
+
+                                return (
+                                    <button
+                                        key={type}
+                                        onClick={() => addPathStep(type)}
+                                        className="relative flex items-center pl-3 pr-4 py-2 text-sm bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-900 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition-all shadow-sm group"
+                                    >
+                                        <img src={config.icon} alt="" className="w-5 h-5 mr-2" />
+                                        <span className="font-medium text-gray-700 dark:text-gray-200">{config.name}</span>
+
+                                        {/* Badge do Contador */}
+                                        {count > 0 && (
+                                            <span className="ml-2 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-bold px-2 py-0.5 rounded-full">
+                                                {count}
+                                            </span>
+                                        )}
+
+                                        <span className="ml-2 text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <FaPlus size={10} />
+                                        </span>
+                                    </button>
+                                );
+                            })}
                         </div>
 
                         {/* Lista de Passos */}

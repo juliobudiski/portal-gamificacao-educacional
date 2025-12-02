@@ -4,13 +4,14 @@ from flask import Flask, send_from_directory
 from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
-from flask_socketio import SocketIO
+from .extensions import socketio
 
 import os
 import logging
 
 # 1. Crie as instâncias das extensões FORA da função, sem associá-las a um app
-socketio = SocketIO(cors_allowed_origins="*")
+
+
 db = SQLAlchemy()
 migrate = Migrate()
 
@@ -24,14 +25,21 @@ def create_app():
     from .config import Config
     app.config.from_object(Config)
     from app.commands import seed, triggers, simulations
+    
     # 3. Associe as instâncias das extensões com o objeto 'app'
     db.init_app(app)
     migrate.init_app(app, db)
-    CORS(app, resources={r"/api/*": {"origins": "*"}}) # Habilita o CORS globalmente
+    
+    # Habilita o CORS globalmente
+    CORS(app, resources={r"/api/*": {"origins": "*"}}) 
+    
+    # Inicializa o socketio importado do extensions.py
     socketio.init_app(app)
+    
     seed.init_app(app)
     triggers.init_app(app)
     simulations.init_app(app)
+    
     # Importa e configura o JWT
     from .utils.auth_utils import configure_jwt
     configure_jwt(app)

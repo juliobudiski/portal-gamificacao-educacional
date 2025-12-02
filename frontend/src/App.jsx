@@ -44,7 +44,7 @@ import ActivityManagementPage from './pages/admin/ActivityManagementPage';
 import SystemAnalyticsPage from './pages/admin/SystemAnalyticsPage';
 import LogExplorerPage from './pages/admin/LogExplorerPage';
 import LocationMapPage from './pages/admin/LocationMapPage';
-
+import LearningContentEditorPage from './pages/LearningContentEditorPage';
 // --- 2. COMPONENTES AUXILIARES ---
 const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === 'true';
 const debugLog = (message, ...optionalParams) => {
@@ -364,6 +364,7 @@ function AppContent() {
               <Route path="/professor/criar-atividade/criar/:type/:stepId/edit" element={<QuizEditorPage />} /> {/* Exemplo, ajuste se necessário */}
               <Route path="/professor/atividades/:activityId/quiz/:stepId/edit" element={<QuizEditorPage />} />
               <Route path="/professor/atividades/:activityId/narrative/:stepId/edit" element={<NarrativeEditorPage />} />
+              <Route path="/professor/atividades/:activityId/learning-material/:stepId/edit" element={<LearningContentEditorPage />} />
             </Route>
 
             <Route path="/professor/banco-atividades" element={<ActivityBankPage />} />

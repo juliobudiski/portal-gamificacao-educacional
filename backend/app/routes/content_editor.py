@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request, current_app 
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from ..models import db, Activity, QuizContent, NarrativeContent, User
+from ..models import db, Activity, QuizContent, NarrativeContent, User, LearningContent
 from ..services.ai_service import ai_service
 content_editor_bp = Blueprint('content_editor', __name__)
 
@@ -27,6 +27,7 @@ def get_step_content(activity_id, step_id):
     if not check_permission(activity_id):
         return jsonify({"message": "Acesso não autorizado."}), 403
 
+    learning_content = LearningContent.query.filter_by(activity_id=activity_id, step_id=step_id).first()
     # Log para debug
     current_app.logger.info(f"Buscando conteúdo para step_id: {step_id}")
 
@@ -66,6 +67,22 @@ def get_step_content(activity_id, step_id):
             "characters": [],
             "dialogue": []
         })
+    elif learning_content:
+        current_app.logger.info(f"Conteúdo Learning encontrado para step_id: {step_id}")
+        return jsonify({
+            "type": "content",
+            "video_url": learning_content.video_url,
+            "text_content": learning_content.text_content,
+            "material_link": learning_content.material_link
+        })
+    # Adicione o fallback do parametro type
+    elif content_type == 'content':
+         return jsonify({
+            "type": "content",
+            "video_url": "",
+            "text_content": "",
+            "material_link": ""
+        })
     else:
         # Se não houver conteúdo e não foi especificado um tipo, retorna erro
         current_app.logger.error(f"Não foi possível determinar o tipo para step_id: {step_id}")
@@ -101,6 +118,16 @@ def save_step_content(activity_id, step_id):
         content.characters = data.get('characters', [])
         content.dialogue = data.get('dialogue', [])
         
+    elif content_type == 'content':
+        content = LearningContent.query.filter_by(activity_id=activity_id, step_id=step_id).first()
+        if not content:
+            content = LearningContent(activity_id=activity_id, step_id=step_id)
+            db.session.add(content)
+        
+        content.video_url = data.get('video_url')
+        content.text_content = data.get('text_content')
+        content.material_link = data.get('material_link')
+    
     else:
         current_app.logger.error(f"Tipo de conteúdo inválido ou não fornecido para step_id: {step_id}")
         return jsonify({"message": "O campo 'type' ('quiz' ou 'narrative') é obrigatório no corpo da requisição."}), 400
@@ -129,20 +156,24 @@ def orchestrate_draft_activity():
         if not data:
             current_app.logger.error("Recebido body vazio na requisição.")
             return jsonify({"message": "Body vazio"}), 400
+        
         skeleton_path = data.get('structure')
         ai_config = data.get('config')
-        
-        # O Frontend deve enviar isso agora
         context_data = data.get('context', {}) 
-        # Logs dos dados de entrada
-        current_app.logger.info(f"Structure size: {len(skeleton_path) if skeleton_path else 0}")
-        current_app.logger.info(f"AI Config presente? {bool(ai_config)}")
-        current_app.logger.info(f"Context Title: {context_data.get('title')}")
+        client_socket_id = data.get('socket_id') # Pega o socket ID
+        
         if not context_data.get('title'):
             return jsonify({"message": "Título e descrição são necessários para a IA."}), 400
 
-        # Chama o serviço
-        full_content_map = ai_service.orchestrate_story(context_data, skeleton_path, ai_config)
+        # --- CHAMADA CORRIGIDA ---
+        # Passamos os argumentos na ordem certa: context, structure, config, e por último socket_id
+        full_content_map = ai_service.orchestrate_story(
+            context_data, 
+            skeleton_path, 
+            ai_config, 
+            client_socket_id=client_socket_id
+        )
+        
         current_app.logger.info("Orquestração concluída com sucesso. Retornando ao frontend.")
         return jsonify(full_content_map), 200
 
