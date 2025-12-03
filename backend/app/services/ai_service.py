@@ -49,15 +49,23 @@ class AIService:
         )
 
     def orchestrate_story(self, activity_context: Dict, path_structure: List[Dict], ai_config: Dict, client_socket_id: str = None) -> Dict:
-        logger.info(f"--- INICIANDO ORQUESTRAÇÃO (Modelo: {self.model_name}) ---")
+        logger.info(f"--- INICIANDO ORQUESTRAÇÃO INTELIGENTE (Modelo: {self.model_name}) ---")
         
-        steps_to_fill = [s for s in path_structure if s['type'] in ['quiz', 'narrative']]
+        # Filtra apenas os passos preenchíveis
+        steps_to_fill = [s for s in path_structure if s['type'] in ['quiz', 'narrative', 'content']]
         total_steps = len(steps_to_fill)
         
         if not steps_to_fill:
             return {}
         
-        story_memory = "ESTADO INICIAL: O aluno acabou de entrar na simulação."
+        # --- MEMÓRIA DE CURTO PRAZO ---
+        # Armazena o resumo do que aconteceu nos passos anteriores para dar continuidade
+        execution_trace = {
+            "last_narrative_event": "A aventura começou.", # O que aconteceu na última história
+            "last_taught_concept": "Nenhum conceito ensinado ainda.", # O que foi ensinado no último conteúdo
+            "accumulated_knowledge": [] # Lista de tópicos já cobertos
+        }
+        
         final_map = {}
 
         for index, step in enumerate(steps_to_fill):
@@ -65,140 +73,150 @@ class AIService:
             step_type = step['type']
             step_id = step['id']
             
-            # --- CÁLCULO E ENVIO DO PROGRESSO ---
-            # Como importamos do extensions, 'socketio' agora sempre existe e é válido
+            # Cálculo de Progresso (Visual para o usuário)
             if client_socket_id:
                 try:
                     percent = int(((index) / total_steps) * 100)
                     socketio.emit('ai_progress', {
                         'percent': percent,
-                        'message': f"Escrevendo passo {step_number}/{total_steps} ({step_type})...",
+                        'message': f"Criando passo {step_number}/{total_steps}: {self._get_step_label(step_type)}...",
                     }, to=client_socket_id)
-                    
-                    # Força o envio imediato da mensagem WebSocket
-                    socketio.sleep(0) 
-                except Exception as e:
-                    logger.error(f"Erro socket emit: {e}")
-            
-            logger.info(f"Processando Passo {step_number}/{total_steps}")
+                    socketio.sleep(0)
+                except Exception:
+                    pass
             
             try:
-                attempts = 0
-                max_attempts = 2
-                content = {}
+                # --- LÓGICA DE CONTINUIDADE ---
+                # Passamos o 'execution_trace' para a IA saber o contexto imediato
+                content = self._generate_single_step(
+                    step_type, 
+                    step_number, 
+                    total_steps, 
+                    activity_context, 
+                    ai_config, 
+                    execution_trace # <--- NOVA INJEÇÃO DE DEPENDÊNCIA
+                )
                 
-                while attempts < max_attempts:
-                    try:
-                        content = self._generate_single_step(
-                            step_type, step_number, total_steps, activity_context, ai_config, story_memory
-                        )
-                        if content: break
-                    except Exception as err:
-                        logger.warning(f"Tentativa {attempts+1} falhou: {err}")
-                        attempts += 1
-                        time.sleep(2)
-                
-                if not content:
-                    content = {} 
+                # --- ATUALIZAÇÃO DA MEMÓRIA (O Pulo do Gato) ---
+                if content:
+                    if step_type == 'narrative':
+                        # Salva o último diálogo para o próximo passo saber
+                        dialogues = " ".join([f"{d.get('characterRole', 'Alguém')}: {d.get('text', '')}" for d in content.get('dialogue', [])])
+                        execution_trace["last_narrative_event"] = dialogues[:500] + "..." # Trunca para não estourar tokens
+                        
+                    elif step_type == 'content':
+                        # Salva o tópico ensinado para o Quiz usar
+                        topic = content.get('text_content', '')[:300]
+                        execution_trace["last_taught_concept"] = topic
+                        execution_trace["accumulated_knowledge"].append(topic[:50])
 
+                # Fallbacks de segurança (Schema garantido)
+                if not content: content = {}
                 if step_type == 'narrative' and 'dialogue' not in content:
                     content = {"type": "narrative", "dialogue": [], "scenario": "", "characters": []}
                 if step_type == 'quiz' and 'questions' not in content:
                     content = {"type": "quiz", "questions": []}
+                if step_type == 'content' and 'text_content' not in content:
+                    content = {"type": "content", "text_content": "Erro na geração.", "video_url": ""}
 
                 final_map[step_id] = content
-                
-                if step_type == 'narrative':
-                    last_dialogues = " ".join([f"{d.get('characterRole', 'Alguém')}: {d.get('text', '')}" for d in content.get('dialogue', [])])
-                    story_memory = f"RECENTE: {last_dialogues[:800]}..."
-                
-                # Pequeno delay para garantir que o frontend receba a atualização visual
                 socketio.sleep(0.5)
 
             except Exception as e:
                 logger.error(f"Erro passo {step_id}: {str(e)}")
                 continue
 
-        # Envia 100% no final
         if client_socket_id:
             socketio.emit('ai_progress', {'percent': 100, 'message': "Finalizando..."}, to=client_socket_id)
-            socketio.sleep(0)
 
         return final_map
 
-    def _generate_single_step(self, step_type, step_idx, total_steps, context, config, memory):
-        """
-        Constrói o prompt de engenharia avançada e chama o modelo.
-        """
+    def _get_step_label(self, type):
+        labels = {'quiz': 'Desafio', 'narrative': 'História', 'content': 'Conteúdo Teórico'}
+        return labels.get(type, 'Passo')
+
+    def _generate_single_step(self, step_type, step_idx, total_steps, context, config, execution_trace):
+        # 1. Extração de Metadados Ricos (Novos Campos)
+        area_knowledge = context.get('area_knowledge', 'Geral')
+        teaching_focus = config.get('teachingFocus', context.get('title')) # "Loop For"
+        target_audience = config.get('targetAudience', 'Estudante')
+        target_audience = context.get('player_profile', 'Estudantes')
+        characters_list = config.get('charactersList', []) # A lista que vem do Modal
         
-        # 1. Configuração de Variáveis do Prompt
-        personality = config.get('personality', 'Tech Lead Pragmático')
-        # Garantir inteiros
-        try:
-            quiz_count = int(config.get('questionsPerQuiz', 4))
-            dialogue_len = int(config.get('linesPerNarrative', 6))
-        except:
-            quiz_count = 4
-            dialogue_len = 6
-
-        user_characters = config.get('charactersList', [])
+        # Formata a lista de personagens para o prompt
+        formatted_cast = ", ".join([f"{c['role']} ({c['type']})" for c in characters_list])
         
-        # Serialização segura dos assets para o prompt
-        assets_context = {
-            "available_scenarios": AVAILABLE_SCENARIOS,
-            "available_characters": AVAILABLE_CHARACTERS,
-            "user_selected_cast": user_characters
-        }
+        # Formata o conhecimento acumulado para evitar repetição
+        known_topics = "; ".join(execution_trace['accumulated_knowledge'])
 
-        # 2. Definição da Dinâmica da História (Micro-Journey)
-        story_phase = ""
-        if step_idx == 1:
-            story_phase = "SETUP & INCITING INCIDENT: Apresente o cenário e o problema técnico (bug, feature request, queda de servidor). Estabeleça a urgência."
-        elif step_idx == total_steps:
-            story_phase = "RESOLUTION: O problema é resolvido com sucesso após a aplicação do conhecimento. Clímax e lição aprendida."
-        else:
-            story_phase = "RISING ACTION: O problema se complica. Tentativas falham ou novos requisitos surgem. É necessário aprofundar a teoria."
+        # 2. Definição da Dinâmica (Mantida)
+        progress_ratio = step_idx / total_steps
+        story_phase = "INTRODUÇÃO"
+        difficulty = "FÁCIL (Conceitos Básicos)"
+        
+        if progress_ratio > 0.3 and progress_ratio < 0.8:
+            story_phase = "DESENVOLVIMENTO (Conflito e Aplicação)"
+            difficulty = "MÉDIO (Análise de Casos)"
+        elif progress_ratio >= 0.8:
+            story_phase = "CLÍMAX (Resolução Complexa)"
+            difficulty = "DIFÍCIL (Avaliação e Síntese)"
 
-        # 3. Construção do Prompt Modular
+        # 3. Contexto Dinâmico Melhorado
+        dynamic_instruction = ""
+        
+        if step_type == 'content':
+            dynamic_instruction = f"""
+            CONTEXTO SITUACIONAL:
+            - Último evento: "{execution_trace['last_narrative_event']}"
+            - Tópicos JÁ ENSINADOS (NÃO REPITA): {known_topics}
+            - SUA MISSÃO: Introduza um NOVO conceito técnico necessário para resolver o problema atual. Use exemplos em código se aplicável à área "{area_knowledge}".
+            """
+        
+        elif step_type == 'quiz':
+            dynamic_instruction = f"""
+            CONTEXTO SITUACIONAL:
+            - Conceito ACABOU de ser ensinado: "{execution_trace['last_taught_concept']}"
+            - Dificuldade Atual: {difficulty}
+            - Público Alvo: {target_audience}
+            - SUA MISSÃO: Crie perguntas focadas estritamente no conceito recém-ensinado.
+            """
+            
+        elif step_type == 'narrative':
+            dynamic_instruction = f"""
+            CONTEXTO SITUACIONAL:
+            - Conceito técnico em foco: "{execution_trace['last_taught_concept']}"
+            - Fase da História: {story_phase}
+            - Personagens Disponíveis (USE ESTES NOMES): {formatted_cast}
+            - SUA MISSÃO: Crie um diálogo onde os personagens discutem ou enfrentam um problema relacionado ao conceito técnico. Mantenha as personalidades definidas.
+            """
+
+        # 4. Montagem do Prompt Enriquecido
         system_role = f"""
-        Você é um Engenheiro de Software Sênior e Game Master de uma plataforma educacional chamada Gamefica.Edu.
-        Sua Persona: "{personality}".
-        Seu Objetivo: Criar uma experiência de aprendizado imersiva para alunos de Computação.
-        O tom deve ser técnico, profissional, mas engajador. Use jargão correto (ex: deploy, commit, request, latency).
+        Você é um Arquiteto de Aprendizagem Gamificada e Escritor Sênior.
+        Personalidade da IA: {config.get('personality', 'Mentor Socrático')}.
+        Tom da História: {config.get('tone', 'Aventura')}.
+        Objetivo Global: {config.get('narrativeGoal', 'Ensinar conceito X')}.
         """
-
-        task_context = f"""
-        # CONTEXTO DA ATIVIDADE
-        - Título: {context.get('title', 'Sem título')}
-        - Área: {context.get('area_knowledge', 'Engenharia de Software')}
-        - Descrição Técnica: {context.get('description', '')}
-        - Meta Narrativa Global: {config.get('narrativeGoal', 'Resolver um problema de software')}
         
-        # ESTADO ATUAL (Passo {step_idx} de {total_steps})
-        - Fase da História: {story_phase}
-        - Memória (O que aconteceu antes): "{memory}"
-        
-        # ASSETS DISPONÍVEIS (Use APENAS estas URLs)
-        {json.dumps(assets_context, ensure_ascii=False)}
-        """
-
-        specific_instructions = self._get_strict_instructions(step_type, quiz_count, dialogue_len)
-
         full_prompt = f"""
         {system_role}
         
-        {task_context}
+        # METADADOS DA ATIVIDADE
+        - Título: {context.get('title')}
+        - Descrição: {context.get('description')}
+        - Área de Conhecimento: {area_knowledge}
+        - Público Alvo: {target_audience}
         
-        {specific_instructions}
+        # INSTRUÇÕES DE CONTINUIDADE E MEMÓRIA
+        {dynamic_instruction}
         
-        # FORMATO DE RESPOSTA
-        Retorne APENAS um objeto JSON válido. Não use Markdown. Não inclua explicações fora do JSON.
+        # REGRAS ESTRUTURAIS (SCHEMA JSON)
+        {self._get_strict_instructions(step_type, config.get('questionsPerQuiz', 4), config.get('linesPerNarrative', 6))}
+        
+        Retorne APENAS o JSON válido.
         """
         
-        # 4. Chamada ao Modelo
         response = self.model.generate_content(full_prompt)
-        
-        # 5. Parsing e Limpeza Robusta
         return self._clean_and_parse_json(response.text)
 
     def _get_strict_instructions(self, step_type, quiz_count, dialogue_len):
@@ -228,7 +246,7 @@ class AIService:
                 ]
             }}
             """
-        else:
+        elif step_type == 'quiz':
             return f"""
             # TAREFA: GERAR QUIZ (TIPO: 'quiz')
             
@@ -254,21 +272,49 @@ class AIService:
                 ]
             }}
             """
+        elif step_type == 'content':
+            return f"""
+            # TAREFA: GERAR CONTEÚDO EDUCACIONAL (TIPO: 'content')
+            
+            Regras Pedagógicas (Engenharia de Software):
+            1. Gere um texto explicativo RICO em Markdown sobre o conceito técnico que os personagens estão enfrentando na história.
+            2. ESTRUTURA: Use Títulos (#), subtítulos (##), code blocks (```sql ou ```python) e listas.
+            3. TOM: Deve ser como um tutorial técnico ou documentação interna da empresa fictícia, mas didático para o aluno.
+            4. CONEXÃO: Comece fazendo uma breve ponte com o problema narrativo atual (ex: "Para resolver o erro de servidor mencionado pela Capitã Debug, precisamos entender Logs...").
+            5. VIDEO: O campo 'video_url' deve vir VAZIO (""), pois o professor irá inserir manualmente depois.
+            
+            Schema JSON Obrigatório:
+            {{
+                "type": "content",
+                "text_content": "# Título do Tópico\\n\\nExplicação detalhada...\\n\\n```python\\nprint('Exemplo de código')\\n```",
+                "video_url": "",
+                "material_link": ""
+            }}
+            """
 
     def _clean_and_parse_json(self, raw_text: str) -> Dict:
         """
-        Limpa alucinações de markdown (```json ... ```) e tenta fazer o parse.
-        Lança exceção se falhar, para ser capturado pelo retry logic.
+        Limpa markdown e faz parse seguro, tratando casos onde a IA retorna lista.
         """
         try:
-            # Remove blocos de código markdown se existirem
+            # Remove blocos de código markdown (```json ... ```)
             cleaned_text = re.sub(r'```json\s*', '', raw_text)
             cleaned_text = re.sub(r'```\s*$', '', cleaned_text)
             cleaned_text = cleaned_text.strip()
             
-            return json.loads(cleaned_text)
+            parsed = json.loads(cleaned_text)
+            
+            # --- CORREÇÃO DO BUG "list has no attribute get" ---
+            # Se a IA retornou uma lista [{}], pegamos o primeiro item
+            if isinstance(parsed, list):
+                if len(parsed) > 0 and isinstance(parsed[0], dict):
+                    return parsed[0]
+                else:
+                    return {} # Lista vazia ou inválida
+            
+            return parsed
         except json.JSONDecodeError as e:
-            logger.error(f"Falha ao decodificar JSON gerado. Texto bruto: {raw_text[:100]}...")
+            logger.error(f"Falha ao decodificar JSON. Texto bruto: {raw_text[:100]}...")
             raise e
-        
+
 ai_service = AIService()

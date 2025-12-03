@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FaMagic, FaTimes, FaRobot, FaBook, FaUsers, FaPlus, FaTrash, FaSlidersH } from 'react-icons/fa';
+import { FaMagic, FaTimes, FaRobot, FaBook, FaUsers, FaPlus, FaTrash, FaSlidersH, FaBullseye, FaGraduationCap, FaToggleOn, FaToggleOff } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { io } from 'socket.io-client';
 const PERSONALITIES = [
@@ -8,6 +8,14 @@ const PERSONALITIES = [
     { id: 'Divertido', label: 'Colega Divertido', desc: 'Usa humor, gírias leves e analogias engraçadas.' },
     { id: 'Storyteller', label: 'Narrador Épico', desc: 'Foco total na imersão e dramatismo da história.' }
 ];
+
+const AUDIENCE_LEVELS = [
+    { id: 'Iniciante', label: 'Iniciante / Curioso', desc: 'Explicações simples, sem jargão pesado.' },
+    { id: 'Junior', label: 'Estudante (Graduação/Técnico)', desc: 'Termos técnicos corretos, foco em fundamentos.' },
+    { id: 'Pleno', label: 'Profissional / Prático', desc: 'Foco em resolução de problemas reais e clean code.' },
+    { id: 'Senior', label: 'Especialista / Avançado', desc: 'Discussões arquiteturais e otimização.' }
+];
+
 
 const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, contextData }) => {
     const { user } = useAuth();
@@ -19,35 +27,68 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
     const progressInterval = useRef(null); // Referência para o intervalo de progresso
     // Estado complexo de configuração
     const [config, setConfig] = useState({
-        narrativeGoal: "",
+        narrativeGoal: "", // O enredo
+        teachingFocus: "", // NOVO: O que ensinar especificamente
+        targetAudience: "Junior", // NOVO: Nível
         tone: "aventura",
         personality: "Socrático",
         questionsPerQuiz: 4,
         linesPerNarrative: 6,
         charactersList: [
-            { role: "Capitã Debug", type: "Mentor" },
-            { role: "Recruta Zero", type: "Aluno" }
+            { role: "Mentor Técnico", type: "Mentor" },
+            { role: "Estagiário Curioso", type: "Aluno" }
         ]
     });
+    // 1. CORREÇÃO DO BUG DE ESTADO (Adicione este useEffect)
+    // Isso garante que sempre que a modal fechar ou abrir, o estado seja resetado
+    useEffect(() => {
+        if (!isOpen) {
+            setLoading(false);
+            setProgress(0);
+            setProgressMessage("Iniciando...");
+            // Opcional: Se quiser resetar o passo ou config, faça aqui também
+        }
+    }, [isOpen]);
+
     useEffect(() => {
         if (isOpen) {
+            // Reset inicial
+            setLoading(false);
+            setProgress(0);
+            setProgressMessage("Iniciando...");
+
+            // --- LÓGICA DE PREENCHIMENTO AUTOMÁTICO (PRESET) ---
+            if (contextData?.ai_preset) {
+                // Se o contexto trouxer um preset do template, usamos ele
+                setConfig(prev => ({
+                    ...prev,
+                    teachingFocus: contextData.ai_preset.teachingFocus || contextData.title || "",
+                    targetAudience: contextData.ai_preset.targetAudience || "Junior",
+                    narrativeGoal: contextData.ai_preset.narrativeGoal || prev.narrativeGoal,
+                    tone: contextData.ai_preset.tone || "aventura",
+                    personality: contextData.ai_preset.personality || "Socrático",
+                    charactersList: contextData.ai_preset.charactersList || prev.charactersList
+                }));
+            } else {
+                // Se não tiver preset, tentamos inferir apenas o básico
+                setConfig(prev => ({
+                    ...prev,
+                    teachingFocus: contextData?.title || "",
+                    // Mantém os padrões do state inicial para o resto
+                }));
+            }
+
+            // Conexão Socket (código existente)
             const socketUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-            socketRef.current = io(socketUrl, {
-                transports: ['websocket', 'polling'],
-                reconnectionAttempts: 3
-            });
+            socketRef.current = io(socketUrl, { transports: ['websocket'], reconnectionAttempts: 3 });
 
             socketRef.current.on('ai_progress', (data) => {
-                console.log("Progresso recebido:", data);
-                // A barra pula diretamente para a porcentagem real enviada pelo backend
                 setProgress(data.percent);
                 if (data.message) setProgressMessage(data.message);
             });
         }
-        return () => {
-            if (socketRef.current) socketRef.current.disconnect();
-        };
-    }, [isOpen]);
+        return () => { if (socketRef.current) socketRef.current.disconnect(); };
+    }, [isOpen, contextData]); // Dependência contextData é importante aqui
 
     if (!isOpen) return null;
 
@@ -85,7 +126,7 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
 
         try {
             const skeletonPath = structure.map(step => ({ id: step.id, type: step.type }))
-                .filter(s => ['quiz', 'narrative'].includes(s.type));
+                .filter(s => ['quiz', 'narrative', 'content'].includes(s.type));
 
             const socketId = socketRef.current?.id;
 
@@ -157,18 +198,51 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                     )}
                     {!loading && step === 1 ? (
                         <div className="space-y-6">
+                            {/* BLOCO PEDAGÓGICO (NOVO) */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-2">
+                                        <FaBullseye className="text-red-500" /> Tópico Central
+                                    </label>
+                                    <input
+                                        type="text"
+                                        className="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-sm focus:ring-2 focus:ring-purple-500"
+                                        placeholder="Ex: Loop For vs While"
+                                        value={config.teachingFocus}
+                                        onChange={e => setConfig({ ...config, teachingFocus: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-2">
+                                        <FaGraduationCap className="text-blue-500" /> Nível da Turma
+                                    </label>
+                                    <select
+                                        className="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-sm"
+                                        value={config.targetAudience}
+                                        onChange={e => setConfig({ ...config, targetAudience: e.target.value })}
+                                    >
+                                        {AUDIENCE_LEVELS.map(lvl => (
+                                            <option key={lvl.id} value={lvl.id}>{lvl.label}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
                             {/* Enredo */}
                             <div>
-                                <label className="block font-bold text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-2">
-                                    <FaBook className="text-purple-500" /> Sobre o que é a história?
+                                <label className="block text-sm font-bold text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-2">
+                                    <FaBook className="text-purple-500" /> Contexto da História
                                 </label>
                                 <textarea
-                                    className="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-purple-500 outline-none"
+                                    className="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-sm focus:ring-2 focus:ring-purple-500"
                                     rows="3"
-                                    placeholder="Ex: O servidor caiu e precisamos usar comandos SQL para restaurar o backup antes que os dados sejam perdidos..."
+                                    placeholder="Ex: O servidor caiu e a equipe precisa analisar os logs para achar o erro de memória..."
                                     value={config.narrativeGoal}
                                     onChange={e => setConfig({ ...config, narrativeGoal: e.target.value })}
                                 />
+                            </div>
+
+                            <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg text-xs text-blue-700 dark:text-blue-200 border border-blue-100 dark:border-blue-800">
+                                <strong>Dica:</strong> O "Tópico Central" define o conteúdo das aulas. O "Contexto da História" define o cenário onde esse conteúdo será aplicado.
                             </div>
 
                             {/* Tom e Personalidade */}

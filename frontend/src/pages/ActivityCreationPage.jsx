@@ -320,7 +320,7 @@ function ActivityCreationPage({ existingActivity }) {
   // useEffect para sincronizar os elementos do hub baseados nas seleções da Etapa 5
   useEffect(() => {
     // Pega os nomes dos cards selecionados (ex: "Economia (sistema monetário)")
-    const selectedCards = activityData.gameElements.selectedElements;
+    const selectedCards = activityData.gameElements?.selectedElements || [];
     // Pega os elementos do hub que JÁ existem na atividade
     const currentHubElements = activityData.gamificationDesign?.hub_elements || [];
 
@@ -366,7 +366,7 @@ function ActivityCreationPage({ existingActivity }) {
         }
       }));
     }
-  }, [activityData.gameElements.selectedElements, setActivityData]);
+  }, [activityData.gameElements?.selectedElements, setActivityData]);
 
 
   const handleSelectTemplate = (templateData) => {

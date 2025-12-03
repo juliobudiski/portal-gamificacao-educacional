@@ -156,25 +156,7 @@ function Step5_GameElements({ activityData, handleInputChange, setActivityData, 
         fullActivityData={activityData}
       />
 
-      {/* SEÇÃO 4: Detalhes da Narrativa (Condicional) */}
-      {activityData.gameElements.selectedElements.includes("Narrativas envolventes") && (
-        <div className="mt-4 p-6 border border-teal-300 dark:border-teal-800 rounded-lg bg-teal-50 dark:bg-teal-900/20 animate-fade-in">
-          <h4 className="text-lg font-semibold text-teal-800 dark:text-teal-200 mb-4">
-            Construindo sua Narrativa
-          </h4>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="gameElements.narrativeTitle" className="block text-sm font-medium text-secondary-text dark:text-secondary-text">Título da Narrativa:</label>
-              <input type="text" id="gameElements.narrativeTitle" name="gameElements.narrativeTitle" value={activityData.gameElements.narrativeTitle} onChange={handleInputChange} className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-primary-bg border border-border-color dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm" placeholder="Ex: A Saga do Código Perdido" />
-            </div>
-            <div>
-              <label htmlFor="gameElements.narrativeContent" className="block text-sm font-medium text-secondary-text dark:text-secondary-text">Conteúdo da Narrativa:</label>
-              <textarea id="gameElements.narrativeContent" name="gameElements.narrativeContent" value={activityData.gameElements.narrativeContent} onChange={handleInputChange} rows="5" className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-primary-bg border border-border-color dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm" placeholder="Descreva o enredo, os personagens e o mundo da sua atividade."></textarea>
-              <p className="text-xs text-secondary-text dark:text-secondary-text mt-2">Em breve iremos conectar com a API para geração de falas da narrativa.</p>
-            </div>
-          </div>
-        </div>
-      )}
+
       <button
         onClick={() => openHelp('elementos_jogos')} // Chama pelo ID
         className="bg-blue-500 text-white px-4 py-2 rounded"

@@ -4,7 +4,7 @@ import { elementConfig } from '../../components/activity/GameBoardConfig'; // Aj
 import { useParams } from 'react-router-dom';
 import AIConfigModal from '../activity/AIConfigModal'; // <--- Importamos o novo modal
 
-function GameBoardEditor({ gamificationDesign, setActivityData, onEditContent, onStructureChange, activityId, fullActivityData }) {
+function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditContent, onStructureChange, activityId, fullActivityData }) {
 
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
 
@@ -72,12 +72,21 @@ function GameBoardEditor({ gamificationDesign, setActivityData, onEditContent, o
                 onClose={() => setIsAIModalOpen(false)}
                 onSuccess={handleAIContentApplied}
                 activityId={activityId}
-                // Passamos o contexto manual para caso não tenha ID salvo
                 contextData={{
                     title: fullActivityData?.title || "Nova Atividade",
                     description: fullActivityData?.description || "Sem descrição",
                     area_knowledge: fullActivityData?.areaKnowledge || "Geral",
-                    player_profile: fullActivityData?.playerProfile?.selectedProfiles?.join(", ") || "Geral"
+                    player_profile: fullActivityData?.playerProfile?.selectedProfiles?.join(", ") || "Geral",
+
+                    // Criamos um preset fundindo o AI_PRESET oficial com o CONTEÚDO LEGADO do template
+                    ai_preset: {
+                        ...(fullActivityData?.ai_preset || fullActivityData?.gamificationDesign?.ai_preset || {}),
+
+                        // Se o preset não tiver objetivo narrativo, tentamos pegar do gameElements (legado do template)
+                        narrativeGoal: (fullActivityData?.ai_preset?.narrativeGoal) ||
+                            (fullActivityData?.gameElements?.narrativeContent) ||
+                            ""
+                    }
                 }}
                 structure={gamificationDesign.progression_path || []}
             />
@@ -111,7 +120,7 @@ function GameBoardEditor({ gamificationDesign, setActivityData, onEditContent, o
                         <div className="flex flex-wrap gap-3 mb-6">
                             {Object.entries(elementConfig.path).map(([type, config]) => {
                                 // Conta quantos passos desse tipo já existem na trilha
-                                const count = (gamificationDesign.progression_path || []).filter(s => s.type === type).length;
+                                const count = (gamificationDesign?.progression_path || []).filter(s => s.type === type).length;
 
                                 return (
                                     <button
