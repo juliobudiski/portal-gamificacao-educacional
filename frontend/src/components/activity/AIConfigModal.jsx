@@ -57,26 +57,26 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
             setProgress(0);
             setProgressMessage("Iniciando...");
 
-            // --- LÓGICA DE PREENCHIMENTO AUTOMÁTICO (PRESET) ---
-            if (contextData?.ai_preset) {
-                // Se o contexto trouxer um preset do template, usamos ele
-                setConfig(prev => ({
-                    ...prev,
-                    teachingFocus: contextData.ai_preset.teachingFocus || contextData.title || "",
-                    targetAudience: contextData.ai_preset.targetAudience || "Junior",
-                    narrativeGoal: contextData.ai_preset.narrativeGoal || prev.narrativeGoal,
-                    tone: contextData.ai_preset.tone || "aventura",
-                    personality: contextData.ai_preset.personality || "Socrático",
-                    charactersList: contextData.ai_preset.charactersList || prev.charactersList
-                }));
-            } else {
-                // Se não tiver preset, tentamos inferir apenas o básico
-                setConfig(prev => ({
-                    ...prev,
-                    teachingFocus: contextData?.title || "",
-                    // Mantém os padrões do state inicial para o resto
-                }));
-            }
+            // --- LÓGICA DE PRIORIDADE DO TÓPICO ---
+            // 1. O Preset tem prioridade máxima (ex: template "Log de Erros")
+            const presetFocus = contextData?.ai_preset?.teachingFocus;
+
+            // Definimos o valor inicial
+            const initialFocus = presetFocus || "";
+
+            setConfig(prev => ({
+                ...prev,
+                // Mantém o que o usuário já digitou se ele fechou e abriu o modal rapidamente,
+                // a menos que esteja vazio.
+                teachingFocus: (prev.teachingFocus && !contextData.ai_preset) ? prev.teachingFocus : initialFocus,
+
+                // Demais campos seguem a lógica de preset ou fallback
+                targetAudience: contextData?.ai_preset?.targetAudience || prev.targetAudience || "Junior",
+                narrativeGoal: contextData?.ai_preset?.narrativeGoal || prev.narrativeGoal || "",
+                tone: contextData?.ai_preset?.tone || prev.tone || "aventura",
+                personality: contextData?.ai_preset?.personality || prev.personality || "Socrático",
+                charactersList: contextData?.ai_preset?.charactersList || prev.charactersList
+            }));
 
             // Conexão Socket (código existente)
             const socketUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -118,6 +118,9 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
     };
 
     const handleOrchestrate = async () => {
+        if (!config.teachingFocus.trim()) {
+            return alert("Por favor, defina o Tópico de Ensino (ex: 'Ponteiros em C', 'Loop For'). A IA precisa disso para criar as questões.");
+        }
         if (!config.narrativeGoal.trim()) return alert("Descreva o enredo.");
 
         setLoading(true);
@@ -202,15 +205,16 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-2">
-                                        <FaBullseye className="text-red-500" /> Tópico Central
+                                        <FaBullseye className="text-red-500" /> Tópico de Ensino (Obrigatório)
                                     </label>
                                     <input
                                         type="text"
                                         className="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-sm focus:ring-2 focus:ring-purple-500"
-                                        placeholder="Ex: Loop For vs While"
+                                        placeholder="Ex: Diferença entre Git Merge e Rebase"
                                         value={config.teachingFocus}
                                         onChange={e => setConfig({ ...config, teachingFocus: e.target.value })}
                                     />
+
                                 </div>
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-2">

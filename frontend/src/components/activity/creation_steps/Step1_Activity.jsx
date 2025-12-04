@@ -1,11 +1,52 @@
 // frontend/src/components/steps/Step1_InitialDetails.jsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   FaCode, FaTools, FaUsers, FaFrown, FaTasks, FaHeadSideVirus,
   FaRocket, FaComments, FaBalanceScale, FaHeartbeat, FaCogs,
-  FaBriefcase, FaCalendarTimes
+  FaBriefcase, FaCalendarTimes, FaGlobeAmericas
 } from 'react-icons/fa';
 import { useHelpModal } from "../../../context/HelpModalContext";
+// Dados baseados na Tabela de Áreas do Conhecimento do CNPq (Simplificada para o contexto)
+const CNPQ_AREAS = {
+  "Ciências Exatas e da Terra": [
+    "Ciência da Computação",
+    "Matemática",
+    "Probabilidade e Estatística",
+    "Física",
+    "Química",
+    "Astronomia"
+  ],
+  "Engenharias": [
+    "Engenharia de Software", // Adicionado especificamente para seu contexto
+    "Engenharia Elétrica",
+    "Engenharia Civil",
+    "Engenharia Mecânica",
+    "Engenharia de Produção"
+  ],
+  "Ciências Humanas": [
+    "Educação",
+    "Psicologia",
+    "Sociologia",
+    "Filosofia",
+    "História"
+  ],
+  "Ciências Sociais Aplicadas": [
+    "Administração",
+    "Economia",
+    "Direito",
+    "Comunicação",
+    "Design"
+  ],
+  "Linguística, Letras e Artes": [
+    "Linguística",
+    "Letras",
+    "Artes"
+  ],
+  "Outros": [
+    "Multidisciplinar",
+    "Geral"
+  ]
+};
 /**
  * Componente para a Etapa 1 do formulário de criação de atividades.
  * Coleta o título, a descrição e os principais desafios enfrentados pelos alunos.
@@ -32,7 +73,23 @@ function Step1_InitialDetails({ activityData, handleInputChange, setActivityData
     { text: "Dificuldades em trabalhar com prazos apertados em projetos acadêmicos.", icon: <FaCalendarTimes /> },
   ];
   const { openHelp } = useHelpModal();
-
+  // Estado local para controlar a "Grande Área" selecionada (Filtro do segundo select)
+  const [selectedGreatArea, setSelectedGreatArea] = useState("");
+  // Efeito para sincronizar a Grande Área caso a activityData já venha preenchida (Edição)
+  useEffect(() => {
+    if (activityData.areaKnowledge && !selectedGreatArea) {
+      // Procura em qual Grande Área a área específica se encontra
+      const foundGreatArea = Object.keys(CNPQ_AREAS).find(key =>
+        CNPQ_AREAS[key].includes(activityData.areaKnowledge)
+      );
+      if (foundGreatArea) {
+        setSelectedGreatArea(foundGreatArea);
+      } else {
+        // Fallback se não achar (ex: importação antiga)
+        setSelectedGreatArea("Outros");
+      }
+    }
+  }, [activityData.areaKnowledge]);
   /**
    * Manipula a seleção de problemas a partir dos cards.
    * Adiciona o problema ao array se ele não existir, ou o remove se já existir,
@@ -54,6 +111,13 @@ function Step1_InitialDetails({ activityData, handleInputChange, setActivityData
         problems: newProblems,
       },
     }));
+  };
+
+  // Manipula a mudança da Grande Área (apenas visual/filtro)
+  const handleGreatAreaChange = (e) => {
+    setSelectedGreatArea(e.target.value);
+    // Limpa a área específica quando a grande área muda para evitar inconsistência
+    setActivityData(prev => ({ ...prev, areaKnowledge: "" }));
   };
 
   return (
@@ -96,6 +160,46 @@ function Step1_InitialDetails({ activityData, handleInputChange, setActivityData
             className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-primary-bg border border-border-color dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
             placeholder="Um resumo sobre o que é a atividade."
           ></textarea>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-secondary-text dark:text-secondary-text mb-1">
+            Grande Área (CNPq)
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+              <FaGlobeAmericas />
+            </div>
+            <select
+              value={selectedGreatArea}
+              onChange={handleGreatAreaChange}
+              className="pl-10 block w-full px-4 py-2 bg-secondary-bg dark:bg-primary-bg border border-border-color dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+            >
+              <option value="">Selecione a Grande Área...</option>
+              {Object.keys(CNPQ_AREAS).map(area => (
+                <option key={area} value={area}>{area}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-secondary-text dark:text-secondary-text mb-1">
+            Área de Conhecimento <span className="text-red-500">*</span>
+          </label>
+          <select
+            name="areaKnowledge"
+            value={activityData.areaKnowledge || ""}
+            onChange={handleInputChange}
+            disabled={!selectedGreatArea}
+            className="block w-full px-4 py-2 bg-secondary-bg dark:bg-primary-bg border border-border-color dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <option value="">
+              {selectedGreatArea ? "Selecione a Área específica..." : "Selecione a Grande Área primeiro"}
+            </option>
+            {selectedGreatArea && CNPQ_AREAS[selectedGreatArea].map(subArea => (
+              <option key={subArea} value={subArea}>{subArea}</option>
+            ))}
+          </select>
         </div>
       </div>
 

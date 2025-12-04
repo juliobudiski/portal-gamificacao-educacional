@@ -16,13 +16,37 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
 
     // --- MANIPULAÇÃO DA TRILHA ---
     const addPathStep = (type) => {
+        const currentPath = gamificationDesign.progression_path || [];
+
+        // --- REGRA DE NEGÓCIO: Quiz não pode ser o primeiro ---
+        // Se o tipo for 'quiz' E a trilha estiver vazia, bloqueamos.
+        // Nota: Ajuste 'quiz' para a chave exata usada no seu elementConfig (ex: 'challenge', 'battle', etc)
+        if (type === 'quiz' && currentPath.length === 0) {
+            alert("Incoerência Pedagógica: Um Quiz não pode ser o primeiro passo. Adicione uma Narrativa ou Conteúdo antes para preparar o aluno.");
+            return;
+        }
+
         const newStep = { id: `step_${new Date().getTime()}`, type, isMandatory: true, content: {} };
-        const newPath = [...(gamificationDesign.progression_path || []), newStep];
+        const newPath = [...currentPath, newStep]; // Usando currentPath que já definimos acima
         updateDesign('progression_path', newPath);
     };
 
     const removePathStep = (stepId) => {
-        const newPath = (gamificationDesign.progression_path || []).filter(step => step.id !== stepId);
+        const currentPath = gamificationDesign.progression_path || [];
+        const indexToRemove = currentPath.findIndex(s => s.id === stepId);
+
+        if (indexToRemove === -1) return;
+
+        // --- REGRA DE NEGÓCIO: Proteção de Integridade ---
+        // Se estamos removendo o PRIMEIRO item (index 0)
+        // E existe um SEGUNDO item (index 1)
+        // E esse segundo item é um QUIZ
+        if (indexToRemove === 0 && currentPath.length > 1 && currentPath[1].type === 'quiz') {
+            alert("Ação Bloqueada: Você não pode remover este passo pois o próximo item é um Quiz. O Quiz não pode se tornar o início da trilha.");
+            return;
+        }
+
+        const newPath = currentPath.filter(step => step.id !== stepId);
         updateDesign('progression_path', newPath);
     };
 
@@ -119,28 +143,46 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
                         {/* --- BOTÕES DE ADICIONAR COM CONTADORES --- */}
                         <div className="flex flex-wrap gap-3 mb-6">
                             {Object.entries(elementConfig.path).map(([type, config]) => {
-                                // Conta quantos passos desse tipo já existem na trilha
-                                const count = (gamificationDesign?.progression_path || []).filter(s => s.type === type).length;
+                                const currentPath = gamificationDesign?.progression_path || [];
+                                const count = currentPath.filter(s => s.type === type).length;
 
+                                // Verifica se o botão deve ser desabilitado
+                                const isQuizType = type === 'quiz'; // Ajuste conforme sua chave real
+                                const isDisabled = isQuizType && currentPath.length === 0;
                                 return (
                                     <button
                                         key={type}
-                                        onClick={() => addPathStep(type)}
-                                        className="relative flex items-center pl-3 pr-4 py-2 text-sm bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-900 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition-all shadow-sm group"
+                                        onClick={() => !isDisabled && addPathStep(type)} // Previne clique
+                                        disabled={isDisabled} // Atributo HTML
+                                        // Estilização condicional para estado disabled
+                                        className={`relative flex items-center pl-3 pr-4 py-2 text-sm border rounded-lg transition-all shadow-sm group
+                ${isDisabled
+                                                ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed opacity-60'
+                                                : 'bg-white dark:bg-gray-800 border-blue-200 dark:border-blue-900 hover:bg-blue-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200'
+                                            }
+            `}
+                                        // Tooltip explicativo
+                                        title={isDisabled ? "Adicione uma Narrativa antes de incluir um Quiz." : config.name}
                                     >
-                                        <img src={config.icon} alt="" className="w-5 h-5 mr-2" />
-                                        <span className="font-medium text-gray-700 dark:text-gray-200">{config.name}</span>
+                                        <img
+                                            src={config.icon}
+                                            alt=""
+                                            className={`w-5 h-5 mr-2 ${isDisabled ? 'grayscale opacity-50' : ''}`}
+                                        />
+                                        <span className="font-medium">{config.name}</span>
 
                                         {/* Badge do Contador */}
                                         {count > 0 && (
-                                            <span className="ml-2 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-bold px-2 py-0.5 rounded-full">
+                                            <span className={`ml-2 text-xs font-bold px-2 py-0.5 rounded-full ${isDisabled ? 'bg-gray-200 text-gray-500' : 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'}`}>
                                                 {count}
                                             </span>
                                         )}
 
-                                        <span className="ml-2 text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <FaPlus size={10} />
-                                        </span>
+                                        {!isDisabled && (
+                                            <span className="ml-2 text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <FaPlus size={10} />
+                                            </span>
+                                        )}
                                     </button>
                                 );
                             })}
