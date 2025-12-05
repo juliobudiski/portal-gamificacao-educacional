@@ -29,6 +29,8 @@
     "react-roulette-pro": "^3.2.3",
     "react-router-dom": "^7.6.3",
     "recharts": "^3.1.2",
+    "rehype-highlight": "^7.0.2",
+    "remark-breaks": "^4.0.0",
     "remark-gfm": "^4.0.1",
     "socket.io-client": "^4.8.1",
     "use-debounce": "^10.0.6",
@@ -36,6 +38,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",
+    "@tailwindcss/typography": "^0.5.19",
     "@types/leaflet": "^1.9.21",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",

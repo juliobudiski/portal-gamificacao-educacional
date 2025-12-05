@@ -163,18 +163,28 @@ function ClassListPage() {
             <h1 className="text-3xl font-bold mb-6 text-center text-accent-yellow">
                 {user?.role === 'professor' ? 'Minhas Turmas' : 'Minhas Matrículas'}
             </h1>
+
+            {/* Mensagem de Feedback com cores semânticas */}
             {message && (
-                <p className={`text-sm mb-4 text-center font-medium ${message.includes('sucesso') ? 'text-green-600' : 'text-red-600'}`}>
+                <p className={`text-sm mb-4 text-center font-medium py-2 px-4 rounded-lg border ${message.includes('sucesso')
+                        ? 'bg-success-bg text-success border-success/30'
+                        : 'bg-danger-bg text-danger border-danger/30'
+                    }`}>
                     {message}
                 </p>
             )}
+
+            {/* Botão Criar Nova Turma */}
             {user?.role === 'professor' && (
                 <div className="text-center mb-6">
-                    <Link to="/teacher/classes/new" className="bg-green-600 hover:bg-green-700 text-primary-text font-bold py-2 px-4 rounded-lg inline-block transition duration-200 ease-in-out transform hover:scale-105">
+                    <Link to="/teacher/classes/new"
+                        // Mudado para 'bg-success' para indicar ação positiva
+                        className="bg-success hover:bg-success/90 text-white dark:text-primary-bg font-bold py-2 px-6 rounded-lg inline-block transition duration-200 ease-in-out transform hover:scale-105 shadow-md">
                         Criar Nova Turma
                     </Link>
                 </div>
             )}
+
             {isLoading ? (
                 <p className="text-center text-secondary-text">Carregando turmas...</p>
             ) : classes.length > 0 ? (
@@ -182,36 +192,42 @@ function ClassListPage() {
                     {classes.map((cls) => (
                         <div
                             key={cls.id}
-                            className="bg-secondary-bg p-6 rounded-xl shadow-lg border-t-4 border-[#ffbd30] transition-all duration-300 hover:shadow-2xl hover:-translate-y-1.5 hover:border-[#69e8cb]"
+                            // Card agora usa secondary-bg e bordas semânticas
+                            className="bg-secondary-bg p-6 rounded-xl shadow-lg border border-[var(--border-color)] border-t-4 border-t-accent-yellow transition-all duration-300 hover:shadow-2xl hover:-translate-y-1.5 hover:border-t-accent-teal"
                         >
                             <h2 className="text-xl font-bold mb-3 text-primary-text">
                                 <Link
                                     to={`/classes/${cls.id}`}
-                                    className="text-[#69e8cb] hover:text-[#ffbd30] transition-colors duration-200"
+                                    // Cores de link atualizadas
+                                    className="text-accent-teal hover:text-accent-yellow transition-colors duration-200"
                                 >
                                     {cls.name}
                                 </Link>
                             </h2>
-                            <p className="text-secondary-texttext-sm mb-4">{cls.description}</p>
+                            {/* Correção do typo: text-secondary-text text-sm (estava junto) */}
+                            <p className="text-secondary-text text-sm mb-4">{cls.description}</p>
 
                             {user?.role === 'professor' && (
                                 <>
-                                    <p className="text-secondary-texttext-sm mb-4">
+                                    <p className="text-secondary-text text-sm mb-4">
                                         Código de Inscrição:
-                                        <span className="font-mono bg-primary-bg p-1.5 rounded-md text-[#ffbd30] block mt-1.5">
+                                        {/* Código com fundo primary-bg para contraste dentro do card */}
+                                        <span className="font-mono bg-primary-bg border border-[var(--border-color)] p-1.5 rounded-md text-accent-yellow block mt-1.5">
                                             {cls.enrollment_code}
                                         </span>
                                     </p>
                                     <div className="flex space-x-3 mt-5">
                                         <Link
                                             to={`/classes/${cls.id}/edit`}
-                                            className="flex-1 bg-gradient-to-r from-[#ffbd30] to-[#ffa000] hover:from-[#ffcc5c] hover:to-[#ffb140] text-[#2c3135] font-bold py-2 px-4 rounded-lg text-center text-sm transition-all duration-200 shadow-md hover:shadow-lg"
+                                            // Botão Editar usando accent-yellow
+                                            className="flex-1 bg-accent-yellow hover:brightness-110 text-white dark:text-primary-bg font-bold py-2 px-4 rounded-lg text-center text-sm transition-all duration-200 shadow-md hover:shadow-lg"
                                         >
                                             Editar
                                         </Link>
                                         <button
                                             onClick={() => handleDeleteClass(cls.id)}
-                                            className="flex-1 bg-gradient-to-r from-[#ff416c] to-[#ff4b2b] hover:from-[#ff557c] hover:to-[#ff6340] text-primary-text font-bold py-2 px-4 rounded-lg text-sm transition-all duration-200 shadow-md hover:shadow-lg"
+                                            // Botão Deletar usando danger
+                                            className="flex-1 bg-danger hover:bg-danger/90 text-white font-bold py-2 px-4 rounded-lg text-sm transition-all duration-200 shadow-md hover:shadow-lg"
                                         >
                                             Deletar
                                         </button>
@@ -223,7 +239,8 @@ function ClassListPage() {
                                 <div className="mt-5">
                                     <button
                                         onClick={() => handleLeaveClass(cls.id)}
-                                        className="w-full bg-gradient-to-r from-[#ff416c] to-[#ff4b2b] hover:from-[#ff557c] hover:to-[#ff6340] text-primary-text font-bold py-2 px-4 rounded-lg text-sm transition-all duration-200 shadow-md hover:shadow-lg"
+                                        // Botão Sair usando danger
+                                        className="w-full bg-danger hover:bg-danger/90 text-white font-bold py-2 px-4 rounded-lg text-sm transition-all duration-200 shadow-md hover:shadow-lg"
                                     >
                                         Sair da Turma
                                     </button>

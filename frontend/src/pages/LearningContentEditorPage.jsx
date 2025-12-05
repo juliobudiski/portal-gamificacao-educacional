@@ -178,7 +178,7 @@ function LearningContentEditorPage({ initialData, onSave, isOfflineMode = false 
                             )}
                         </div>
 
-                        <div className="bg-blue-900/20 p-4 rounded-lg border border-blue-800 text-sm text-blue-200">
+                        <div className="bg-info-bg p-4 rounded-lg border border-info/30 text-info text-sm">
                             <strong>Nota:</strong> O texto escrito ao lado aparecerá formatado abaixo do vídeo na visão do aluno.
                         </div>
                     </div>

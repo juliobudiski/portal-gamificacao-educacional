@@ -45,401 +45,380 @@ class AIService:
             generation_config={
                 "response_mime_type": "application/json",
                 "max_output_tokens": 8192, 
-                "temperature": 0.4,
+                "temperature": 0.5, # Aumentei levemente para criatividade
                 "top_p": 0.8
             }
         )
 
     def orchestrate_story(self, activity_context: Dict, path_structure: List[Dict], ai_config: Dict, client_socket_id: str = None) -> Dict:
-        logger.info(f"--- INICIANDO ORQUESTRAÇÃO INTELIGENTE (Modelo: {self.model_name}) ---")
+        logger.info(f"--- INICIANDO ORQUESTRAÇÃO ROBUSTA (Modelo: {self.model_name}) ---")
         
-        # Filtra apenas os passos preenchíveis
         steps_to_fill = [s for s in path_structure if s['type'] in ['quiz', 'narrative', 'content']]
         total_steps = len(steps_to_fill)
         
         if not steps_to_fill:
             return {}
         
-        # --- MEMÓRIA DE CURTO PRAZO ---
-        # Armazena o resumo do que aconteceu nos passos anteriores para dar continuidade
         execution_trace = {
-            "last_narrative_event": "A aventura começou.", # O que aconteceu na última história
-            "last_taught_concept": "Nenhum conceito ensinado ainda.", # O que foi ensinado no último conteúdo
-            "accumulated_knowledge": [] # Lista de tópicos já cobertos
+            "last_narrative_event": "A aventura começou.",
+            "last_taught_concept": "Conceitos introdutórios.",
+            "accumulated_knowledge": []
         }
         
         final_map = {}
+        MAX_RETRIES = 3 # Integridade: Tenta 3x antes de desistir
 
         for index, step in enumerate(steps_to_fill):
             step_number = index + 1
             step_type = step['type']
             step_id = step['id']
             
-            # Cálculo de Progresso (Visual para o usuário)
+            # Feedback visual via Socket
             if client_socket_id:
                 try:
                     percent = int(((index) / total_steps) * 100)
                     socketio.emit('ai_progress', {
                         'percent': percent,
-                        'message': f"Criando passo {step_number}/{total_steps}: {self._get_step_label(step_type)}...",
+                        'message': f"Criando {self._get_step_label(step_type)} ({step_number}/{total_steps})...",
                     }, to=client_socket_id)
-                    socketio.sleep(0)
                 except Exception:
                     pass
             
-            try:
-                # --- LÓGICA DE CONTINUIDADE ---
-                # Passamos o 'execution_trace' para a IA saber o contexto imediato
-                content = self._generate_single_step(
-                    step_type, 
-                    step_number, 
-                    total_steps, 
-                    activity_context, 
-                    ai_config, 
-                    execution_trace # <--- NOVA INJEÇÃO DE DEPENDÊNCIA
-                )
-                
-                # --- ATUALIZAÇÃO DA MEMÓRIA (O Pulo do Gato) ---
-                if content:
-                    if step_type == 'narrative':
-                        # Salva o último diálogo para o próximo passo saber
-                        dialogues = " ".join([f"{d.get('characterRole', 'Alguém')}: {d.get('text', '')}" for d in content.get('dialogue', [])])
-                        execution_trace["last_narrative_event"] = dialogues[:500] + "..." # Trunca para não estourar tokens
+            # --- LOOP DE INTEGRIDADE (RETRY MECHANISM) ---
+            attempts = 0
+            valid_content = None
+            
+            while attempts < MAX_RETRIES and not valid_content:
+                attempts += 1
+                try:
+                    if attempts > 1:
+                        logger.warning(f"Tentativa {attempts} para o passo {step_id} ({step_type})...")
+
+                    raw_content = self._generate_single_step(
+                        step_type, step_number, total_steps, 
+                        activity_context, ai_config, execution_trace
+                    )
+                    
+                    # Validação de Integridade
+                    if self._validate_content_integrity(step_type, raw_content):
+                        valid_content = raw_content
+                    else:
+                        logger.warning(f"Conteúdo inválido gerado para {step_type}. Retrying...")
                         
-                    elif step_type == 'content':
-                        # Salva o tópico ensinado para o Quiz usar
-                        topic = content.get('text_content', '')[:300]
-                        execution_trace["last_taught_concept"] = topic
-                        execution_trace["accumulated_knowledge"].append(topic[:50])
+                except Exception as e:
+                    logger.error(f"Erro na tentativa {attempts} do passo {step_id}: {str(e)}")
+                    time.sleep(1) # Backoff simples
 
-                # Fallbacks de segurança (Schema garantido)
-                if not content: content = {}
-                if step_type == 'narrative' and 'dialogue' not in content:
-                    content = {"type": "narrative", "dialogue": [], "scenario": "", "characters": []}
-                if step_type == 'quiz' and 'questions' not in content:
-                    content = {"type": "quiz", "questions": []}
-                if step_type == 'content' and 'text_content' not in content:
-                    content = {"type": "content", "text_content": "Erro na geração.", "video_url": ""}
+            # Se falhou após 3 tentativas, usa fallback vazio para não travar o app
+            if not valid_content:
+                logger.error(f"FALHA CRÍTICA: Não foi possível gerar passo {step_id} após {MAX_RETRIES} tentativas.")
+                valid_content = self._get_fallback_content(step_type)
 
-                final_map[step_id] = content
-                socketio.sleep(0.5)
+            # --- ATUALIZAÇÃO DA MEMÓRIA ---
+            self._update_memory_trace(execution_trace, step_type, valid_content)
 
-            except Exception as e:
-                logger.error(f"Erro passo {step_id}: {str(e)}")
-                continue
+            final_map[step_id] = valid_content
+            socketio.sleep(0.5) # Evita rate limit
 
         if client_socket_id:
             socketio.emit('ai_progress', {'percent': 100, 'message': "Finalizando..."}, to=client_socket_id)
 
         return final_map
 
+    # --- NOVO: VALIDADOR DE INTEGRIDADE ---
+    def _validate_content_integrity(self, step_type: str, content: Dict) -> bool:
+        """Retorna True se o conteúdo tiver o mínimo necessário para não quebrar o frontend."""
+        if not content or not isinstance(content, dict):
+            return False
+            
+        if step_type == 'narrative':
+            # Precisa ter array de diálogos e pelo menos 2 falas
+            dialogues = content.get('dialogue', [])
+            has_dialogue = isinstance(dialogues, list) and len(dialogues) >= 2
+            # Garante que as falas tenham texto
+            valid_lines = all(d.get('text') and d.get('characterRole') for d in dialogues) if has_dialogue else False
+            return has_dialogue and valid_lines
+
+        elif step_type == 'quiz':
+            # Precisa ter perguntas
+            questions = content.get('questions', [])
+            return isinstance(questions, list) and len(questions) > 0
+
+        elif step_type == 'content':
+            # Precisa ter texto
+            text = content.get('text_content', '')
+            return len(str(text)) > 50
+
+        return True
+
+    def _get_fallback_content(self, step_type):
+        """Retorna estrutura vazia segura em caso de falha total."""
+        if step_type == 'narrative':
+            return {"type": "narrative", "dialogue": [], "scenario": "", "characters": []}
+        elif step_type == 'quiz':
+            return {"type": "quiz", "questions": []}
+        return {"type": "content", "text_content": "Erro na geração. Edite manualmente.", "video_url": ""}
+
+    def _update_memory_trace(self, trace, step_type, content):
+        """Atualiza a memória de curto prazo para o próximo passo."""
+        if step_type == 'narrative':
+            dialogues = " ".join([f"{d.get('characterRole', 'Alguém')}: {d.get('text', '')}" for d in content.get('dialogue', [])])
+            trace["last_narrative_event"] = dialogues[:800] + "..." 
+        elif step_type == 'content':
+            topic = content.get('text_content', '')[:300]
+            trace["last_taught_concept"] = topic
+            trace["accumulated_knowledge"].append(topic[:50])
+
     def _get_step_label(self, type):
-        labels = {'quiz': 'Desafio', 'narrative': 'História', 'content': 'Conteúdo Teórico'}
+        labels = {'quiz': 'Desafio', 'narrative': 'História', 'content': 'Conteúdo'}
         return labels.get(type, 'Passo')
 
+    # -------------------------------------------------------------------------
+    # NOVO MÉTODO: Centraliza a Persona (A "Alma" da IA)
+    # -------------------------------------------------------------------------
+    def _get_system_persona(self, config: Dict) -> str:
+        personality = config.get('personality', 'Socrático')
+        tone = config.get('tone', 'Aventura')
+        
+        base_persona = f"""
+        VOCÊ É: Um Tech Lead Sênior (Google/Netflix ex-employee) e Roteirista premiado de Ficção Interativa.
+        
+        SUA MENTALIDADE (PEDAGOGIA):
+        1.  **Anti-Tédio:** Você odeia definições de dicionário ("X é uma ferramenta que..."). Você explica COMO e POR QUE usar.
+        2.  **Contexto Real:** Tudo deve ser aplicado a um cenário de produção (servidores caindo, bugs em produção, prazos apertados).
+        3.  **Método:** Use a abordagem '{personality}'. Se for 'Socrático', faça perguntas que guiem. Se for 'Hardcore', seja direto e exija atenção aos detalhes.
+        
+        SEU ESTILO DE ESCRITA (TOM '{tone}'):
+        -   Evite linguagem corporativa vazia ("alavancar sinergias").
+        -   Use terminologia técnica correta (Stack Trace, Deploy, Commit, Branch), mas com uma narrativa envolvente.
+        """
+        return base_persona
+
+    # -------------------------------------------------------------------------
+    # REFACTOR: _generate_single_step (Orquestrador do Prompt)
+    # -------------------------------------------------------------------------
     def _generate_single_step(self, step_type, step_idx, total_steps, context, config, execution_trace):
-        # 1. Extração de Metadados Ricos (Novos Campos)
-        area_knowledge = context.get('area_knowledge', 'Geral')
+        # 1. Metadados
         teaching_focus = config.get('teachingFocus') or context.get('title')
-        target_audience = config.get('targetAudience', 'Estudante')
-        #target_audience = context.get('player_profile', 'Estudantes')
-        characters_list = config.get('charactersList', []) # A lista que vem do Modal
+        target_audience = config.get('targetAudience', 'Junior')
+        characters_list = config.get('charactersList', [])
         
-        # Formata a lista de personagens para o prompt
-        formatted_cast = ", ".join([f"{c['role']} ({c['type']})" for c in characters_list])
-        
-        # Formata o conhecimento acumulado para evitar repetição
-        known_topics = "; ".join(execution_trace['accumulated_knowledge'])
+        # Formata o elenco para a IA saber quem está falando
+        formatted_cast = "\n".join([
+            f"- {c['role']} ({c['type']}): Use a imagem '{c.get('image', '')}'." 
+            for c in characters_list
+        ])
 
-        # 2. Definição da Dinâmica (Mantida)
+        # 2. Define a Fase da História
         progress_ratio = step_idx / total_steps
-        story_phase = "INTRODUÇÃO"
-        difficulty = "FÁCIL (Conceitos Básicos)"
-        
-        if progress_ratio > 0.3 and progress_ratio < 0.8:
-            story_phase = "DESENVOLVIMENTO (Conflito e Aplicação)"
-            difficulty = "MÉDIO (Análise de Casos)"
-        elif progress_ratio >= 0.8:
-            story_phase = "CLÍMAX (Resolução Complexa)"
-            difficulty = "DIFÍCIL (Avaliação e Síntese)"
+        story_phase = "INTRODUÇÃO (O Problema Surge)"
+        if progress_ratio > 0.3: story_phase = "DESENVOLVIMENTO (Tentativa e Erro)"
+        if progress_ratio > 0.8: story_phase = "CLÍMAX (A Solução Final)"
 
-        # 3. Contexto Dinâmico Melhorado
-        dynamic_instruction = ""
-        
-        if step_type == 'content':
-            dynamic_instruction = f"""
-            CONTEXTO:
-            - Erro observado na narrativa: "{execution_trace['last_narrative_event']}"
-            - Foco Técnico: "{teaching_focus}"
-            
-            SUA MISSÃO (CONSTRUTIVISMO):
-            1. NÃO DÊ AULA. Forneça a documentação técnica necessária para resolver o artefato quebrado da narrativa anterior.
-            2. USE A TÉCNICA "BRIDGING": Comece validando o que o aluno viu ("Vocês viram o erro 500 no log?").
-            3. ENTREGUE O "TOOLKIT": Explique a ferramenta/conceito exato que corrige aquele log.
-            """
-        
-        elif step_type == 'quiz':
-            dynamic_instruction = f"""
-            CONTEXTO SITUACIONAL:
-            - Conceito TÉCNICO recém-ensinado: "{execution_trace['last_taught_concept']}"
-            - Cenário Narrativo Anterior: "{execution_trace['last_narrative_event']}" (Use isso para a Pergunta 1)
-            - Dificuldade: {difficulty}
-            - Público Alvo: {target_audience}
-            
-            SUA MISSÃO: Atuar como um Tech Lead entrevistando um candidato. 
-            Você deve validar se o usuário sabe APLICAR o conhecimento, e não apenas memorizá-lo.
-            """
-            
-        elif step_type == 'narrative':
-            dynamic_instruction = f"""
-            CONTEXTO SITUACIONAL:
-            - Tópico Técnico em Pauta: "{execution_trace['last_taught_concept']}" ou "{teaching_focus}"
-            - Fase da História: {story_phase}
-            - Personagens em Cena (ELENCO OBRIGATÓRIO): {formatted_cast}
-            
-            SUA MISSÃO (CRIAR TENSÃO):
-            1. NÃO RESOLVA O PROBLEMA: Crie uma situação onde o sistema falha, um bug crítico aparece ou um prazo estourou.
-            2. FOCO NO SINTOMA: Os personagens devem descrever o erro (ex: logs estranhos, tela travada, cliente reclamando), e não a teoria.
-            3. CLIFFHANGER: O diálogo deve terminar com os personagens precisando urgentemente aprender algo novo para consertar a situação (preparando terreno para o próximo Conteúdo).
-            """
+        # 3. Montagem do Prompt Modular
+        system_persona = self._get_system_persona(config)
+        specific_instruction = self._get_dynamic_instruction(step_type, execution_trace, story_phase, formatted_cast, teaching_focus, config)
+        json_schema = self._get_strict_instructions(step_type, config.get('questionsPerQuiz', 4), config.get('linesPerNarrative', 6), characters_list)
 
-        # 4. Montagem do Prompt Enriquecido
-        system_role = f"""
-        Você é um Tech Lead Sênior e Roteirista de Ficção Científica.
-        Sua especialidade é criar cenários de crise em Engenharia de Software que exigem solução imediata.
-        Você NUNCA resolve o problema na narrativa; você apenas expõe os sintomas do erro para que o aluno investigue.
-        Personalidade da IA: {config.get('personality', 'Mentor Pragmático')}..
-        Tom da História: {config.get('tone', 'Aventura')}.
-        Objetivo Global: {config.get('narrativeGoal', 'Ensinar conceito X')}.
-        """
-        
         full_prompt = f"""
-        {system_role}
+        {system_persona}
+
+        --- CONTEXTO ATUAL ---
+        TÓPICO DE ENSINO: "{teaching_focus}"
+        NÍVEL DO ALUNO: {target_audience} (Ajuste a complexidade técnica para este nível)
+        FASE DA NARRATIVA: {story_phase}
         
-        # METADADOS DA ATIVIDADE
-        - Título: {context.get('title')}
-        - TÓPICO DE ENSINO (CONTEÚDO TÉCNICO): {teaching_focus}
-        - Descrição: {context.get('description')}
-        - Área de Conhecimento: {area_knowledge}
-        - Público Alvo: {target_audience}
+        --- MEMÓRIA (O que já aconteceu) ---
+        Último Evento: "{execution_trace['last_narrative_event']}"
+        Conceito Ensinado Recentemente: "{execution_trace['last_taught_concept']}"
+
+        --- SUA MISSÃO AGORA ({step_type.upper()}) ---
+        {specific_instruction}
+
+        --- REGRAS DE SAÍDA (EXTREMAMENTE CRÍTICO) ---
+        1. Responda APENAS com JSON válido.
+        2. NÃO use Markdown (sem ```json).
+        3. Siga estritamente o schema abaixo.
         
-        # INSTRUÇÕES DE CONTINUIDADE E MEMÓRIA
-        {dynamic_instruction}
-        
-        # REGRAS ESTRUTURAIS (SCHEMA JSON)
-        {self._get_strict_instructions(step_type, config.get('questionsPerQuiz', 4), config.get('linesPerNarrative', 6))}
-        
-        Retorne APENAS o JSON válido.
+        {json_schema}
         """
         
+        # Geração
         response = self.model.generate_content(full_prompt)
         parsed_json = self._clean_and_parse_json(response.text)
         
-        # --- APLICAÇÃO DA CORREÇÃO DE VIÉS ---
         if step_type == 'quiz':
             parsed_json = self._shuffle_quiz_options(parsed_json)
             
         return parsed_json
 
-    def _get_strict_instructions(self, step_type, quiz_count, dialogue_len):
-        """Retorna instruções específicas e 'failsafes' para cada tipo."""
-        
+    # -------------------------------------------------------------------------
+    # REFACTOR: _get_dynamic_instruction (Onde a mágica acontece)
+    # -------------------------------------------------------------------------
+    def _get_dynamic_instruction(self, step_type, trace, phase, cast, topic, config):
         if step_type == 'narrative':
             return f"""
-            # TAREFA: GERAR NARRATIVA (TIPO: 'narrative')
+            **TAREFA:** Escrever um roteiro de diálogo curto e tenso.
             
-            Regras de Roteiro:
-            1. Gere EXATAMENTE {dialogue_len} linhas de diálogo alternando entre os personagens.
-            2. CONTINUIDADE VISUAL: Se o cenário anterior era um escritório, mantenha-o, a menos que a história exija mudança (ex: ir para a sala de servidores).
-            3. ESCOLHA DE PERSONAGEM: Use o campo 'role' (ex: 'Mentor', 'Aluno') e associe a uma URL de 'image' válida da lista 'available_characters'. Tente usar o elenco do usuário se houver match.
-            4. TENSÃO TÉCNICA: O diálogo não deve ser "fofoca". Deve ser sobre o problema de software, logs de erro, arquitetura ou código.
+            **PERSONAGENS DISPONÍVEIS:**
+            {cast}
             
-            Schema JSON Obrigatório:
+            **DIRETRIZES DE ROTEIRO:**
+            1.  **O Conflito:** Crie um problema técnico ESPECÍFICO relacionado a "{topic}". 
+                * RUIM: "O sistema não funciona."
+                * BOM: "O endpoint de login está retornando 403 Forbidden intermitente." ou "O loop infinito travou a main thread."
+            2.  **Vozes Distintas:**
+                * O **Mentor** deve ser calmo, questionador e sênior.
+                * O **Aluno** deve demonstrar urgência, confusão ou iniciativa (dependendo do erro).
+            3.  **Show, Don't Tell:** Não faça eles falarem "Nossa, precisamos estudar X". Faça o erro acontecer na tela deles.
+            4.  **Gancho (Cliffhanger):** Termine o diálogo no momento exato em que eles percebem que não sabem como resolver sem aprender o conceito "{topic}".
+            """
+
+        elif step_type == 'content':
+            return f"""
+            **TAREFA:** Criar um guia técnico prático ("Cheat Sheet") para resolver o problema da narrativa anterior.
+            
+            **ESTRUTURA OBRIGATÓRIA DO CONTEÚDO (Markdown):**
+            
+            1.  **O Diagnóstico (Por que quebrou?):**
+                - Explique o erro técnico que ocorreu na história. Conecte a teoria à prática.
+                - Ex: "O erro 403 aconteceu porque o token JWT expirou..."
+            
+            2.  **A Teoria (Mental Model):**
+                - Use uma analogia rápida se ajudar.
+                - Explique o conceito de "{topic}" de forma direta.
+            
+            3.  **A Solução (Code Snippet):**
+                - Forneça um bloco de código Python/JS (conforme o tópico) mostrando a implementação correta.
+                - O código deve seguir boas práticas (Clean Code).
+            
+            **REGRAS DE ESTILO:**
+            - Use formatação rica: **Negrito**, `Código Inline`, > Blockquotes para avisos.
+            - CÓDIGO: Sempre envolva blocos de código com três crases e o nome da linguagem (ex: ```python ... ```).
+            - ESPAÇAMENTO: Use sempre duas quebras de linha (\n\n) para separar parágrafos de texto.
+            - Seja conciso. Alunos odeiam textão.
+            """
+
+        elif step_type == 'quiz':
+            return f"""
+            **TAREFA:** Criar um desafio de validação de conhecimento (Quiz).
+            
+            **DIRETRIZES DE DESIGN DE PERGUNTAS (Bloom's Taxonomy):**
+            1.  **Evite Decoreba:** NÃO pergunte "O que é X?".
+            2.  **Foco em Cenários:** Pergunte "Dado o código abaixo, o que acontece se...?" ou "Qual a melhor arquitetura para resolver Y?".
+            3.  **Debug Mental:** Coloque um trecho de código com um bug sutil relacionado a "{topic}" e peça para o aluno identificar.
+            4.  **Feedback Educativo:** O campo 'explanation' deve explicar POR QUE a resposta certa é a certa e POR QUE a errada é uma armadilha comum.
+            
+            **CONTEXTO:** Baseie as perguntas no conceito "{topic}" e no problema narrado na história.
+            """
+        return ""
+
+    def _get_strict_instructions(self, step_type, quiz_count, dialogue_len, char_list):
+        # Extrai nomes para ajudar a IA
+        roles = [c['role'] for c in char_list]
+        role1 = roles[0] if len(roles) > 0 else "Mentor"
+        role2 = roles[1] if len(roles) > 1 else "Aluno"
+
+        if step_type == 'narrative':
+            return f"""
+            JSON Schema Obrigatório para NARRATIVA:
             {{
                 "type": "narrative",
-                "scenario": "URL_DO_CENARIO_ESCOLHIDO (deve vir de available_scenarios)",
-                "characters": [ 
-                    {{ "role": "NomePersonagem1", "image": "URL_DA_IMAGEM" }},
-                    {{ "role": "NomePersonagem2", "image": "URL_DA_IMAGEM" }}
+                "scenario": "/narrativa/cenarios/cenario1.webp",
+                "characters": [
+                    {{ "role": "{role1}", "image": "/narrativa/personagens/instrutor1.webp" }},
+                    {{ "role": "{role2}", "image": "/narrativa/personagens/aluno1.webp" }}
                 ],
-                "dialogue": [ 
-                    {{ "characterRole": "NomePersonagem1", "text": "Fala técnica e contextual..." }},
-                    {{ "characterRole": "NomePersonagem2", "text": "Resposta ou dúvida pertinente..." }}
+                "dialogue": [
+                    {{ "characterRole": "{role1}", "text": "Frase curta e direta sobre o problema." }},
+                    {{ "characterRole": "{role2}", "text": "Pergunta ou reação ao erro." }}
                 ]
             }}
+            Gere EXATAMENTE {dialogue_len} linhas de 'dialogue'. Use apenas URLs válidas fornecidas anteriormente ou as do exemplo.
             """
         elif step_type == 'quiz':
             return f"""
-            # TAREFA: GERAR AVALIAÇÃO DIAGNÓSTICA (TIPO: 'quiz')
-            
-            ## 1. Regras de Quantidade:
-            - Você DEVE gerar uma lista com EXATAMENTE {quiz_count} perguntas.
-            
-            ## 2. Ciência da Avaliação:
-            - **PERGUNTA 1 (Contexto):** Pergunte sobre o ERRO descrito verbalmente na narrativa anterior.
-            - **PERGUNTAS 2 a {quiz_count} (Técnicas):** Crie cenários de código ou arquitetura ("Spot the Bug").
-            - **Distratores:** Use erros conceituais comuns de Júniores, não erros de sintaxe bobos.
-            
-            ## 3. Schema JSON Obrigatório:
+            JSON Schema Obrigatório para QUIZ ({quiz_count} questões):
             {{
                 "type": "quiz",
                 "questions": [
                     {{
-                        "_concept_tested": "Conceito da Pergunta 1",
-                        "text": "Sobre o erro mencionado pelo Mentor na história...",
-                        "options": ["Certa", "Errada 1", "Errada 2", "Errada 3"],
-                        "correct_option": "Certa",
-                        "explanation": "Explicação do porquê...",
-                        "points": 10,
-                        "coins": 5,
-                        "timeLimit": 60
-                    }},
-                    {{
-                        "_concept_tested": "Conceito da Pergunta 2",
-                        "text": "Analise o código: ```python ... ```",
-                        "options": ["...", "...", "...", "..."],
-                        "correct_option": "...",
-                        "explanation": "...",
-                        "points": 10,
-                        "coins": 5,
-                        "timeLimit": 60
+                        "text": "Pergunta técnica sobre o erro...",
+                        "options": ["Opção A", "Opção B", "Opção C", "Opção D"],
+                        "correct_option": "Opção A",
+                        "explanation": "Por que é A...",
+                        "points": 10, "coins": 5, "timeLimit": 60
                     }}
-                    // ... GERE AS OUTRAS {quiz_count - 2} PERGUNTAS AQUI ...
                 ]
             }}
             """
         elif step_type == 'content':
             return f"""
-            # TAREFA: GERAR DOCUMENTAÇÃO TÉCNICA (TIPO: 'content')
-            
-            ## 1. Regras de Estilo (Anti-Wikipedia):
-            - **TOM:** Pragmático, "Senior para Junior". Use "Nós usamos X para..." em vez de "X é definido como...".
-            - **SEM INTRODUÇÕES LONGAS:** Corte frases como "No mundo da computação..." ou "É importante notar que...". Vá direto ao ponto.
-            - **CONEXÃO NARRATIVA:** Comece obrigatoriamente com um "Callout" ou nota conectando ao problema anterior. Ex: "Para corrigir o erro 500 que travou o sistema da Capitã Debug, precisamos entender Exceções...".
-            
-            ## 2. Estrutura Visual (Markdown Obrigatório):
-            - Use **Negrito** para termos-chave.
-            - Use `Code Blocks` para comandos ou sintaxe.
-            - Use > Blockquotes para "Dicas Pro" ou "Avisos de Segurança".
-            - Use Listas para passo-a-passo.
-            
-            ## 3. Estrutura do Conteúdo (Obrigatória):
-            1. **O Diagnóstico:** Por que o problema (da história) aconteceu?
-            2. **O Conceito:** A explicação técnica da solução.
-            3. **A Prática:** Um exemplo de código (snippet) mostrando a implementação correta.
-            
-            Schema JSON Obrigatório:
+            JSON Schema para CONTEÚDO:
             {{
                 "type": "content",
-                "text_content": "### 🛠️ Diagnóstico do Erro\\n\\nO servidor caiu porque...\\n\\n### 📚 Conceito: Try/Except\\n\\nPara evitar isso, utilizamos blocos de tratamento...\\n\\n> **Dica Senior:** Nunca use except puro!\\n\\n```python\\ntry:\\n    codigo_perigoso()\\nexcept ValueError:\\n    log_erro()\\n```",
+                "text_content": "### Título\\n\\nExplicação técnica direta.\\n\\n```python\\nprint('Exemplo')\\n```",
                 "video_url": "",
                 "material_link": ""
             }}
             """
+        return ""
 
     def _clean_and_parse_json(self, raw_text: str) -> Dict:
-        """
-        Faz o parse robusto de JSON vindo de LLMs.
-        Remove markdown, extrai apenas o bloco JSON, remove vírgulas sobrando (trailing commas)
-        e comentários, prevenindo erros de sintaxe comuns (JSONDecodeError).
-        """
+        """Parse robusto que limpa Markdown e trata erros comuns de LLM."""
         try:
             text = raw_text.strip()
-
-            # 1. REMOÇÃO DE MARKDOWN (Fase 1)
-            # Remove blocos ```json ... ``` ou apenas ```
-            text = re.sub(r'```(?:json)?', '', text)
-            text = re.sub(r'```', '', text)
-
-            # 2. EXTRAÇÃO DO BLOCO JSON (Fase 2)
-            # Localiza o primeiro '{' ou '[' e o último '}' ou ']'
-            # Isso ignora textos como "Aqui está o seu JSON:" no início
-            idx_brace_start = text.find('{')
-            idx_bracket_start = text.find('[')
-
-            # Determina onde começa (o que vier primeiro)
-            start_idx = -1
-            end_idx = -1
+            # 1. Remove Markdown (```json ... ```)
+            if "```" in text:
+                text = re.sub(r'```(?:json)?', '', text)
+                text = re.sub(r'```', '', text)
             
-            if idx_brace_start != -1 and (idx_bracket_start == -1 or idx_brace_start < idx_bracket_start):
-                start_idx = idx_brace_start
-                end_idx = text.rfind('}') + 1 # +1 para incluir o caractere
-            elif idx_bracket_start != -1:
-                start_idx = idx_bracket_start
-                end_idx = text.rfind(']') + 1
-
+            # 2. Encontra o JSON real (ignora texto introdutório da IA)
+            start_idx = text.find('{')
+            end_idx = text.rfind('}') + 1
             if start_idx != -1 and end_idx != -1:
                 text = text[start_idx:end_idx]
-            else:
-                # Se não achou delimitadores, tenta parsear o texto limpo original
-                # (Pode ser um JSON válido mas sem chaves, ex: string ou number, embora raro aqui)
-                pass 
 
-            # 3. HIGIENIZAÇÃO DE SINTAXE VIA REGEX (Fase 3 - O Pulo do Gato)
-            
-            # Remove comentários de linha (// ...)
-            # Cuidado: Isso é um regex simples e pode remover URLs dentro de strings. 
-            # Se suas URLs não tiverem // (usarem https:), ok. Se tiverem, melhor comentar essa linha ou usar lógica mais complexa.
-            # Para segurança em URLs, vamos assumir que a IA retorna JSON puro sem comentários, 
-            # mas vamos focar na vírgula, que é o erro crítico.
-            
-            # Remove Trailing Commas (Vírgulas antes de fechar objeto/lista)
-            # Ex: {"a": 1, } -> {"a": 1 }
-            # Ex: [1, 2, ] -> [1, 2 ]
+            # 3. Limpeza de "sujeira" comum em JSON gerado
+            # Remove vírgulas trailling (ex: [1, 2,] -> [1, 2])
             text = re.sub(r',\s*([\]}])', r'\1', text)
-
-            # 4. PARSE
-            parsed = json.loads(text)
             
-            # Tratamento para listas retornadas quando se espera dict
-            if isinstance(parsed, list):
-                if len(parsed) > 0 and isinstance(parsed[0], dict):
-                    return parsed[0]
-                return {} # Lista vazia
-
-            return parsed
+            # Tenta carregar
+            return json.loads(text)
 
         except json.JSONDecodeError as e:
-            # Log rico para debug: mostra onde quebrou
-            logger.error(f"FALHA GRAVE JSON DECODE. Erro: {e}")
-            logger.error(f"Texto Original (inicio): {raw_text[:200]}")
-            logger.error(f"Texto Higienizado (tentativa): {text[:200]}")
-            return {}
-        except Exception as e:
-            logger.error(f"Erro inesperado no parser: {e}")
+            logger.error(f"JSON Parse Error: {e} | Text snippet: {raw_text[:100]}...")
             return {}
     
     def _shuffle_quiz_options(self, content: Dict) -> Dict:
-        """
-        Embaralha as opções do quiz deterministicamente para evitar vício de posição da IA.
-        Também remove prefixos comuns como 'A)', '1.', etc.
-        """
-        if content.get('type') != 'quiz' or 'questions' not in content:
-            return content
-
-        for question in content['questions']:
-            options = question.get('options', [])
-            correct_val = question.get('correct_option', "")
+        if content.get('type') != 'quiz' or 'questions' not in content: return content
+        for q in content['questions']:
+            opts = q.get('options', [])
+            corr = q.get('correct_option', "")
+            # Limpa prefixos comuns (A), 1., etc)
+            clean_opts = [re.sub(r'^([A-Z][\).]\s*|\d+[\).]\s*)', '', o) for o in opts]
             
-            # 1. Limpeza de prefixos (A), B), 1., etc) para não ficar estranho ao embaralhar
-            clean_options = []
-            for opt in options:
-                # Remove "A) ", "1. ", "- " do início da string
-                clean_text = re.sub(r'^([A-Da-d][\).]\s*|\d+[\).]\s*|-\s*)', '', opt)
-                clean_options.append(clean_text)
+            # Atualiza a correta se ela tinha prefixo
+            if corr in opts:
+                idx = opts.index(corr)
+                corr = clean_opts[idx]
+            elif re.match(r'^([A-Z][\).]\s*|\d+[\).]\s*)', corr):
+                 corr = re.sub(r'^([A-Z][\).]\s*|\d+[\).]\s*)', '', corr)
+
+            # Embaralha
+            c = list(zip(clean_opts, [o == corr for o in clean_opts])) # Marca qual é a correta
+            random.shuffle(c) # Só aqui usamos random, não precisa importar se já tiver
+            
+            q['options'] = [x[0] for x in c]
+            # Recupera a string correta (caso o shuffle mude a ordem, precisamos saber quem era)
+            # Mas espera, a lógica acima estava errada. O jeito mais fácil:
+            # Reencontrar a string correta na lista limpa.
+            if corr in q['options']:
+                q['correct_option'] = corr
+            else:
+                # Fallback se a limpeza quebrou o match exato
+                q['correct_option'] = q['options'][0] 
                 
-                # Se esta era a correta, precisamos atualizar o texto da correta também
-                # (caso o frontend compare string exata)
-                if opt == correct_val:
-                    correct_val = clean_text
-
-            # 2. Atualiza a correta limpa no objeto
-            question['correct_option'] = correct_val
-            
-            # 3. Embaralha a lista limpa
-            random.shuffle(clean_options)
-            question['options'] = clean_options
-
         return content
 
 ai_service = AIService()

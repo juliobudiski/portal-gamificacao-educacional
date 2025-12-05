@@ -6120,5 +6120,189 @@
                 "percent": 100.0
             }
         ]
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 2,
+            "total_seconds": 148.28,
+            "digital": "0:02",
+            "decimal": "0.03",
+            "text": "2 mins",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 48
+        },
+        "range": {
+            "start": "2025-12-05T03:00:00Z",
+            "end": "2025-12-06T02:59:59Z",
+            "date": "2025-12-05",
+            "text": "Fri Dec 5th 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [
+            {
+                "name": "portal-gamificacao-educacional",
+                "total_seconds": 148.28,
+                "ai_additions": 0,
+                "ai_deletions": 0,
+                "human_additions": 0,
+                "human_deletions": 48,
+                "color": null,
+                "digital": "0:02:28",
+                "decimal": "0.03",
+                "text": "2 mins",
+                "hours": 0,
+                "minutes": 2,
+                "seconds": 28,
+                "percent": 100.0
+            }
+        ],
+        "languages": [
+            {
+                "name": "Python",
+                "total_seconds": 148.28,
+                "digital": "0:02:28",
+                "decimal": "0.03",
+                "text": "2 mins",
+                "hours": 0,
+                "minutes": 2,
+                "seconds": 28,
+                "percent": 100.0
+            }
+        ],
+        "dependencies": [
+            {
+                "name": "typing",
+                "total_seconds": 148.28,
+                "digital": "0:02:28",
+                "decimal": "0.03",
+                "text": "2 mins",
+                "hours": 0,
+                "minutes": 2,
+                "seconds": 28,
+                "percent": 14.29
+            },
+            {
+                "name": "time",
+                "total_seconds": 148.28,
+                "digital": "0:02:28",
+                "decimal": "0.03",
+                "text": "2 mins",
+                "hours": 0,
+                "minutes": 2,
+                "seconds": 28,
+                "percent": 14.29
+            },
+            {
+                "name": "logging",
+                "total_seconds": 148.28,
+                "digital": "0:02:28",
+                "decimal": "0.03",
+                "text": "2 mins",
+                "hours": 0,
+                "minutes": 2,
+                "seconds": 28,
+                "percent": 14.29
+            },
+            {
+                "name": "google",
+                "total_seconds": 148.28,
+                "digital": "0:02:28",
+                "decimal": "0.03",
+                "text": "2 mins",
+                "hours": 0,
+                "minutes": 2,
+                "seconds": 28,
+                "percent": 14.29
+            },
+            {
+                "name": "re",
+                "total_seconds": 148.28,
+                "digital": "0:02:28",
+                "decimal": "0.03",
+                "text": "2 mins",
+                "hours": 0,
+                "minutes": 2,
+                "seconds": 28,
+                "percent": 14.29
+            },
+            {
+                "name": "json",
+                "total_seconds": 148.28,
+                "digital": "0:02:28",
+                "decimal": "0.03",
+                "text": "2 mins",
+                "hours": 0,
+                "minutes": 2,
+                "seconds": 28,
+                "percent": 14.29
+            },
+            {
+                "name": "random",
+                "total_seconds": 148.28,
+                "digital": "0:02:28",
+                "decimal": "0.03",
+                "text": "2 mins",
+                "hours": 0,
+                "minutes": 2,
+                "seconds": 28,
+                "percent": 14.29
+            }
+        ],
+        "machines": [
+            {
+                "name": "julio-Inspiron-5421",
+                "total_seconds": 148.28,
+                "machine_name_id": "688bb242-4d47-461b-835d-e0d01e83f26f",
+                "digital": "0:02:28",
+                "decimal": "0.03",
+                "text": "2 mins",
+                "hours": 0,
+                "minutes": 2,
+                "seconds": 28,
+                "percent": 100.0
+            }
+        ],
+        "editors": [
+            {
+                "name": "VS Code",
+                "total_seconds": 148.28,
+                "digital": "0:02:28",
+                "decimal": "0.03",
+                "text": "2 mins",
+                "hours": 0,
+                "minutes": 2,
+                "seconds": 28,
+                "percent": 100.0
+            }
+        ],
+        "operating_systems": [
+            {
+                "name": "Linux",
+                "total_seconds": 148.28,
+                "digital": "0:02:28",
+                "decimal": "0.03",
+                "text": "2 mins",
+                "hours": 0,
+                "minutes": 2,
+                "seconds": 28,
+                "percent": 100.0
+            }
+        ],
+        "categories": [
+            {
+                "name": "Coding",
+                "total_seconds": 148.28,
+                "digital": "0:02:28",
+                "decimal": "0.03",
+                "text": "2 mins",
+                "hours": 0,
+                "minutes": 2,
+                "seconds": 28,
+                "percent": 100.0
+            }
+        ]
     }
 ]

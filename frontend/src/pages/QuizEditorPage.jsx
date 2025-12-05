@@ -145,66 +145,72 @@ function QuizEditorPage({ initialData, onSave, onCancel, isOfflineMode = false }
     if (error) return <div className="text-center text-red-500 p-10">Erro: {error}</div>;
 
     return (
-        <div className="min-h-screen bg-primary-bg text-primary-text p-4 md:p-8">
+        <div className="min-h-screen bg-primary-bg text-primary-text p-4 md:p-8 transition-colors duration-300">
             <div className="max-w-4xl mx-auto">
+                {/* Cabeçalho */}
                 <div className="flex items-center gap-3 mb-6">
-                    <div className="bg-gradient-to-r from-[#ffbd30] to-[#ff9d00] p-3 rounded-xl">
-                        <FaQuestion className="text-xl text-primary-text" />
+                    <div className="bg-accent-yellow p-3 rounded-xl shadow-lg">
+                        {/* Ajuste de cor do ícone para garantir contraste no amarelo */}
+                        <FaQuestion className="text-xl text-white dark:text-primary-bg" />
                     </div>
                     <div>
                         <h1 className="text-2xl md:text-3xl font-bold">Editor de Quiz</h1>
-                        <h2 className="text-lg md:text-xl text-[#ffbd30]">{activityTitle}</h2>
+                        <h2 className="text-lg md:text-xl text-accent-yellow font-medium">{activityTitle}</h2>
                     </div>
                 </div>
 
-                <div className="bg-primary-bg p-6 rounded-2xl shadow-xl shadow-gray-900/50 mb-8 border border-border-color">
-                    <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                        <FaEdit />
+                {/* Formulário de Edição/Criação */}
+                <div className="bg-secondary-bg p-6 rounded-2xl shadow-xl mb-8 border border-[var(--border-color)]">
+                    <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-primary-text">
+                        <FaEdit className="text-accent-teal" />
                         {editingIndex !== null ? 'Editando Pergunta' : 'Nova Pergunta'}
                     </h3>
 
                     <div className="space-y-5">
+                        {/* Campo Pergunta */}
                         <div>
                             <label className="block text-sm text-secondary-text mb-1 flex items-center gap-1">
-                                <FaQuestion className="text-[#69e8cb]" /> Pergunta
+                                <FaQuestion className="text-accent-teal" /> Pergunta
                             </label>
                             <textarea
                                 name="text"
                                 value={currentQuestion.text}
                                 onChange={handleInputChange}
                                 placeholder="Digite o texto da pergunta..."
-                                className="w-full p-3 bg-border-color rounded-xl border border-gray-600 focus:border-[#ffbd30] focus:ring-2 focus:ring-[#ffbd30]/30 transition-all duration-300"
+                                className="w-full p-3 bg-primary-bg text-primary-text rounded-xl border border-[var(--border-color)] focus:border-accent-yellow focus:ring-1 focus:ring-accent-yellow outline-none transition-all duration-300 placeholder-secondary-text"
                             />
                         </div>
 
+                        {/* Opções de Resposta */}
                         <div>
                             <label className="block text-sm text-secondary-text mb-1 flex items-center gap-1">
-                                <FaList className="text-[#69e8cb]" /> Opções de Resposta
+                                <FaList className="text-accent-teal" /> Opções de Resposta
                             </label>
                             {currentQuestion.options.map((option, index) => (
                                 <div key={index} className="flex items-center mb-2">
-                                    <div className="mr-3 text-secondary-text">{index + 1}.</div>
+                                    <div className="mr-3 text-secondary-text font-bold">{index + 1}.</div>
                                     <input
                                         name="options"
                                         value={option}
                                         onChange={(e) => handleInputChange(e, index)}
                                         placeholder={`Opção ${index + 1}`}
-                                        className="flex-1 p-3 bg-border-color rounded-xl border border-gray-600 focus:border-[#ffbd30] focus:ring-2 focus:ring-[#ffbd30]/30 transition-all duration-300"
+                                        className="flex-1 p-3 bg-primary-bg text-primary-text rounded-xl border border-[var(--border-color)] focus:border-accent-yellow focus:ring-1 focus:ring-accent-yellow outline-none transition-all duration-300 placeholder-secondary-text"
                                     />
                                 </div>
                             ))}
                         </div>
 
+                        {/* Grid de Configurações */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <label className="block text-sm text-secondary-text mb-1 flex items-center gap-1">
-                                    <FaCheck className="text-[#69e8cb]" /> Resposta Correta
+                                    <FaCheck className="text-accent-teal" /> Resposta Correta
                                 </label>
                                 <select
                                     name="correct_option"
                                     value={currentQuestion.correct_option}
                                     onChange={handleInputChange}
-                                    className="w-full p-3 bg-border-color rounded-xl border border-gray-600 focus:border-[#ffbd30] focus:ring-2 focus:ring-[#ffbd30]/30 transition-all duration-300"
+                                    className="w-full p-3 bg-primary-bg text-primary-text rounded-xl border border-[var(--border-color)] focus:border-accent-yellow outline-none transition-all duration-300"
                                 >
                                     <option value="">Selecione a resposta correta</option>
                                     {currentQuestion.options.map((opt, i) => (opt && <option key={`${opt}-${i}`} value={opt}>{opt}</option>))}
@@ -213,52 +219,53 @@ function QuizEditorPage({ initialData, onSave, onCancel, isOfflineMode = false }
 
                             <div>
                                 <label className="block text-sm text-secondary-text mb-1 flex items-center gap-1">
-                                    <FaStar className="text-[#69e8cb]" /> Pontos
+                                    <FaStar className="text-accent-teal" /> Pontos
                                 </label>
                                 <input
                                     type="number"
                                     name="points"
                                     value={currentQuestion.points}
                                     onChange={handleInputChange}
-                                    className="w-full p-3 bg-border-color rounded-xl border border-gray-600 focus:border-[#ffbd30] focus:ring-2 focus:ring-[#ffbd30]/30 transition-all duration-300"
+                                    className="w-full p-3 bg-primary-bg text-primary-text rounded-xl border border-[var(--border-color)] focus:border-accent-yellow outline-none transition-all duration-300"
                                 />
                             </div>
 
-                            {/* NOVO CAMPO PARA MOEDAS */}
+                            {/* Campo Moedas */}
                             <div>
                                 <label className="block text-sm text-secondary-text mb-1 flex items-center gap-1">
-                                    <FaGem className="text-[#ffbd30]" /> Moedas
+                                    <FaGem className="text-accent-yellow" /> Moedas
                                 </label>
                                 <input
                                     type="number"
                                     name="coins"
                                     value={currentQuestion.coins}
                                     onChange={handleInputChange}
-                                    className="w-full p-3 bg-border-color rounded-xl border border-gray-600 focus:border-[#ffbd30] focus:ring-2 focus:ring-[#ffbd30]/30 transition-all duration-300"
+                                    className="w-full p-3 bg-primary-bg text-primary-text rounded-xl border border-[var(--border-color)] focus:border-accent-yellow outline-none transition-all duration-300"
                                 />
                             </div>
 
-                            {/* ATUALIZADO: Renderização condicional do campo de tempo */}
+                            {/* Tempo Limite */}
                             {isTimed && (
                                 <div>
                                     <label className="block text-sm text-secondary-text mb-1 flex items-center gap-1">
-                                        <FaClock className="text-[#69e8cb]" /> Tempo Limite (s)
+                                        <FaClock className="text-accent-teal" /> Tempo Limite (s)
                                     </label>
                                     <input
                                         type="number"
                                         name="timeLimit"
                                         value={currentQuestion.timeLimit}
                                         onChange={handleInputChange}
-                                        className="w-full p-3 bg-border-color rounded-xl border border-gray-600 focus:border-[#ffbd30] focus:ring-2 focus:ring-[#ffbd30]/30 transition-all duration-300"
+                                        className="w-full p-3 bg-primary-bg text-primary-text rounded-xl border border-[var(--border-color)] focus:border-accent-yellow outline-none transition-all duration-300"
                                     />
                                 </div>
                             )}
                         </div>
 
+                        {/* Botão Adicionar/Atualizar */}
                         <div className="pt-2">
                             <button
                                 onClick={handleAddOrUpdateQuestion}
-                                className="bg-gradient-to-r from-[#ffbd30] to-[#ff9d00] hover:from-[#ff9d00] hover:to-[#ffbd30] text-primary-text font-bold py-3 px-6 rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 group"
+                                className="w-full md:w-auto bg-accent-yellow hover:brightness-110 text-white dark:text-primary-bg font-bold py-3 px-6 rounded-xl flex items-center justify-center shadow-lg transition-all duration-300 group"
                             >
                                 <FaPlus className="mr-2 transform group-hover:scale-110 transition-transform" />
                                 {editingIndex !== null ? 'Atualizar Pergunta' : 'Adicionar Pergunta'}
@@ -270,8 +277,8 @@ function QuizEditorPage({ initialData, onSave, onCancel, isOfflineMode = false }
                 {/* Lista de Perguntas */}
                 {questions.length > 0 && (
                     <div className="mb-8">
-                        <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                            <FaList className="text-[#69e8cb]" />
+                        <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-primary-text">
+                            <FaList className="text-accent-teal" />
                             Perguntas do Quiz ({questions.length})
                         </h3>
 
@@ -279,32 +286,33 @@ function QuizEditorPage({ initialData, onSave, onCancel, isOfflineMode = false }
                             {questions.map((q, index) => (
                                 <div
                                     key={index}
-                                    className="bg-primary-bg p-4 rounded-xl flex justify-between items-center border border-border-color shadow-lg hover:shadow-xl transition-shadow duration-300"
+                                    // Card da pergunta usa secondary-bg
+                                    className="bg-secondary-bg p-4 rounded-xl flex justify-between items-center border border-[var(--border-color)] shadow-sm hover:shadow-md transition-all duration-300"
                                 >
                                     <div className="flex-1">
                                         <div className="flex items-start">
-                                            <div className="bg-[#9570d9] w-8 h-8 rounded-full flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">
+                                            {/* Badge numérico roxo */}
+                                            <div className="bg-accent-purple w-8 h-8 rounded-full flex items-center justify-center mr-3 mt-0.5 flex-shrink-0 text-white">
                                                 <span className="font-bold text-sm">{index + 1}</span>
                                             </div>
                                             <div>
-                                                <p className="font-medium">{q.text}</p>
+                                                <p className="font-medium text-primary-text">{q.text}</p>
                                                 <div className="flex flex-wrap gap-2 mt-2">
-                                                    <span className="bg-border-color px-2 py-1 rounded-lg text-xs flex items-center">
-                                                        <FaCheck className="mr-1 text-[#69e8cb]" />
+                                                    <span className="bg-primary-bg border border-[var(--border-color)] px-2 py-1 rounded-lg text-xs flex items-center text-secondary-text">
+                                                        <FaCheck className="mr-1 text-success" />
                                                         {q.correct_option}
                                                     </span>
-                                                    <span className="bg-border-color px-2 py-1 rounded-lg text-xs flex items-center">
-                                                        <FaStar className="mr-1 text-[#69e8cb]" />
+                                                    <span className="bg-primary-bg border border-[var(--border-color)] px-2 py-1 rounded-lg text-xs flex items-center text-secondary-text">
+                                                        <FaStar className="mr-1 text-accent-teal" />
                                                         {q.points} pontos
                                                     </span>
-                                                    <span className="bg-border-color px-2 py-1 rounded-lg text-xs flex items-center">
-                                                        <FaGem className="mr-1 text-[#ffbd30]" />
+                                                    <span className="bg-primary-bg border border-[var(--border-color)] px-2 py-1 rounded-lg text-xs flex items-center text-secondary-text">
+                                                        <FaGem className="mr-1 text-accent-yellow" />
                                                         {q.coins || 0} moedas
                                                     </span>
-                                                    {/* ATUALIZADO: Mostra o tempo limite apenas se for relevante */}
                                                     {isTimed && (
-                                                        <span className="bg-border-color px-2 py-1 rounded-lg text-xs flex items-center">
-                                                            <FaClock className="mr-1 text-[#69e8cb]" />
+                                                        <span className="bg-primary-bg border border-[var(--border-color)] px-2 py-1 rounded-lg text-xs flex items-center text-secondary-text">
+                                                            <FaClock className="mr-1 text-accent-teal" />
                                                             {q.timeLimit}s
                                                         </span>
                                                     )}
@@ -313,19 +321,21 @@ function QuizEditorPage({ initialData, onSave, onCancel, isOfflineMode = false }
                                         </div>
                                     </div>
                                     <div className="flex gap-2 ml-4">
+                                        {/* Botão Editar: Roxo */}
                                         <button
                                             onClick={() => handleEditQuestion(index)}
-                                            className="p-3 bg-[#9570d9] hover:bg-[#7a55c4] rounded-xl transition-colors duration-300"
+                                            className="p-3 bg-accent-purple hover:brightness-110 text-white rounded-xl transition-all duration-300 shadow-sm"
                                             aria-label="Editar pergunta"
                                         >
-                                            <FaEdit className="text-primary-text" />
+                                            <FaEdit />
                                         </button>
+                                        {/* Botão Excluir: Estilo Ghost Vermelho */}
                                         <button
                                             onClick={() => handleDeleteQuestion(index)}
-                                            className="p-3 bg-red-600 hover:bg-red-700 rounded-xl transition-colors duration-300"
+                                            className="p-3 text-danger hover:bg-danger-bg rounded-xl transition-colors duration-300"
                                             aria-label="Excluir pergunta"
                                         >
-                                            <FaTrash className="text-primary-text" />
+                                            <FaTrash />
                                         </button>
                                     </div>
                                 </div>
@@ -336,23 +346,23 @@ function QuizEditorPage({ initialData, onSave, onCancel, isOfflineMode = false }
 
                 {/* Salvar Alterações */}
                 {questions.length > 0 && (
-                    <div className="mt-8 pt-4 border-t border-border-color">
+                    <div className="mt-8 pt-4 border-t border-[var(--border-color)]">
                         <button
                             onClick={handleSaveChanges}
-                            className="bg-gradient-to-r from-[#69e8cb] to-[#49d0b0] hover:from-[#49d0b0] hover:to-[#69e8cb] text-primary-text font-bold text-lg py-3 px-6 rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 w-full md:w-auto group"
+                            className="bg-accent-teal hover:brightness-110 text-white dark:text-primary-bg font-bold text-lg py-3 px-6 rounded-xl flex items-center justify-center shadow-lg transition-all duration-300 w-full md:w-auto group disabled:opacity-50 disabled:cursor-not-allowed"
                             disabled={loading}
                         >
                             <FaSave className="mr-2 transform group-hover:scale-110 transition-transform" />
                             {loading ? 'Salvando...' : 'Salvar Quiz Completo'}
                         </button>
                         {message && (
-                            <div className="mt-4 p-3 bg-green-900/30 border border-green-700 rounded-xl text-green-400">
-                                {message}
+                            <div className="mt-4 p-3 bg-success-bg border border-success/20 rounded-xl text-success flex items-center">
+                                <span className="font-bold mr-2">✓</span> {message}
                             </div>
                         )}
                         {error && (
-                            <div className="mt-4 p-3 bg-red-900/30 border border-red-700 rounded-xl text-red-400">
-                                Erro: {error}
+                            <div className="mt-4 p-3 bg-danger-bg border border-danger/20 rounded-xl text-danger flex items-center">
+                                <span className="font-bold mr-2">!</span> Erro: {error}
                             </div>
                         )}
                     </div>

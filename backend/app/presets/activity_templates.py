@@ -124,7 +124,7 @@ PREDEFINED_TEMPLATES = [
         "data": {
             "title": "Operação Debug: Protocolo Omega",
             "description": "Identifique e corrija falhas críticas no sistema de defesa da cidade.",
-            "areaKnowledge": "Programação e Testes",
+            "areaKnowledge": "Ciência da Computação",
             
             "currentScenario": {
                 "problems": [
@@ -229,7 +229,7 @@ PREDEFINED_TEMPLATES = [
         "data": {
             "title": "O Enigma do Monolito",
             "description": "Refatore o sistema legado aplicando padrões de projeto adequados.",
-            "areaKnowledge": "Arquitetura de Software",
+            "areaKnowledge": "Engenharia de Software",
             
             "currentScenario": {
                 "problems": [

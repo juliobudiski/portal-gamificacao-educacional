@@ -80,7 +80,7 @@ echo "5. Abrindo novos terminais e iniciando os servidores..."
 # 2. source venv/bin/activate
 # 3. flask run
 # 4. exec bash (mantém o terminal aberto após o comando)
-CMD_BACKEND="cd $BACKEND_DIR && source venv/bin/activate && echo '✅ Ambiente virtual ativado.' && flask run; exec bash"
+CMD_BACKEND="cd $BACKEND_DIR && source venv/bin/activate && echo '✅ Ambiente virtual ativado.' && python3 run.py; exec bash"
 
 # Comando para o terminal do FRONTEND
 # 1. cd frontend
