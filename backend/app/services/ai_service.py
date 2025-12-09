@@ -4,7 +4,7 @@ import json
 import logging
 import time
 import re
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any
 from ..extensions import socketio
 import random
 
@@ -23,42 +23,68 @@ AVAILABLE_CHARACTERS = [
     {"url": "/narrativa/personagens/aluno1.webp", "description": "Aluno homem, jovem, casual, estagiário ou aprendiz."},
     {"url": "/narrativa/personagens/aluno2.webp", "description": "Aluna mulher, jovem, focada, desenvolvedora júnior."}
 ]
-# Mantenha as constantes globais (AVAILABLE_SCENARIOS, AVAILABLE_CHARACTERS) 
-# no topo do arquivo como já estavam.
 
 class AIService:
+    """
+    @desc Serviço de orquestração para geração de conteúdo de atividades com IA.
+    Esta classe gerencia a comunicação com a API do Google Generative AI,
+    implementando uma lógica de fallback de modelos, retentativas, e
+    formatação de prompts para criar conteúdo pedagógico (narrativas, quizzes).
+    """
     def __init__(self):
+        """
+        @desc Inicializa o serviço de IA.
+        Configura a chave de API, a hierarquia de modelos e os parâmetros de geração.
+        """
         api_key = os.environ.get("GOOGLE_API_KEY")
-        if not api_key:
-            logger.warning("GOOGLE_API_KEY não configurada.")
+        if api_key:
+            genai.configure(api_key=api_key)
         
-        try:
-            if api_key:
-                genai.configure(api_key=api_key)
-                logger.info("Google GenAI configurado.")
-        except Exception as e:
-            logger.error(f"Falha Google GenAI: {e}")
+        # Lista de prioridade de modelos, do mais preferível ao fallback.
+        self.MODEL_HIERARCHY = [
+            'models/gemini-2.5-flash',             # 1. Qualidade e Velocidade (Novo)
+            'models/gemini-2.0-flash-lite-preview', # 2. Otimizado para cota alta (Lite)
+            'models/gemini-2.0-flash',             # 3. O que você estava usando
+            'models/gemini-1.5-flash'              # 4. Legado (se disponível)
+        ]
+        
+        # Configurações de geração para a API, buscando respostas em JSON.
+        self.generation_config = {
+            "response_mime_type": "application/json",
+            "max_output_tokens": 8192, 
+            "temperature": 0.5,
+            "top_p": 0.8
+        }
 
-        self.model_name = 'gemini-2.0-flash' 
-        self.model = genai.GenerativeModel(
-            self.model_name, 
-            generation_config={
-                "response_mime_type": "application/json",
-                "max_output_tokens": 8192, 
-                "temperature": 0.5, # Aumentei levemente para criatividade
-                "top_p": 0.8
-            }
-        )
+        # Centraliza constantes de controle para fácil ajuste.
+        self.max_retries = 3
+        self.cooldown_seconds = 10 # Tempo de espera entre chamadas para evitar rate limit.
 
     def orchestrate_story(self, activity_context: Dict, path_structure: List[Dict], ai_config: Dict, client_socket_id: str = None) -> Dict:
-        logger.info(f"--- INICIANDO ORQUESTRAÇÃO ROBUSTA (Modelo: {self.model_name}) ---")
+        """
+        @desc Orquestra a geração de conteúdo para todos os passos de uma atividade.
+        Itera sobre a estrutura do caminho de progressão, gerando conteúdo para cada
+        passo do tipo 'quiz', 'narrative' ou 'content' de forma sequencial e robusta.
+
+        @param {Dict} activity_context - Dados gerais da atividade (título, descrição).
+        @param {List[Dict]} path_structure - A lista de passos do tabuleiro.
+        @param {Dict} ai_config - Configurações da IA (personalidade, tom, etc.).
+        @param {str} client_socket_id - ID do socket do cliente para enviar atualizações de progresso.
+        @returns {Dict} Um mapa onde as chaves são os IDs dos passos e os valores são o conteúdo gerado.
+        """
+        logger.info(f"--- INICIANDO ORQUESTRAÇÃO ROBUSTA (Hierarquia: {self.MODEL_HIERARCHY}) ---")
         
         steps_to_fill = [s for s in path_structure if s['type'] in ['quiz', 'narrative', 'content']]
         total_steps = len(steps_to_fill)
         
+        # Limite de segurança para evitar execuções muito longas e custosas.
+        if len(steps_to_fill) > 15:
+            steps_to_fill = steps_to_fill[:15] 
+            logger.warning("Trilha muito longa. Limitando geração aos primeiros 15 passos.")
         if not steps_to_fill:
             return {}
         
+        # "Memória de curto prazo" para dar contexto sequencial à IA.
         execution_trace = {
             "last_narrative_event": "A aventura começou.",
             "last_taught_concept": "Conceitos introdutórios.",
@@ -66,7 +92,7 @@ class AIService:
         }
         
         final_map = {}
-        MAX_RETRIES = 3 # Integridade: Tenta 3x antes de desistir
+        # TODO: Considerar tornar o cooldown dinâmico com base em headers de resposta da API, se disponíveis.
 
         for index, step in enumerate(steps_to_fill):
             step_number = index + 1
@@ -74,7 +100,7 @@ class AIService:
             step_id = step['id']
             
             # Feedback visual via Socket
-            if client_socket_id:
+            if client_socket_id: # pragma: no cover
                 try:
                     percent = int(((index) / total_steps) * 100)
                     socketio.emit('ai_progress', {
@@ -84,11 +110,11 @@ class AIService:
                 except Exception:
                     pass
             
-            # --- LOOP DE INTEGRIDADE (RETRY MECHANISM) ---
+            # Loop de retentativa para garantir que o conteúdo seja gerado.
             attempts = 0
             valid_content = None
             
-            while attempts < MAX_RETRIES and not valid_content:
+            while attempts < self.max_retries and not valid_content:
                 attempts += 1
                 try:
                     if attempts > 1:
@@ -99,33 +125,90 @@ class AIService:
                         activity_context, ai_config, execution_trace
                     )
                     
-                    # Validação de Integridade
+                    # Validação de integridade para garantir que o JSON tem os campos mínimos.
                     if self._validate_content_integrity(step_type, raw_content):
                         valid_content = raw_content
                     else:
                         logger.warning(f"Conteúdo inválido gerado para {step_type}. Retrying...")
                         
                 except Exception as e:
-                    logger.error(f"Erro na tentativa {attempts} do passo {step_id}: {str(e)}")
-                    time.sleep(1) # Backoff simples
+                    error_msg = str(e)
+                    logger.error(f"Erro na tentativa {attempts} do passo {step_id}: {error_msg}")
+                    
+                    # Lógica de Backoff para Erro 429 (Rate Limit)
+                    if "429" in error_msg:
+                        wait_time = (attempts + 1) * self.cooldown_seconds # Aumenta a espera a cada tentativa.
+                        if client_socket_id:
+                            socketio.emit('ai_progress', {
+                                'percent': int(((index) / total_steps) * 100),
+                                'message': f"Atingimos o limite da IA. Aguardando {wait_time}s para retomar...",
+                            }, to=client_socket_id)
+                        
+                        logger.warning(f"⚠️ Quota excedida (429). Pausando por {wait_time} segundos...")
+                        time.sleep(wait_time)
+                    else:
+                        time.sleep(2) # Backoff simples para outros erros
 
             # Se falhou após 3 tentativas, usa fallback vazio para não travar o app
             if not valid_content:
-                logger.error(f"FALHA CRÍTICA: Não foi possível gerar passo {step_id} após {MAX_RETRIES} tentativas.")
+                logger.error(f"FALHA CRÍTICA: Não foi possível gerar passo {step_id} após {self.max_retries} tentativas.")
                 valid_content = self._get_fallback_content(step_type)
 
-            # --- ATUALIZAÇÃO DA MEMÓRIA ---
+            # Atualiza a memória com o resultado do passo atual para o próximo.
             self._update_memory_trace(execution_trace, step_type, valid_content)
 
             final_map[step_id] = valid_content
-            socketio.sleep(0.5) # Evita rate limit
+            
+            # Pausa estratégica (cooldown) para evitar atingir o limite de requisições por minuto da API.
+            if index < total_steps - 1:
+                logger.info(f"⏳ Cooldown: Pausando por {self.cooldown_seconds}s para evitar rate limit...")
+                time.sleep(self.cooldown_seconds)
 
-        if client_socket_id:
+        if client_socket_id: # pragma: no cover
             socketio.emit('ai_progress', {'percent': 100, 'message': "Finalizando..."}, to=client_socket_id)
 
         return final_map
 
-    # --- NOVO: VALIDADOR DE INTEGRIDADE ---
+    def _generate_content_with_fallback(self, prompt: str) -> str:
+        """Tenta gerar usando a lista de modelos. Se um falhar (429), tenta o próximo."""
+        
+        last_error = None
+
+        for model_name in self.MODEL_HIERARCHY:
+            try:
+                # Instancia o modelo da vez.
+                current_model = genai.GenerativeModel(
+                    model_name, 
+                    generation_config=self.generation_config
+                )
+                
+                logger.info(f"🤖 Tentando gerar com modelo: {model_name}...")
+                
+                # Tenta gerar o conteúdo.
+                response = current_model.generate_content(prompt)
+                
+                # Se chegou aqui, funcionou. Retorna o texto.
+                logger.info(f"✅ Sucesso com {model_name}!")
+                return response.text
+
+            except Exception as e:
+                error_str = str(e)
+                # Se for erro de cota (429), loga e passa para o próximo modelo.
+                if "429" in error_str or "Quota exceeded" in error_str:
+                    logger.warning(f"⚠️ Cota estourada para {model_name}. Tentando próximo...")
+                    last_error = e
+                    time.sleep(1) # Pequena pausa antes de trocar.
+                    continue # Vai para o próximo modelo da lista
+                else:
+                    # Se for outro erro (ex: erro de sintaxe, filtro de segurança), 
+                    # não adianta trocar de modelo, então quebra.
+                    logger.error(f"Erro não relacionado a cota em {model_name}: {error_str}")
+                    raise e
+
+        # Se o loop terminou, todos os modelos falharam.
+        logger.error("❌ Todos os modelos de fallback falharam.")
+        raise last_error
+    
     def _validate_content_integrity(self, step_type: str, content: Dict) -> bool:
         """Retorna True se o conteúdo tiver o mínimo necessário para não quebrar o frontend."""
         if not content or not isinstance(content, dict):
@@ -133,10 +216,10 @@ class AIService:
             
         if step_type == 'narrative':
             # Precisa ter array de diálogos e pelo menos 2 falas
-            dialogues = content.get('dialogue', [])
-            has_dialogue = isinstance(dialogues, list) and len(dialogues) >= 2
+            dialogue = content.get('dialogue', [])
+            has_dialogue = isinstance(dialogue, list) and len(dialogue) >= 2
             # Garante que as falas tenham texto
-            valid_lines = all(d.get('text') and d.get('characterRole') for d in dialogues) if has_dialogue else False
+            valid_lines = all(d.get('text') and d.get('characterRole') for d in dialogue) if has_dialogue else False
             return has_dialogue and valid_lines
 
         elif step_type == 'quiz':
@@ -169,17 +252,21 @@ class AIService:
             trace["last_taught_concept"] = topic
             trace["accumulated_knowledge"].append(topic[:50])
 
-    def _get_step_label(self, type):
-        labels = {'quiz': 'Desafio', 'narrative': 'História', 'content': 'Conteúdo'}
-        return labels.get(type, 'Passo')
+    def _get_step_label(self, step_type: str) -> str:
+        """Retorna um rótulo amigável para o tipo de passo."""
+        labels = {'quiz': 'Desafio', 'narrative': 'Diálogo', 'content': 'Conteúdo'}
+        return labels.get(step_type, 'Passo')
 
-    # -------------------------------------------------------------------------
-    # NOVO MÉTODO: Centraliza a Persona (A "Alma" da IA)
-    # -------------------------------------------------------------------------
     def _get_system_persona(self, config: Dict) -> str:
+        """
+        @desc Monta a instrução de "persona" do sistema.
+        Define a personalidade, mentalidade pedagógica e tom de escrita da IA.
+        @param {Dict} config - Configurações da IA vindas do frontend.
+        @returns {str} O texto formatado da persona.
+        """
         personality = config.get('personality', 'Socrático')
         tone = config.get('tone', 'Aventura')
-        
+
         base_persona = f"""
         VOCÊ É: Um Tech Lead Sênior (Google/Netflix ex-employee) e Roteirista premiado de Ficção Interativa.
         
@@ -194,12 +281,21 @@ class AIService:
         """
         return base_persona
 
-    # -------------------------------------------------------------------------
-    # REFACTOR: _generate_single_step (Orquestrador do Prompt)
-    # -------------------------------------------------------------------------
-    def _generate_single_step(self, step_type, step_idx, total_steps, context, config, execution_trace):
-        # 1. Metadados
-        teaching_focus = config.get('teachingFocus') or context.get('title')
+    def _generate_single_step(self, step_type: str, step_idx: int, total_steps: int, context: Dict, config: Dict, execution_trace: Dict) -> Dict:
+        """
+        @desc Gera o conteúdo para um único passo, montando o prompt completo.
+        Este é o coração do prompt engineering, onde a persona, o contexto, a memória,
+        a missão específica e as regras de formato são combinadas.
+
+        @param {str} step_type - O tipo de passo a ser gerado ('quiz', 'narrative', etc.).
+        @param {int} step_idx - O número do passo atual (1-based).
+        @param {int} total_steps - O número total de passos a serem gerados.
+        @param {Dict} context - Contexto geral da atividade.
+        @param {Dict} config - Configurações da IA.
+        @param {Dict} execution_trace - A "memória" do que já foi gerado.
+        @returns {Dict} O conteúdo JSON gerado e validado para o passo.
+        """
+        teaching_focus = config.get('teachingFocus') or context.get('title', 'Tópico não definido')
         target_audience = config.get('targetAudience', 'Junior')
         characters_list = config.get('charactersList', [])
         
@@ -209,13 +305,13 @@ class AIService:
             for c in characters_list
         ])
 
-        # 2. Define a Fase da História
+        # Define a fase da história para guiar o tom da IA.
         progress_ratio = step_idx / total_steps
         story_phase = "INTRODUÇÃO (O Problema Surge)"
         if progress_ratio > 0.3: story_phase = "DESENVOLVIMENTO (Tentativa e Erro)"
         if progress_ratio > 0.8: story_phase = "CLÍMAX (A Solução Final)"
 
-        # 3. Montagem do Prompt Modular
+        # Montagem do prompt modular.
         system_persona = self._get_system_persona(config)
         specific_instruction = self._get_dynamic_instruction(step_type, execution_trace, story_phase, formatted_cast, teaching_focus, config)
         json_schema = self._get_strict_instructions(step_type, config.get('questionsPerQuiz', 4), config.get('linesPerNarrative', 6), characters_list)
@@ -243,19 +339,26 @@ class AIService:
         {json_schema}
         """
         
-        # Geração
-        response = self.model.generate_content(full_prompt)
-        parsed_json = self._clean_and_parse_json(response.text)
+        # Geração e pós-processamento.
+        response = self._generate_content_with_fallback(full_prompt)
+        parsed_json = self._clean_and_parse_json(response)
         
         if step_type == 'quiz':
             parsed_json = self._shuffle_quiz_options(parsed_json)
             
         return parsed_json
 
-    # -------------------------------------------------------------------------
-    # REFACTOR: _get_dynamic_instruction (Onde a mágica acontece)
-    # -------------------------------------------------------------------------
-    def _get_dynamic_instruction(self, step_type, trace, phase, cast, topic, config):
+    def _get_dynamic_instruction(self, step_type: str, trace: Dict, phase: str, cast: str, topic: str, config: Dict) -> str:
+        """
+        @desc Retorna a instrução específica da tarefa para a IA com base no tipo de passo.
+        @param {str} step_type - Tipo do passo ('narrative', 'content', 'quiz').
+        @param {Dict} trace - Memória da execução.
+        @param {str} phase - Fase atual da história.
+        @param {str} cast - Elenco de personagens formatado.
+        @param {str} topic - Tópico de ensino principal.
+        @param {Dict} config - Configurações da IA.
+        @returns {str} A instrução detalhada para a tarefa.
+        """
         if step_type == 'narrative':
             return f"""
             **TAREFA:** Escrever um roteiro de diálogo curto e tenso.
@@ -313,7 +416,14 @@ class AIService:
             """
         return ""
 
-    def _get_strict_instructions(self, step_type, quiz_count, dialogue_len, char_list):
+    def _get_strict_instructions(self, step_type: str, quiz_count: int, dialogue_len: int, char_list: List[Dict]) -> str:
+        """
+        @desc Define e retorna o schema JSON que a IA deve seguir para sua resposta.
+        @param {str} step_type - Tipo do passo.
+        @param {int} quiz_count - Número de questões a gerar para um quiz.
+        @param {int} dialogue_len - Número de falas a gerar para uma narrativa.
+        @param {List[Dict]} char_list - Lista de personagens para extrair papéis.
+        """
         # Extrai nomes para ajudar a IA
         roles = [c['role'] for c in char_list]
         role1 = roles[0] if len(roles) > 0 else "Mentor"
@@ -365,7 +475,12 @@ class AIService:
         return ""
 
     def _clean_and_parse_json(self, raw_text: str) -> Dict:
-        """Parse robusto que limpa Markdown e trata erros comuns de LLM."""
+        """
+        @desc Limpa e parseia uma string que deveria conter JSON.
+        Remove blocos de código Markdown, texto introdutório e vírgulas finais
+        antes de tentar o parse, tornando o processo mais resiliente a respostas
+        mal formatadas da IA.
+        """
         try:
             text = raw_text.strip()
             # 1. Remove Markdown (```json ... ```)
@@ -391,33 +506,54 @@ class AIService:
             return {}
     
     def _shuffle_quiz_options(self, content: Dict) -> Dict:
-        if content.get('type') != 'quiz' or 'questions' not in content: return content
+        """
+        @desc Embaralha as opções de um quiz e garante que a resposta correta seja atualizada.
+        Também limpa prefixos comuns que a IA pode adicionar (ex: "A)", "1.").
+        Isso evita que a resposta correta seja sempre a primeira e melhora a
+        qualidade do quiz.
+        @param {Dict} content - O conteúdo do quiz.
+        @returns {Dict} O conteúdo do quiz com as opções embaralhadas.
+        """
+        if content.get('type') != 'quiz' or 'questions' not in content: 
+            return content
+            
         for q in content['questions']:
-            opts = q.get('options', [])
-            corr = q.get('correct_option', "")
-            # Limpa prefixos comuns (A), 1., etc)
-            clean_opts = [re.sub(r'^([A-Z][\).]\s*|\d+[\).]\s*)', '', o) for o in opts]
+            raw_options = q.get('options', [])
+            raw_correct = q.get('correct_option', "")
             
-            # Atualiza a correta se ela tinha prefixo
-            if corr in opts:
-                idx = opts.index(corr)
-                corr = clean_opts[idx]
-            elif re.match(r'^([A-Z][\).]\s*|\d+[\).]\s*)', corr):
-                 corr = re.sub(r'^([A-Z][\).]\s*|\d+[\).]\s*)', '', corr)
+            # 1. Função auxiliar para limpar prefixos (A), 1., etc).
+            def clean_text(text):
+                return re.sub(r'^([A-Z][\).]\s*|\d+[\).]\s*)', '', text).strip()
 
-            # Embaralha
-            c = list(zip(clean_opts, [o == corr for o in clean_opts])) # Marca qual é a correta
-            random.shuffle(c) # Só aqui usamos random, não precisa importar se já tiver
+            # 2. Limpa todas as opções e a resposta correta.
+            clean_opts = [clean_text(o) for o in raw_options]
+            clean_correct = clean_text(raw_correct)
             
-            q['options'] = [x[0] for x in c]
-            # Recupera a string correta (caso o shuffle mude a ordem, precisamos saber quem era)
-            # Mas espera, a lógica acima estava errada. O jeito mais fácil:
-            # Reencontrar a string correta na lista limpa.
-            if corr in q['options']:
-                q['correct_option'] = corr
-            else:
-                # Fallback se a limpeza quebrou o match exato
-                q['correct_option'] = q['options'][0] 
+            # 3. Garante que a resposta correta exista na lista de opções limpas.
+            # Se a IA alucinou uma resposta que não está nas opções, assume a primeira como correta
+            # para evitar que o quiz fique sem resposta válida.
+            if clean_correct not in clean_opts:
+                logger.warning(f"Resposta correta '{raw_correct}' não encontrada nas opções. Usando a primeira como fallback.")
+                clean_correct = clean_opts[0] 
+
+            # 4. Cria pares (opção, é_correta?) para embaralhar mantendo a referência.
+            # Ex: [("Java", False), ("Python", True), ("C++", False)].
+            pairs = []
+            for opt in clean_opts:
+                is_correct = (opt == clean_correct)
+                pairs.append((opt, is_correct))
+
+            # 5. Embaralha a lista de pares.
+            random.shuffle(pairs)
+            
+            # 6. Reconstrói a lista de opções e atualiza a resposta correta.
+            q['options'] = [p[0] for p in pairs]
+            
+            # Encontra qual é a opção correta na nova ordem.
+            for opt, is_correct in pairs:
+                if is_correct:
+                    q['correct_option'] = opt
+                    break
                 
         return content
 

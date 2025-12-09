@@ -1,4 +1,8 @@
 # backend/app/models.py
+"""
+Define todos os modelos de dados da aplicação utilizando SQLAlchemy.
+Cada classe representa uma tabela no banco de dados e suas respectivas colunas e relações.
+"""
 from . import db # Importa a instância do db do __init__.py
 from sqlalchemy.dialects.postgresql import JSONB
 from .extensions import socketio
@@ -6,6 +10,7 @@ from sqlalchemy.orm import validates
 # --- Modelos de Banco de Dados (SQLAlchemy) ---
 
 class User(db.Model):
+    """Modelo para representar um usuário (aluno ou professor) no sistema."""
     __tablename__ = 'user'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -25,8 +30,8 @@ class User(db.Model):
     last_known_longitude = db.Column(db.Float, nullable=True)
     last_location_update = db.Column(db.DateTime, nullable=True)
     unlocked_global_avatars = db.Column(JSONB, nullable=True, server_default='[]')
-    forum_topics = db.relationship('ForumTopic', backref='author', lazy=True, foreign_keys='ForumTopic.author_id')
-    forum_posts = db.relationship('ForumPost', backref='author', lazy=True, foreign_keys='ForumPost.author_id')
+    forum_topics = db.relationship('ForumTopic', backref=db.backref('author', lazy='joined'), lazy=True, foreign_keys='ForumTopic.author_id')
+    forum_posts = db.relationship('ForumPost', backref=db.backref('author', lazy='joined'), lazy=True, foreign_keys='ForumPost.author_id')
     global_xp = db.Column(db.Integer, default=0, nullable=False, server_default='0')
     cached_city = db.Column(db.String(100), nullable=True)
     cached_state = db.Column(db.String(100), nullable=True)
@@ -61,6 +66,7 @@ class User(db.Model):
         }
 
 class LearningContent(db.Model):
+    """Modelo para conteúdo educacional de um passo (ex: vídeo, texto)."""
     __tablename__ = 'learning_content'
     id = db.Column(db.Integer, primary_key=True)
     activity_id = db.Column(db.Integer, db.ForeignKey('activity.id', ondelete='CASCADE'), nullable=False)
@@ -75,6 +81,7 @@ class LearningContent(db.Model):
     __table_args__ = (db.UniqueConstraint('activity_id', 'step_id', name='_activity_step_uc_learning'),)
 
 class Activity(db.Model):
+    """Modelo central que representa uma atividade gamificada criada por um professor."""
     __tablename__ = 'activity'
     id = db.Column(db.Integer, primary_key=True)
     professor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -96,8 +103,8 @@ class Activity(db.Model):
     class_id = db.Column(db.Integer, db.ForeignKey('class.id'), nullable=True)
     copy_count = db.Column(db.Integer, nullable=False, default=0, server_default='0')
     assignment_count = db.Column(db.Integer, nullable=False, default=0, server_default='0')
-    professor = db.relationship('User', backref='activities', lazy=True)
-    class_obj = db.relationship('Class', backref='assigned_activities', lazy=True)
+    professor = db.relationship('User', backref='activities', lazy='joined')
+    class_obj = db.relationship('Class', backref='assigned_activities', lazy='joined')
     gamification_design = db.Column(JSONB, nullable=True)
     forum_topics = db.relationship('ForumTopic', backref='activity', lazy=True, cascade="all, delete-orphan")
     available_from = db.Column(db.DateTime, nullable=True) # Data de início da disponibilidade
@@ -106,6 +113,9 @@ class Activity(db.Model):
     
     def to_dict(self):
         design = self.gamification_design or {}
+        # TODO: Otimizar cálculo de rating para evitar problema N+1.
+        # Carregar a contagem e a média de ratings diretamente na query principal
+        # que busca as atividades, usando, por exemplo, subqueries ou funções de agregação do DB.
         ratings_count = len(self.ratings)
         average_rating = sum(r.score for r in self.ratings) / ratings_count if ratings_count > 0 else 0
         return {
@@ -146,6 +156,7 @@ class Activity(db.Model):
 # --- NOVAS TABELAS PARA CONTEÚDO DOS PASSOS ---
 
 class QuizContent(db.Model):
+    """Modelo para o conteúdo de um passo do tipo 'Quiz'."""
     __tablename__ = 'quiz_content'
     id = db.Column(db.Integer, primary_key=True)
     activity_id = db.Column(db.Integer, db.ForeignKey('activity.id', ondelete='CASCADE'), nullable=False)
@@ -156,6 +167,7 @@ class QuizContent(db.Model):
     __table_args__ = (db.UniqueConstraint('activity_id', 'step_id', name='_activity_step_uc_quiz'),)
 
 class NarrativeContent(db.Model):
+    """Modelo para o conteúdo de um passo do tipo 'Narrativa'."""
     __tablename__ = 'narrative_content'
     id = db.Column(db.Integer, primary_key=True)
     activity_id = db.Column(db.Integer, db.ForeignKey('activity.id', ondelete='CASCADE'), nullable=False)
@@ -170,6 +182,7 @@ class NarrativeContent(db.Model):
 
 
 class Class(db.Model):
+    """Modelo para uma turma, criada por um professor para organizar alunos e atividades."""
     __tablename__ = 'class'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -192,6 +205,7 @@ class Class(db.Model):
         }
 
 class Enrollment(db.Model):
+    """Modelo de associação que representa a matrícula de um aluno em uma turma."""
     __tablename__ = 'enrollment'
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -203,6 +217,7 @@ class Enrollment(db.Model):
     __table_args__ = (db.UniqueConstraint('student_id', 'class_id', name='_student_class_uc'),)
 
 class ActivityProgress(db.Model):
+    """Armazena o progresso de um aluno em uma atividade específica."""
     __tablename__ = 'activity_progress'
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -237,7 +252,6 @@ class ActivityProgress(db.Model):
     # NOVAS RELAÇÕES: Usamos foreign_keys para resolver a ambiguidade de múltiplas FKs para a mesma tabela
     equipped_name_cosmetic = db.relationship('StoreItem', foreign_keys=[equipped_name_cosmetic_id])
     equipped_title_cosmetic = db.relationship('StoreItem', foreign_keys=[equipped_title_cosmetic_id])
-    coins_earned = db.Column(db.Integer, nullable=False, default=0, server_default='0')
     __table_args__ = (db.UniqueConstraint('student_id', 'activity_id', name='_student_activity_uc'),)
     
     # --- ADICIONE ESTE MÉTODO ---
@@ -259,6 +273,7 @@ class ActivityProgress(db.Model):
 
 
 class EventLog(db.Model):
+    """Registra eventos importantes no sistema para análise e gamificação."""
     __tablename__ = 'event_log'
     
     id = db.Column(db.Integer, primary_key=True)
@@ -282,6 +297,7 @@ class EventLog(db.Model):
     activity = db.relationship('Activity', backref=db.backref('event_logs', cascade="all, delete-orphan"))
 
 class StudentResponse(db.Model):
+    """Armazena a resposta de um aluno a uma questão ou tarefa dissertativa."""
     __tablename__ = 'student_response'
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -295,6 +311,7 @@ class StudentResponse(db.Model):
     activity = db.relationship('Activity', backref=db.backref('responses', cascade="all, delete-orphan"))
 
 class Tag(db.Model):
+    """Modelo para tags que podem ser associadas a atividades para categorização."""
     __tablename__ = 'tag'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True, nullable=False)
@@ -308,6 +325,7 @@ activity_tag = db.Table('activity_tag',
 )
 
 class ActivityRevision(db.Model):
+    """Armazena o histórico de revisões de uma atividade."""
     __tablename__ = 'activity_revision'
     id = db.Column(db.Integer, primary_key=True)
     activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=False)
@@ -320,6 +338,7 @@ class ActivityRevision(db.Model):
     revised_by = db.relationship('User')
 
 class ManualFeedback(db.Model):
+    """Permite que professores deem feedback manual para respostas de alunos."""
     __tablename__ = 'manual_feedback'
     id = db.Column(db.Integer, primary_key=True)
     response_id = db.Column(db.Integer, db.ForeignKey('student_response.id'), nullable=False)
@@ -333,6 +352,7 @@ class ManualFeedback(db.Model):
 
 
 class RouletteWin(db.Model):
+    """Registra os prêmios ganhos por um usuário na roleta de uma atividade."""
     __tablename__ = 'roulette_win'
     
     id = db.Column(db.Integer, primary_key=True)
@@ -346,6 +366,7 @@ class RouletteWin(db.Model):
     activity = db.relationship('Activity', backref=db.backref('roulette_wins', cascade="all, delete-orphan"))
 
 class SlotWin(db.Model):
+    """Registra os prêmios ganhos por um usuário no caça-níquel de uma atividade."""
     __tablename__ = 'slot_win'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -356,6 +377,7 @@ class SlotWin(db.Model):
     activity = db.relationship('Activity', backref=db.backref('slot_wins', cascade="all, delete-orphan"))
 
 class Purchase(db.Model):
+    """Registra a compra de um item da loja por um usuário em uma atividade."""
     __tablename__ = 'purchase'
     
     id = db.Column(db.Integer, primary_key=True)
@@ -391,6 +413,7 @@ class Purchase(db.Model):
 
 
 class StoreItem(db.Model):
+    """Representa um item que pode ser comprado na loja de uma atividade."""
     __tablename__ = 'store_item'
     
     id = db.Column(db.Integer, primary_key=True)
@@ -398,13 +421,9 @@ class StoreItem(db.Model):
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(255), nullable=True)
     price = db.Column(db.Integer, nullable=False, default=50)
-    icon = db.Column(db.String(50), nullable=True, default='💡') # Armazena o emoji ou nome do ícone
-    
-    price = db.Column(db.Integer, nullable=False, default=50)
     icon = db.Column(db.String(50), nullable=True, default='💡')
     
     # --- NOVOS CAMPOS ---
-    # Para identificar o tipo de item (cosmético, utilitário)
     item_type = db.Column(db.String(50), nullable=False, default='utility') 
     # Um identificador único para o efeito (ex: 'RANKING_COLOR_GOLD')
     effect_id = db.Column(JSONB, nullable=True) 
@@ -425,6 +444,7 @@ class StoreItem(db.Model):
 
 
 class Title(db.Model):
+    """Define um título cosmético que pode ser desbloqueado e equipado por usuários."""
     __tablename__ = 'title'
     id = db.Column(db.Integer, primary_key=True)
     # ID único para referência interna (ex: TITLE_LUCKY, TITLE_MASTER)
@@ -434,6 +454,7 @@ class Title(db.Model):
     description = db.Column(db.String(255), nullable=True)
 
 class UserUnlockedTitle(db.Model):
+    """Associação que indica que um usuário desbloqueou um título específico em uma atividade."""
     __tablename__ = 'user_unlocked_title'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -446,7 +467,9 @@ class UserUnlockedTitle(db.Model):
     
     # Garante que um usuário não possa desbloquear o mesmo título na mesma atividade várias vezes
     __table_args__ = (db.UniqueConstraint('user_id', 'activity_id', 'title_id', name='_user_activity_title_uc'),)
+
 class Medal(db.Model):
+    """Define uma medalha/conquista que pode ser desbloqueada por usuários."""
     __tablename__ = 'medal'
     
     id = db.Column(db.Integer, primary_key=True)
@@ -459,6 +482,7 @@ class Medal(db.Model):
     notes = db.Column(db.Text, nullable=True)
 
 class UserUnlockedMedal(db.Model):
+    """Associação que indica que um usuário desbloqueou uma medalha."""
     __tablename__ = 'user_unlocked_medal'
     
     id = db.Column(db.Integer, primary_key=True)
@@ -478,6 +502,7 @@ class UserUnlockedMedal(db.Model):
 
 
 class ForumTopic(db.Model):
+    """Representa um tópico de discussão no fórum de uma atividade."""
     __tablename__ = 'forum_topic'
     
     id = db.Column(db.Integer, primary_key=True)
@@ -496,7 +521,10 @@ class ForumTopic(db.Model):
     posts = db.relationship('ForumPost', backref='topic', lazy='dynamic', foreign_keys='ForumPost.topic_id', cascade="all, delete-orphan")
     best_answer = db.relationship('ForumPost', foreign_keys=[best_answer_id])
     likes = db.relationship('TopicLike', backref='topic', lazy=True, cascade="all, delete-orphan")
+
     def to_dict(self):
+        # TODO: Otimizar contagens para evitar queries extras (problema N+1).
+        # Carregar 'post_count' e 'likes_count' na query principal usando subqueries.
         return {
             "id": self.id,
             "title": self.title,
@@ -504,14 +532,15 @@ class ForumTopic(db.Model):
             "created_at": self.created_at.isoformat(),
             "activity_id": self.activity_id,
             "author_id": self.author_id,
-            "author_name": self.author.name,
+            "author_name": self.author.name if self.author else None,
             "best_answer_id": self.best_answer_id,
-            "post_count": self.posts.count(),
-            "likes_count": len(self.likes),
+            "post_count": self.posts.count(), # Cuidado: pode gerar uma query extra
+            "likes_count": len(self.likes),   # Cuidado: pode gerar uma query extra
             "is_pinned": self.is_pinned
         }
 
 class ForumPost(db.Model):
+    """Representa uma resposta (post) dentro de um tópico do fórum."""
     __tablename__ = 'forum_post'
     
     id = db.Column(db.Integer, primary_key=True)
@@ -530,11 +559,12 @@ class ForumPost(db.Model):
             "created_at": self.created_at.isoformat(),
             "topic_id": self.topic_id,
             "author_id": self.author_id,
-            "author_name": self.author.name,
+            "author_name": self.author.name if self.author else None,
             "likes_count": len(self.likes)
         }
 
 class ForumCategory(db.Model):
+    """Define uma categoria para organizar os tópicos do fórum dentro de uma atividade."""
     __tablename__ = 'forum_category'
     
     id = db.Column(db.Integer, primary_key=True)
@@ -556,6 +586,7 @@ class ForumCategory(db.Model):
         }
         
 class TopicLike(db.Model):
+    """Associação que representa um 'like' de um usuário em um tópico do fórum."""
     __tablename__ = 'topic_like'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
@@ -564,6 +595,7 @@ class TopicLike(db.Model):
     __table_args__ = (db.UniqueConstraint('user_id', 'topic_id', name='_user_topic_like_uc'),)
 
 class PostLike(db.Model):
+    """Associação que representa um 'like' de um usuário em um post do fórum."""
     __tablename__ = 'post_like'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
@@ -579,6 +611,7 @@ conversation_participants = db.Table('conversation_participants',
 )
 
 class Conversation(db.Model):
+    """Representa uma conversa no chat, que pode ser em grupo (atividade) ou direta."""
     __tablename__ = 'conversation'
     
     id = db.Column(db.Integer, primary_key=True)
@@ -595,6 +628,7 @@ class Conversation(db.Model):
     messages = db.relationship('ChatMessage', backref='conversation', lazy=True, cascade="all, delete-orphan")
 
 class ChatMessage(db.Model):
+    """Representa uma única mensagem enviada em uma conversa de chat."""
     __tablename__ = 'chat_message'
     
     id = db.Column(db.Integer, primary_key=True)
@@ -603,20 +637,21 @@ class ChatMessage(db.Model):
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     
-    sender = db.relationship('User', backref='sent_chat_messages')
+    sender = db.relationship('User', backref='sent_chat_messages', lazy='joined')
 
     def to_dict(self):
         return {
             'id': self.id,
             'conversation_id': self.conversation_id,
             'sender_id': self.sender_id,
-            'sender_name': self.sender.name,
+            'sender_name': self.sender.name if self.sender else None,
             'content': self.content,
             'created_at': self.created_at.isoformat()
         }
 
 
 class ActivityRating(db.Model):
+    """Armazena a avaliação (nota de 1 a 5) que um usuário deu para uma atividade."""
     __tablename__ = 'activity_rating'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -626,3 +661,35 @@ class ActivityRating(db.Model):
 
     # Restrição: Um aluno só pode avaliar uma atividade uma vez (opcional)
     __table_args__ = (db.UniqueConstraint('user_id', 'activity_id', name='_user_activity_rating_uc'),)
+    
+class ContactMessage(db.Model):
+    __tablename__ = 'contact_messages'
+
+    id = db.Column(db.Integer, primary_key=True)
+    # CORREÇÃO 1: 'user.id' no singular (para bater com __tablename__ = 'user')
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True) 
+    
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), nullable=False)
+    subject = db.Column(db.String(150), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    
+    # CORREÇÃO 2: Usar db.func.current_timestamp() para consistência com o resto do sistema
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    
+    is_read = db.Column(db.Boolean, default=False) 
+
+    # Relacionamento opcional
+    user = db.relationship('User', backref='sent_messages')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'email': self.email,
+            'subject': self.subject,
+            'message': self.message,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'is_read': self.is_read
+        }
+    
