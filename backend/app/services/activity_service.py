@@ -58,6 +58,7 @@ def create_activity(user, data):
         return {"message": "Acesso negado"}, 403
     
     try:
+        activity_planning_data = data.get('activityPlanning', {})
         # 1. Cria a Atividade Principal
         new_activity = Activity(
             professor_id=user.id,
@@ -65,7 +66,7 @@ def create_activity(user, data):
             description=data.get('description', ''),
             current_scenario=data.get('currentScenario', {}),
             desired_scenario=data.get('desiredScenario', {}),
-            activity_planning=data.get('activityPlanning', {}),
+            activity_planning=activity_planning_data,
             player_profile=data.get('playerProfile', {}),
             game_elements=data.get('gameElements', {}), 
             rewards_offered=data.get('rewardsOffered', {}),
@@ -73,7 +74,8 @@ def create_activity(user, data):
             gamification_rules=data.get('gamificationRules', {}),
             gamification_design=data.get('gamificationDesign', {}), # Importante pegar o design aqui
             area_knowledge=data.get('areaKnowledge'),
-            is_public=data.get('isPublic', False)
+            is_public=data.get('isPublic', False),
+            is_team_activity=activity_planning_data.get('isTeamActivity', False)
         )
         
         # Tratamento de Tags
@@ -123,6 +125,16 @@ def create_activity(user, data):
                         )
                         db.session.add(new_narrative)
                         logger.info(f"Narrativa adicionada ao passo {step_id} da nova atividade {new_activity.id}")
+                    
+                    elif content_type == 'content': # ou 'learning_content'
+                         new_learning = LearningContent(
+                            activity_id=new_activity.id,
+                            step_id=str(step_id),
+                            video_url=content.get('video_url'),
+                            text_content=content.get('text_content'),
+                            material_link=content.get('material_link')
+                         )
+                         db.session.add(new_learning)
 
         # --- INÍCIO DA NOVA LÓGICA: POPULAR A LOJA ---
         logger.info(f"Populando loja padrão para a nova atividade ID {new_activity.id}")

@@ -45,6 +45,9 @@ import SystemAnalyticsPage from './pages/admin/SystemAnalyticsPage';
 import LogExplorerPage from './pages/admin/LogExplorerPage';
 import LocationMapPage from './pages/admin/LocationMapPage';
 import LearningContentEditorPage from './pages/LearningContentEditorPage';
+import ContactPage from './pages/ContactPage';
+import ContactMessagesPage from './pages/admin/ContactMessagesPage';
+
 // --- 2. COMPONENTES AUXILIARES ---
 const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === 'true';
 const debugLog = (message, ...optionalParams) => {
@@ -347,6 +350,7 @@ function AppContent() {
           <Route path="/cadastro" element={<RegisterPage />} />
           <Route path="/sobre-nos" element={<AboutUsPage />} />
           <Route path="/recuperar-senha" element={<ForgotPasswordPage />} />
+          <Route path="/contact" element={<ContactPage />} />
 
           <Route element={<PrivateRoute />}>
             <Route path="/perfil" element={<UserProfilePage />} />
@@ -392,6 +396,7 @@ function AppContent() {
               <Route path="analytics" element={<SystemAnalyticsPage />} />
               <Route path="logs" element={<LogExplorerPage />} />
               <Route path="mapa-localizacao" element={<LocationMapPage />} />
+              <Route path="messages" element={<ContactMessagesPage />} />
             </Route>
           </Route>
 

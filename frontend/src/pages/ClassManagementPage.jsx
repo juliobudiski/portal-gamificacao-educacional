@@ -167,8 +167,8 @@ function ClassListPage() {
             {/* Mensagem de Feedback com cores semânticas */}
             {message && (
                 <p className={`text-sm mb-4 text-center font-medium py-2 px-4 rounded-lg border ${message.includes('sucesso')
-                        ? 'bg-success-bg text-success border-success/30'
-                        : 'bg-danger-bg text-danger border-danger/30'
+                    ? 'bg-success-bg text-success border-success/30'
+                    : 'bg-danger-bg text-danger border-danger/30'
                     }`}>
                     {message}
                 </p>
@@ -177,7 +177,7 @@ function ClassListPage() {
             {/* Botão Criar Nova Turma */}
             {user?.role === 'professor' && (
                 <div className="text-center mb-6">
-                    <Link to="/teacher/classes/new"
+                    <Link to="/professor/turmas/nova"
                         // Mudado para 'bg-success' para indicar ação positiva
                         className="bg-success hover:bg-success/90 text-white dark:text-primary-bg font-bold py-2 px-6 rounded-lg inline-block transition duration-200 ease-in-out transform hover:scale-105 shadow-md">
                         Criar Nova Turma

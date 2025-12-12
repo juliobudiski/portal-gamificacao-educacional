@@ -1,4 +1,6 @@
 // frontend/src/components/steps/Step1_InitialDetails.jsx
+// Verificado 09/12/2025 - OK
+
 import React, { useState, useEffect } from 'react';
 import {
   FaCode, FaTools, FaUsers, FaFrown, FaTasks, FaHeadSideVirus,
@@ -17,7 +19,7 @@ const CNPQ_AREAS = {
     "Astronomia"
   ],
   "Engenharias": [
-    "Engenharia de Software", // Adicionado especificamente para seu contexto
+    "Engenharia de Software", // Adicionado 
     "Engenharia Elétrica",
     "Engenharia Civil",
     "Engenharia Mecânica",

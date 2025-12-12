@@ -1,10 +1,11 @@
 from flask import Blueprint, jsonify, request, current_app
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from .. import db
-from ..models import db, User, Class, Enrollment, Activity
+from ..models import db, User, Class, Enrollment, Activity, Team
 import uuid
 import logging
 from flask_cors import cross_origin
+import random
 
 class_bp = Blueprint('classes', __name__)
 logger = logging.getLogger(__name__)
@@ -126,7 +127,27 @@ def get_class_details(class_id):
         if 'enrollment_code' in class_data:
             del class_data['enrollment_code']
 
-
+    # Busca as equipes (Casas) da turma
+    teams = Team.query.filter_by(class_id=class_id).all()
+    teams_data = []
+    
+    for team in teams:
+        # Busca os membros deste time
+        members = User.query.join(Enrollment).filter(Enrollment.team_id == team.id).all()
+        teams_data.append({
+            "id": team.id,
+            "name": team.name,
+            "avatar_url": team.avatar_url,
+            "members": [
+                {
+                    "id": m.id, 
+                    "name": m.name, 
+                    "avatar": m.profile_picture or '/avatars/default_avatar.webp'
+                } for m in members
+            ]
+        })
+    
+    class_data['teams'] = teams_data
     # Optionally include activities assigned to this class
     assigned_activities = Activity.query.filter_by(class_id=class_id).all()
     class_data['activities'] = [activity.to_dict() for activity in assigned_activities]
@@ -246,6 +267,22 @@ def join_class():
 
     try:
         new_enrollment = Enrollment(student_id=user.id, class_id=class_to_join.id)
+        existing_teams = Team.query.filter_by(class_id=class_to_join.id).all()
+        
+        if existing_teams:
+            # Estratégia: Encontrar o time com MENOS membros para manter equilíbrio
+            # Precisamos contar quantos enrollments cada time tem.
+            # Uma forma simples (mas não a mais performática para milhões de alunos) é:
+            
+            # Ordena os times pelo tamanho da lista de membros
+            existing_teams.sort(key=lambda t: len(t.members))
+            
+            # Pega o primeiro (o menor)
+            target_team = existing_teams[0]
+            new_enrollment.team_id = target_team.id
+            
+            current_app.logger.info(f"Aluno {user.id} sorteado automaticamente para a Casa {target_team.name}")
+            
         db.session.add(new_enrollment)
         db.session.commit()
         current_app.logger.info(f"Aluno ID {current_user_id} matriculado com sucesso na turma '{class_to_join.name}' (ID: {class_to_join.id}).")
@@ -478,3 +515,58 @@ def remove_activity_from_class(class_id, activity_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": str(e)}), 500
+    
+    
+@class_bp.route('/<int:class_id>/teams/generate', methods=['POST'])
+@cross_origin()
+@jwt_required()
+def generate_teams(class_id):
+    current_user_id = get_jwt_identity()
+    professor = User.query.get(current_user_id)
+    class_obj = Class.query.get(class_id)
+
+    if not professor or professor.role != 'professor' or class_obj.professor_id != professor.id:
+        return jsonify({"message": "Acesso negado."}), 403
+    
+    data = request.get_json()
+    num_teams = int(data.get('quantity', 4))
+    custom_names = data.get('names', [])
+    method = data.get('method', 'random')
+
+    # 1. Cria a ESTRUTURA (As Casas) - Isso acontece independente de ter alunos
+    created_teams = []
+    for i in range(num_teams):
+        name = custom_names[i] if i < len(custom_names) else f"Equipe {i+1}"
+        new_team = Team(name=name, class_id=class_id)
+        db.session.add(new_team)
+        created_teams.append(new_team)
+    
+    db.session.flush() # Gera os IDs
+
+    # 2. Busca alunos existentes (pode ser lista vazia)
+    enrollments = Enrollment.query.filter_by(class_id=class_id).all()
+    
+    # 3. Só distribui SE houver alunos
+    if enrollments:
+        students = [e for e in enrollments]
+        
+        if method == 'balanced':
+            # Ordena por XP Global para balancear veteranos
+            # Nota: Precisamos garantir que o relacionamento 'student' esteja carregado
+            students.sort(key=lambda x: x.student.global_xp if x.student else 0, reverse=True)
+            
+            for index, enrollment in enumerate(students):
+                team_index = index % num_teams
+                target_team = created_teams[team_index]
+                enrollment.team_id = target_team.id
+        else:
+            # Aleatório
+            random.shuffle(students)
+            for index, enrollment in enumerate(students):
+                target_team = created_teams[index % num_teams]
+                enrollment.team_id = target_team.id
+
+    db.session.commit()
+    
+    msg = "Casas criadas com sucesso!" if not enrollments else "Casas criadas e alunos distribuídos!"
+    return jsonify({"message": msg}), 201

@@ -11,7 +11,7 @@ import {
     FaUserGraduate,
     FaChevronDown,
     FaChevronUp,
-    FaUsers, FaClock, FaCheckCircle, FaTimesCircle, FaHourglassStart
+    FaUsers, FaClock, FaCheckCircle, FaTimesCircle, FaHourglassStart, FaShieldAlt
 } from "react-icons/fa";
 
 // --- COMPONENTE INTERNO PARA O CARD DA ATIVIDADE ---
@@ -196,6 +196,8 @@ function ClassDetailsPage() {
     const [error, setError] = useState(''); // Estado para o erro
     const [isLoading, setIsLoading] = useState(true);
     const [students, setStudents] = useState([]);
+    const [teams, setTeams] = useState([]);
+
     useEffect(() => {
         const fetchClassData = async () => {
             const token = user?.token;
@@ -228,6 +230,7 @@ function ClassDetailsPage() {
                 setClassDetails(classData);
                 setActivities(activitiesData);
                 setStudents(classData.students || []);
+                setTeams(classData.teams || []);
 
             } catch (err) {
                 console.error('[ClassDetailsPage] Erro na requisição de dados da turma:', err);
@@ -341,6 +344,62 @@ function ClassDetailsPage() {
                         </div>
                     </div>
                 </div>
+
+                {/* --- SEÇÃO NOVA: CASAS DA TURMA (EQUIPES) --- */}
+                {teams.length > 0 && (
+                    <div className="mb-8 animate-fade-in">
+                        <div className="flex items-center mb-6">
+                            <div className="w-10 h-10 rounded-full bg-accent-purple/20 flex items-center justify-center mr-3">
+                                <FaShieldAlt className="text-accent-purple" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-primary-text">
+                                Casas da Turma
+                            </h2>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {teams.map((team, index) => (
+                                <div
+                                    key={team.id}
+                                    className="bg-secondary-bg rounded-xl border border-border-color shadow-lg overflow-hidden hover:border-accent-purple transition-all duration-300"
+                                >
+                                    {/* Header da Casa */}
+                                    <div className={`p-4 border-b border-border-color bg-gradient-to-r ${index % 2 === 0 ? 'from-purple-900/40 to-blue-900/40' : 'from-blue-900/40 to-teal-900/40'}`}>
+                                        <h3 className="font-bold text-lg text-white flex items-center justify-center gap-2">
+                                            <FaShieldAlt className="opacity-50" />
+                                            {team.name}
+                                        </h3>
+                                    </div>
+
+                                    {/* Lista de Membros */}
+                                    <div className="p-4">
+                                        <p className="text-xs text-secondary-text mb-3 font-bold uppercase tracking-wider">
+                                            Membros ({team.members.length})
+                                        </p>
+                                        <div className="flex flex-col gap-2 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
+                                            {team.members.length > 0 ? (
+                                                team.members.map(member => (
+                                                    <div key={member.id} className="flex items-center gap-2 bg-primary-bg/50 p-2 rounded-lg">
+                                                        <img
+                                                            src={member.avatar}
+                                                            alt={member.name}
+                                                            className="w-6 h-6 rounded-full border border-border-color object-cover"
+                                                        />
+                                                        <span className="text-sm text-primary-text truncate">{member.name}</span>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <p className="text-sm text-gray-500 italic text-center py-2">Casa vazia</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+
                 {/* --- SEÇÃO NOVA PARA LISTA DE ALUNOS --- */}
                 <div className="mb-8">
                     <div className="flex items-center mb-6">

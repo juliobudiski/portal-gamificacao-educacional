@@ -110,6 +110,7 @@ class Activity(db.Model):
     available_from = db.Column(db.DateTime, nullable=True) # Data de início da disponibilidade
     expires_at = db.Column(db.DateTime, nullable=True)     # Data final (prazo)
     ratings = db.relationship('ActivityRating', backref='activity', lazy=True)
+    is_team_activity = db.Column(db.Boolean, default=False, nullable=False, server_default='f')
     
     def to_dict(self):
         design = self.gamification_design or {}
@@ -150,7 +151,8 @@ class Activity(db.Model):
                 'theme': design.get('theme', 'vila_da_aventura'), # Adicione um padrão
                 'progression_path': design.get('progression_path', []),
                 'hub_elements': design.get('hub_elements', [])
-            }
+            },
+            'is_team_activity': self.is_team_activity
         }
 
 # --- NOVAS TABELAS PARA CONTEÚDO DOS PASSOS ---
@@ -211,7 +213,7 @@ class Enrollment(db.Model):
     student_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     class_id = db.Column(db.Integer, db.ForeignKey('class.id'), nullable=False)
     enrollment_date = db.Column(db.DateTime, default=db.func.current_timestamp())
-
+    team_id = db.Column(db.Integer, db.ForeignKey('team.id'), nullable=True)
     student = db.relationship('User', backref='enrollments', lazy=True)
     class_obj = db.relationship('Class', backref='enrollments', lazy=True)
     __table_args__ = (db.UniqueConstraint('student_id', 'class_id', name='_student_class_uc'),)
@@ -693,3 +695,13 @@ class ContactMessage(db.Model):
             'is_read': self.is_read
         }
     
+class Team(db.Model):
+    __tablename__ = 'team'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    class_id = db.Column(db.Integer, db.ForeignKey('class.id'), nullable=False)
+    avatar_url = db.Column(db.String(255), nullable=True) # Brasão
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    
+    # Relação com Enrollments (Membros)
+    members = db.relationship('Enrollment', backref='team', lazy=True)

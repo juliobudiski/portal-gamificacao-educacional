@@ -1,4 +1,6 @@
 // frontend/src/components/steps/Step7_RewardedActions.jsx
+// Verificado 09/12/2025 - OK
+
 import React from 'react';
 import {
   FaComments,

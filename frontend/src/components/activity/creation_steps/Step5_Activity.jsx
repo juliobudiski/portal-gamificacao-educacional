@@ -1,4 +1,6 @@
 // frontend/src/components/steps/Step5_GameElements.jsx
+// Verificado 09/12/2025 - OK
+
 import React from 'react';
 import {
   FaLayerGroup, FaChartBar, FaGem, FaCoins, FaDice, FaClock, FaIdBadge,

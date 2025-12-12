@@ -208,10 +208,14 @@ function AboutUsPage() {
           Faça parte desta revolução educacional que já transforma a vida de milhares de professores e alunos.
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4">
-          <Link to="/cadastro" className="bg-gradient-to-r from-[#ffbd30] to-[#ffa000] hover:from-[#ffcc5c] hover:to-[#ffb140] text-[#2c3135] font-bold py-3 px-6 rounded-full shadow-md transition-all duration-300 transform hover:scale-105">Comece Agora</Link>
-          <button className="bg-secondary-bg hover:bg-primary-bg text-primary-text font-bold py-3 px-6 rounded-full border border-[#69e8cb]/40 shadow-md transition-all duration-300">
-            Fale Conosco
-          </button>
+          <Link to="/cadastro"
+            className="bg-gradient-to-r from-[#ffbd30] to-[#ffa000] hover:from-[#ffcc5c] hover:to-[#ffb140] text-[#2c3135] font-bold py-3 px-6 rounded-full shadow-md transition-all duration-300 transform hover:scale-105">
+            Comece Agora</Link>
+
+          {/* Alterado de <button> para <Link> */}
+          <Link to="/contact"
+            className="bg-secondary-bg hover:bg-primary-bg text-primary-text font-bold py-3 px-6 rounded-full border border-[#69e8cb]/40 shadow-md transition-all duration-300 flex items-center justify-center">
+            Fale Conosco</Link>
         </div>
       </div>
     </div>

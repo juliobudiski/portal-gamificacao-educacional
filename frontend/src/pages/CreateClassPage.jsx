@@ -74,8 +74,8 @@ function CreateClassPage() {
                 setMessage(`Turma "${data.class.name}" criada com sucesso! Código de Inscrição: ${data.class.enrollment_code}`);
                 setName('');
                 setDescription('');
-                console.log('[CreateClassPage] Turma criada, navegando para /teacher/classes');
-                setTimeout(() => navigate('/teacher/classes'), 2000);
+                console.log('[CreateClassPage] Turma criada, navegando para /professor/gerenciar-turmas');
+                setTimeout(() => navigate('/professor/gerenciar-turmas'), 2000);
             } else {
                 setMessage(data.message || 'Erro desconhecido ao criar turma.');
                 console.error('[CreateClassPage] Erro ao criar turma:', data.message);

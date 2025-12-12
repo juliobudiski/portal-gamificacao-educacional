@@ -1,4 +1,6 @@
 // frontend/src/components/steps/Step6_RewardsOffered.jsx
+// Verificado 09/12/2025 - OK
+
 import React from 'react';
 import {
   FaPlusCircle,

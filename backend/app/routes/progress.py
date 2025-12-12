@@ -1,7 +1,7 @@
 # backend/app/routes/progress.py
 from flask import Blueprint, jsonify, request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from ..models import db, Title, UserUnlockedTitle, Purchase, StoreItem, User, ActivityProgress, Activity, StudentResponse, EventLog, RouletteWin, SlotWin
+from ..models import db, Title, UserUnlockedTitle, Purchase, StoreItem, User, ActivityProgress, Activity, StudentResponse, EventLog, RouletteWin, SlotWin, Enrollment, Team
 from sqlalchemy.orm import joinedload
 from flask_cors import cross_origin 
 progress_bp = Blueprint('progress', __name__)
@@ -77,6 +77,11 @@ def _get_progress_json(user_id, activity_id):
     # 1. Calcula o nível do aluno baseado no XP total
     total_xp = progress.total_xp_earned if progress.total_xp_earned is not None else 0
     level_info = calculate_level(total_xp) # Retorna um dicionário
+    
+    stats = { "scoreAchieved": progress.points_earned or 0, "totalPossibleScore": 100, "totalQuestions": 0, "averageTime": 0, "achievements": 0 }
+    teammates_positions = {}
+    if activity.is_team_activity:
+        teammates_positions = _get_teammates_positions(user.id, activity.id, activity.class_id)
 
     # 2. Calcula as estatísticas (stats) dinamicamente
     total_possible_points = 0
@@ -107,7 +112,8 @@ def _get_progress_json(user_id, activity_id):
         "attempts": progress.attempts or 0,
         "stats": stats,
         "unlocked_activity_avatars": progress.unlocked_activity_avatars or [],
-        "equipped_activity_avatar_url": progress.equipped_activity_avatar_url
+        "equipped_activity_avatar_url": progress.equipped_activity_avatar_url,
+        "teammates_positions": teammates_positions
     }
     
 @progress_bp.route('/<int:activity_id>', methods=['GET'])
@@ -1041,3 +1047,51 @@ def equip_cosmetic(activity_id):
     
     db.session.commit()
     return jsonify({"message": f"Cosmético equipado no slot '{slot}' com sucesso!"}), 200
+
+def _get_teammates_positions(user_id, activity_id, class_id):
+    """
+    Retorna um dicionário mapeando 'step_id' -> lista de colegas naquele passo.
+    Ex: { 'step_01': [{'name': 'Joao', 'avatar': '...'}, {'name': 'Maria', ...}] }
+    """
+    # 1. Descobrir qual é o time do aluno atual nesta turma
+    enrollment = Enrollment.query.filter_by(student_id=user_id, class_id=class_id).first()
+    
+    # Se o aluno não tem time, não retorna ninguém
+    if not enrollment or not enrollment.team_id:
+        return {}
+
+    # 2. Buscar progresso de todos os colegas DESSE time NESSA atividade
+    # (Excluindo o próprio aluno para não ver a si mesmo como "colega")
+    results = (
+        db.session.query(ActivityProgress, User)
+        .join(User, ActivityProgress.student_id == User.id)
+        .join(Enrollment, User.id == Enrollment.student_id)
+        .filter(
+            Enrollment.team_id == enrollment.team_id,
+            ActivityProgress.activity_id == activity_id,
+            User.id != user_id # Exclui o próprio usuário
+        ).all()
+    )
+
+    positions = {}
+    
+    for prog, user in results:
+        # A lógica: O aluno está "parado" no último passo que ele completou.
+        # Se a lista estiver vazia, ele está no início (antes do passo 1).
+        # Se sua lógica de passo for baseada em IDs do JSON, precisamos pegar o último ID da lista.
+        
+        steps = prog.completed_steps or []
+        last_step_id = steps[-1] if steps else 'start' 
+        
+        if last_step_id not in positions:
+            positions[last_step_id] = []
+        
+        # Define o avatar (usa o da atividade ou o global)
+        display_avatar = prog.equipped_activity_avatar_url or user.profile_picture or '/avatars/default_avatar.webp'
+
+        positions[last_step_id].append({
+            'name': user.name,
+            'avatar': display_avatar
+        })
+        
+    return positions

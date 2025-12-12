@@ -1,4 +1,6 @@
 // frontend/src/components/steps/Step8_RulesAndSharing.jsx
+// Verificado 09/12/2025 - OK
+
 import React from 'react';
 import {
   FaGavel,

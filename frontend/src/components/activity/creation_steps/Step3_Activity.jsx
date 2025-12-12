@@ -1,4 +1,6 @@
 // frontend/src/components/steps/Step3_ActivityPlanning.jsx
+// Verificado 09/12/2025 - OK
+
 import React from 'react';
 import {
   FaChalkboardTeacher,
@@ -26,8 +28,6 @@ function Step3_ActivityPlanning({ activityData, handleInputChange, setActivityDa
   const activityCharacteristics = [
     { text: "Presencial", icon: <FaChalkboardTeacher /> },
     { text: "Online", icon: <FaLaptop /> },
-    { text: "Individual", icon: <FaUser /> },
-    { text: "Em grupos", icon: <FaUsers /> },
     { text: "Requer equipamentos específicos", icon: <FaTools /> },
     { text: "Formativa (prática ou revisão)", icon: <FaClipboardCheck /> },
     { text: "Somativa (avaliação)", icon: <FaFileSignature /> },
@@ -60,6 +60,17 @@ function Step3_ActivityPlanning({ activityData, handleInputChange, setActivityDa
     });
   };
 
+  // 2. Nova função para controlar o MODO DE JOGO (Team vs Individual)
+  const handleModeSelection = (isTeam) => {
+    setActivityData(prevData => ({
+      ...prevData,
+      activityPlanning: {
+        ...prevData.activityPlanning,
+        isTeamActivity: isTeam // Salva explicitamente no JSON
+      }
+    }));
+  };
+
   return (
     <div className="space-y-8 animate-fade-in">
       {/* SEÇÃO 1: Título e Descrição */}
@@ -70,6 +81,51 @@ function Step3_ActivityPlanning({ activityData, handleInputChange, setActivityDa
         <p className="mt-2 text-secondary-text dark:text-secondary-text">
           Descreva as características e a logística da atividade. Essas informações são cruciais para um bom planejamento.
         </p>
+      </div>
+
+      {/* --- NOVA SEÇÃO: DINÂMICA DE PARTICIPAÇÃO (Decisão Crítica) --- */}
+      <div className="bg-primary-bg border border-border-color p-6 rounded-xl">
+        <h3 className="text-lg font-semibold text-primary-text mb-4 flex items-center gap-2">
+          Dinâmica de Participação <span className="text-xs font-normal text-secondary-text bg-secondary-bg px-2 py-1 rounded-full border border-border-color">Obrigatório</span>
+        </h3>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Opção 1: Individual */}
+          <div
+            onClick={() => handleModeSelection(false)}
+            className={`cursor-pointer p-4 rounded-xl border-2 transition-all flex items-center gap-4
+              ${activityData.activityPlanning.isTeamActivity === false
+                ? 'border-accent-teal bg-accent-teal/10'
+                : 'border-border-color hover:border-gray-400 bg-secondary-bg opacity-70 hover:opacity-100'}
+            `}
+          >
+            <div className={`p-3 rounded-full ${activityData.activityPlanning.isTeamActivity === false ? 'bg-accent-teal text-white' : 'bg-gray-700 text-gray-400'}`}>
+              <FaUser size={24} />
+            </div>
+            <div>
+              <h4 className="font-bold text-primary-text">Jornada Individual</h4>
+              <p className="text-sm text-secondary-text">Cada aluno progride sozinho e vê apenas seu próprio avatar.</p>
+            </div>
+          </div>
+
+          {/* Opção 2: Equipes */}
+          <div
+            onClick={() => handleModeSelection(true)}
+            className={`cursor-pointer p-4 rounded-xl border-2 transition-all flex items-center gap-4
+              ${activityData.activityPlanning.isTeamActivity === true
+                ? 'border-accent-purple bg-accent-purple/10'
+                : 'border-border-color hover:border-gray-400 bg-secondary-bg opacity-70 hover:opacity-100'}
+            `}
+          >
+            <div className={`p-3 rounded-full ${activityData.activityPlanning.isTeamActivity === true ? 'bg-accent-purple text-white' : 'bg-gray-700 text-gray-400'}`}>
+              <FaUsers size={24} />
+            </div>
+            <div>
+              <h4 className="font-bold text-primary-text">Expedição em Equipe</h4>
+              <p className="text-sm text-secondary-text">Alunos veem o progresso dos colegas de equipe no tabuleiro em tempo real.</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* SEÇÃO 2: Seleção de Características com Cards */}

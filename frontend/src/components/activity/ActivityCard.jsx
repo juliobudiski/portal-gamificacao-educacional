@@ -34,7 +34,7 @@ function ActivityCard({ activity, isOwner, onCopy, onDelete, onSelect, isSelecte
 
 
     return (
-        <div className="bg-secondary-bg p-5 rounded-xl shadow-lg border border-[#4a525a] flex flex-col justify-between h-full transform hover:-translate-y-1 transition-transform duration-300 relative group-card">
+        <div className="bg-secondary-bg p-5 rounded-xl shadow-lg border border-[var(--border-color)] flex flex-col justify-between h-full transform hover:-translate-y-1 transition-transform duration-300 relative group-card">
             {isOwner && (
                 <div className="absolute top-3 right-3 z-10">
                     <input
@@ -42,7 +42,8 @@ function ActivityCard({ activity, isOwner, onCopy, onDelete, onSelect, isSelecte
                         checked={isSelected}
                         onChange={handleCheckboxClick}
                         onClick={(e) => e.stopPropagation()}
-                        className="h-5 w-5 rounded bg-border-color border-gray-500 text-accent-yellow focus:ring-accent-yellow cursor-pointer"
+                        // Checkbox adaptável
+                        className="h-5 w-5 rounded bg-primary-bg border-secondary-text/50 text-accent-yellow focus:ring-accent-yellow cursor-pointer"
                     />
                 </div>
             )}
@@ -53,12 +54,13 @@ function ActivityCard({ activity, isOwner, onCopy, onDelete, onSelect, isSelecte
 
                     {/* --- SEÇÃO DE AVALIAÇÃO --- */}
                     <div
-                        className="flex items-center bg-primary-bg/50 px-2 py-1 rounded-lg cursor-help transition-colors hover:bg-primary-bg"
-                        title={ratingTooltip} // Tooltip nativo do HTML
+                        // Fundo primary-bg para contraste
+                        className="flex items-center bg-primary-bg px-2 py-1 rounded-lg cursor-help transition-colors border border-[var(--border-color)]"
+                        title={ratingTooltip}
                     >
                         {ratingCount > 0 ? (
                             <>
-                                <div className="flex text-xs mr-1">
+                                <div className="flex text-xs mr-1 text-accent-yellow">
                                     {renderStars()}
                                 </div>
                                 <span className="text-xs font-bold text-secondary-text">({ratingCount})</span>
@@ -73,8 +75,9 @@ function ActivityCard({ activity, isOwner, onCopy, onDelete, onSelect, isSelecte
                     {/* -------------------------- */}
                 </div>
 
+                {/* Badge de Turma */}
                 {activity.class_name && (
-                    <div className="flex items-center text-xs text-yellow-300 bg-yellow-400/10 px-2 py-1 rounded-md mb-3 w-fit">
+                    <div className="flex items-center text-xs text-accent-yellow bg-accent-yellow/10 border border-accent-yellow/20 px-2 py-1 rounded-md mb-3 w-fit">
                         <FaChalkboardTeacher className="mr-2" />
                         <span>Turma: {activity.class_name}</span>
                     </div>
@@ -88,49 +91,79 @@ function ActivityCard({ activity, isOwner, onCopy, onDelete, onSelect, isSelecte
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                    <span className="text-xs font-medium px-2 py-1 bg-blue-400/20 text-blue-300 rounded-full">
+                    {/* Badge de Área (Info) */}
+                    <span className="text-xs font-medium px-2 py-1 bg-info-bg text-info border border-info/20 rounded-full">
                         {activity.areaKnowledge || 'N/A'}
                     </span>
+
+                    {/* Badge de Público (Success) */}
                     {activity.isPublic && (
-                        <span className="text-xs font-medium px-2 py-1 bg-green-500/20 text-green-400 rounded-full">
+                        <span className="text-xs font-medium px-2 py-1 bg-success-bg text-success border border-success/20 rounded-full">
                             Pública
                         </span>
                     )}
                 </div>
             </div>
 
-            <div className="mt-4 pt-4 border-t border-gray-600 flex justify-end items-center gap-2">
+            {/* Rodapé de Ações */}
+            <div className="mt-4 pt-4 border-t border-[var(--border-color)] flex justify-end items-center gap-2">
                 {isOwner ? (
                     <>
+                        {/* Botão Atribuir */}
                         <button
                             onClick={() => navigate(`/assign-activity-to-class/${activity.id}`)}
-                            className="p-2 bg-border-color hover:bg-accent-teal/30 rounded-full group"
+                            className="p-2 bg-primary-bg hover:bg-accent-teal/20 rounded-full group transition-colors border border-transparent hover:border-accent-teal/30"
                             title="Atribuir à Turma"
                         >
                             <FaChalkboardTeacher className="text-secondary-text group-hover:text-accent-teal" />
                         </button>
-                        <button onClick={() => navigate(`/professor/atividades/${activity.id}/edit`)} className="p-2 bg-border-color hover:bg-accent-yellow/30 rounded-full group" title="Editar">
+                        {/* Botão Editar */}
+                        <button
+                            onClick={() => navigate(`/professor/atividades/${activity.id}/edit`)}
+                            className="p-2 bg-primary-bg hover:bg-accent-yellow/20 rounded-full group transition-colors border border-transparent hover:border-accent-yellow/30"
+                            title="Editar"
+                        >
                             <FaEdit className="text-secondary-text group-hover:text-accent-yellow" />
                         </button>
-                        <button onClick={() => onDelete(activity.id)} className="p-2 bg-border-color hover:bg-red-500/30 rounded-full group" title="Deletar">
-                            <FaTrash className="text-secondary-text group-hover:text-red-400" />
+                        {/* Botão Deletar (Danger) */}
+                        <button
+                            onClick={() => onDelete(activity.id)}
+                            className="p-2 bg-primary-bg hover:bg-danger-bg rounded-full group transition-colors border border-transparent hover:border-danger/30"
+                            title="Deletar"
+                        >
+                            <FaTrash className="text-secondary-text group-hover:text-danger" />
                         </button>
-                        <button onClick={() => onCopy(activity.id)} className="p-2 bg-border-color hover:bg-accent-purple/30 rounded-full group" title="Copiar e Editar">
+                        {/* Botão Copiar */}
+                        <button
+                            onClick={() => onCopy(activity.id)}
+                            className="p-2 bg-primary-bg hover:bg-accent-purple/20 rounded-full group transition-colors border border-transparent hover:border-accent-purple/30"
+                            title="Copiar e Editar"
+                        >
                             <FaCopy className="text-secondary-text group-hover:text-accent-purple" />
                         </button>
                     </>
                 ) : (
                     <>
-                        <button onClick={() => onCopy(activity.id)} className="p-2 bg-border-color hover:bg-accent-purple/30 rounded-full group" title="Copiar e Editar">
+                        <button
+                            onClick={() => onCopy(activity.id)}
+                            className="p-2 bg-primary-bg hover:bg-accent-purple/20 rounded-full group transition-colors border border-transparent hover:border-accent-purple/30"
+                            title="Copiar e Editar"
+                        >
                             <FaCopy className="text-secondary-text group-hover:text-accent-purple" />
                         </button>
                     </>
                 )}
-                <button onClick={() => navigate(`/activities/${activity.id}`)} className="p-2 bg-border-color hover:bg-blue-500/30 rounded-full group" title="Visualizar">
-                    <FaEye className="text-secondary-text group-hover:text-blue-400" />
+                {/* Botão Visualizar (Info/Blue) */}
+                <button
+                    onClick={() => navigate(`/activities/${activity.id}`)}
+                    className="p-2 bg-primary-bg hover:bg-info-bg rounded-full group transition-colors border border-transparent hover:border-info/30"
+                    title="Visualizar"
+                >
+                    <FaEye className="text-secondary-text group-hover:text-info" />
                 </button>
             </div>
 
+            {/* Estatísticas de rodapé */}
             <div className="flex items-center text-xs text-secondary-text mt-3 space-x-4">
                 <div className="flex items-center" title={`${copyCount} professores copiaram esta atividade`}>
                     <FaCopy className="mr-1.5" />

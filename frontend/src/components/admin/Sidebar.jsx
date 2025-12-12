@@ -1,7 +1,7 @@
 // frontend/src/components/admin/Sidebar.jsx
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { MapPin, LayoutDashboard, Users, BookCopy, BarChart4, LogOut, GraduationCap } from 'lucide-react';
+import { MessageSquare, MapPin, LayoutDashboard, Users, BookCopy, BarChart4, LogOut, GraduationCap } from 'lucide-react';
 
 /**
  * Componente Sidebar
@@ -61,6 +61,13 @@ function Sidebar() {
         >
           <MapPin className="mr-3" size={20} />
           <span>Mapa e Localização</span>
+        </NavLink>
+        <NavLink
+          to="/admin/messages"
+          className={({ isActive }) => `${baseLinkStyle} ${isActive ? activeLinkStyle : inactiveLinkStyle}`}
+        >
+          <MessageSquare className="mr-3" size={20} />
+          <span>Fale Conosco</span>
         </NavLink>
       </nav>
 

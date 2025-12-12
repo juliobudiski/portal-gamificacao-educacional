@@ -1,4 +1,6 @@
 // frontend/src/components/steps/Step2_DesiredScenario.jsx
+// Verificado 09/12/2025 - OK
+
 import React from 'react';
 import {
   FaGamepad,
@@ -11,6 +13,7 @@ import {
   FaProjectDiagram
 } from 'react-icons/fa';
 import { useHelpModal } from "../../../context/HelpModalContext";
+
 /**
  * Componente para a Etapa 2 do formulário de criação de atividades.
  * Coleta os objetivos de aprendizagem e metas a serem alcançadas.

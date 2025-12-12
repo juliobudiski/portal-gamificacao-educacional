@@ -2,11 +2,13 @@
 from flask_cors import cross_origin 
 from flask import Blueprint, jsonify, current_app, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from ..models import db, User, Activity, EventLog, Purchase, ActivityProgress
+from ..models import db, User, Activity, EventLog, Purchase, ActivityProgress, ContactMessage
 from sqlalchemy import func, case, cast, Numeric
 from datetime import datetime, timedelta
 from collections import Counter
 import requests
+from ..models import ContactMessage
+
 admin_bp = Blueprint('admin', __name__)
 
 # Função auxiliar para verificar se o usuário é admin
@@ -583,3 +585,29 @@ def get_user_locations():
             })
             
     return jsonify(locations_data)
+
+@admin_bp.route('/contact/messages', methods=['GET'])
+@jwt_required()
+def get_contact_messages():
+    if not check_admin():
+        return jsonify({"message": "Acesso negado."}), 403
+
+    # Busca mensagens ordenadas: Não lidas primeiro, depois as mais recentes
+    messages = ContactMessage.query.order_by(
+        ContactMessage.is_read.asc(),
+        ContactMessage.created_at.desc()
+    ).limit(100).all() # Limitando a 100 para segurança inicial, ideal é paginar
+
+    return jsonify([msg.to_dict() for msg in messages])
+
+@admin_bp.route('/contact/messages/<int:msg_id>/read', methods=['PATCH'])
+@jwt_required()
+def mark_contact_message_read(msg_id):
+    if not check_admin():
+        return jsonify({"message": "Acesso negado."}), 403
+
+    msg = ContactMessage.query.get_or_404(msg_id)
+    msg.is_read = True
+    db.session.commit()
+    
+    return jsonify({"success": True, "message": "Mensagem marcada como lida"})
