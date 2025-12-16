@@ -79,9 +79,20 @@ def _get_progress_json(user_id, activity_id):
     level_info = calculate_level(total_xp) # Retorna um dicionário
     
     stats = { "scoreAchieved": progress.points_earned or 0, "totalPossibleScore": 100, "totalQuestions": 0, "averageTime": 0, "achievements": 0 }
-    teammates_positions = {}
-    if activity.is_team_activity:
-        teammates_positions = _get_teammates_positions(user.id, activity.id, activity.class_id)
+    
+    multiplayer_data = {"teammates": {}, "rivals": {}}
+    team_name = None # Variável para armazenar o nome da casa
+    
+    # Busca posições
+    multiplayer_data = _get_multiplayer_positions(user.id, activity)
+    
+    if activity.is_team_activity:            
+        # Busca o Nome do Time
+        enrollment = Enrollment.query.filter_by(student_id=user.id, class_id=activity.class_id).first()
+        if enrollment and enrollment.team_id:
+            team = Team.query.get(enrollment.team_id)
+            if team:
+                team_name = team.name
 
     # 2. Calcula as estatísticas (stats) dinamicamente
     total_possible_points = 0
@@ -113,7 +124,9 @@ def _get_progress_json(user_id, activity_id):
         "stats": stats,
         "unlocked_activity_avatars": progress.unlocked_activity_avatars or [],
         "equipped_activity_avatar_url": progress.equipped_activity_avatar_url,
-        "teammates_positions": teammates_positions
+        "teammates_positions": multiplayer_data["teammates"], # Envia só a parte de colegas
+        "rivals_positions": multiplayer_data["rivals"],       # Envia só a parte de rivais
+        "team_name": team_name
     }
     
 @progress_bp.route('/<int:activity_id>', methods=['GET'])
@@ -1048,50 +1061,123 @@ def equip_cosmetic(activity_id):
     db.session.commit()
     return jsonify({"message": f"Cosmético equipado no slot '{slot}' com sucesso!"}), 200
 
-def _get_teammates_positions(user_id, activity_id, class_id):
+def _get_multiplayer_positions(user_id, activity):
     """
-    Retorna um dicionário mapeando 'step_id' -> lista de colegas naquele passo.
-    Ex: { 'step_01': [{'name': 'Joao', 'avatar': '...'}, {'name': 'Maria', ...}] }
+    Retorna posições no tabuleiro.
+    - Se for EM EQUIPE: Retorna 'teammates' (meu time) e 'rivals' (outros times).
+    - Se for SOLO: Retorna todos os alunos da turma em 'teammates' (como 'Colegas').
     """
-    # 1. Descobrir qual é o time do aluno atual nesta turma
-    enrollment = Enrollment.query.filter_by(student_id=user_id, class_id=class_id).first()
+    data = { "teammates": {}, "rivals": {} }
     
-    # Se o aluno não tem time, não retorna ninguém
-    if not enrollment or not enrollment.team_id:
-        return {}
+    # Mapeamento da trilha (ID -> Índice)
+    progression_path = activity.gamification_design.get('progression_path', [])
+    step_order = {step['id']: i for i, step in enumerate(progression_path)}
+    step_order['start'] = -1
+    ordered_step_ids = [step['id'] for step in progression_path]
 
-    # 2. Buscar progresso de todos os colegas DESSE time NESSA atividade
-    # (Excluindo o próprio aluno para não ver a si mesmo como "colega")
+    def get_current_step_id(progress_obj):
+        if not progress_obj or not progress_obj.completed_steps:
+            return 'start'
+        last_completed = progress_obj.completed_steps[-1]
+        if last_completed == ordered_step_ids[-1]:
+             return 'final_reward' if progress_obj.status == 'completed' else last_completed
+        current_index = step_order.get(last_completed, -1) + 1
+        if current_index < len(ordered_step_ids):
+            return ordered_step_ids[current_index]
+        return last_completed
+
+    # --- CENÁRIO 1: ATIVIDADE SOLO (MOSTRAR TODOS COMO COLEGAS) ---
+    if not activity.is_team_activity:
+        # Busca todos os alunos da turma (independente de time)
+        results = (
+            db.session.query(User, ActivityProgress)
+            .join(Enrollment, User.id == Enrollment.student_id)
+            .outerjoin(ActivityProgress, (ActivityProgress.student_id == User.id) & (ActivityProgress.activity_id == activity.id))
+            .filter(Enrollment.class_id == activity.class_id)
+            .filter(User.id != user_id) # Exclui eu mesmo
+            .all()
+        )
+        
+        for user_obj, prog in results:
+            current_step = get_current_step_id(prog)
+            
+            if current_step not in data["teammates"]:
+                data["teammates"][current_step] = []
+            
+            avatar = prog.equipped_activity_avatar_url if prog else None
+            avatar = avatar or user_obj.profile_picture or '/avatars/default_avatar.webp'
+            
+            data["teammates"][current_step].append({
+                "name": user_obj.name,
+                "avatar": avatar
+            })
+            
+        return data
+
+    # --- CENÁRIO 2: ATIVIDADE EM EQUIPE (LÓGICA ORIGINAL) ---
+    
+    # 1. Descobre o time do usuário
+    my_enrollment = Enrollment.query.filter_by(student_id=user_id, class_id=activity.class_id).first()
+    if not my_enrollment or not my_enrollment.team_id:
+        return data # Sem time, sem multiplayer
+
+    my_team_id = my_enrollment.team_id
+    
     results = (
-        db.session.query(ActivityProgress, User)
-        .join(User, ActivityProgress.student_id == User.id)
-        .join(Enrollment, User.id == Enrollment.student_id)
-        .filter(
-            Enrollment.team_id == enrollment.team_id,
-            ActivityProgress.activity_id == activity_id,
-            User.id != user_id # Exclui o próprio usuário
-        ).all()
+        db.session.query(Enrollment, User, ActivityProgress, Team)
+        .join(User, Enrollment.student_id == User.id)
+        .join(Team, Enrollment.team_id == Team.id)
+        .outerjoin(ActivityProgress, (ActivityProgress.student_id == User.id) & (ActivityProgress.activity_id == activity.id))
+        .filter(Enrollment.class_id == activity.class_id)
+        .all()
     )
 
-    positions = {}
-    
-    for prog, user in results:
-        # A lógica: O aluno está "parado" no último passo que ele completou.
-        # Se a lista estiver vazia, ele está no início (antes do passo 1).
-        # Se sua lógica de passo for baseada em IDs do JSON, precisamos pegar o último ID da lista.
-        
-        steps = prog.completed_steps or []
-        last_step_id = steps[-1] if steps else 'start' 
-        
-        if last_step_id not in positions:
-            positions[last_step_id] = []
-        
-        # Define o avatar (usa o da atividade ou o global)
-        display_avatar = prog.equipped_activity_avatar_url or user.profile_picture or '/avatars/default_avatar.webp'
+    rival_max_indices = {}
+    rival_teams_info = {}
 
-        positions[last_step_id].append({
-            'name': user.name,
-            'avatar': display_avatar
-        })
+    for enroll, user_obj, prog, team in results:
+        current_step = get_current_step_id(prog)
+        current_index = step_order.get(current_step, -1)
+        if current_step == 'final_reward': current_index = 9999
         
-    return positions
+        # A. MEU TIME (Detalhado)
+        if team.id == my_team_id:
+            if user_obj.id == user_id: continue 
+
+            if current_step not in data["teammates"]:
+                data["teammates"][current_step] = []
+            
+            avatar = prog.equipped_activity_avatar_url if prog else None
+            avatar = avatar or user_obj.profile_picture or '/avatars/default_avatar.webp'
+            
+            data["teammates"][current_step].append({
+                "name": user_obj.name,
+                "avatar": avatar
+            })
+
+        # B. RIVAIS (Agrupado por Time)
+        else:
+            if team.id not in rival_max_indices:
+                rival_max_indices[team.id] = -99
+                rival_teams_info[team.id] = team
+            
+            if current_index > rival_max_indices[team.id]:
+                rival_max_indices[team.id] = current_index
+
+    # Processa Rivais
+    for r_team_id, max_idx in rival_max_indices.items():
+        if max_idx == -99: step_id = 'start'
+        elif max_idx == 9999: step_id = 'final_reward'
+        elif 0 <= max_idx < len(ordered_step_ids): step_id = ordered_step_ids[max_idx]
+        else: step_id = 'start'
+
+        if step_id not in data["rivals"]:
+            data["rivals"][step_id] = []
+        
+        team_obj = rival_teams_info[r_team_id]
+        data["rivals"][step_id].append({
+            "name": team_obj.name,
+            "avatar": team_obj.avatar_url or '/badges/default_shield.webp'
+        })
+
+    return data

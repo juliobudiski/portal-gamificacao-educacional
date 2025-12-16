@@ -1,10 +1,11 @@
 import React from 'react';
-import { FaStar, FaTrophy, FaCoins } from 'react-icons/fa';
+import { FaStar, FaTrophy, FaCoins, FaShieldAlt } from 'react-icons/fa';
 
 const GameHUD = ({ progress }) => {
     // 1. USA OS DADOS VINDOS DO BACKEND (progress.py -> get_activity_progress)
     const currentPoints = progress?.points_earned || 0; // Pontos para a loja
     const currentCoins = progress?.coins || 0;         // Moedas (Tigrinho/Roleta)
+    const teamName = progress?.team_name;
 
     // 2. USA O CÁLCULO DE NÍVEL QUE O BACKEND JÁ FEZ
     const currentLevel = progress?.level || 1;
@@ -41,6 +42,19 @@ const GameHUD = ({ progress }) => {
                     </div>
                 </div>
 
+                {/* --- CENTRO: Nome da Equipe (Condicional) --- */}
+                {teamName && (
+                    <div className="hidden md:flex flex-col items-center justify-center px-6 border-l border-r border-gray-700/50 mx-2">
+                        <div className="flex items-center gap-2 text-blue-300 mb-0.5">
+                            <FaShieldAlt className="text-sm" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-blue-400">Sua Casa</span>
+                        </div>
+                        <span className="text-white font-bold text-base truncate max-w-[150px] drop-shadow-md">
+                            {teamName}
+                        </span>
+                    </div>
+                )}
+
                 {/* Direita: Moedas e Pontos (AGORA CORRETOS) */}
                 <div className="flex items-center gap-4 border-l border-gray-700 pl-4">
                     <div className="flex flex-col items-end">
@@ -61,6 +75,14 @@ const GameHUD = ({ progress }) => {
                 </div>
 
             </div>
+            {/* Badge Mobile para Equipe (aparece fora do HUD principal se a tela for pequena) */}
+            {teamName && (
+                <div className="md:hidden flex justify-center mt-2">
+                    <div className="bg-gray-900/80 backdrop-blur text-blue-200 text-xs font-bold py-1 px-3 rounded-full border border-blue-500/30 flex items-center gap-2 shadow-lg">
+                        <FaShieldAlt /> {teamName}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

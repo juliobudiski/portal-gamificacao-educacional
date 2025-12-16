@@ -5,15 +5,13 @@ import { useActivity } from '../../../context/ActivityContext';
 import GameHUD from '../GameHUD';
 import { FaUsers, FaShieldAlt } from 'react-icons/fa'; // Ícones para o indicador de equipe
 
-// --- COMPONENTE DE BADGE (ATUALIZADO) ---
-const TeamBadge = ({ teammates }) => {
-    // Se não tiver colegas neste passo, não renderiza nada
+// --- COMPONENTE DE BADGE PARA COLEGAS (ALIADOS - AZUL) ---
+const TeamBadge = ({ teammates, title = "Sua Equipe:" }) => { // <--- Aceita prop title
     if (!teammates || teammates.length === 0) return null;
 
     const count = teammates.length;
     const isSingle = count === 1;
 
-    // Conteúdo visual: Foto ou Número
     const displayContent = isSingle ? (
         <img
             src={teammates[0].avatar}
@@ -25,33 +23,80 @@ const TeamBadge = ({ teammates }) => {
     );
 
     return (
-        // Z-INDEX ALTO (z-50) para garantir que fique em cima da imagem do nó
-        <div className="absolute -top-2 -right-2 z-50 group cursor-help animate-bounce-slow">
-            {/* O Badge Visível */}
+        <div className="absolute -top-3 -right-3 z-[60] group cursor-help animate-bounce-slow">
             <div className={`
-                w-7 h-7 rounded-full flex items-center justify-center shadow-md border-2 border-white 
+                w-8 h-8 rounded-full flex items-center justify-center shadow-md border-2 border-white 
                 transform transition-transform hover:scale-110
-                ${isSingle ? 'bg-gray-200' : 'bg-blue-600'}
+                bg-blue-600 ring-2 ring-blue-400/50
             `}>
                 {displayContent}
             </div>
 
-            {/* Tooltip (Lista de Nomes) */}
-            <div className="hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max bg-gray-900/90 backdrop-blur-sm text-white text-xs py-2 px-3 rounded-lg shadow-xl z-[60] pointer-events-none border border-gray-700">
-                <div className="font-bold border-b border-gray-600 mb-1 pb-1 text-accent-yellow flex items-center gap-1">
-                    <FaUsers className="text-xs" /> Neste passo:
+            <div className="hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max bg-blue-900/95 backdrop-blur-sm text-white text-xs py-2 px-3 rounded-lg shadow-xl z-[70] pointer-events-none border border-blue-500/30">
+                <div className="font-bold border-b border-blue-500/30 mb-1 pb-1 text-blue-200 flex items-center gap-1">
+                    <FaUsers className="text-xs" /> {title} {/* <--- Título Dinâmico */}
                 </div>
                 <ul className="text-left space-y-1">
                     {teammates.map((mate, idx) => (
                         <li key={idx} className="flex items-center gap-2">
                             <img src={mate.avatar} className="w-4 h-4 rounded-full border border-gray-500" alt="" />
-                            <span className="text-gray-200">{mate.name}</span>
+                            <span className="text-gray-100">{mate.name}</span>
                         </li>
                     ))}
                 </ul>
-                {/* Seta do tooltip */}
-                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900/90"></div>
             </div>
+        </div>
+    );
+};
+
+// --- COMPONENTE DE BADGE PARA RIVAIS (INIMIGOS - VERMELHO) ---
+const RivalBadge = ({ rivals }) => {
+    if (!rivals || rivals.length === 0) return null;
+
+    // Função para tratar erro de imagem (se o brasão não existir)
+    const handleImageError = (e) => {
+        e.target.style.display = 'none'; // Esconde a imagem quebrada
+        e.target.nextSibling.style.display = 'block'; // Mostra o ícone de fallback
+    };
+
+    return (
+        <div className="absolute -top-3 -left-3 z-[60] flex flex-col gap-1">
+            {rivals.map((team, idx) => (
+                <div key={idx} className="group relative">
+
+                    {/* 1. O Círculo (Bolinha Vermelha) */}
+                    <div className="w-8 h-8 bg-red-900 rounded-full border-2 border-red-400 flex items-center justify-center shadow-lg cursor-help transition-transform transform hover:scale-110 overflow-hidden">
+
+                        {/* Tenta mostrar a imagem. Se falhar, esconde e mostra o ícone. */}
+                        {team.avatar && team.avatar.includes('/') ? (
+                            <>
+                                <img
+                                    src={team.avatar}
+                                    alt={team.name}
+                                    onError={handleImageError}
+                                    className="w-full h-full object-cover"
+                                />
+                                {/* Ícone de Fallback (invisível por padrão) */}
+                                <FaShieldAlt className="text-red-200 text-xs absolute" style={{ display: 'none' }} />
+                            </>
+                        ) : (
+                            <FaShieldAlt className="text-red-200 text-xs" />
+                        )}
+                    </div>
+
+                    {/* 2. O Balão (Tooltip) - Só aparece no HOVER */}
+                    <div className="hidden group-hover:block absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-max max-w-[150px] z-[70]">
+                        <div className="bg-red-900/95 backdrop-blur-sm text-white text-xs py-2 px-3 rounded-lg shadow-xl border border-red-500/30 text-center">
+                            {/* Setinha do balão */}
+                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-red-900 rotate-45 border-r border-b border-red-500/30"></div>
+
+                            <div className="font-bold text-red-100 whitespace-normal">{team.name}</div>
+                            <div className="text-[9px] text-red-300 uppercase tracking-wider mt-0.5">Rival</div>
+                        </div>
+                    </div>
+
+                </div>
+            ))}
         </div>
     );
 };
@@ -178,6 +223,7 @@ const VilaDaAventuraTheme = ({ children }) => {
 
     // --- LOG DE DEBUG PARA EQUIPE ---
     const teammatesPositions = userProgress?.teammates_positions || {};
+    const rivalsPositions = userProgress?.rivals_positions || {};
     const isTeamActivity = activity?.is_team_activity;
     const firstTeammateKey = Object.keys(teammatesPositions)[0];
     const hasTeammates = firstTeammateKey && teammatesPositions[firstTeammateKey].length > 0;
@@ -192,6 +238,22 @@ const VilaDaAventuraTheme = ({ children }) => {
         console.log("[DEBUG BADGE] IDs dos Passos na Trilha:", activity.gamificationDesign.progression_path.map(s => s.id));
     }
     // =======================================
+    // --- BLOCO DE DEBUG (Adicione isto antes do return) ---
+    console.group("🔍 DEBUG DO TABULEIRO (VilaDaAventura)");
+    console.log("1. É atividade de equipe?", activity?.is_team_activity);
+    console.log("2. Dados brutos de userProgress:", userProgress);
+    console.log("3. Posições de Colegas (teammates):", userProgress?.teammates_positions);
+    console.log("4. Posições de Rivais (rivals):", userProgress?.rivals_positions);
+    // Verifica se as chaves batem com os IDs dos passos
+    const stepIds = activity?.gamificationDesign?.progression_path?.map(s => s.id) || [];
+    console.log("5. IDs dos passos na trilha:", stepIds);
+
+    // Verifica se há alguem na posição 'start' ou 'mission_step_01'
+    if (userProgress?.teammates_positions) {
+        console.log("-> Colegas no Start?", userProgress.teammates_positions['start']);
+        console.log("-> Colegas no 1º Passo?", userProgress.teammates_positions[stepIds[0]]);
+    }
+    console.groupEnd();
 
     if (currentView !== 'board') {
         return <div className="game-content-area">{children}</div>;
@@ -200,19 +262,16 @@ const VilaDaAventuraTheme = ({ children }) => {
     if (!boardSize) {
         return <div className="rpg-map-board" ref={boardRef} style={{ width: '100%', minHeight: '600px' }} />;
     }
-
+    const badgeTitle = activity.is_team_activity ? "Sua Equipe:" : "Colegas:";
     return (
         <div className="rpg-map-board" ref={boardRef}>
-            {/* Interface de HUD (Pontos, Moedas) */}
             <GameHUD progress={userProgress} />
 
             <div className="progress-path-area" style={{ height: `${requiredHeight}px` }}>
-                {/* Decorações */}
                 {renderedDecorations.map(deco => (
                     <img key={deco.id} src={deco.src} alt="Decoração" className={`board-decoration ${deco.className}`} style={deco.style} />
                 ))}
 
-                {/* Linha da Trilha */}
                 <svg className="path-svg">
                     <path d={svgPath} className="path-line" />
                 </svg>
@@ -220,14 +279,14 @@ const VilaDaAventuraTheme = ({ children }) => {
                 {/* --- NÓ DA MISSÃO --- */}
                 {missionNode && missionConfig && (
                     <div className="path-node-wrapper" style={{ top: `${missionNode.y}px`, left: `${missionNode.x}px` }} onClick={() => handleStepClick({ type: 'mission' })}>
-                        {/* ... (Imagem do nó mantida) ... */}
                         <div className={`path-node path-node--active`}>
                             <img className="path-node-image" src={missionConfig.icon} alt={missionConfig.name} />
                         </div>
                         <div className="path-label">{missionConfig.name}</div>
 
-                        {/* VERIFIQUE SE AS CHAVES BATEM COM O QUE VEM DO CONSOLE */}
-                        <TeamBadge teammates={teammatesPositions['start'] || teammatesPositions['mission_step_01']} />
+                        {/* RENDERIZA OS BADGES (O Rival estava faltando aqui!) */}
+                        <TeamBadge teammates={teammatesPositions['start'] || teammatesPositions['mission_step_01']} title={badgeTitle} />
+                        <RivalBadge rivals={rivalsPositions['start'] || rivalsPositions['mission_step_01']} />
                     </div>
                 )}
 
@@ -239,18 +298,19 @@ const VilaDaAventuraTheme = ({ children }) => {
                     if (!config || !position) return null;
 
                     const teammatesHere = teammatesPositions[step.id];
+                    const rivalsHere = rivalsPositions[step.id];
 
                     return (
                         <div key={step.id} className="path-node-wrapper" style={{ top: `${position.y}px`, left: `${position.x}px` }} onClick={() => (status === 'active' || status === 'completed') && handleStepClick(step)}>
-                            {/* ... (Imagem do nó mantida) ... */}
                             <div className={`path-node path-node--${status}`}>
                                 <img className="path-node-image" src={config.icon} alt={config.name} />
                                 {status === 'completed' && <div className="path-node-completed-check">✔</div>}
                             </div>
                             <div className="path-label">{step.content?.title || config.name}</div>
 
-                            {/* O BADGE */}
-                            <TeamBadge teammates={teammatesHere} />
+                            {/* RENDERIZA OS BADGES (O Rival estava faltando aqui!) */}
+                            <TeamBadge teammates={teammatesHere} title={badgeTitle} />
+                            <RivalBadge rivals={rivalsHere} />
                         </div>
                     );
                 })}
@@ -258,15 +318,15 @@ const VilaDaAventuraTheme = ({ children }) => {
                 {/* --- RECOMPENSA FINAL --- */}
                 {finalRewardNode && finalRewardConfig && (
                     <div className="path-node-wrapper" style={{ top: `${finalRewardNode.y}px`, left: `${finalRewardNode.x}px` }} onClick={() => finalRewardStatus === 'active' && handleFinalRewardClick()}>
-                        {/* ... (Imagem do nó mantida) ... */}
                         <div className={`path-node path-node--${finalRewardStatus}`}>
                             <img className="path-node-image" src={finalRewardConfig.icon} alt={finalRewardConfig.name} />
                             {finalRewardStatus === 'completed' && <div className="path-node-completed-check">✔</div>}
                         </div>
                         <div className="path-label">{finalRewardConfig.name}</div>
 
-                        {/* BADGE FINAL */}
-                        <TeamBadge teammates={teammatesPositions['completed'] || teammatesPositions['final_reward']} />
+                        {/* RENDERIZA OS BADGES */}
+                        <TeamBadge teammates={teammatesPositions['completed'] || teammatesPositions['final_reward']} title={badgeTitle} />
+                        <RivalBadge rivals={rivalsPositions['completed'] || rivalsPositions['final_reward']} />
                     </div>
                 )}
             </div>
