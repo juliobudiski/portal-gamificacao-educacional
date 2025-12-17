@@ -101,7 +101,8 @@ def register_user():
             "profile_picture": new_user.profile_picture,
             "institutionName": new_user.institution_name,
             "discipline": new_user.discipline,
-            "unlocked_global_avatars": new_user.unlocked_global_avatars
+            "unlocked_global_avatars": new_user.unlocked_global_avatars,
+            "onboarding_status": user.onboarding_status
         }
         access_token = create_access_token(identity=str(new_user.id), additional_claims=additional_claims)
 
@@ -111,7 +112,8 @@ def register_user():
             "institutionName": new_user.institution_name,
             "discipline": new_user.discipline,
             "unlocked_global_avatars": new_user.unlocked_global_avatars,
-            "token": access_token
+            "token": access_token,
+            "onboarding_status": user.onboarding_status
         }
         return jsonify(access_token=access_token, user=user_data), 201
     except Exception as e:
@@ -142,7 +144,8 @@ def login_user():
             "profile_picture": user.profile_picture,
             "institutionName": user.institution_name,
             "discipline": user.discipline,
-            "unlocked_global_avatars": user.unlocked_global_avatars
+            "unlocked_global_avatars": user.unlocked_global_avatars,
+            "onboarding_status": user.onboarding_status
         }
         access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
         
@@ -152,6 +155,7 @@ def login_user():
             "institutionName": user.institution_name, "discipline": user.discipline,
             "token": access_token,
             "unlocked_global_avatars": user.unlocked_global_avatars,
+            "onboarding_status": user.onboarding_status
         }
         return jsonify(access_token=access_token, user=user_data), 200
     else:
@@ -234,7 +238,8 @@ def google_auth():
             "profile_picture": user.profile_picture,
             "institutionName": user.institution_name,
             "discipline": user.discipline,
-            "unlocked_global_avatars": user.unlocked_global_avatars
+            "unlocked_global_avatars": user.unlocked_global_avatars,
+            "onboarding_status": user.onboarding_status
         }
         access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
 
@@ -244,6 +249,7 @@ def google_auth():
             "institutionName": user.institution_name, "discipline": user.discipline,
             "token": access_token,
             "unlocked_global_avatars": user.unlocked_global_avatars,
+            "onboarding_status": user.onboarding_status
         }
         return jsonify(access_token=access_token, user=user_data), status_code
 
@@ -306,7 +312,8 @@ def update_profile():
             "profile_picture": user.profile_picture,
             "institutionName": user.institution_name, # <-- AGORA PEGA O VALOR ATUALIZADO
             "discipline": user.discipline, # <-- AGORA PEGA O VALOR ATUALIZADO
-            "unlocked_global_avatars": user.unlocked_global_avatars
+            "unlocked_global_avatars": user.unlocked_global_avatars,
+            "onboarding_status": user.onboarding_status
             
         }
         new_access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
@@ -322,6 +329,7 @@ def update_profile():
             "google_id": user.google_id, # Inclua se aplicável
             "institutionName": user.institution_name,
             "discipline": user.discipline,
+            "onboarding_status": user.onboarding_status
         }
 
         return jsonify({
@@ -474,7 +482,8 @@ def update_avatar():
         "name": user.name,
         "role": user.role,
         "profile_picture": user.profile_picture,
-        "unlocked_global_avatars": user.unlocked_global_avatars
+        "unlocked_global_avatars": user.unlocked_global_avatars,
+        "onboarding_status": user.onboarding_status
     }
     access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
     
@@ -530,7 +539,8 @@ def unlock_location_avatar():
             "profile_picture": user.profile_picture,
             "institutionName": user.institution_name,
             "discipline": user.discipline,
-            "unlocked_global_avatars": user.unlocked_global_avatars
+            "unlocked_global_avatars": user.unlocked_global_avatars,
+            "onboarding_status": user.onboarding_status
         }
         access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
         
@@ -547,3 +557,50 @@ def unlock_location_avatar():
         db.session.rollback()
         current_app.logger.error(f"Erro ao processar localização: {str(e)}")
         return jsonify({"msg": "Erro interno ao salvar localização."}), 500
+    
+    
+# --- 1. ROTA NOVA: SALVAR STATUS DO TUTORIAL ---
+# Adicione esta rota no final do arquivo (antes ou depois de unlock-location-avatar)
+@auth_bp.route('/user/update-onboarding', methods=['POST'])
+@jwt_required()
+def update_onboarding():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    
+    if not user:
+        return jsonify({"msg": "Usuário não encontrado."}), 404
+
+    data = request.get_json()
+    tour_key = data.get('tour_key') # Ex: 'student_dashboard_v1'
+
+    if not tour_key:
+        return jsonify({"msg": "Chave do tutorial é obrigatória."}), 400
+
+    # Inicializa se for None (por segurança)
+    if user.onboarding_status is None:
+        user.onboarding_status = {}
+
+    # Marca como visto
+    user.onboarding_status[tour_key] = True
+    
+    # Força o SQLAlchemy a detectar mudança no JSONB
+    flag_modified(user, "onboarding_status")
+    
+    try:
+        db.session.commit()
+        
+        # Opcional: Retornar novo token atualizado para o frontend não precisar de refresh
+        additional_claims = {
+            "email": user.email, "name": user.name, "role": user.role,
+            "profile_picture": user.profile_picture,
+            "institutionName": user.institution_name, "discipline": user.discipline,
+            "unlocked_global_avatars": user.unlocked_global_avatars,
+            "onboarding_status": user.onboarding_status
+        }
+        new_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
+
+        return jsonify({"message": "Tutorial concluído!", "access_token": new_token}), 200
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Erro ao salvar onboarding: {str(e)}")
+        return jsonify({"msg": "Erro ao salvar progresso."}), 500

@@ -16,7 +16,8 @@ import Step8_RulesAndSharing from '../components/activity/creation_steps/Step8_A
 import QuizEditor from './QuizEditorPage';
 import NarrativeEditor from './NarrativeEditorPage';
 import LearningContentEditor from './LearningContentEditorPage';
-
+import { useTutorial } from '../context/TutorialContext';
+import { TEACHER_CREATION_INITIAL_STEPS, TEACHER_CREATION_FORM_STEPS } from '../data/tutorialSteps';
 // Nota: O GameBoardEditor é usado dentro do Step5, mas o mantemos importado aqui
 // caso seja necessário em outro local ou para referência.
 //import GameBoardEditor from '../../components/activity/GameBoardEditor';
@@ -372,8 +373,10 @@ function ActivityCreationPage({ existingActivity }) {
   const handleSelectTemplate = (templateData) => {
     console.log("handleSelectTemplate: Selecionando template e preenchendo dados...", templateData);
     formStartedRef.current = true;
-
     startNewActivity(templateData);
+    setTimeout(() => {
+      startTour(TEACHER_CREATION_FORM_STEPS, 'teacher_creation_part2');
+    }, 500);
   };
 
   /**
@@ -383,6 +386,9 @@ function ActivityCreationPage({ existingActivity }) {
     console.log("handleStartFromScratch: Iniciando atividade do zero.");
     formStartedRef.current = true;
     startNewActivity();
+    setTimeout(() => {
+      startTour(TEACHER_CREATION_FORM_STEPS, 'teacher_creation_part2');
+    }, 500);
   };
 
   /**
@@ -658,7 +664,7 @@ function ActivityCreationPage({ existingActivity }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Opção: Iniciar do Zero */}
                 {/* Alterado para bg-secondary-bg para contraste e borda variável */}
-                <div className="relative bg-secondary-bg rounded-2xl shadow-xl overflow-hidden border border-[var(--border-color)] hover:border-accent-yellow/50 transition-all duration-300 group">
+                <div id="tour-start-scratch" className="relative bg-secondary-bg rounded-2xl shadow-xl overflow-hidden border border-[var(--border-color)] hover:border-accent-yellow/50 transition-all duration-300 group">
                   <div className="absolute inset-0 bg-gradient-to-r from-accent-teal/5 to-accent-purple/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <div className="relative z-10 p-6 flex flex-col items-center text-center h-full">
                     <div className="mb-4 bg-gradient-to-r from-accent-yellow to-accent-teal p-1 rounded-full">
@@ -688,7 +694,7 @@ function ActivityCreationPage({ existingActivity }) {
 
                 {/* Opção: Escolher um Template */}
                 {/* Mudei para bg-secondary-bg para contraste e usei a variável de borda */}
-                <div className="relative bg-secondary-bg rounded-2xl shadow-xl overflow-hidden border border-[var(--border-color)] hover:border-accent-purple/50 transition-all duration-300 group">
+                <div id="tour-choose-scratch" className="relative bg-secondary-bg rounded-2xl shadow-xl overflow-hidden border border-[var(--border-color)] hover:border-accent-purple/50 transition-all duration-300 group">
                   <div className="absolute inset-0 bg-gradient-to-r from-accent-purple/5 to-accent-yellow/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <div className="relative z-10 p-6 flex flex-col items-center text-center h-full">
                     <div className="mb-4 bg-gradient-to-r from-accent-purple to-accent-teal p-1 rounded-full">
@@ -789,7 +795,7 @@ function ActivityCreationPage({ existingActivity }) {
         ) : (
           <>
             {/* Barra de Progresso */}
-            <div className="w-full bg-gray-200 dark:bg-border-color rounded-full h-2.5 mb-6">
+            <div id="tour-progress-bar" className="w-full bg-gray-200 dark:bg-border-color rounded-full h-2.5 mb-6">
               <div
                 className="bg-teal-500 h-2.5 rounded-full transition-all duration-500"
                 style={{ width: `${(currentStep / totalSteps) * 100}%` }}
@@ -797,7 +803,7 @@ function ActivityCreationPage({ existingActivity }) {
             </div>
 
             {/* Contêiner do Formulário */}
-            <div className="bg-secondary-bg dark:bg-primary-bg p-8 rounded-lg shadow-md">
+            <div id="tour-form-container" lassName="bg-secondary-bg dark:bg-primary-bg p-8 rounded-lg shadow-md">
               {/* 3. A função renderStep agora insere o componente filho aqui */}
               {renderStep()}
 
@@ -813,7 +819,7 @@ function ActivityCreationPage({ existingActivity }) {
                 ) : (
                   <div></div> // Espaçador para manter o botão "Próximo" à direita
                 )}
-                <button
+                <button tour-next-button
                   onClick={handleNext}
                   disabled={isSaving}
                   className={`py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-text 

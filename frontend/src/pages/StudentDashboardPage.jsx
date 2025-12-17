@@ -244,7 +244,7 @@ function StudentDashboardPage() {
           {/* Coluna Principal (Turmas e Atividades) */}
           <div className="lg:col-span-2 space-y-8">
             {/* Seção Minhas Turmas */}
-            <section>
+            <section id="tour-classes-section">
               <div className="flex items-center mb-6">
                 <FaBook className="text-3xl text-[#ffbd30] mr-4" />
                 <h2 className="text-3xl font-bold">Minhas Turmas</h2>
@@ -261,7 +261,7 @@ function StudentDashboardPage() {
             </section>
 
             {/* Seção Minhas Atividades Pendentes */}
-            <section>
+            <section id="tour-activities-section">
               <div className="flex items-center mb-6">
                 <FaTasks className="text-3xl text-[#69e8cb] mr-4" />
                 <h2 className="text-3xl font-bold">Minhas Atividades</h2>
@@ -281,7 +281,7 @@ function StudentDashboardPage() {
           {/* Coluna Lateral (Desempenho e Ações Rápidas) */}
           <aside className="space-y-8">
             {/* Card de Desempenho (AGORA COM DADOS REAIS) */}
-            <section className="bg-secondary-bg p-6 rounded-2xl shadow-xl border-t-4 border-[#9570d9]">
+            <section id="tour-xp-display" className="bg-secondary-bg p-6 rounded-2xl shadow-xl border-t-4 border-[#9570d9]">
               <h2 className="text-2xl font-bold mb-6 text-center">Meu Desempenho Global</h2>
 
               {(() => {

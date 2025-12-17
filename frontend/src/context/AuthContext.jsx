@@ -57,6 +57,7 @@ const getUserFromToken = (token) => {
       institutionName: decoded.institutionName,
       discipline: decoded.discipline,
       unlocked_global_avatars: decoded.unlocked_global_avatars,
+      onboarding_status: decoded.onboarding_status || {},
       // Incluímos o token aqui para consistência, embora getToken seja preferível
       token: token
     };

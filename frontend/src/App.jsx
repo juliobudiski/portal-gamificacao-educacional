@@ -47,7 +47,10 @@ import LocationMapPage from './pages/admin/LocationMapPage';
 import LearningContentEditorPage from './pages/LearningContentEditorPage';
 import ContactPage from './pages/ContactPage';
 import ContactMessagesPage from './pages/admin/ContactMessagesPage';
-
+import { TutorialProvider } from './context/TutorialContext';
+import { useTutorial } from './context/TutorialContext';
+import { STUDENT_DASHBOARD_STEPS } from './data/tutorialSteps';
+import { TEACHER_CREATION_INITIAL_STEPS } from './data/tutorialSteps';
 // --- 2. COMPONENTES AUXILIARES ---
 const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === 'true';
 const debugLog = (message, ...optionalParams) => {
@@ -81,7 +84,7 @@ function AppContent() {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const { logEvent } = useAnalytics('session', user?.token);
-
+  const { startTour } = useTutorial();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isTeacherMenuOpen, setIsTeacherMenuOpen] = useState(false);
   const [isStudentMenuOpen, setIsStudentMenuOpen] = useState(false);
@@ -128,7 +131,19 @@ function AppContent() {
       locationRequestedRef.current = false;
     }
   }, [user, isAuthenticated]);
+  const handleRestartTour = () => {
+    closeAllMenus();
 
+    if (user?.role === 'aluno') {
+      // O 'true' no final força o tour a iniciar mesmo se já tiver sido visto
+      startTour(STUDENT_DASHBOARD_STEPS, 'student_dashboard_v1', true);
+      navigate('/aluno/dashboard'); // Garante que vá para a página certa
+    } else if (user?.role === 'professor') {
+      // Exemplo: Tour de criação (ajuste conforme o que você criou)
+      startTour(TEACHER_CREATION_INITIAL_STEPS, 'teacher_creation_v1', true);
+      navigate('/professor/criar-atividade');
+    }
+  };
   return (
     // Usa a variável de cor do CSS para o fundo
     <div className="min-h-screen w-full bg-primary-bg p-4 pt-4 flex flex-col">
@@ -239,6 +254,17 @@ function AppContent() {
                           Minhas Configurações
                         </Link>
                       </li>
+                      {/* --- NOVO BOTÃO DE TUTORIAL --- */}
+                      <li>
+                        <button
+                          onClick={handleRestartTour}
+                          className="w-full flex items-center px-4 py-3 text-secondary-text hover:bg-secondary-bg transition-colors text-left"
+                        >
+                          <span className="mr-2 text-accent-yellow">💡</span> {/* Ou use um ícone Lucide como HelpCircle */}
+                          Ver Tutorial
+                        </button>
+                      </li>
+                      {/* ------------------------------- */}
                       <li>
                         <button
                           onClick={handleLogout}
@@ -254,7 +280,7 @@ function AppContent() {
 
                 {user?.role === 'professor' && (
                   <li className="relative">
-                    <button
+                    <button id="tour-professor-menu"
                       onClick={() => {
                         setIsTeacherMenuOpen(!isTeacherMenuOpen);
                         setIsStudentMenuOpen(false);
@@ -288,7 +314,7 @@ function AppContent() {
 
                 {user?.role === 'aluno' && (
                   <li className="relative">
-                    <button
+                    <button id="tour-student-menu"
                       onClick={() => {
                         setIsStudentMenuOpen(!isStudentMenuOpen);
                         setIsTeacherMenuOpen(false);
@@ -414,7 +440,9 @@ function App() {
     // O AuthProvider já está aqui, o que é ótimo.
     // O ThemeProvider será adicionado em `main.jsx` para envolver tudo.
     <AuthProvider>
-      <AppContent />
+      <TutorialProvider>
+        <AppContent />
+      </TutorialProvider>
     </AuthProvider>
   );
 }

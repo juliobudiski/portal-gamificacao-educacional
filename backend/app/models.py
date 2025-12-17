@@ -37,6 +37,7 @@ class User(db.Model):
     cached_state = db.Column(db.String(100), nullable=True)
     cached_country = db.Column(db.String(100), nullable=True)
     cached_suburb = db.Column(db.String(100), nullable=True)
+    onboarding_status = db.Column(JSONB, default={}, nullable=False, server_default='{}')
     
     @validates('name')
     def validate_and_format_name(self, key, name):
