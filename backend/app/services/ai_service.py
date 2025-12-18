@@ -44,8 +44,8 @@ class AIService:
         self.MODEL_HIERARCHY = [
             'models/gemini-2.5-flash',             # 1. Qualidade e Velocidade (Novo)
             'models/gemini-2.0-flash-lite-preview', # 2. Otimizado para cota alta (Lite)
-            'models/gemini-2.0-flash',             # 3. O que você estava usando
-            'models/gemini-1.5-flash'              # 4. Legado (se disponível)
+            'models/gemini-2.0-flash'             # 3. O que você estava usando
+            
         ]
         
         # Configurações de geração para a API, buscando respostas em JSON.
@@ -57,8 +57,8 @@ class AIService:
         }
 
         # Centraliza constantes de controle para fácil ajuste.
-        self.max_retries = 3
-        self.cooldown_seconds = 10 # Tempo de espera entre chamadas para evitar rate limit.
+        self.max_retries = 2
+        self.cooldown_seconds = 5 # Tempo de espera entre chamadas para evitar rate limit.
 
     def orchestrate_story(self, activity_context: Dict, path_structure: List[Dict], ai_config: Dict, client_socket_id: str = None) -> Dict:
         """

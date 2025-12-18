@@ -101,7 +101,7 @@ function Step5_GameElements({ activityData, handleInputChange, setActivityData, 
       </div>
 
       {/* SEÇÃO 2: Seleção de Elementos com Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+      <div id="tour-step-elements" className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {allGameElements.map((element) => {
           const isSelected = activityData.gameElements.selectedElements.includes(element.name);
           const isRecommended = recommendedElements.has(element.name);

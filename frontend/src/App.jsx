@@ -50,7 +50,9 @@ import ContactMessagesPage from './pages/admin/ContactMessagesPage';
 import { TutorialProvider } from './context/TutorialContext';
 import { useTutorial } from './context/TutorialContext';
 import { STUDENT_DASHBOARD_STEPS } from './data/tutorialSteps';
-import { TEACHER_CREATION_INITIAL_STEPS } from './data/tutorialSteps';
+import { ACTIVITY_SELECTION_STEPS } from './data/tutorialSteps';
+
+
 // --- 2. COMPONENTES AUXILIARES ---
 const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === 'true';
 const debugLog = (message, ...optionalParams) => {
@@ -98,8 +100,34 @@ function AppContent() {
     setIsStudentMenuOpen(false);
   };
 
+  // Handler inteligente para Professores
+  const handleTeacherTour = (type) => {
+    closeAllMenus();
+
+    if (type === 'dashboard') {
+      // Opção 1: Jornada Completa (Dashboard -> Criação)
+      // Ativamos a flag na sessão para que, ao mudar de página, o tutorial continue
+      sessionStorage.setItem('TUTORIAL_MODE', 'true');
+      navigate('/professor/dashboard', { state: { forceTour: true } });
+
+    } else if (type === 'creation') {
+      // Opção 2: Apenas Criação (Direto ao ponto)
+      // Removemos a flag da sessão para não causar efeitos colaterais
+      sessionStorage.removeItem('TUTORIAL_MODE');
+      // Forçamos apenas via state (que morre após esta navegação)
+      navigate('/professor/criar-atividade', { state: { forceTour: true } });
+    }
+  };
+
+  const handleStudentTour = () => {
+    closeAllMenus();
+    startTour(STUDENT_DASHBOARD_STEPS, 'student_dashboard_v1', true);
+    navigate('/aluno/dashboard');
+  };
+
   const handleLogout = () => {
     debugLog('AppContent: Chamando logout.');
+    sessionStorage.removeItem('TUTORIAL_MODE');
     logout();
     closeAllMenus();
     navigate('/');
@@ -131,19 +159,24 @@ function AppContent() {
       locationRequestedRef.current = false;
     }
   }, [user, isAuthenticated]);
+
   const handleRestartTour = () => {
     closeAllMenus();
 
     if (user?.role === 'aluno') {
-      // O 'true' no final força o tour a iniciar mesmo se já tiver sido visto
       startTour(STUDENT_DASHBOARD_STEPS, 'student_dashboard_v1', true);
-      navigate('/aluno/dashboard'); // Garante que vá para a página certa
+      navigate('/aluno/dashboard');
     } else if (user?.role === 'professor') {
-      // Exemplo: Tour de criação (ajuste conforme o que você criou)
-      startTour(TEACHER_CREATION_INITIAL_STEPS, 'teacher_creation_v1', true);
-      navigate('/professor/criar-atividade');
+      // 1. ATIVAR MODO TUTORIAL NA SESSÃO
+      // Isso garante que a flag sobreviva à navegação do Dashboard para a Criação
+      sessionStorage.setItem('TUTORIAL_MODE', 'true');
+
+      // 2. Navegar para o INÍCIO da jornada (Dashboard)
+      // Usamos forceTour no state para o Dashboard pegar imediatamente
+      navigate('/professor/dashboard', { state: { forceTour: true } });
     }
   };
+
   return (
     // Usa a variável de cor do CSS para o fundo
     <div className="min-h-screen w-full bg-primary-bg p-4 pt-4 flex flex-col">
@@ -254,17 +287,51 @@ function AppContent() {
                           Minhas Configurações
                         </Link>
                       </li>
-                      {/* --- NOVO BOTÃO DE TUTORIAL --- */}
-                      <li>
-                        <button
-                          onClick={handleRestartTour}
-                          className="w-full flex items-center px-4 py-3 text-secondary-text hover:bg-secondary-bg transition-colors text-left"
-                        >
-                          <span className="mr-2 text-accent-yellow">💡</span> {/* Ou use um ícone Lucide como HelpCircle */}
-                          Ver Tutorial
-                        </button>
-                      </li>
-                      {/* ------------------------------- */}
+                      {/* --- SEÇÃO DE TUTORIAIS INTELIGENTE --- */}
+                      {user?.role === 'professor' ? (
+                        <>
+                          <li>
+                            <button
+                              onClick={() => handleTeacherTour('dashboard')}
+                              className="w-full flex items-center px-4 py-3 text-secondary-text hover:bg-secondary-bg transition-colors text-left group"
+                            >
+                              {/* Ícone de Bússola/Mapa */}
+                              <span className="mr-2 text-accent-yellow group-hover:scale-110 transition-transform">🧭</span>
+                              <div>
+                                <span className="block text-sm font-medium">Tour: Visão Geral</span>
+                                <span className="block text-xs text-secondary-text/70">Conheça o painel e turmas</span>
+                              </div>
+                            </button>
+                          </li>
+                          <li>
+                            <button
+                              onClick={() => handleTeacherTour('creation')}
+                              className="w-full flex items-center px-4 py-3 text-secondary-text hover:bg-secondary-bg transition-colors text-left group"
+                            >
+                              {/* Ícone de Criação/Brilho */}
+                              <span className="mr-2 text-accent-teal group-hover:scale-110 transition-transform">✨</span>
+                              <div>
+                                <span className="block text-sm font-medium">Tour: Criar Atividade</span>
+                                <span className="block text-xs text-secondary-text/70">Aprenda a usar o editor</span>
+                              </div>
+                            </button>
+                          </li>
+                        </>
+                      ) : (
+                        // Fallback para Alunos (Botão Único)
+                        <li>
+                          <button
+                            onClick={handleStudentTour}
+                            className="w-full flex items-center px-4 py-3 text-secondary-text hover:bg-secondary-bg transition-colors text-left"
+                          >
+                            <span className="mr-2 text-accent-yellow">💡</span>
+                            Ver Tutorial
+                          </button>
+                        </li>
+                      )}
+
+                      <div className="border-t border-border-color my-1"></div>
+                      {/* -------------------------------------- */}
                       <li>
                         <button
                           onClick={handleLogout}
@@ -280,7 +347,7 @@ function AppContent() {
 
                 {user?.role === 'professor' && (
                   <li className="relative">
-                    <button id="tour-professor-menu"
+                    <button id="tour-profile-menu"
                       onClick={() => {
                         setIsTeacherMenuOpen(!isTeacherMenuOpen);
                         setIsStudentMenuOpen(false);
@@ -303,7 +370,7 @@ function AppContent() {
                         onMouseLeave={() => setIsTeacherMenuOpen(false)}
                       >
                         <li><Link to="/professor/dashboard" className="flex items-center px-4 py-3 text-secondary-text hover:bg-secondary-bg transition-colors rounded-t-xl" onClick={closeAllMenus}><LayoutDashboard size={18} className="mr-2 text-accent-yellow" />Dashboard</Link></li>
-                        <li><Link to="/professor/criar-atividade" className="flex items-center px-4 py-3 text-secondary-text hover:bg-secondary-bg transition-colors" onClick={closeAllMenus}><PlusCircle size={18} className="mr-2 text-accent-teal" />Criar Atividade</Link></li>
+                        <li id="tour-menu-create-action"><Link to="/professor/criar-atividade" className="flex items-center px-4 py-3 text-secondary-text hover:bg-secondary-bg transition-colors" onClick={closeAllMenus}><PlusCircle size={18} className="mr-2 text-accent-teal" />Criar Atividade</Link></li>
                         <li><Link to="/professor/banco-atividades" className="flex items-center px-4 py-3 text-secondary-text hover:bg-secondary-bg transition-colors" onClick={closeAllMenus}><BookOpen size={18} className="mr-2 text-accent-purple" />Banco de Atividades</Link></li>
                         <li><Link to="/professor/gerenciar-turmas" className="flex items-center px-4 py-3 text-secondary-text hover:bg-secondary-bg transition-colors" onClick={closeAllMenus}><Users size={18} className="mr-2 text-accent-yellow" />Gerenciar Turmas</Link></li>
                         <li><Link to="/professor/desempenho-alunos" className="flex items-center px-4 py-3 text-secondary-text hover:bg-secondary-bg transition-colors rounded-b-xl" onClick={closeAllMenus}><BarChart2 size={18} className="mr-2 text-accent-teal" />Desempenho Alunos</Link></li>

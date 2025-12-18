@@ -17,11 +17,19 @@ import QuizEditor from './QuizEditorPage';
 import NarrativeEditor from './NarrativeEditorPage';
 import LearningContentEditor from './LearningContentEditorPage';
 import { useTutorial } from '../context/TutorialContext';
-import { TEACHER_CREATION_INITIAL_STEPS, TEACHER_CREATION_FORM_STEPS } from '../data/tutorialSteps';
+
 // Nota: O GameBoardEditor é usado dentro do Step5, mas o mantemos importado aqui
 // caso seja necessário em outro local ou para referência.
 //import GameBoardEditor from '../../components/activity/GameBoardEditor';
-
+// Importe TODOS os passos aqui (centralizado)
+import {
+  ACTIVITY_SELECTION_STEPS, // Tour Inicial
+  WIZARD_SCENARIO_STEPS,    // Passo 1
+  WIZARD_DYNAMICS_STEPS,    // Passo 3 
+  WIZARD_PROFILES_STEPS,    // Passo 4
+  WIZARD_ELEMENTS_STEPS,    // Passo 5 
+  WIZARD_END_STEPS          // Passo 8
+} from '../data/tutorialSteps';
 
 const hubElementCardMap = {
   "Chance (sorte e probabilidade)": ["roulette", "slot_machine"],
@@ -46,7 +54,7 @@ const hubElementCardMap = {
 function ActivityCreationPage({ existingActivity }) {
   // --- TODA A LÓGICA DE ESTADO, HOOKS E HANDLERS É MANTIDA AQUI ---
   const navigate = useNavigate();
-
+  const { startTour, stopTour } = useTutorial();
   const totalSteps = 8;
   const { user } = useAuth();
   const formStartedRef = useRef(false);
@@ -82,77 +90,41 @@ function ActivityCreationPage({ existingActivity }) {
 
 
 
-
   useEffect(() => {
 
     const startTime = stepStartTimeRef.current;
-
     const previousStep = previousStepRef.current;
 
-
-
     // Calcula a duração na etapa anterior
-
     const durationInSeconds = Math.round((Date.now() - startTime) / 1000);
 
-
-
     // Evita logar na primeira renderização (duração de 0s)
-
     if (durationInSeconds > 0 && previousStep !== currentStep) {
-
       console.log(`Logando duração da Etapa ${previousStep}: ${durationInSeconds}s`);
-
       logEvent("step_view_duration", {
-
         step: previousStep,
-
         duration_seconds: durationInSeconds
-
       });
 
     }
 
-
-
     // Reseta o timer para a nova etapa
-
     stepStartTimeRef.current = Date.now();
-
     previousStepRef.current = currentStep;
-
-
-
-  }, [currentStep, logEvent]); // O efeito roda sempre que a etapa muda
-
-
-
-
-
-
+  }, [currentStep, logEvent, startTour]); // O efeito roda sempre que a etapa muda
 
   useEffect(() => {
 
     // A função de retorno (cleanup) é executada quando o componente é desmontado
-
     return () => {
 
       // Só loga abandono se o formulário não foi concluído e não está no processo de submissão
-
-
       if (formStartedRef.current && !isSubmittingRef.current) {
-
-
         console.log(`Usuário abandonou o formulário INICIADO na etapa ${previousStepRef.current}`);
-
         logEvent("form_abandoned", {
-
           last_step: previousStepRef.current
-
         });
-
       }
-
     };
 
   }, [logEvent]);
@@ -161,7 +133,6 @@ function ActivityCreationPage({ existingActivity }) {
     // Executa apenas quando o usuário chega na etapa 5
     if (currentStep === 5) {
       console.log("ActivityCreationPage: Etapa 5 alcançada. Calculando e mesclando elementos de jogo recomendados.");
-
       const recommendedElements = new Set();
       if (activityData.playerProfile.selectedProfiles.includes("Competitivo")) { ["Níveis", "Sistema de pontuação", "Estatísticas (métricas de progresso)", "Reconhecimento", "Competição", "Progressão baseada em habilidade", "Sistema de classificação e ranking"].forEach(el => recommendedElements.add(el)); }
       if (activityData.playerProfile.selectedProfiles.includes("Cooperativo")) { ["Cooperação", "Chat ou sistema de mensagens", "Interação social com outros jogadores"].forEach(el => recommendedElements.add(el)); }
@@ -187,8 +158,64 @@ function ActivityCreationPage({ existingActivity }) {
   }, [currentStep, activityData.playerProfile.selectedProfiles]);
 
   const location = useLocation();
+  const startTourRef = useRef(startTour);
+  useEffect(() => { startTourRef.current = startTour; }, [startTour]);
 
+  // --- LÓGICA CENTRAL DO TUTORIAL (O MAESTRO) ---
+  useEffect(() => {
+    // 1. Captura a intenção de força (Sessão ou State)
+    const sessionForce = sessionStorage.getItem('TUTORIAL_MODE') === 'true';
+    const stateForce = location.state?.forceTour === true;
+    const shouldForce = stateForce || sessionForce;
 
+    // --- O PORTEIRO ---
+    // Se o usuário NÃO clicou no botão de tour (não tem força),
+    // nós não iniciamos NADA automaticamente.
+    if (!shouldForce) {
+      return;
+    }
+
+    // Se passou do porteiro, avisa no log
+    console.log(`🔍 MAESTRO: Modo Tutorial Ativo! (Step: ${currentStep})`);
+
+    const timer = setTimeout(() => {
+      const startTourFn = startTourRef.current;
+
+      // CASO 1: Tela de Seleção Inicial
+      if (showInitialSelection) {
+        if (!isEditMode && !showTemplateList) {
+          console.log(`🚀 MAESTRO: Disparando 'teacher_creation_v1'.`);
+          startTourFn(ACTIVITY_SELECTION_STEPS, 'teacher_creation_v1', true);
+        }
+      }
+      // CASO 2: Modo Wizard (Formulário)
+      else {
+        switch (currentStep) {
+          case 1:
+            startTourFn(WIZARD_SCENARIO_STEPS, 'creation_step_1_scenario', true);
+            break;
+          case 3:
+            // Certifique-se que no seu form o passo da Dinâmica é realmente o 3
+            // Se for o 2, mude aqui para 'case 2'.
+            startTourFn(WIZARD_DYNAMICS_STEPS, 'creation_step_3_dynamics', true);
+            break;
+          case 4:
+            startTourFn(WIZARD_PROFILES_STEPS, 'creation_step_4_profiles', true);
+            break;
+          case 5:
+            startTourFn(WIZARD_ELEMENTS_STEPS, 'creation_step_5_elements', true);
+            break;
+          case 8:
+            startTourFn(WIZARD_END_STEPS, 'creation_step_8_end', true);
+            break;
+          default:
+            break;
+        }
+      }
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, [currentStep, showInitialSelection, isEditMode, location.state, showTemplateList]);
 
 
   useEffect(() => {
@@ -371,30 +398,31 @@ function ActivityCreationPage({ existingActivity }) {
 
 
   const handleSelectTemplate = (templateData) => {
+    stopTour();
     console.log("handleSelectTemplate: Selecionando template e preenchendo dados...", templateData);
-    formStartedRef.current = true;
-    startNewActivity(templateData);
     setTimeout(() => {
-      startTour(TEACHER_CREATION_FORM_STEPS, 'teacher_creation_part2');
-    }, 500);
+      formStartedRef.current = true;
+      startNewActivity(templateData);
+    }, 100);
   };
 
   /**
    * handleStartFromScratch: Inicia o formulário de criação de atividade vazio.
    */
   const handleStartFromScratch = () => {
+    stopTour();
     console.log("handleStartFromScratch: Iniciando atividade do zero.");
-    formStartedRef.current = true;
-    startNewActivity();
     setTimeout(() => {
-      startTour(TEACHER_CREATION_FORM_STEPS, 'teacher_creation_part2');
-    }, 500);
+      formStartedRef.current = true;
+      startNewActivity();
+    }, 100);
   };
 
   /**
    * handleShowTemplates: Exibe a lista de templates.
    */
   const handleShowTemplates = () => {
+    stopTour();
     console.log("handleShowTemplates: Exibindo a lista de templates.");
     setShowInitialSelection(true);
     setShowTemplateList(true);
@@ -405,6 +433,7 @@ function ActivityCreationPage({ existingActivity }) {
    * handleBackToInitialSelection: Volta para a tela inicial de seleção (Iniciar do Zero / Escolher Template).
    */
   const handleBackToInitialSelection = () => {
+    stopTour();
     console.log("handleBackToInitialSelection: Voltando para a seleção inicial.");
     setShowInitialSelection(true);
     setShowTemplateList(false);
@@ -463,6 +492,8 @@ function ActivityCreationPage({ existingActivity }) {
     if (currentStep < totalSteps) {
       setCurrentStep(prevStep => prevStep + 1);
     } else {
+      sessionStorage.removeItem('TUTORIAL_MODE');
+      stopTour();
       // --- TRAVA DE SEGURANÇA 2: Ativa o bloqueio ---
       isSubmittingRef.current = true;
       setIsSaving(true); // Atualiza a UI para mostrar "Salvando..." e desabilitar botão
@@ -501,6 +532,7 @@ function ActivityCreationPage({ existingActivity }) {
           navigate('/professor/banco-atividades');
           // Não precisamos destravar o ref aqui porque vamos sair da página
         } else {
+          stopTour();
           alert('Erro: ' + (result.message || 'Erro desconhecido do servidor.'));
           // Se deu erro, destravamos para o usuário tentar de novo
           isSubmittingRef.current = false;
@@ -508,6 +540,7 @@ function ActivityCreationPage({ existingActivity }) {
         }
       } catch (error) {
         console.error(error);
+        stopTour();
         alert('Ocorreu um erro de rede. Verifique sua conexão.');
         // Se deu erro de rede, destravamos
         isSubmittingRef.current = false;
@@ -694,7 +727,7 @@ function ActivityCreationPage({ existingActivity }) {
 
                 {/* Opção: Escolher um Template */}
                 {/* Mudei para bg-secondary-bg para contraste e usei a variável de borda */}
-                <div id="tour-choose-scratch" className="relative bg-secondary-bg rounded-2xl shadow-xl overflow-hidden border border-[var(--border-color)] hover:border-accent-purple/50 transition-all duration-300 group">
+                <div className="relative bg-secondary-bg rounded-2xl shadow-xl overflow-hidden border border-[var(--border-color)] hover:border-accent-purple/50 transition-all duration-300 group">
                   <div className="absolute inset-0 bg-gradient-to-r from-accent-purple/5 to-accent-yellow/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <div className="relative z-10 p-6 flex flex-col items-center text-center h-full">
                     <div className="mb-4 bg-gradient-to-r from-accent-purple to-accent-teal p-1 rounded-full">
@@ -712,7 +745,7 @@ function ActivityCreationPage({ existingActivity }) {
                     <p className="text-secondary-text mb-6 flex-grow">
                       Use um de nossos templates predefinidos para agilizar a criação.
                     </p>
-                    <button
+                    <button id="tour-choose-scratch"
                       onClick={handleShowTemplates}
                       // Texto adaptável: branco no tema claro (fundo escuro), escuro no tema escuro (fundo claro)
                       className="w-full py-3 px-6 bg-gradient-to-r from-accent-purple to-accent-teal text-white dark:text-primary-bg font-bold rounded-xl shadow-lg hover:shadow-xl hover:brightness-110 transform hover:-translate-y-0.5 transition-all duration-300 ease-out"
@@ -803,7 +836,7 @@ function ActivityCreationPage({ existingActivity }) {
             </div>
 
             {/* Contêiner do Formulário */}
-            <div id="tour-form-container" lassName="bg-secondary-bg dark:bg-primary-bg p-8 rounded-lg shadow-md">
+            <div id="tour-form-container" className="bg-secondary-bg dark:bg-primary-bg p-8 rounded-lg shadow-md">
               {/* 3. A função renderStep agora insere o componente filho aqui */}
               {renderStep()}
 
@@ -819,7 +852,7 @@ function ActivityCreationPage({ existingActivity }) {
                 ) : (
                   <div></div> // Espaçador para manter o botão "Próximo" à direita
                 )}
-                <button tour-next-button
+                <button id={currentStep === totalSteps ? "tour-final-save" : "tour-next-button"}
                   onClick={handleNext}
                   disabled={isSaving}
                   className={`py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-text 
@@ -888,7 +921,7 @@ function ActivityCreationPage({ existingActivity }) {
                 onClick={() => setEditingStep(null)}
                 className="absolute top-4 right-4 text-gray-500 hover:text-red-500 font-bold text-xl z-10"
               >
-                ✕
+
               </button>
 
               <LearningContentEditor

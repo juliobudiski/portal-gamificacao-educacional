@@ -266,7 +266,7 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block font-bold text-sm mb-2 text-gray-600 dark:text-gray-300">Personalidade da IA</label>
+                                    <label className="block font-bold text-sm mb-2 text-gray-600 dark:text-gray-300">Personalidade da Historia</label>
                                     <select
                                         className="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-700 border dark:border-gray-600"
                                         value={config.personality}
@@ -380,6 +380,7 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                     <button
                         onClick={step === 1 ? () => setStep(2) : handleOrchestrate}
                         disabled={loading}
+                        id={step === 1 ? "tour-editor-continue-btn" : "tour-editor-gen-story"}
                         className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg flex items-center justify-center gap-2"
                     >
                         {loading ? (

@@ -6,20 +6,21 @@ PREDEFINED_TEMPLATES = [
         "name": "Quiz de Requisitos (Iniciante)",
         "description": "Revisão rápida sobre conceitos fundamentais de software.",
         "icon": "🧠",
-        # --- PRESET PARA A IA (Configurações internas mantidas para o comportamento do Agente) ---
-        "ai_preset": {
-            "teachingFocus": "Diferença entre Requisitos Funcionais e Não Funcionais",
-            "targetAudience": "Iniciante",
-            "tone": "corporativo",
-            "personality": "Socrático",
-            "narrativeGoal": "A startup 'DevFast' está perdendo clientes porque o software trava e faltam botões. A equipe precisa classificar os problemas.",
-            "charactersList": [
-                {"role": "Product Owner Ana", "type": "Mentor"},
-                {"role": "Estagiário Dev", "type": "Aluno"}
-            ]
-        },
+        
         # --- DADOS DA ATIVIDADE (Mapeados estritamente com as constantes válidas) ---
         "data": {
+            # --- PRESET PARA A IA
+            "ai_preset": {
+                "teachingFocus": "Diferença entre Requisitos Funcionais e Não Funcionais",
+                "targetAudience": "Iniciante",
+                "tone": "corporativo",
+                "personality": "Socrático",
+                "narrativeGoal": "A startup 'DevFast' está perdendo clientes porque o software trava e faltam botões. A equipe precisa classificar os problemas.",
+                "charactersList": [
+                    {"role": "Product Owner Ana", "type": "Mentor"},
+                    {"role": "Estagiário Dev", "type": "Aluno"}
+                ]
+            },
             "title": "Fundamentos de Requisitos",
             "description": "Avalie seu conhecimento sobre especificações de software com este quiz interativo.",
             "areaKnowledge": "Engenharia de Software",
@@ -108,20 +109,21 @@ PREDEFINED_TEMPLATES = [
         "name": "Operação Caça-Bugs (Prático)",
         "description": "Simulação de crise onde o aluno precisa identificar erros sob pressão.",
         "icon": "🐛",
-        # --- PRESET PARA A IA ---
-        "ai_preset": {
-            "teachingFocus": "Técnicas de Debugging e Leitura de Logs",
-            "targetAudience": "Junior",
-            "tone": "scifi",
-            "personality": "Hardcore",
-            "narrativeGoal": "O servidor central da CyberCity foi hackeado. O código está cheio de loops infinitos e variáveis nulas. A equipe tem 20 minutos antes do shutdown total.",
-            "charactersList": [
-                {"role": "Comandante Kernel", "type": "Mentor"},
-                {"role": "Soldado Byte", "type": "Aluno"}
-            ]
-        },
+        
         # --- DADOS DA ATIVIDADE ---
         "data": {
+            # --- PRESET PARA A IA ---
+            "ai_preset": {
+                "teachingFocus": "Técnicas de Debugging e Leitura de Logs",
+                "targetAudience": "Junior",
+                "tone": "scifi",
+                "personality": "Hardcore",
+                "narrativeGoal": "O servidor central da CyberCity foi hackeado. O código está cheio de loops infinitos e variáveis nulas. A equipe tem 20 minutos antes do shutdown total.",
+                "charactersList": [
+                    {"role": "Comandante Kernel", "type": "Mentor"},
+                    {"role": "Soldado Byte", "type": "Aluno"}
+                ]
+            },
             "title": "Operação Debug: Protocolo Omega",
             "description": "Identifique e corrija falhas críticas no sistema de defesa da cidade.",
             "areaKnowledge": "Ciência da Computação",
@@ -213,20 +215,23 @@ PREDEFINED_TEMPLATES = [
         "name": "Arquitetura de Software (Avançado)",
         "description": "Aplicação de Design Patterns (Strategy, Observer) em cenários complexos.",
         "icon": "📐",
-        # --- PRESET PARA A IA ---
-        "ai_preset": {
-            "teachingFocus": "Design Patterns GoF (Strategy e Factory)",
-            "targetAudience": "Senior",
-            "tone": "mistério",
-            "personality": "Storyteller",
-            "narrativeGoal": "Um arquiteto antigo deixou um sistema legado complexo chamado 'O Monolito'. Para escalá-lo, é preciso refatorar o código usando padrões modernos sem quebrar a funcionalidade.",
-            "charactersList": [
-                {"role": "O Arquiteto Sênior", "type": "Mentor"},
-                {"role": "Dev Lead", "type": "Aluno"}
-            ]
-        },
+        
         # --- DADOS DA ATIVIDADE ---
         "data": {
+            
+            # --- PRESET PARA A IA ---
+            "ai_preset": {
+                "teachingFocus": "Design Patterns GoF (Strategy e Factory)",
+                "targetAudience": "Senior",
+                "tone": "mistério",
+                "personality": "Storyteller",
+                "narrativeGoal": "Um arquiteto antigo deixou um sistema legado complexo chamado 'O Monolito'. Para escalá-lo, é preciso refatorar o código usando padrões modernos sem quebrar a funcionalidade.",
+                "charactersList": [
+                    {"role": "O Arquiteto Sênior", "type": "Mentor"},
+                    {"role": "Dev Lead", "type": "Aluno"}
+                ]
+            },
+            
             "title": "O Enigma do Monolito",
             "description": "Refatore o sistema legado aplicando padrões de projeto adequados.",
             "areaKnowledge": "Engenharia de Software",

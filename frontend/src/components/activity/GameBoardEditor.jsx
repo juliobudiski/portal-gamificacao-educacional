@@ -1,15 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     FaPlus, FaTrash, FaPen, FaToggleOn, FaToggleOff,
     FaRoute, FaCity, FaMagic, FaRobot, FaCheckDouble, FaExclamationTriangle
 } from 'react-icons/fa';
 import { elementConfig } from '../../components/activity/GameBoardConfig';
 import AIConfigModal from '../activity/AIConfigModal';
+import { WIZARD_IA_STEPS } from '../../data/tutorialSteps';
+import { useTutorial } from '../../context/TutorialContext';
 
 function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditContent, onStructureChange, activityId, fullActivityData }) {
 
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
-
+    const { startTour, stopTour } = useTutorial();
+    useEffect(() => {
+        // Se o modal abriu, inicia o tour específico da IA
+        if (isAIModalOpen) {
+            // Pequeno delay para garantir que o modal renderizou no DOM
+            setTimeout(() => {
+                // startTour aceita (passos, chave_unica, forçar_inicio)
+                // Usamos force=true para garantir que rode mesmo se o usuário já viu antes
+                startTour(WIZARD_IA_STEPS, 'wizard_ai_modal', true);
+            }, 500);
+        } else {
+            // Se o modal fechou (usuário cancelou ou terminou), paramos o tour da IA
+            // Opcional: Você poderia reiniciar o tour principal aqui se quisesse
+            stopTour();
+        }
+    }, [isAIModalOpen, startTour, stopTour]);
     const updateDesign = (key, value) => {
         const newDesign = { ...(gamificationDesign || {}), [key]: value };
         setActivityData(prev => ({ ...prev, gamificationDesign: newDesign }));
@@ -131,7 +148,7 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
                         </h4>
 
                         {(gamificationDesign.progression_path?.length > 1) && (
-                            <button
+                            <button id="tour-editor-ai-assist"
                                 onClick={() => setIsAIModalOpen(true)}
                                 className="flex items-center gap-2 text-xs font-bold bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg shadow-md transition-transform hover:scale-105"
                                 title="Assistente de Criação Inteligente"
@@ -150,17 +167,21 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
                                 const count = currentPath.filter(s => s.type === type).length;
                                 const isQuizType = type === 'quiz';
                                 const isDisabled = isQuizType && currentPath.length === 0;
+
                                 return (
                                     <button
                                         key={type}
+                                        // ✅ ADICIONE ESTA LINHA: Gera id="tour-editor-add-narrative", "tour-editor-add-quiz", etc.
+                                        id={`tour-editor-add-${type}`}
+
                                         onClick={() => !isDisabled && addPathStep(type)}
                                         disabled={isDisabled}
                                         className={`relative flex items-center pl-3 pr-4 py-2 text-sm border rounded-lg transition-all shadow-sm group
-                                            ${isDisabled
+                    ${isDisabled
                                                 ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed opacity-60'
                                                 : 'bg-white dark:bg-gray-800 border-blue-200 dark:border-blue-900 hover:bg-blue-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200'
                                             }
-                                        `}
+                `}
                                         title={isDisabled ? "Adicione uma Narrativa antes de incluir um Quiz." : config.name}
                                     >
                                         <img src={config.icon} alt="" className={`w-5 h-5 mr-2 ${isDisabled ? 'grayscale opacity-50' : ''}`} />
@@ -181,7 +202,7 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
                         </div>
 
                         {/* --- LISTA DE PASSOS (TRILHA) --- */}
-                        <div className="space-y-3">
+                        <div className="space-y-3" id="tour-editor-canvas">
                             {(gamificationDesign.progression_path || []).map((step, index) => {
                                 // Verifica se é um rascunho da IA
                                 const isDraft = step.isDraft === true;
@@ -240,8 +261,8 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
                                             <button
                                                 onClick={() => handleHumanValidation(step)}
                                                 className={`p-2 rounded-lg transition-colors ${isDraft
-                                                        ? 'bg-yellow-100 hover:bg-yellow-200 text-yellow-700 animate-bounce'
-                                                        : 'hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-500'
+                                                    ? 'bg-yellow-100 hover:bg-yellow-200 text-yellow-700 animate-bounce'
+                                                    : 'hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-500'
                                                     }`}
                                                 title={isDraft ? "Revisar e Validar Conteúdo" : "Editar Conteúdo"}
                                             >

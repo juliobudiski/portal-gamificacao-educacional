@@ -73,7 +73,7 @@ function Step4_PlayerProfile({ activityData, setActivityData, openHelpModal }) {
   };
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div id="tour-step-profiles" className="space-y-8 animate-fade-in">
       {/* SEÇÃO 1: Título e Descrição */}
       <div>
         <h2 className="text-2xl font-bold text-primary-text dark:text-primary-text">

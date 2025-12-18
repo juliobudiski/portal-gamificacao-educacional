@@ -125,7 +125,7 @@ function Step1_InitialDetails({ activityData, handleInputChange, setActivityData
   return (
     <div className="space-y-8 animate-fade-in">
       {/* SEÇÃO 1: Título e Descrição da Atividade */}
-      <div>
+      <div id="tour-step-scenario-inputs">
         <h2 className="text-2xl font-bold text-primary-text dark:text-primary-text">
           Definindo o Cenário da Atividade
         </h2>

@@ -43,6 +43,7 @@ export const TutorialProvider = ({ children }) => {
      * @param {Boolean} force - Se true, inicia mesmo que o usuário já tenha visto (para botão "Ver Tutorial")
      */
     const startTour = useCallback((tourSteps, key, force = false) => {
+        setRun(false);
         // Se não for forçado e o usuário já tiver visto, aborta.
         if (!force && user?.onboarding_status?.[key]) {
             return;
@@ -52,6 +53,8 @@ export const TutorialProvider = ({ children }) => {
         setTourKey(key);
         setStepIndex(0);
         setRun(true);
+        // 4. Inicia com um micro-delay
+        setTimeout(() => setRun(true), 100);
     }, [user]);
 
     // Lógica ao terminar ou pular o tour
@@ -94,10 +97,17 @@ export const TutorialProvider = ({ children }) => {
             }
         }
     };
+    // 1. Crie a função stopTour
+    const stopTour = useCallback(() => {
+        setRun(false);
+        setStepIndex(0);
+        setTourKey(null);
+    }, []);
 
     return (
-        <TutorialContext.Provider value={{ startTour }}>
+        <TutorialContext.Provider value={{ startTour, stopTour }}>
             <Joyride
+                key={tourKey || 'no-tour'}
                 steps={steps}
                 run={run}
                 stepIndex={stepIndex}

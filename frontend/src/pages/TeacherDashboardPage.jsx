@@ -1,11 +1,30 @@
 // frontend/src/pages/TeacherDashboardPage.jsx
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLocation } from 'react-router-dom'; // <--- Importante
+import { TEACHER_DASHBOARD_STEPS } from '../data/tutorialSteps';
+import { useTutorial } from '../context/TutorialContext';
+
 
 function TeacherDashboardPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { startTour } = useTutorial();
+
+  useEffect(() => {
+    // Verifica se veio do botão "Ver Tutorial" com ordem de força
+    const shouldForce = location.state?.forceTour === true;
+
+    // Se forçar OU se o usuário nunca viu (a lógica interna do startTour cuida do 'nunca viu')
+    // Adicionamos um pequeno delay para garantir que os elementos carregaram
+    const timer = setTimeout(() => {
+      startTour(TEACHER_DASHBOARD_STEPS, 'teacher_dashboard_v1', shouldForce);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [startTour, location.state]);
 
   // Se o usuário não estiver logado ou não for professor, redireciona
   if (!user || user.role !== 'professor') {
@@ -30,7 +49,7 @@ function TeacherDashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
             {/* Card para Gerenciar Turmas */}
-            <Link
+            <Link id="tour-dash-classes"
               to="/professor/gerenciar-turmas"
               className="group block p-6 bg-secondary-bg rounded-2xl shadow-xl hover:shadow-2xl border-l-4 border-[#69e8cb] hover:border-[#ffbd30] transition-all duration-300 transform hover:-translate-y-1"
             >
@@ -50,7 +69,7 @@ function TeacherDashboardPage() {
             </Link>
 
             {/* Card para Criar Atividade */}
-            <Link
+            <Link id="tour-dash-create-btn"
               to="/professor/criar-atividade"
               className="group block p-6 bg-secondary-bg rounded-2xl shadow-xl hover:shadow-2xl border-l-4 border-[#ffbd30] hover:border-[#9570d9] transition-all duration-300 transform hover:-translate-y-1"
             >
@@ -70,7 +89,7 @@ function TeacherDashboardPage() {
             </Link>
 
             {/* Card para Banco de Atividades */}
-            <Link
+            <Link id="tour-dash-bank"
               to="/professor/banco-atividades"
               className="group block p-6 bg-secondary-bg rounded-2xl shadow-xl hover:shadow-2xl border-l-4 border-[#9570d9] hover:border-[#69e8cb] transition-all duration-300 transform hover:-translate-y-1"
             >
@@ -90,7 +109,7 @@ function TeacherDashboardPage() {
             </Link>
 
             {/* Card para Desempenho de Alunos */}
-            <Link
+            <Link id="tour-dash-performance"
               to="/professor/desempenho-alunos"
               className="group block p-6 bg-secondary-bg rounded-2xl shadow-xl hover:shadow-2xl border-l-4 border-[#69e8cb] hover:border-[#ffbd30] transition-all duration-300 transform hover:-translate-y-1"
             >
@@ -110,7 +129,7 @@ function TeacherDashboardPage() {
             </Link>
 
             {/* Card para Dashboard */}
-            <Link
+            <Link id="tour-dash-ranking"
               to="/professor/ranking"
               className="group block p-6 bg-secondary-bg rounded-2xl shadow-xl hover:shadow-2xl border-l-4 border-[#ffbd30] hover:border-[#9570d9] transition-all duration-300 transform hover:-translate-y-1"
             >

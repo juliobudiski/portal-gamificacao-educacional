@@ -137,7 +137,7 @@ function Step8_RulesAndSharing({ activityData, handleInputChange, setActivityDat
               }
             `}
           >
-            <div className="flex items-center gap-4 pr-4">
+            <div id="tour-final-privacy" className="flex items-center gap-4 pr-4">
               {/* Ícone Dinâmico: Muda conforme o estado */}
               <div
                 className={`flex h-12 w-12 items-center justify-center rounded-full text-2xl transition-colors duration-300
