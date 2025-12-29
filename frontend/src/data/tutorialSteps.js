@@ -173,28 +173,10 @@ export const WIZARD_ELEMENTS_STEPS = [
     },
     {
         target: '#tour-editor-ai-assist',
-        content: 'Sem ideias? Gere um rascunho!',
-        hideFooter: true,
-        spotlightClicks: true,
-        placement: 'top',
-        disableBeacon: true
+        content: 'Sem ideias? Gere um rascunho!'
     },
 ];
-export const WIZARD_IA_STEPS = [
-    {
-        target: '#tour-editor-continue-btn',
-        content: 'Defina os personagens na próxima tela',
-        hideFooter: true,
-        spotlightClicks: true,
-        placement: 'top',
-        disableBeacon: true
-    },
-    {
-        target: '#tour-editor-gen-story',
-        content: 'Dica: Gere uma história completa baseada no seu tema com um clique.',
-        disableBeacon: true
-    }
-];
+
 
 export const WIZARD_END_STEPS = [
     {

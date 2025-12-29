@@ -84,7 +84,11 @@ function Step3_ActivityPlanning({ activityData, handleInputChange, setActivityDa
       </div>
 
       {/* --- NOVA SEÇÃO: DINÂMICA DE PARTICIPAÇÃO (Decisão Crítica) --- */}
-      <div id="tour-step-dynamics-options" className="bg-primary-bg border border-border-color p-6 rounded-xl">
+      <div
+        id="tour-step-dynamics-options"
+        className={`bg-primary-bg border p-6 rounded-xl transition-all duration-300 ${typeof activityData.activityPlanning.isTeamActivity !== 'boolean' ? 'border-red-500 shadow-lg shadow-red-500/10' : 'border-border-color'
+          }`}
+      >
         <h3 className="text-lg font-semibold text-primary-text mb-4 flex items-center gap-2">
           Dinâmica de Participação <span className="text-xs font-normal text-secondary-text bg-secondary-bg px-2 py-1 rounded-full border border-border-color">Obrigatório</span>
         </h3>

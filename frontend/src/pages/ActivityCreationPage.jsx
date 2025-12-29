@@ -1,5 +1,6 @@
 // frontend/src/pages/ActivityCreationPage.jsx
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import PropTypes from 'prop-types';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import useAnalytics from '../hooks/useAnalytics';
@@ -31,6 +32,10 @@ import {
   WIZARD_END_STEPS          // Passo 8
 } from '../data/tutorialSteps';
 
+/**
+ * Mapeamento entre nomes de cartas de elementos e tipos de elementos do Hub.
+ * Utilizado para sincronizar a seleção do usuário com a estrutura do gamification design.
+ */
 const hubElementCardMap = {
   "Chance (sorte e probabilidade)": ["roulette", "slot_machine"],
   "Competição": ["ranking"],
@@ -46,10 +51,11 @@ const hubElementCardMap = {
 };
 
 /**
- * Componente ActivityCreationPage (Refatorado)
- * Atua como um "container" que gerencia o estado e a lógica para o formulário 
- * de criação de atividades de várias etapas. Renderiza dinamicamente o componente 
- * de etapa apropriado.
+ * @component ActivityCreationPage
+ * @desc Componente principal para criação e edição de atividades. Gerencia o estado do formulário (wizard),
+ * navegação entre etapas, seleção de templates e persistência de dados.
+ * @param {Object} props - Propriedades do componente.
+ * @param {Object} [props.existingActivity] - Objeto contendo dados de uma atividade existente para edição.
  */
 function ActivityCreationPage({ existingActivity }) {
   // --- TODA A LÓGICA DE ESTADO, HOOKS E HANDLERS É MANTIDA AQUI ---
@@ -100,6 +106,9 @@ function ActivityCreationPage({ existingActivity }) {
 
     // Evita logar na primeira renderização (duração de 0s)
     if (durationInSeconds > 0 && previousStep !== currentStep) {
+      if (import.meta.env.VITE_DEBUG_MODE) {
+        console.log(`// LOG: [ActivityCreationPage] Duração da etapa ${previousStep}: ${durationInSeconds}s`);
+      }
       console.log(`Logando duração da Etapa ${previousStep}: ${durationInSeconds}s`);
       logEvent("step_view_duration", {
         step: previousStep,
@@ -120,6 +129,9 @@ function ActivityCreationPage({ existingActivity }) {
 
       // Só loga abandono se o formulário não foi concluído e não está no processo de submissão
       if (formStartedRef.current && !isSubmittingRef.current) {
+        if (import.meta.env.VITE_DEBUG_MODE) {
+          console.log(`// LOG: [ActivityCreationPage] Abandono do formulário detectado na etapa ${previousStepRef.current}`);
+        }
         console.log(`Usuário abandonou o formulário INICIADO na etapa ${previousStepRef.current}`);
         logEvent("form_abandoned", {
           last_step: previousStepRef.current
@@ -132,6 +144,9 @@ function ActivityCreationPage({ existingActivity }) {
   useEffect(() => {
     // Executa apenas quando o usuário chega na etapa 5
     if (currentStep === 5) {
+      if (import.meta.env.VITE_DEBUG_MODE) {
+        console.log("// LOG: [ActivityCreationPage] Etapa 5 (Elementos de Jogo) iniciada. Executando lógica de recomendação.");
+      }
       console.log("ActivityCreationPage: Etapa 5 alcançada. Calculando e mesclando elementos de jogo recomendados.");
       const recommendedElements = new Set();
       if (activityData.playerProfile.selectedProfiles.includes("Competitivo")) { ["Níveis", "Sistema de pontuação", "Estatísticas (métricas de progresso)", "Reconhecimento", "Competição", "Progressão baseada em habilidade", "Sistema de classificação e ranking"].forEach(el => recommendedElements.add(el)); }
@@ -141,9 +156,16 @@ function ActivityCreationPage({ existingActivity }) {
       if (activityData.playerProfile.selectedProfiles.includes("Social")) { ["Interação social com outros jogadores", "Chat ou sistema de mensagens", "Reputação (prestígio, renome, status)", "Cooperação", "Feedback claro sobre o desempenho"].forEach(el => recommendedElements.add(el)); }
 
       setActivityData(prevData => {
-        // Combina os elementos já selecionados com os novos recomendados, evitando duplicatas.
         const mergedElements = new Set([...prevData.gameElements.selectedElements, ...recommendedElements]);
+        // Combina os elementos já selecionados com os novos recomendados, evitando duplicatas.
+        if (import.meta.env.VITE_DEBUG_MODE) {
+          console.log(`// LOG: [ActivityCreationPage] Elementos mesclados. Total: ${mergedElements.size}`);
+        }
 
+
+        if (import.meta.env.VITE_DEBUG_MODE) {
+          console.log("// LOG: [ActivityCreationPage] Verificando credenciais do usuário.");
+        }
         console.log("ActivityCreationPage: Elementos mesclados para salvar no estado:", Array.from(mergedElements));
 
         return {
@@ -176,6 +198,9 @@ function ActivityCreationPage({ existingActivity }) {
     }
 
     // Se passou do porteiro, avisa no log
+    if (import.meta.env.VITE_DEBUG_MODE) {
+      console.log(`// LOG: [ActivityCreationPage] Maestro do Tutorial ativado. Step atual: ${currentStep}`);
+    }
     console.log(`🔍 MAESTRO: Modo Tutorial Ativo! (Step: ${currentStep})`);
 
     const timer = setTimeout(() => {
@@ -231,11 +256,17 @@ function ActivityCreationPage({ existingActivity }) {
   useEffect(() => {
     const fetchActivityDataForBoard = async () => {
       if (activityId && user?.token) {
+        if (import.meta.env.VITE_DEBUG_MODE) {
+          console.log(`// LOG: [ActivityCreationPage] Buscando dados atualizados para Activity ID: ${activityId}`);
+        }
         console.log(`[ActivityCreationPage] useEffect detectou um activityId (${activityId}). BUSCANDO DADOS ATUALIZADOS da atividade.`);
         try {
           const response = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${activityId}`, {
             headers: { 'Authorization': `Bearer ${user.token}` }
           });
+          if (import.meta.env.VITE_DEBUG_MODE) {
+            console.log("// LOG: [ActivityCreationPage] Dados recebidos da API.", { keys: Object.keys(data) });
+          }
           const data = await response.json();
           console.log("%cLOG 1: DADOS BRUTOS RECEBIDOS DA API", "color: blue; font-weight: bold;", data);
           console.log("--> O objeto acima tem a chave 'gamification_design' (com underline)?", data.hasOwnProperty('gamification_design'));
@@ -248,6 +279,10 @@ function ActivityCreationPage({ existingActivity }) {
             console.error('[ActivityCreationPage] Erro ao buscar dados frescos:', data.message);
           }
         } catch (error) {
+          if (import.meta.env.VITE_DEBUG_MODE) {
+            console.error("// LOG: [ActivityCreationPage] Erro ao buscar dados da atividade:", error);
+            if (error.stack) console.error(error.stack);
+          }
           console.error('[ActivityCreationPage] Erro de rede ao buscar dados frescos:', error);
         }
       } else {
@@ -258,10 +293,18 @@ function ActivityCreationPage({ existingActivity }) {
     fetchActivityDataForBoard();
   }, [activityId, user?.token]);
 
+  /**
+   * @function handleAutoSaveStructure
+   * @desc Salva automaticamente a estrutura de gamificação (trilha) quando alterada.
+   * @param {Object} newGamificationDesign - O novo design de gamificação a ser salvo.
+   */
   const handleAutoSaveStructure = useCallback(async (newGamificationDesign) => {
     const activityIdToSave = activityId || existingActivity?.id;
     if (!activityIdToSave || !user?.token) return;
 
+    if (import.meta.env.VITE_DEBUG_MODE) {
+      console.log("// LOG: [ActivityCreationPage] Auto-save da estrutura iniciado.");
+    }
     console.log("%c[Auto-Save] Salvando estrutura da trilha...", "color: #007acc;");
 
     try {
@@ -274,12 +317,18 @@ function ActivityCreationPage({ existingActivity }) {
         body: JSON.stringify({ gamificationDesign: newGamificationDesign }),
       });
     } catch (error) {
+      if (import.meta.env.VITE_DEBUG_MODE) {
+        console.error("// LOG: [ActivityCreationPage] Falha no auto-save:", error);
+      }
       console.error("[Auto-Save] Falha ao salvar a estrutura:", error);
     }
   }, [activityId, existingActivity, user]);
 
   useEffect(() => {
     if (isEditMode && existingActivity) {
+      if (import.meta.env.VITE_DEBUG_MODE) {
+        console.log("// LOG: [ActivityCreationPage] Inicializando modo de edição com dados existentes.");
+      }
       setActivityData({
         title: existingActivity.title || '',
         description: existingActivity.description || '',
@@ -315,6 +364,9 @@ function ActivityCreationPage({ existingActivity }) {
       }
 
       try {
+        if (import.meta.env.VITE_DEBUG_MODE) {
+          console.log("// LOG: [ActivityCreationPage] Buscando templates disponíveis.");
+        }
         setLoadingTemplates(true);
         setTemplateError(null);
         const response = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/templates`, {
@@ -327,6 +379,10 @@ function ActivityCreationPage({ existingActivity }) {
 
         if (response.ok) {
           const data = await response.json();
+          if (import.meta.env.VITE_DEBUG_MODE) {
+            console.log(`// LOG: [ActivityCreationPage] ${data.length} templates carregados.`);
+          }
+
           setTemplates(data);
           console.log("Templates carregados com sucesso:", data);
         } else {
@@ -335,6 +391,9 @@ function ActivityCreationPage({ existingActivity }) {
           console.error("Erro ao carregar templates:", errorData);
         }
       } catch (error) {
+        if (import.meta.env.VITE_DEBUG_MODE) {
+          console.error("// LOG: [ActivityCreationPage] Exceção ao buscar templates:", error);
+        }
         setTemplateError('Erro de conexão ao carregar templates.');
         console.error("Erro de rede ao carregar templates:", error);
       } finally {
@@ -347,6 +406,10 @@ function ActivityCreationPage({ existingActivity }) {
 
   // useEffect para sincronizar os elementos do hub baseados nas seleções da Etapa 5
   useEffect(() => {
+    // TODO: Esta lógica de sincronização poderia ser extraída para um hook customizado 'useHubSync'.
+    if (import.meta.env.VITE_DEBUG_MODE) {
+      console.log("// LOG: [ActivityCreationPage] Sincronizando elementos do Hub com seleções da Etapa 5.");
+    }
     // Pega os nomes dos cards selecionados (ex: "Economia (sistema monetário)")
     const selectedCards = activityData.gameElements?.selectedElements || [];
     // Pega os elementos do hub que JÁ existem na atividade
@@ -397,8 +460,16 @@ function ActivityCreationPage({ existingActivity }) {
   }, [activityData.gameElements?.selectedElements, setActivityData]);
 
 
+  /**
+   * @function handleSelectTemplate
+   * @desc Seleciona um template e preenche o formulário com seus dados.
+   * @param {Object} templateData - Os dados do template selecionado.
+   */
   const handleSelectTemplate = (templateData) => {
     stopTour();
+    if (import.meta.env.VITE_DEBUG_MODE) {
+      console.log("// LOG: [ActivityCreationPage] Template selecionado. Iniciando preenchimento.");
+    }
     console.log("handleSelectTemplate: Selecionando template e preenchendo dados...", templateData);
     setTimeout(() => {
       formStartedRef.current = true;
@@ -407,10 +478,14 @@ function ActivityCreationPage({ existingActivity }) {
   };
 
   /**
-   * handleStartFromScratch: Inicia o formulário de criação de atividade vazio.
+   * @function handleStartFromScratch
+   * @desc Inicia o formulário de criação de atividade vazio.
    */
   const handleStartFromScratch = () => {
     stopTour();
+    if (import.meta.env.VITE_DEBUG_MODE) {
+      console.log("// LOG: [ActivityCreationPage] Iniciando nova atividade do zero.");
+    }
     console.log("handleStartFromScratch: Iniciando atividade do zero.");
     setTimeout(() => {
       formStartedRef.current = true;
@@ -419,10 +494,14 @@ function ActivityCreationPage({ existingActivity }) {
   };
 
   /**
-   * handleShowTemplates: Exibe a lista de templates.
+   * @function handleShowTemplates
+   * @desc Exibe a lista de templates disponíveis para seleção.
    */
   const handleShowTemplates = () => {
     stopTour();
+    if (import.meta.env.VITE_DEBUG_MODE) {
+      console.log("// LOG: [ActivityCreationPage] Exibindo lista de templates.");
+    }
     console.log("handleShowTemplates: Exibindo a lista de templates.");
     setShowInitialSelection(true);
     setShowTemplateList(true);
@@ -430,10 +509,14 @@ function ActivityCreationPage({ existingActivity }) {
 
 
   /**
-   * handleBackToInitialSelection: Volta para a tela inicial de seleção (Iniciar do Zero / Escolher Template).
+   * @function handleBackToInitialSelection
+   * @desc Volta para a tela inicial de seleção (Iniciar do Zero / Escolher Template).
    */
   const handleBackToInitialSelection = () => {
     stopTour();
+    if (import.meta.env.VITE_DEBUG_MODE) {
+      console.log("// LOG: [ActivityCreationPage] Retornando à seleção inicial.");
+    }
     console.log("handleBackToInitialSelection: Voltando para a seleção inicial.");
     setShowInitialSelection(true);
     setShowTemplateList(false);
@@ -443,7 +526,15 @@ function ActivityCreationPage({ existingActivity }) {
   const [editingStep, setEditingStep] = useState(null); // Guarda o passo sendo editado {id, type, content}
 
   // 2. ATUALIZAR A FUNÇÃO DE ABRIR EDITOR
+  /**
+   * @function handleOpenContentEditor
+   * @desc Abre o modal de edição de conteúdo para um passo específico da trilha.
+   * @param {Object} step - O objeto do passo a ser editado.
+   */
   const handleOpenContentEditor = (step) => {
+    if (import.meta.env.VITE_DEBUG_MODE) {
+      console.log(`// LOG: [ActivityCreationPage] Abrindo editor de conteúdo para o passo: ${step.id} (${step.type})`);
+    }
     // Em vez de navegar, abrimos o modal localmente com o conteúdo atual do estado
     const currentContent = activityData.gamificationDesign?.progression_path?.find(p => p.id === step.id)?.content || {};
 
@@ -454,9 +545,17 @@ function ActivityCreationPage({ existingActivity }) {
   };
 
   // 3. FUNÇÃO PARA SALVAR O CONTEÚDO NO ESTADO (SEM API)
+  /**
+   * @function handleSaveContentLocally
+   * @desc Salva o conteúdo editado no estado local da atividade, sem persistir na API imediatamente.
+   * @param {Object} newContent - O novo conteúdo a ser salvo no passo.
+   */
   const handleSaveContentLocally = (newContent) => {
     if (!editingStep) return;
 
+    if (import.meta.env.VITE_DEBUG_MODE) {
+      console.log("// LOG: [ActivityCreationPage] Salvando conteúdo localmente.", { stepId: editingStep.id });
+    }
     setActivityData(prev => {
       const newPath = prev.gamificationDesign.progression_path.map(step => {
         if (step.id === editingStep.id) {
@@ -487,7 +586,18 @@ function ActivityCreationPage({ existingActivity }) {
     // --- TRAVA DE SEGURANÇA 1: Se já estiver enviando, PARE IMEDIATAMENTE ---
     if (isSubmittingRef.current) return;
 
+    if (import.meta.env.VITE_DEBUG_MODE) {
+      console.log(`// LOG: [ActivityCreationPage] handleNext acionado. Etapa atual: ${currentStep}`);
+    }
     console.log(`%c[handleNext] Botão clicado na Etapa ${currentStep}.`, "background: #FFD700; color: black;");
+
+    // Validação da Etapa 3: Dinâmica de Participação
+    if (currentStep === 3) {
+      if (typeof activityData.activityPlanning?.isTeamActivity !== 'boolean') {
+        alert('Por favor, selecione a Dinâmica de Participação (Individual ou em Equipe) antes de prosseguir.');
+        return; // Impede o avanço
+      }
+    }
 
     if (currentStep < totalSteps) {
       setCurrentStep(prevStep => prevStep + 1);
@@ -498,6 +608,9 @@ function ActivityCreationPage({ existingActivity }) {
       isSubmittingRef.current = true;
       setIsSaving(true); // Atualiza a UI para mostrar "Salvando..." e desabilitar botão
 
+      if (import.meta.env.VITE_DEBUG_MODE) {
+        console.log("// LOG: [ActivityCreationPage] Submetendo formulário final.");
+      }
       console.log("%c[handleNext] INICIANDO SALVAMENTO...", "background: #28a745; color: white;");
 
       // Log de duração da última etapa
@@ -528,10 +641,16 @@ function ActivityCreationPage({ existingActivity }) {
         const result = await response.json();
 
         if (response.ok) {
+          if (import.meta.env.VITE_DEBUG_MODE) {
+            console.log("// LOG: [ActivityCreationPage] Atividade salva com sucesso.");
+          }
           alert(isEditMode ? 'Atividade atualizada com sucesso!' : 'Atividade criada com sucesso!');
           navigate('/professor/banco-atividades');
           // Não precisamos destravar o ref aqui porque vamos sair da página
         } else {
+          if (import.meta.env.VITE_DEBUG_MODE) {
+            console.error("// LOG: [ActivityCreationPage] Erro na resposta da API ao salvar.", result);
+          }
           stopTour();
           alert('Erro: ' + (result.message || 'Erro desconhecido do servidor.'));
           // Se deu erro, destravamos para o usuário tentar de novo
@@ -539,6 +658,9 @@ function ActivityCreationPage({ existingActivity }) {
           setIsSaving(false);
         }
       } catch (error) {
+        if (import.meta.env.VITE_DEBUG_MODE) {
+          console.error("// LOG: [ActivityCreationPage] Exceção de rede ao salvar atividade:", error);
+        }
         console.error(error);
         stopTour();
         alert('Ocorreu um erro de rede. Verifique sua conexão.');
@@ -554,6 +676,9 @@ function ActivityCreationPage({ existingActivity }) {
    * Decrementa `currentStep` se não estiver na primeira etapa.
    */
   const handlePrevious = () => {
+    if (import.meta.env.VITE_DEBUG_MODE) {
+      console.log(`// LOG: [ActivityCreationPage] handlePrevious acionado. Voltando da etapa ${currentStep}.`);
+    }
     console.log(`handlePrevious: Retornando da etapa ${currentStep}.`);
     if (currentStep > 1) {
       logEvent("previous_button_click", {
@@ -572,6 +697,9 @@ function ActivityCreationPage({ existingActivity }) {
    */
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
+    if (import.meta.env.VITE_DEBUG_MODE) {
+      console.log(`// LOG: [ActivityCreationPage] Input alterado: ${name}`);
+    }
     console.log(`handleInputChange: Input alterado -> name='${name}', type='${type}', value='${value}', checked=${checked}`);
 
     const nameParts = name.split('.');
@@ -615,6 +743,9 @@ function ActivityCreationPage({ existingActivity }) {
    * @param {string} text - O texto de ajuda a ser exibido.
    */
   const openHelpModal = (title, text) => {
+    if (import.meta.env.VITE_DEBUG_MODE) {
+      console.log(`// LOG: [ActivityCreationPage] Abrindo ajuda: ${title}`);
+    }
     console.log(`openHelpModal: Abrindo modal de ajuda com o título: "${title}"`);
     logEvent("help_button_click", { step: currentStep, help_title: title });
     setHelpContent({ title, text });
@@ -625,16 +756,23 @@ function ActivityCreationPage({ existingActivity }) {
    * closeHelpModal: Fecha o modal de ajuda.
    */
   const closeHelpModal = () => {
+    if (import.meta.env.VITE_DEBUG_MODE) {
+      console.log("// LOG: [ActivityCreationPage] Fechando modal de ajuda.");
+    }
     console.log("closeHelpModal: Fechando modal de ajuda.");
     setShowHelpModal(false);
     setHelpContent({ title: '', text: '' });
   };
 
   /**
-   * renderStep (Refatorado): Renderiza o componente filho apropriado para a etapa atual.
-   * O JSX de cada etapa foi movido para seu próprio componente.
+   * @function renderStep
+   * @desc Renderiza o componente filho apropriado para a etapa atual.
+   * @returns {JSX.Element|null} O componente da etapa atual ou null.
    */
   const renderStep = () => {
+    if (import.meta.env.VITE_DEBUG_MODE) {
+      console.log(`// LOG: [ActivityCreationPage] Renderizando etapa ${currentStep}`);
+    }
     if (!user || !user.token || user.role !== 'professor') {
       return null;
     }
@@ -937,5 +1075,24 @@ function ActivityCreationPage({ existingActivity }) {
     </div>
   );
 }
+
+ActivityCreationPage.propTypes = {
+  existingActivity: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    title: PropTypes.string,
+    description: PropTypes.string,
+    areaKnowledge: PropTypes.string,
+    isPublic: PropTypes.bool,
+    currentScenario: PropTypes.object,
+    desiredScenario: PropTypes.object,
+    activityPlanning: PropTypes.object,
+    playerProfile: PropTypes.object,
+    gameElements: PropTypes.object,
+    gamificationDesign: PropTypes.object,
+    rewardsOffered: PropTypes.object,
+    rewardedActions: PropTypes.object,
+    gamificationRules: PropTypes.object,
+  }),
+};
 
 export default ActivityCreationPage;

@@ -30,7 +30,7 @@ FRONTEND_PID=$!
 echo "2. Aguardando a geração das URLs (aprox. 8 segundos)..."
 # Um tempo de espera é necessário para o cloudflared conectar e gerar a URL.
 # Se falhar, você pode aumentar este valor (ex: sleep 10).
-sleep 8
+sleep 15
 
 # --- Extração e Formatação das URLs ---
 

@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request, current_app 
+import threading
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from ..models import db, Activity, QuizContent, NarrativeContent, User, LearningContent
 from ..services.ai_service import ai_service
@@ -142,41 +143,33 @@ def save_step_content(activity_id, step_id):
         current_app.logger.error(f"Erro ao salvar conteúdo para step_id: {step_id}: {str(e)}")
         return jsonify({"message": "Erro interno do servidor."}), 500
     
+def orchestrate_worker(app, data, room_id):
+    from ..extensions import socketio
+    with app.app_context():
+        try:
+            full_content_map = ai_service.orchestrate_story(
+                data['context'], 
+                data['structure'], 
+                data['config'], 
+                room_id=room_id
+            )
+            socketio.emit('ai_complete', full_content_map, to=room_id)
+        except Exception as e:
+            current_app.logger.error(f"Erro na thread de IA: {str(e)}")
+            socketio.emit('ai_error', {"message": str(e)}, to=room_id)
+
 @content_editor_bp.route('/orchestrate', methods=['POST'])
 @jwt_required()
 def orchestrate_draft_activity():
-    """
-    Gera conteúdo IA sem precisar salvar a atividade no banco.
-    O contexto vem todo do frontend.
-    """
     user_id = get_jwt_identity()
-    current_app.logger.info(f"Rota /orchestrate chamada pelo usuário {user_id}")
-    try:
-        data = request.get_json()
-        if not data:
-            current_app.logger.error("Recebido body vazio na requisição.")
-            return jsonify({"message": "Body vazio"}), 400
-        
-        skeleton_path = data.get('structure')
-        ai_config = data.get('config')
-        context_data = data.get('context', {}) 
-        client_socket_id = data.get('socket_id') # Pega o socket ID
-        
-        if not context_data.get('title'):
-            return jsonify({"message": "Título e descrição são necessários para a IA."}), 400
+    data = request.get_json()
+    app = current_app._get_current_object()
+    from ..extensions import socketio
 
-        # --- CHAMADA CORRIGIDA ---
-        # Passamos os argumentos na ordem certa: context, structure, config, e por último socket_id
-        full_content_map = ai_service.orchestrate_story(
-            context_data, 
-            skeleton_path, 
-            ai_config, 
-            client_socket_id=client_socket_id
-        )
-        
-        current_app.logger.info("Orquestração concluída com sucesso. Retornando ao frontend.")
-        return jsonify(full_content_map), 200
+    # Sala baseada no ID do usuário
+    room_id = f"user_ai_{user_id}"
 
-    except Exception as e:
-        current_app.logger.error(f"Erro na rota orchestrate: {str(e)}")
-        return jsonify({"message": f"Erro na IA: {str(e)}"}), 500
+    # CORREÇÃO: Usar start_background_task para compatibilidade com Socket.IO (Eventlet/Gevent)
+    socketio.start_background_task(orchestrate_worker, app, data, room_id)
+
+    return jsonify({"message": "Iniciado", "room_id": room_id}), 202

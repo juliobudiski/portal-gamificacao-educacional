@@ -1,43 +1,74 @@
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import {
     FaPlus, FaTrash, FaPen, FaToggleOn, FaToggleOff,
     FaRoute, FaCity, FaMagic, FaRobot, FaCheckDouble, FaExclamationTriangle
 } from 'react-icons/fa';
 import { elementConfig } from '../../components/activity/GameBoardConfig';
 import AIConfigModal from '../activity/AIConfigModal';
-import { WIZARD_IA_STEPS } from '../../data/tutorialSteps';
 import { useTutorial } from '../../context/TutorialContext';
 
+/**
+ * @component GameBoardEditor
+ * @desc Componente responsável pela edição visual do tabuleiro de gamificação, permitindo gerenciar a trilha de progressão e elementos do Hub.
+ * @param {Object} props - As propriedades recebidas pelo componente.
+ * @returns {JSX.Element} O elemento JSX do editor do tabuleiro.
+ */
 function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditContent, onStructureChange, activityId, fullActivityData }) {
+
+    // LOG: Renderização do componente com metadados básicos
+    if (import.meta.env.VITE_DEBUG_MODE === 'true') {
+        console.log('// LOG: [GameBoardEditor] Renderizando componente.', { activityId, pathLength: gamificationDesign.progression_path?.length });
+    }
 
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
     const { startTour, stopTour } = useTutorial();
     useEffect(() => {
         // Se o modal abriu, inicia o tour específico da IA
+        if (import.meta.env.VITE_DEBUG_MODE === 'true') {
+            console.log(`// LOG: [GameBoardEditor] Estado do modal IA alterado: ${isAIModalOpen ? 'Aberto' : 'Fechado'}`);
+        }
         if (isAIModalOpen) {
             // Pequeno delay para garantir que o modal renderizou no DOM
-            setTimeout(() => {
-                // startTour aceita (passos, chave_unica, forçar_inicio)
-                // Usamos force=true para garantir que rode mesmo se o usuário já viu antes
-                startTour(WIZARD_IA_STEPS, 'wizard_ai_modal', true);
-            }, 500);
+
         } else {
             // Se o modal fechou (usuário cancelou ou terminou), paramos o tour da IA
             // Opcional: Você poderia reiniciar o tour principal aqui se quisesse
             stopTour();
         }
     }, [isAIModalOpen, startTour, stopTour]);
+
+    /**
+     * @function updateDesign
+     * @desc Atualiza uma chave específica no design de gamificação e propaga as mudanças.
+     * @param {string} key - A chave do design a ser atualizada (ex: 'progression_path').
+     * @param {any} value - O novo valor para a chave.
+     */
     const updateDesign = (key, value) => {
+        if (import.meta.env.VITE_DEBUG_MODE === 'true') {
+            console.log(`// LOG: [GameBoardEditor] Atualizando design. Key: ${key}`, { valueType: typeof value });
+        }
         const newDesign = { ...(gamificationDesign || {}), [key]: value };
         setActivityData(prev => ({ ...prev, gamificationDesign: newDesign }));
         if (['progression_path', 'hub_elements'].includes(key)) onStructureChange(newDesign);
     };
 
     // --- MANIPULAÇÃO DA TRILHA ---
+    /**
+     * @function addPathStep
+     * @desc Adiciona um novo passo à trilha de progressão.
+     * @param {string} type - O tipo de passo a ser adicionado (ex: 'narrative', 'quiz').
+     */
     const addPathStep = (type) => {
+        if (import.meta.env.VITE_DEBUG_MODE === 'true') {
+            console.log(`// LOG: [GameBoardEditor] Tentando adicionar passo do tipo: ${type}`);
+        }
         const currentPath = gamificationDesign.progression_path || [];
 
         if (type === 'quiz' && currentPath.length === 0) {
+            if (import.meta.env.VITE_DEBUG_MODE === 'true') {
+                console.warn('// LOG: [GameBoardEditor] Bloqueio: Quiz não pode ser o primeiro passo.');
+            }
             alert("Incoerência Pedagógica: Um Quiz não pode ser o primeiro passo. Adicione uma Narrativa ou Conteúdo antes para preparar o aluno.");
             return;
         }
@@ -48,13 +79,25 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
         updateDesign('progression_path', newPath);
     };
 
+    /**
+     * @function removePathStep
+     * @desc Remove um passo da trilha de progressão pelo ID.
+     * @param {string} stepId - O ID do passo a ser removido.
+     */
     const removePathStep = (stepId) => {
+        if (import.meta.env.VITE_DEBUG_MODE === 'true') {
+            console.log(`// LOG: [GameBoardEditor] Removendo passo: ${stepId}`);
+        }
         const currentPath = gamificationDesign.progression_path || [];
         const indexToRemove = currentPath.findIndex(s => s.id === stepId);
 
         if (indexToRemove === -1) return;
 
         if (indexToRemove === 0 && currentPath.length > 1 && currentPath[1].type === 'quiz') {
+            // TODO: Substituir alerts nativos por um sistema de notificação (Toast) mais amigável.
+            if (import.meta.env.VITE_DEBUG_MODE === 'true') {
+                console.warn('// LOG: [GameBoardEditor] Bloqueio: Remoção impedida pois tornaria um Quiz o primeiro passo.');
+            }
             alert("Ação Bloqueada: Você não pode remover este passo pois o próximo item é um Quiz. O Quiz não pode se tornar o início da trilha.");
             return;
         }
@@ -63,7 +106,15 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
         updateDesign('progression_path', newPath);
     };
 
+    /**
+     * @function toggleMandatory
+     * @desc Alterna o status de obrigatoriedade de um passo.
+     * @param {string} stepId - O ID do passo.
+     */
     const toggleMandatory = (stepId) => {
+        if (import.meta.env.VITE_DEBUG_MODE === 'true') {
+            console.log(`// LOG: [GameBoardEditor] Alternando obrigatoriedade para o passo: ${stepId}`);
+        }
         const newPath = (gamificationDesign.progression_path || []).map(step => {
             if (step.id === stepId) return { ...step, isMandatory: !step.isMandatory };
             return step;
@@ -73,7 +124,15 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
 
     // --- LÓGICA DE VALIDAÇÃO HUMANA ---
     // Chamado quando o professor clica em "Editar" (Lápis)
+    /**
+     * @function handleHumanValidation
+     * @desc Marca um passo como validado por humano (remove status de rascunho) e abre o editor.
+     * @param {Object} step - O objeto do passo a ser editado.
+     */
     const handleHumanValidation = (step) => {
+        if (import.meta.env.VITE_DEBUG_MODE === 'true') {
+            console.log(`// LOG: [GameBoardEditor] Validação humana iniciada para o passo: ${step.id}`);
+        }
         // Se era um rascunho da IA, agora é considerado "Tocado por Humano"
         if (step.isDraft) {
             const newPath = (gamificationDesign.progression_path || []).map(s => {
@@ -87,7 +146,15 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
     };
 
     // --- CALLBACK DO SUCESSO DA IA ---
+    /**
+     * @function handleAIContentApplied
+     * @desc Aplica o conteúdo gerado pela IA aos passos correspondentes na trilha.
+     * @param {Object} contentMap - Mapa de conteúdos gerados, indexado pelo ID do passo.
+     */
     const handleAIContentApplied = (contentMap) => {
+        if (import.meta.env.VITE_DEBUG_MODE === 'true') {
+            console.log('// LOG: [GameBoardEditor] Conteúdo de IA aplicado.', { itemsCount: Object.keys(contentMap).length });
+        }
         const currentPath = gamificationDesign.progression_path || [];
 
         const newPath = currentPath.map(step => {
@@ -106,7 +173,15 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
     };
 
     // --- MANIPULAÇÃO DO HUB ---
+    /**
+     * @function toggleHubElement
+     * @desc Ativa ou desativa um elemento do Hub.
+     * @param {string} elementType - O tipo do elemento do Hub.
+     */
     const toggleHubElement = (elementType) => {
+        if (import.meta.env.VITE_DEBUG_MODE === 'true') {
+            console.log(`// LOG: [GameBoardEditor] Alternando elemento do Hub: ${elementType}`);
+        }
         const newHubElements = (gamificationDesign.hub_elements || []).map(element => {
             if (element.type === elementType) return { ...element, enabled: !element.enabled };
             return element;
@@ -313,5 +388,26 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
         </div>
     );
 }
+
+GameBoardEditor.propTypes = {
+    gamificationDesign: PropTypes.shape({
+        progression_path: PropTypes.arrayOf(PropTypes.shape({
+            id: PropTypes.string,
+            type: PropTypes.string,
+            isMandatory: PropTypes.bool,
+            content: PropTypes.object,
+            isDraft: PropTypes.bool
+        })),
+        hub_elements: PropTypes.arrayOf(PropTypes.shape({
+            type: PropTypes.string,
+            enabled: PropTypes.bool
+        }))
+    }),
+    setActivityData: PropTypes.func.isRequired,
+    onEditContent: PropTypes.func.isRequired,
+    onStructureChange: PropTypes.func.isRequired,
+    activityId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    fullActivityData: PropTypes.object
+};
 
 export default GameBoardEditor;

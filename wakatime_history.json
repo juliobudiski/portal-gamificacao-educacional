@@ -8476,5 +8476,209 @@
                 "percent": 100.0
             }
         ]
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2025-12-23T03:00:00Z",
+            "end": "2025-12-24T02:59:59Z",
+            "date": "2025-12-23",
+            "text": "Tue Dec 23rd 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [],
+        "languages": [],
+        "dependencies": [],
+        "machines": [],
+        "editors": [],
+        "operating_systems": [],
+        "categories": []
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2025-12-24T03:00:00Z",
+            "end": "2025-12-25T02:59:59Z",
+            "date": "2025-12-24",
+            "text": "Wed Dec 24th 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [],
+        "languages": [],
+        "dependencies": [],
+        "machines": [],
+        "editors": [],
+        "operating_systems": [],
+        "categories": []
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2025-12-25T03:00:00Z",
+            "end": "2025-12-26T02:59:59Z",
+            "date": "2025-12-25",
+            "text": "Thu Dec 25th 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [],
+        "languages": [],
+        "dependencies": [],
+        "machines": [],
+        "editors": [],
+        "operating_systems": [],
+        "categories": []
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2025-12-26T03:00:00Z",
+            "end": "2025-12-27T02:59:59Z",
+            "date": "2025-12-26",
+            "text": "Fri Dec 26th 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [],
+        "languages": [],
+        "dependencies": [],
+        "machines": [],
+        "editors": [],
+        "operating_systems": [],
+        "categories": []
+    },
+    {
+        "languages": [],
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "editors": [],
+        "operating_systems": [],
+        "categories": [],
+        "dependencies": [],
+        "machines": [],
+        "projects": [],
+        "range": {
+            "start": "2025-12-27T03:00:00Z",
+            "end": "2025-12-28T02:59:59Z",
+            "date": "2025-12-27",
+            "text": "Sat Dec 27th 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "ai_additions": 0,
+        "ai_deletions": 0,
+        "human_additions": 0,
+        "human_deletions": 0
+    },
+    {
+        "languages": [],
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "editors": [],
+        "operating_systems": [],
+        "categories": [],
+        "dependencies": [],
+        "machines": [],
+        "projects": [],
+        "range": {
+            "start": "2025-12-28T03:00:00Z",
+            "end": "2025-12-29T02:59:59Z",
+            "date": "2025-12-28",
+            "text": "Sun Dec 28th 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "ai_additions": 0,
+        "ai_deletions": 0,
+        "human_additions": 0,
+        "human_deletions": 0
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2025-12-29T03:00:00Z",
+            "end": "2025-12-30T02:59:59Z",
+            "date": "2025-12-29",
+            "text": "Mon Dec 29th 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [],
+        "languages": [],
+        "dependencies": [],
+        "machines": [],
+        "editors": [],
+        "operating_systems": [],
+        "categories": []
     }
 ]

@@ -19,6 +19,15 @@ from ..presets.activity_templates import PREDEFINED_TEMPLATES
 @jwt_required()
 @cross_origin()
 def submit_answer(activity_id):
+    """
+    Processa a submissão de uma resposta de quiz por um aluno.
+    
+    @desc Verifica a resposta, calcula pontos, atualiza o progresso e checa medalhas.
+    @param {int} activity_id - ID da atividade sendo respondida.
+    @return {JSON} - Resultado da submissão e novos pontos.
+    """
+    # LOG: [submit_answer] Iniciando processamento de resposta.
+    logger.info(f"[submit_answer] Iniciando submissão para atividade {activity_id}")
     current_user_id = get_jwt_identity()
     user = User.query.get(current_user_id)
     
@@ -81,6 +90,8 @@ def submit_answer(activity_id):
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Erro ao submeter resposta para user {current_user_id} na atividade {activity_id}: {str(e)}")
+        # LOG: [submit_answer] Erro crítico capturado com stack trace.
+        current_app.logger.error(f"Erro ao submeter resposta para user {current_user_id} na atividade {activity_id}: {str(e)}", exc_info=True)
         return jsonify({"message": "Erro interno ao salvar a resposta."}), 500
 
 # --- ROTA PARA REGISTRAR EVENTOS GENÉRICOS ---
@@ -88,6 +99,13 @@ def submit_answer(activity_id):
 @jwt_required()
 @cross_origin()
 def log_activity_event(activity_id):
+    """
+    Registra eventos genéricos de interação do usuário com a atividade.
+    
+    @param {int} activity_id - ID da atividade.
+    @payload {json} - Deve conter 'event_type' (ex: 'narrative_viewed').
+    """
+    logger.info(f"[log_activity_event] Registrando evento para atividade {activity_id}")
     current_user_id = get_jwt_identity()
     user = User.query.get(current_user_id)
     data = request.get_json()
@@ -108,22 +126,42 @@ def log_activity_event(activity_id):
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Erro ao registrar evento '{event_type}' para user {current_user_id} na atividade {activity_id}: {str(e)}")
+        # LOG: [log_activity_event] Erro ao salvar evento.
+        current_app.logger.error(f"Erro ao registrar evento '{event_type}' para user {current_user_id} na atividade {activity_id}: {str(e)}", exc_info=True)
         return jsonify({"message": "Erro interno ao registrar evento."}), 500
 
 
 @activity_bp.route('', methods=['POST'])
 @jwt_required()
 def create_activity():
+    """
+    Cria uma nova atividade.
+    
+    @desc Delega a criação para o serviço activity_service.
+    @return {JSON} - A atividade criada.
+    """
+    # LOG: [create_activity] Recebendo requisição de criação.
+    logger.info("[create_activity] Iniciando criação de nova atividade.")
     return activity_service.create_activity(current_user, request.json)
 
 @activity_bp.route('/<int:activity_id>', methods=['GET'])
 @jwt_required()
 def get_activity_route(activity_id):
+    """
+    Busca os detalhes de uma atividade específica.
+    
+    @param {int} activity_id - ID da atividade.
+    """
     return activity_service.get_activity(current_user, activity_id)
 
 @activity_bp.route('/templates', methods=['GET'])
 @jwt_required()
 def get_predefined_templates():
+    """
+    Retorna os templates de atividades predefinidos.
+    
+    @desc Apenas professores podem acessar.
+    """
     if current_user.role != 'professor':
         return jsonify({"message": "Acesso negado"}), 403
     return jsonify(PREDEFINED_TEMPLATES)
@@ -131,6 +169,14 @@ def get_predefined_templates():
 @activity_bp.route('/search', methods=['GET'])
 @jwt_required()
 def search_activities():
+    """
+    Busca atividades com base em termos e tags.
+    
+    @param {string} q - Termo de busca (query param).
+    @param {list} tags - Lista de tags (query param).
+    """
+    # LOG: [search_activities] Processando busca.
+    # TODO: Otimizar busca para grandes volumes de dados (paginação).
     # Nova funcionalidade: busca com tags
     search_term = request.args.get('q')
     tags = request.args.getlist('tags')
@@ -139,6 +185,12 @@ def search_activities():
 @activity_bp.route('/<int:activity_id>/revisions', methods=['POST'])
 @jwt_required()
 def create_revision(activity_id):
+    """
+    Cria uma revisão para uma atividade.
+    
+    @param {int} activity_id - ID da atividade.
+    """
+    logger.info(f"[create_revision] Criando revisão para atividade {activity_id}")
     # Nova funcionalidade: criar revisão
     return activity_service.create_revision(
         current_user, 
@@ -150,6 +202,14 @@ def create_revision(activity_id):
 @cross_origin()
 @jwt_required()
 def assign_activity_to_class(activity_id):
+    """
+    Atribui uma atividade a uma turma.
+    
+    @desc Pode atribuir diretamente (se for modelo mestre) ou criar uma cópia.
+    @param {int} activity_id - ID da atividade original.
+    @payload {json} - Espera 'class_id', datas de início/fim.
+    """
+    logger.info(f"[assign_activity_to_class] Iniciando atribuição da atividade {activity_id}")
     current_user_id = get_jwt_identity()
     user = User.query.get(current_user_id)
     original_activity = Activity.query.get(activity_id)
@@ -174,6 +234,7 @@ def assign_activity_to_class(activity_id):
     available_from = None
     expires_at = None
 
+    # TODO: Extrair lógica de parsing de data/hora para uma função utilitária (DRY).
     # Processa a data/hora de TÉRMINO
     if expires_at_date_str:
         expires_date = datetime.strptime(expires_at_date_str, '%Y-%m-%d').date()
@@ -205,6 +266,7 @@ def assign_activity_to_class(activity_id):
 
     try:
         
+        # Lógica de Negócio: Diferenciação entre atribuição direta e cópia
         # CASO 1: A atividade é um "modelo mestre" e nunca foi atribuída.
         if original_activity.class_id is None:
             current_app.logger.info(f"Atividade ID {activity_id} é um modelo. Atribuindo diretamente à turma ID {class_id}.")
@@ -282,7 +344,12 @@ def assign_activity_to_class(activity_id):
 @activity_bp.route('/my_activities', methods=['GET'])
 @jwt_required()
 def get_my_activities():
-    """Rota para buscar as atividades do professor logado, com filtro de busca opcional."""
+    
+    """
+    Rota para buscar as atividades do professor logado, com filtro de busca opcional.
+    
+    @desc Retorna apenas atividades criadas pelo usuário atual.
+    """
     if current_user.role != 'professor':
         return jsonify({"message": "Acesso negado"}), 403
     
@@ -296,7 +363,11 @@ def get_my_activities():
 @activity_bp.route('/public', methods=['GET'])
 @jwt_required()
 def get_public_activities():
-    """Rota para buscar todas as atividades públicas de outros professores."""
+    """
+    Rota para buscar todas as atividades públicas de outros professores.
+    
+    @desc Exclui atividades privadas e do próprio usuário.
+    """
     if current_user.role != 'professor':
         return jsonify({"message": "Acesso negado"}), 403
     search_term = request.args.get('search', None) # Pega o parâmetro 'search' da URL
@@ -307,7 +378,11 @@ def get_public_activities():
 @activity_bp.route('/<int:activity_id>', methods=['PUT'])
 @jwt_required()
 def update_activity_route(activity_id):
-    """Rota para atualizar uma atividade."""
+    """
+    Rota para atualizar uma atividade existente.
+    
+    @param {int} activity_id - ID da atividade a ser atualizada.
+    """
     if current_user.role != 'professor':
         return jsonify({"message": "Acesso negado"}), 403
     data = request.get_json()
@@ -316,7 +391,12 @@ def update_activity_route(activity_id):
 @activity_bp.route('/<int:activity_id>/copy', methods=['POST'])
 @jwt_required()
 def copy_activity_route(activity_id):
-    """Rota para copiar uma atividade pública."""
+    
+    """
+    Rota para copiar uma atividade pública para o acervo do professor.
+    
+    @param {int} activity_id - ID da atividade pública original.
+    """
     if current_user.role != 'professor':
         return jsonify({"message": "Acesso negado"}), 403
     return activity_service.copy_activity(current_user, activity_id)
@@ -324,6 +404,10 @@ def copy_activity_route(activity_id):
 @activity_bp.route('/<int:activity_id>', methods=['DELETE'])
 @jwt_required()
 def delete_activity(activity_id):
+    """
+    Deleta uma atividade e seus dados relacionados.
+    @desc Remove conversas, avaliações e progressos antes de deletar a atividade.
+    """
     activity = Activity.query.get(activity_id)
     if not activity:
         return jsonify({"message": "Atividade não encontrada"}), 404
@@ -331,6 +415,7 @@ def delete_activity(activity_id):
         return jsonify({"message": "Acesso negado"}), 403
     
     try:
+        logger.info(f"[delete_activity] Iniciando deleção da atividade {activity_id}")
         _log_system_event(
             user_id=current_user.id,
             action='activity_deleted',
@@ -358,6 +443,7 @@ def delete_activity(activity_id):
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Erro ao deletar atividade ID {activity_id}: {str(e)}")
+        current_app.logger.error(f"Erro ao deletar atividade ID {activity_id}: {str(e)}", exc_info=True)
         return jsonify({"message": f"Erro ao deletar: {str(e)}"}), 500
 
 @activity_bp.route('/<int:activity_id>/quiz', methods=['PUT'])
@@ -366,6 +452,8 @@ def delete_activity(activity_id):
 def update_activity_quiz(activity_id):
     """
     Rota para adicionar ou atualizar as perguntas de um quiz de uma atividade.
+    @param {int} activity_id - ID da atividade.
+    @payload {json} - Espera lista de 'questions'.
     """
     current_user_id = get_jwt_identity()
     user = User.query.get(current_user_id)
@@ -393,6 +481,7 @@ def update_activity_quiz(activity_id):
             activity.game_elements = {}
 
         # Cria uma cópia para garantir que o SQLAlchemy detecte a mudança no JSONB
+        # TODO: Verificar se há uma maneira mais eficiente de atualizar JSONB sem cópia completa.
         game_elements_copy = dict(activity.game_elements)
         game_elements_copy['questions'] = questions
         activity.game_elements = game_elements_copy
@@ -403,6 +492,7 @@ def update_activity_quiz(activity_id):
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Erro ao atualizar quiz para atividade ID {activity_id}: {str(e)}")
+        current_app.logger.error(f"Erro ao atualizar quiz para atividade ID {activity_id}: {str(e)}", exc_info=True)
         return jsonify({"message": "Erro interno ao salvar o quiz."}), 500
 
 @activity_bp.route('/bulk-delete', methods=['DELETE'])
@@ -411,6 +501,8 @@ def bulk_delete_activities_route():
     """
     Rota para deletar múltiplas atividades de uma vez.
     Espera um JSON no corpo da requisição com uma chave "activity_ids".
+    
+    @payload {json} - { "activity_ids": [int, int, ...] }
     Ex: { "activity_ids": [1, 5, 12] }
     """
     if current_user.role != 'professor':
@@ -422,6 +514,7 @@ def bulk_delete_activities_route():
     if not activity_ids or not isinstance(activity_ids, list):
         return jsonify({"message": "A lista de IDs de atividades ('activity_ids') é obrigatória."}), 400
 
+    logger.info(f"[bulk_delete] Solicitada deleção de {len(activity_ids)} atividades.")
     # Chama a função do serviço para executar a lógica de negócio
     result, status_code = activity_service.bulk_delete_activities(current_user, activity_ids)
     
@@ -433,6 +526,7 @@ def bulk_delete_activities_route():
 def update_activity_structure_route(activity_id):
     """
     Rota leve para salvar apenas a estrutura de gamificação (gamificationDesign).
+    @param {int} activity_id - ID da atividade.
     """
     if current_user.role != 'professor':
         return jsonify({"message": "Acesso negado"}), 403
@@ -444,6 +538,12 @@ def update_activity_structure_route(activity_id):
 @activity_bp.route('/<int:activity_id>/rate', methods=['POST'])
 @jwt_required()
 def rate_activity(activity_id):
+    """
+    Registra ou atualiza a avaliação (nota) de um usuário para uma atividade.
+    
+    @param {int} activity_id - ID da atividade.
+    @payload {json} - { "score": int (1-5) }
+    """
     user_id = get_jwt_identity()
     data = request.get_json()
     score = data.get('score')
@@ -469,4 +569,5 @@ def rate_activity(activity_id):
 
     except Exception as e:
         db.session.rollback()
+        logger.error(f"[rate_activity] Erro ao avaliar atividade {activity_id}: {str(e)}", exc_info=True)
         return jsonify({"message": f"Erro ao salvar avaliação: {str(e)}"}), 500

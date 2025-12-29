@@ -2,6 +2,7 @@
 
 // --- 1. IMPORTAÇÕES ---
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import PropTypes from 'prop-types';
 import { Routes, Route, Link, useNavigate, Outlet } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import useAnalytics from './hooks/useAnalytics';
@@ -61,6 +62,13 @@ const debugLog = (message, ...optionalParams) => {
   }
 };
 // (O componente GeolocationPrompt permanece o mesmo)
+/**
+ * @component GeolocationPrompt
+ * @desc Componente modal para solicitar permissão de geolocalização ao usuário.
+ * @param {Object} props - Propriedades do componente.
+ * @param {Function} props.onAccept - Função callback chamada quando o usuário aceita a solicitação.
+ * @returns {JSX.Element} Modal de aviso de localização.
+ */
 const GeolocationPrompt = ({ onAccept }) => (
   <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[999] p-4">
     <div className="bg-primary-bg p-8 rounded-2xl shadow-xl max-w-md w-full text-center border border-yellow-500/50">
@@ -81,7 +89,16 @@ const GeolocationPrompt = ({ onAccept }) => (
   </div>
 );
 
+// Validação de PropTypes para GeolocationPrompt
+GeolocationPrompt.propTypes = {
+  onAccept: PropTypes.func.isRequired,
+};
 
+/**
+ * @component AppContent
+ * @desc Componente principal que gerencia o estado da aplicação, rotas e lógica de navegação/autenticação.
+ * @returns {JSX.Element} Estrutura principal da UI (Header, Main, Footer).
+ */
 function AppContent() {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
@@ -102,6 +119,7 @@ function AppContent() {
 
   // Handler inteligente para Professores
   const handleTeacherTour = (type) => {
+    debugLog(`[AppContent] handleTeacherTour: Iniciando tour do tipo '${type}'.`);
     closeAllMenus();
 
     if (type === 'dashboard') {
@@ -120,6 +138,7 @@ function AppContent() {
   };
 
   const handleStudentTour = () => {
+    debugLog('[AppContent] handleStudentTour: Iniciando tour do aluno.');
     closeAllMenus();
     startTour(STUDENT_DASHBOARD_STEPS, 'student_dashboard_v1', true);
     navigate('/aluno/dashboard');
@@ -127,6 +146,7 @@ function AppContent() {
 
   const handleLogout = () => {
     debugLog('AppContent: Chamando logout.');
+    // LOG: Registrando saída do usuário
     sessionStorage.removeItem('TUTORIAL_MODE');
     logout();
     closeAllMenus();
@@ -161,6 +181,7 @@ function AppContent() {
   }, [user, isAuthenticated]);
 
   const handleRestartTour = () => {
+    debugLog('[AppContent] handleRestartTour: Reiniciando tour.');
     closeAllMenus();
 
     if (user?.role === 'aluno') {
@@ -178,6 +199,7 @@ function AppContent() {
   };
 
   return (
+    // TODO: Considerar extrair o Header para um componente separado para melhorar a legibilidade.
     // Usa a variável de cor do CSS para o fundo
     <div className="min-h-screen w-full bg-primary-bg p-4 pt-4 flex flex-col">
       <ScrollToTop />
@@ -502,6 +524,11 @@ function AppContent() {
   );
 }
 
+/**
+ * @component App
+ * @desc Componente raiz que envolve a aplicação com os provedores de contexto (Auth, Tutorial).
+ * @returns {JSX.Element} A aplicação completa.
+ */
 function App() {
   return (
     // O AuthProvider já está aqui, o que é ótimo.

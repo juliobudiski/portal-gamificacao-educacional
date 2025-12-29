@@ -28,11 +28,21 @@ def get_activity_chat_history(activity_id):
 @socketio.on('join')
 def on_join(data):
     """Cliente entra em uma sala de chat."""
-    user_id = data.get('user_id') # Em uma aplicação real, você validaria o token JWT aqui
-    activity_id = data.get('activity_id')
-    room = f'activity_{activity_id}'
-    join_room(room)
-    print(f'Usuário {user_id} entrou na sala {room}')
+    room = None
+    user_id = None
+
+    if isinstance(data, dict):
+        user_id = data.get('user_id') # Em uma aplicação real, você validaria o token JWT aqui
+        activity_id = data.get('activity_id')
+        if activity_id:
+            room = f'activity_{activity_id}'
+    elif isinstance(data, str):
+        room = data
+        user_id = 'Unknown'
+
+    if room:
+        join_room(room)
+        print(f'Usuário {user_id} entrou na sala {room}')
 
 @socketio.on('send_message')
 def handle_send_message(data):

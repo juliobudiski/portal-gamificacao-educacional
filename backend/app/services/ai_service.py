@@ -7,7 +7,7 @@ import re
 from typing import Dict, List, Any
 from ..extensions import socketio
 import random
-
+from difflib import get_close_matches
 logger = logging.getLogger(__name__)
 # --- METADADOS DOS ASSETS ---
 AVAILABLE_SCENARIOS = [
@@ -43,9 +43,11 @@ class AIService:
         # Lista de prioridade de modelos, do mais preferível ao fallback.
         self.MODEL_HIERARCHY = [
             'models/gemini-2.5-flash',             # 1. Qualidade e Velocidade (Novo)
-            'models/gemini-2.0-flash-lite-preview', # 2. Otimizado para cota alta (Lite)
-            'models/gemini-2.0-flash'             # 3. O que você estava usando
-            
+            'models/gemini-2.0-flash',             # 2. Estável e confiável
+            'models/gemini-2.5-flash-lite',        # 3. Lite (Novo) - Rápido e barato
+            'models/gemini-2.0-flash-lite',        # 4. Lite (Estável)
+            'models/gemini-flash-latest',          # 5. Fallback genérico
+            'models/gemini-2.5-pro'                # 6. Alta inteligência (se necessário)
         ]
         
         # Configurações de geração para a API, buscando respostas em JSON.
@@ -60,7 +62,7 @@ class AIService:
         self.max_retries = 2
         self.cooldown_seconds = 5 # Tempo de espera entre chamadas para evitar rate limit.
 
-    def orchestrate_story(self, activity_context: Dict, path_structure: List[Dict], ai_config: Dict, client_socket_id: str = None) -> Dict:
+    def orchestrate_story(self, activity_context: Dict, path_structure: List[Dict], ai_config: Dict, room_id: str = None) -> Dict:
         """
         @desc Orquestra a geração de conteúdo para todos os passos de uma atividade.
         Itera sobre a estrutura do caminho de progressão, gerando conteúdo para cada
@@ -69,108 +71,142 @@ class AIService:
         @param {Dict} activity_context - Dados gerais da atividade (título, descrição).
         @param {List[Dict]} path_structure - A lista de passos do tabuleiro.
         @param {Dict} ai_config - Configurações da IA (personalidade, tom, etc.).
-        @param {str} client_socket_id - ID do socket do cliente para enviar atualizações de progresso.
+        @param {str} room_id - ID da sala Socket.io para enviar atualizações de progresso.
         @returns {Dict} Um mapa onde as chaves são os IDs dos passos e os valores são o conteúdo gerado.
+        @note Espera-se que 'path_structure' contenha dicionários com chaves 'type' e 'id'.
         """
-        logger.info(f"--- INICIANDO ORQUESTRAÇÃO ROBUSTA (Hierarquia: {self.MODEL_HIERARCHY}) ---")
-        
+        logger.info(f"--- INICIANDO ORQUESTRAÇÃO (Hierarquia: {self.MODEL_HIERARCHY}) ---")
         steps_to_fill = [s for s in path_structure if s['type'] in ['quiz', 'narrative', 'content']]
         total_steps = len(steps_to_fill)
         
-        # Limite de segurança para evitar execuções muito longas e custosas.
-        if len(steps_to_fill) > 15:
-            steps_to_fill = steps_to_fill[:15] 
-            logger.warning("Trilha muito longa. Limitando geração aos primeiros 15 passos.")
-        if not steps_to_fill:
-            return {}
+        final_map = {}
+        current_model_idx = 0 # Sticky Fallback: mantém o modelo que está funcionando
         
-        # "Memória de curto prazo" para dar contexto sequencial à IA.
+        # Memória de execução persistente durante a orquestração
         execution_trace = {
-            "last_narrative_event": "A aventura começou.",
-            "last_taught_concept": "Conceitos introdutórios.",
+            "last_narrative_event": "Início da jornada.", 
+            "last_taught_concept": "Nenhum.", 
             "accumulated_knowledge": []
         }
-        
-        final_map = {}
-        # TODO: Considerar tornar o cooldown dinâmico com base em headers de resposta da API, se disponíveis.
 
         for index, step in enumerate(steps_to_fill):
-            step_number = index + 1
             step_type = step['type']
             step_id = step['id']
             
-            # Feedback visual via Socket
-            if client_socket_id: # pragma: no cover
-                try:
-                    percent = int(((index) / total_steps) * 100)
-                    socketio.emit('ai_progress', {
-                        'percent': percent,
-                        'message': f"Criando {self._get_step_label(step_type)} ({step_number}/{total_steps})...",
-                    }, to=client_socket_id)
-                except Exception:
-                    pass
-            
-            # Loop de retentativa para garantir que o conteúdo seja gerado.
-            attempts = 0
-            valid_content = None
-            
-            while attempts < self.max_retries and not valid_content:
-                attempts += 1
-                try:
-                    if attempts > 1:
-                        logger.warning(f"Tentativa {attempts} para o passo {step_id} ({step_type})...")
+            if room_id:
+                percent = int((index / total_steps) * 100)
+                socketio.emit('ai_progress', {'percent': percent, 'message': f"Criando {self._get_step_label(step_type)}..."}, to=room_id)
 
-                    raw_content = self._generate_single_step(
-                        step_type, step_number, total_steps, 
-                        activity_context, ai_config, execution_trace
-                    )
+            # Build prompt usando a memória atualizada
+            full_prompt = self._build_prompt(step_type, index+1, total_steps, activity_context, ai_config, execution_trace)
+
+            success = False
+            # Tenta modelos a partir do último que funcionou (current_model_idx)
+            while not success and current_model_idx < len(self.MODEL_HIERARCHY):
+                model_name = self.MODEL_HIERARCHY[current_model_idx]
+                try:
+                    model = genai.GenerativeModel(model_name, generation_config=self.generation_config)
+                    response = model.generate_content(full_prompt)
+                    valid_content = self._clean_and_parse_json(response.text)
                     
-                    # Validação de integridade para garantir que o JSON tem os campos mínimos.
-                    if self._validate_content_integrity(step_type, raw_content):
-                        valid_content = raw_content
+                    if self._validate_content_integrity(step_type, valid_content):
+                        # Pós-processamento específico
+                        if step_type == 'quiz':
+                            valid_content = self._shuffle_quiz_options(valid_content)
+                            
+                        final_map[step_id] = valid_content
+                        self._update_memory_trace(execution_trace, step_type, valid_content)
+                        success = True
+                        logger.info(f"✅ Passo {step_id} gerado com sucesso usando {model_name}.")
                     else:
-                        logger.warning(f"Conteúdo inválido gerado para {step_type}. Retrying...")
-                        
+                        raise Exception("Conteúdo inválido gerado")
                 except Exception as e:
-                    error_msg = str(e)
-                    logger.error(f"Erro na tentativa {attempts} do passo {step_id}: {error_msg}")
-                    
-                    # Lógica de Backoff para Erro 429 (Rate Limit)
-                    if "429" in error_msg:
-                        wait_time = (attempts + 1) * self.cooldown_seconds # Aumenta a espera a cada tentativa.
-                        if client_socket_id:
-                            socketio.emit('ai_progress', {
-                                'percent': int(((index) / total_steps) * 100),
-                                'message': f"Atingimos o limite da IA. Aguardando {wait_time}s para retomar...",
-                            }, to=client_socket_id)
-                        
-                        logger.warning(f"⚠️ Quota excedida (429). Pausando por {wait_time} segundos...")
-                        time.sleep(wait_time)
+                    if "429" in str(e) or "Quota" in str(e):
+                        logger.warning(f"⚠️ Cota/Erro em {model_name}: {str(e)}. Tentando próximo modelo...")
+                        current_model_idx += 1
                     else:
-                        time.sleep(2) # Backoff simples para outros erros
-
-            # Se falhou após 3 tentativas, usa fallback vazio para não travar o app
-            if not valid_content:
-                logger.error(f"FALHA CRÍTICA: Não foi possível gerar passo {step_id} após {self.max_retries} tentativas.")
-                valid_content = self._get_fallback_content(step_type)
-
-            # Atualiza a memória com o resultado do passo atual para o próximo.
-            self._update_memory_trace(execution_trace, step_type, valid_content)
-
-            final_map[step_id] = valid_content
+                        logger.error(f"Erro no modelo {model_name}: {str(e)}")
+                        break # Tenta retry ou próximo passo
             
-            # Pausa estratégica (cooldown) para evitar atingir o limite de requisições por minuto da API.
-            if index < total_steps - 1:
-                logger.info(f"⏳ Cooldown: Pausando por {self.cooldown_seconds}s para evitar rate limit...")
-                time.sleep(self.cooldown_seconds)
+            if not success:
+                logger.error(f"Falha ao gerar passo {step_id}. Usando fallback estático.")
+                final_map[step_id] = self._get_fallback_content(step_type)
 
-        if client_socket_id: # pragma: no cover
-            socketio.emit('ai_progress', {'percent': 100, 'message': "Finalizando..."}, to=client_socket_id)
+            time.sleep(self.cooldown_seconds)
+
+        if room_id:
+             socketio.emit('ai_complete', {'result': final_map}, to=room_id)
 
         return final_map
 
+    def _build_prompt(self, step_type: str, step_idx: int, total_steps: int, context: Dict, config: Dict, execution_trace: Dict) -> str:
+        """Constrói o prompt completo para um passo."""
+        teaching_focus = config.get('teachingFocus') or context.get('title', 'Tópico não definido')
+        target_audience = config.get('targetAudience', 'Junior')
+        characters_list = config.get('charactersList', [])
+        
+        formatted_cast = "\n".join([
+            f"- {c['role']} ({c['type']}): Use a imagem '{c.get('image', '')}'." 
+            for c in characters_list
+        ])
+
+        progress_ratio = step_idx / total_steps
+        story_phase = "INTRODUÇÃO (O Problema Surge)"
+        if progress_ratio > 0.3: story_phase = "DESENVOLVIMENTO (Tentativa e Erro)"
+        if progress_ratio > 0.8: story_phase = "CLÍMAX (A Solução Final)"
+
+        system_persona = self._get_system_persona(config)
+        specific_instruction = self._get_dynamic_instruction(step_type, execution_trace, story_phase, formatted_cast, teaching_focus, config)
+        json_schema = self._get_strict_instructions(step_type, config.get('questionsPerQuiz', 4), config.get('linesPerNarrative', 6), characters_list)
+
+        return f"""
+        {system_persona}
+
+        --- CONTEXTO ATUAL ---
+        TÓPICO DE ENSINO: "{teaching_focus}"
+        NÍVEL DO ALUNO: {target_audience} (Ajuste a complexidade técnica para este nível)
+        FASE DA NARRATIVA: {story_phase}
+        
+        --- MEMÓRIA (O que já aconteceu) ---
+        Último Evento: "{execution_trace['last_narrative_event']}"
+        Conceito Ensinado Recentemente: "{execution_trace['last_taught_concept']}"
+
+        --- SUA MISSÃO AGORA ({step_type.upper()}) ---
+        {specific_instruction}
+
+        --- REGRAS DE SAÍDA (EXTREMAMENTE CRÍTICO) ---
+        1. Responda APENAS com JSON válido.
+        2. NÃO use Markdown (sem ```json).
+        3. Siga estritamente o schema abaixo.
+        
+        {json_schema}
+        """
+    
+    def _generate_with_sticky_fallback(self, prompt, start_index=0):
+        """Tenta gerar a partir de um índice específico da hierarquia."""
+        last_error = None
+        # Itera a partir do último modelo que funcionou
+        for i in range(start_index, len(self.MODEL_HIERARCHY)):
+            model_name = self.MODEL_HIERARCHY[i]
+            try:
+                current_model = genai.GenerativeModel(model_name, generation_config=self.generation_config)
+                response = current_model.generate_content(prompt)
+                return self._clean_and_parse_json(response.text), i # Retorna o conteúdo e o índice que funcionou
+            except Exception as e:
+                if "429" in str(e) or "Quota exceeded" in str(e):
+                    logger.warning(f"⚠️ Cota estourada para {model_name}. Subindo nível de fallback.")
+                    last_error = e
+                    continue
+                raise e
+        raise last_error
+    
     def _generate_content_with_fallback(self, prompt: str) -> str:
         """Tenta gerar usando a lista de modelos. Se um falhar (429), tenta o próximo."""
+        """
+        @desc Tenta gerar usando a lista de modelos. Se um falhar (429), tenta o próximo.
+        @param {str} prompt - O prompt completo para a IA.
+        @returns {str} O texto gerado pela IA.
+        """
         
         last_error = None
 
@@ -184,6 +220,10 @@ class AIService:
                 
                 logger.info(f"🤖 Tentando gerar com modelo: {model_name}...")
                 
+                # LOG: [AIService] Metadados do prompt (evita logar prompt inteiro por segurança/tamanho)
+                if os.environ.get('FLASK_DEBUG'):
+                    logger.debug(f"[AIService] Prompt length: {len(prompt)} chars")
+
                 # Tenta gerar o conteúdo.
                 response = current_model.generate_content(prompt)
                 
@@ -211,7 +251,16 @@ class AIService:
     
     def _validate_content_integrity(self, step_type: str, content: Dict) -> bool:
         """Retorna True se o conteúdo tiver o mínimo necessário para não quebrar o frontend."""
+        """
+        @desc Retorna True se o conteúdo tiver o mínimo necessário para não quebrar o frontend.
+        @param {str} step_type - O tipo de passo ('narrative', 'quiz', 'content').
+        @param {Dict} content - O conteúdo JSON parseado.
+        @returns {bool} True se válido, False caso contrário.
+        """
         if not content or not isinstance(content, dict):
+            # LOG: [AIService] Falha de validação estrutural
+            if os.environ.get('FLASK_DEBUG'):
+                logger.debug(f"[AIService] Conteúdo inválido ou vazio para {step_type}")
             return False
             
         if step_type == 'narrative':
@@ -237,10 +286,30 @@ class AIService:
     def _get_fallback_content(self, step_type):
         """Retorna estrutura vazia segura em caso de falha total."""
         if step_type == 'narrative':
-            return {"type": "narrative", "dialogue": [], "scenario": "", "characters": []}
+            return {
+                "type": "narrative",
+                "scenario": "/narrativa/cenarios/cenario1.webp",
+                "characters": [
+                    {"role": "Sistema", "image": "/narrativa/personagens/instrutor1.webp"},
+                    {"role": "Dev", "image": "/narrativa/personagens/aluno1.webp"}
+                ],
+                "dialogue": [
+                    {"characterRole": "Sistema", "text": "Houve uma instabilidade na conexão neural (API Error)."},
+                    {"characterRole": "Dev", "text": "Entendido. Vou prosseguir com os dados manuais por enquanto."}
+                ]
+            }
         elif step_type == 'quiz':
-            return {"type": "quiz", "questions": []}
-        return {"type": "content", "text_content": "Erro na geração. Edite manualmente.", "video_url": ""}
+            return {
+                "type": "quiz",
+                "questions": [{
+                    "text": "Pergunta de Exemplo (Erro na Geração)",
+                    "options": ["Opção A", "Opção B", "Opção C", "Opção D"],
+                    "correct_option": "Opção A",
+                    "explanation": "Esta é uma questão de fallback gerada automaticamente devido a um erro na API de IA.",
+                    "points": 10, "coins": 5, "timeLimit": 60
+                }]
+            }
+        return {"type": "content", "text_content": "### Conteúdo Temporário\n\nOcorreu um erro na geração deste conteúdo. Por favor, edite este passo manualmente.\n\n```python\n# Placeholder\nprint('Erro na geração')\n```", "video_url": ""}
 
     def _update_memory_trace(self, trace, step_type, content):
         """Atualiza a memória de curto prazo para o próximo passo."""
@@ -284,60 +353,9 @@ class AIService:
     def _generate_single_step(self, step_type: str, step_idx: int, total_steps: int, context: Dict, config: Dict, execution_trace: Dict) -> Dict:
         """
         @desc Gera o conteúdo para um único passo, montando o prompt completo.
-        Este é o coração do prompt engineering, onde a persona, o contexto, a memória,
-        a missão específica e as regras de formato são combinadas.
-
-        @param {str} step_type - O tipo de passo a ser gerado ('quiz', 'narrative', etc.).
-        @param {int} step_idx - O número do passo atual (1-based).
-        @param {int} total_steps - O número total de passos a serem gerados.
-        @param {Dict} context - Contexto geral da atividade.
-        @param {Dict} config - Configurações da IA.
-        @param {Dict} execution_trace - A "memória" do que já foi gerado.
-        @returns {Dict} O conteúdo JSON gerado e validado para o passo.
+        Reutiliza a lógica de construção de prompt centralizada.
         """
-        teaching_focus = config.get('teachingFocus') or context.get('title', 'Tópico não definido')
-        target_audience = config.get('targetAudience', 'Junior')
-        characters_list = config.get('charactersList', [])
-        
-        # Formata o elenco para a IA saber quem está falando
-        formatted_cast = "\n".join([
-            f"- {c['role']} ({c['type']}): Use a imagem '{c.get('image', '')}'." 
-            for c in characters_list
-        ])
-
-        # Define a fase da história para guiar o tom da IA.
-        progress_ratio = step_idx / total_steps
-        story_phase = "INTRODUÇÃO (O Problema Surge)"
-        if progress_ratio > 0.3: story_phase = "DESENVOLVIMENTO (Tentativa e Erro)"
-        if progress_ratio > 0.8: story_phase = "CLÍMAX (A Solução Final)"
-
-        # Montagem do prompt modular.
-        system_persona = self._get_system_persona(config)
-        specific_instruction = self._get_dynamic_instruction(step_type, execution_trace, story_phase, formatted_cast, teaching_focus, config)
-        json_schema = self._get_strict_instructions(step_type, config.get('questionsPerQuiz', 4), config.get('linesPerNarrative', 6), characters_list)
-
-        full_prompt = f"""
-        {system_persona}
-
-        --- CONTEXTO ATUAL ---
-        TÓPICO DE ENSINO: "{teaching_focus}"
-        NÍVEL DO ALUNO: {target_audience} (Ajuste a complexidade técnica para este nível)
-        FASE DA NARRATIVA: {story_phase}
-        
-        --- MEMÓRIA (O que já aconteceu) ---
-        Último Evento: "{execution_trace['last_narrative_event']}"
-        Conceito Ensinado Recentemente: "{execution_trace['last_taught_concept']}"
-
-        --- SUA MISSÃO AGORA ({step_type.upper()}) ---
-        {specific_instruction}
-
-        --- REGRAS DE SAÍDA (EXTREMAMENTE CRÍTICO) ---
-        1. Responda APENAS com JSON válido.
-        2. NÃO use Markdown (sem ```json).
-        3. Siga estritamente o schema abaixo.
-        
-        {json_schema}
-        """
+        full_prompt = self._build_prompt(step_type, step_idx, total_steps, context, config, execution_trace)
         
         # Geração e pós-processamento.
         response = self._generate_content_with_fallback(full_prompt)
@@ -448,6 +466,9 @@ class AIService:
             """
         elif step_type == 'quiz':
             return f"""
+            REGRAS PARA O QUIZ:
+            1. O campo 'correct_option' deve ser uma CÓPIA EXATA de uma das strings do array 'options'.
+            2. Não adicione explicações ou variações no campo 'correct_option'.
             JSON Schema Obrigatório para QUIZ ({quiz_count} questões):
             {{
                 "type": "quiz",
@@ -480,6 +501,8 @@ class AIService:
         Remove blocos de código Markdown, texto introdutório e vírgulas finais
         antes de tentar o parse, tornando o processo mais resiliente a respostas
         mal formatadas da IA.
+        @param {str} raw_text - Texto bruto retornado pela IA.
+        @returns {Dict} Dicionário parseado ou vazio em caso de erro.
         """
         try:
             text = raw_text.strip()
@@ -503,6 +526,7 @@ class AIService:
 
         except json.JSONDecodeError as e:
             logger.error(f"JSON Parse Error: {e} | Text snippet: {raw_text[:100]}...")
+            # TODO: Implementar estratégia de 'repair' para JSONs levemente quebrados.
             return {}
     
     def _shuffle_quiz_options(self, content: Dict) -> Dict:
@@ -533,8 +557,14 @@ class AIService:
             # Se a IA alucinou uma resposta que não está nas opções, assume a primeira como correta
             # para evitar que o quiz fique sem resposta válida.
             if clean_correct not in clean_opts:
-                logger.warning(f"Resposta correta '{raw_correct}' não encontrada nas opções. Usando a primeira como fallback.")
-                clean_correct = clean_opts[0] 
+                # Tenta encontrar a opção mais parecida gerada pela IA
+                matches = get_close_matches(clean_correct, clean_opts, n=1, cutoff=0.6)
+                if matches:
+                    clean_correct = matches[0]
+                    logger.info(f"Refactor: Match aproximado encontrado: {clean_correct}")
+                else:
+                    logger.warning("Falha crítica: Nenhuma opção se assemelha à resposta correta.")
+                    # Aqui talvez seja melhor marcar o passo como 'precisa de revisão'
 
             # 4. Cria pares (opção, é_correta?) para embaralhar mantendo a referência.
             # Ex: [("Java", False), ("Python", True), ("C++", False)].

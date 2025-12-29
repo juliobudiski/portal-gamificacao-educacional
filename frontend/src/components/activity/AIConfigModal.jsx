@@ -25,6 +25,13 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
     const [progressMessage, setProgressMessage] = useState("Iniciando...");
     const socketRef = useRef(null); // Referência para o socket
     const progressInterval = useRef(null); // Referência para o intervalo de progresso
+
+    // Refs para garantir que o socket não reconecte se as funções do pai mudarem (evita desconexões no log)
+    const onSuccessRef = useRef(onSuccess);
+    const onCloseRef = useRef(onClose);
+    useEffect(() => { onSuccessRef.current = onSuccess; }, [onSuccess]);
+    useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
+
     // Estado complexo de configuração
     const [config, setConfig] = useState({
         narrativeGoal: "", // O enredo
@@ -39,56 +46,83 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
             { role: "Estagiário Curioso", type: "Aluno" }
         ]
     });
-    // 1. CORREÇÃO DO BUG DE ESTADO (Adicione este useEffect)
-    // Isso garante que sempre que a modal fechar ou abrir, o estado seja resetado
+
+    // Consolida toda a lógica de socket em um único useEffect.
     useEffect(() => {
+        // Se o modal não estiver aberto, não faz nada.
         if (!isOpen) {
-            setLoading(false);
-            setProgress(0);
-            setProgressMessage("Iniciando...");
-            // Opcional: Se quiser resetar o passo ou config, faça aqui também
+            return;
         }
-    }, [isOpen]);
 
-    useEffect(() => {
-        if (isOpen) {
-            // Reset inicial
-            setLoading(false);
-            setProgress(0);
-            setProgressMessage("Iniciando...");
+        // 1. Reset de Estado Inicial ao abrir o modal
+        setLoading(false);
+        setProgress(0);
+        setProgressMessage("Aguardando configuração...");
 
-            // --- LÓGICA DE PRIORIDADE DO TÓPICO ---
-            // 1. O Preset tem prioridade máxima (ex: template "Log de Erros")
-            const presetFocus = contextData?.ai_preset?.teachingFocus;
-
-            // Definimos o valor inicial
-            const initialFocus = presetFocus || "";
-
+        // Pre-preencher dados se disponíveis no contexto (template)
+        if (contextData) {
             setConfig(prev => ({
                 ...prev,
-                // Mantém o que o usuário já digitou se ele fechou e abriu o modal rapidamente,
-                // a menos que esteja vazio.
-                teachingFocus: (prev.teachingFocus && !contextData.ai_preset) ? prev.teachingFocus : initialFocus,
-
-                // Demais campos seguem a lógica de preset ou fallback
-                targetAudience: contextData?.ai_preset?.targetAudience || prev.targetAudience || "Junior",
-                narrativeGoal: contextData?.ai_preset?.narrativeGoal || prev.narrativeGoal || "",
-                tone: contextData?.ai_preset?.tone || prev.tone || "aventura",
-                personality: contextData?.ai_preset?.personality || prev.personality || "Socrático",
-                charactersList: contextData?.ai_preset?.charactersList || prev.charactersList
+                teachingFocus: prev.teachingFocus || contextData.title || "",
+                narrativeGoal: prev.narrativeGoal || contextData.description || ""
             }));
-
-            // Conexão Socket (código existente)
-            const socketUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-            socketRef.current = io(socketUrl, { transports: ['websocket'], reconnectionAttempts: 3 });
-
-            socketRef.current.on('ai_progress', (data) => {
-                setProgress(data.percent);
-                if (data.message) setProgressMessage(data.message);
-            });
         }
-        return () => { if (socketRef.current) socketRef.current.disconnect(); };
-    }, [isOpen, contextData]); // Dependência contextData é importante aqui
+
+        // 2. Conexão com o Socket
+        const socketUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        const socket = io(socketUrl, {
+            transports: ['websocket', 'polling'], // Prioriza websocket
+            reconnectionAttempts: 3,
+            forceNew: true // Garante uma nova conexão
+        });
+        socketRef.current = socket;
+
+        // 3. Lógica de Conexão e Inscrição na Sala
+        socket.on('connect', () => {
+            console.log("Socket Conectado. ID:", socket.id);
+            // Emite o evento 'join' para a sala específica do usuário
+            socket.emit('join', `user_ai_${user.id}`);
+        });
+
+        // 4. Listeners para os eventos de progresso da IA
+        socket.on('ai_progress', (data) => {
+            setProgress(data.percent);
+            setProgressMessage(data.message || "Processando...");
+        });
+
+        socket.on('ai_complete', (data) => {
+            // O backend deve enviar { result: {...} }. Para sermos mais robustos,
+            // vamos verificar se 'data.result' existe, ou se 'data' é o próprio mapa.
+            const contentMap = data.result || data;
+
+            // A validação agora é feita no mapa de conteúdo extraído.
+            if (!contentMap || typeof contentMap !== 'object' || Object.keys(contentMap).length === 0) {
+                alert("A IA não conseguiu gerar o conteúdo devido a limites de cota. Tente novamente em alguns minutos.");
+                setLoading(false);
+                return;
+            }
+
+            setProgress(100);
+            setProgressMessage("Roteiro concluído!");
+            setTimeout(() => {
+                if (onSuccessRef.current) onSuccessRef.current(contentMap);
+                if (onCloseRef.current) onCloseRef.current();
+            }, 1500);
+        });
+
+        socket.on('ai_error', (data) => {
+            alert(`Erro na geração: ${data.message}`);
+            setLoading(false); // Libera o botão para nova tentativa
+        });
+
+        // 5. Função de Cleanup: Roda quando o modal fecha (isOpen se torna false)
+        return () => {
+            if (socket) {
+                console.log("Desconectando socket...");
+                socket.disconnect();
+            }
+        };
+    }, [isOpen, user.id]); // Removido onSuccess e onClose das dependências para estabilizar conexão
 
     if (!isOpen) return null;
 
@@ -124,43 +158,31 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
         if (!config.narrativeGoal.trim()) return alert("Descreva o enredo.");
 
         setLoading(true);
-        setProgress(0);
-        // REMOVIDO: setInterval e cálculos falsos de tempo.
+        setProgress(2);
+        setProgressMessage("Conectando ao servidor...");
 
         try {
-            const skeletonPath = structure.map(step => ({ id: step.id, type: step.type }))
-                .filter(s => ['quiz', 'narrative', 'content'].includes(s.type));
-
-            const socketId = socketRef.current?.id;
-
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/content_editor/orchestrate`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${user.token}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    structure: skeletonPath,
-                    config: config,
-                    context: contextData,
-                    socket_id: socketId
+                    structure,
+                    config,
+                    context: contextData
+                    // O socket_id não é mais necessário, o backend usará o room_id derivado do JWT
                 })
             });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                // Força 100% no sucesso, caso o último evento de socket tenha se perdido
-                setProgress(100);
-                setTimeout(() => {
-                    onSuccess(data);
-                    onClose();
-                }, 600);
+            if (response.status === 202) {
+                // Sucesso no início. Não fazemos nada aqui, 
+                // apenas esperamos os eventos 'ai_progress' e 'ai_complete'.
+                console.log("Geração assíncrona iniciada...");
             } else {
-                alert(`Erro na IA: ${data.message}`);
+                const errorData = await response.json();
+                alert(`Erro ao iniciar: ${errorData.message}`);
                 setLoading(false);
             }
-
         } catch (error) {
-            console.error(error);
-            alert("Erro de conexão.");
+            alert("Erro de conexão com o servidor.");
             setLoading(false);
         }
     };
@@ -380,17 +402,18 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                     <button
                         onClick={step === 1 ? () => setStep(2) : handleOrchestrate}
                         disabled={loading}
-                        id={step === 1 ? "tour-editor-continue-btn" : "tour-editor-gen-story"}
                         className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg flex items-center justify-center gap-2"
                     >
-                        {loading ? (
-                            <>
+                        {/* O conteúdo do botão muda, mas o elemento <button> permanece no DOM */}
+                        {loading && (
+                            <span className="flex items-center gap-2">
                                 <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
                                 Criando Roteiro...
-                            </>
-                        ) : (
-                            step === 1 ? 'Continuar para Personagens' : <><FaMagic /> Gerar História</>
+                            </span>
                         )}
+                        {!loading && step === 1 && 'Continuar para Personagens'}
+                        {!loading && step === 2 && <><FaMagic /> Gerar História</>}
+
                     </button>
                 </div>
             </div>

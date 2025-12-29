@@ -2,10 +2,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FaVideo, FaSave, FaExternalLinkAlt, FaAlignLeft } from 'react-icons/fa';
+import { FaVideo, FaEye, FaSave, FaExternalLinkAlt, FaAlignLeft } from 'react-icons/fa';
 import ReactPlayer from 'react-player';
 import { useActivityCreation } from '../context/ActivityCreationContext';
-
+import LearningMaterialViewer from '../components/activity/LearningMaterialViewer';
 function LearningContentEditorPage({ initialData, onSave, isOfflineMode = false }) {
     const { activityId, stepId } = useParams();
     const navigate = useNavigate();
@@ -181,6 +181,24 @@ function LearningContentEditorPage({ initialData, onSave, isOfflineMode = false 
                         <div className="bg-info-bg p-4 rounded-lg border border-info/30 text-info text-sm">
                             <strong>Nota:</strong> O texto escrito ao lado aparecerá formatado abaixo do vídeo na visão do aluno.
                         </div>
+
+                        <div className="lg:sticky lg:top-8 space-y-4">
+                            <h3 className="text-xl font-bold text-secondary-text flex items-center gap-2">
+                                <FaEye /> Visualização do Aluno
+                            </h3>
+
+                            <div className="border-2 border-dashed border-border-color rounded-2xl overflow-hidden bg-secondary-bg shadow-2xl overflow-y-auto max-h-[80vh]">
+                                <LearningMaterialViewer
+                                    content={contentConfig}
+                                    onComplete={() => { }} // Função dummy para o preview
+                                />
+                            </div>
+
+                            <p className="text-xs text-secondary-text text-center italic">
+                                Esta é uma prévia em tempo real de como o conteúdo aparecerá no tabuleiro.
+                            </p>
+                        </div>
+
                     </div>
                 </div>
 
