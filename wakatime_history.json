@@ -8680,5 +8680,284 @@
         "editors": [],
         "operating_systems": [],
         "categories": []
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2025-12-30T03:00:00Z",
+            "end": "2025-12-31T02:59:59Z",
+            "date": "2025-12-30",
+            "text": "Tue Dec 30th 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [],
+        "languages": [],
+        "dependencies": [],
+        "machines": [],
+        "editors": [],
+        "operating_systems": [],
+        "categories": []
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2025-12-31T03:00:00Z",
+            "end": "2026-01-01T02:59:59Z",
+            "date": "2025-12-31",
+            "text": "Wed Dec 31st 2025",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [],
+        "languages": [],
+        "dependencies": [],
+        "machines": [],
+        "editors": [],
+        "operating_systems": [],
+        "categories": []
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2026-01-01T03:00:00Z",
+            "end": "2026-01-02T02:59:59Z",
+            "date": "2026-01-01",
+            "text": "Thu Jan 1st 2026",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [],
+        "languages": [],
+        "dependencies": [],
+        "machines": [],
+        "editors": [],
+        "operating_systems": [],
+        "categories": []
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 4,
+            "total_seconds": 258.648,
+            "digital": "0:04",
+            "decimal": "0.07",
+            "text": "4 mins",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2026-01-02T03:00:00Z",
+            "end": "2026-01-03T02:59:59Z",
+            "date": "2026-01-02",
+            "text": "Fri Jan 2nd 2026",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [
+            {
+                "name": "portal-gamificacao-educacional",
+                "total_seconds": 258.648,
+                "ai_additions": 0,
+                "ai_deletions": 0,
+                "human_additions": 0,
+                "human_deletions": 0,
+                "color": null,
+                "digital": "0:04:18",
+                "decimal": "0.07",
+                "text": "4 mins",
+                "hours": 0,
+                "minutes": 4,
+                "seconds": 18,
+                "percent": 100.0
+            }
+        ],
+        "languages": [
+            {
+                "name": "JavaScript",
+                "total_seconds": 258.648,
+                "digital": "0:04:18",
+                "decimal": "0.07",
+                "text": "4 mins",
+                "hours": 0,
+                "minutes": 4,
+                "seconds": 18,
+                "percent": 100.0
+            }
+        ],
+        "dependencies": [
+            {
+                "name": "fa",
+                "total_seconds": 258.648,
+                "digital": "0:04:18",
+                "decimal": "0.07",
+                "text": "4 mins",
+                "hours": 0,
+                "minutes": 4,
+                "seconds": 18,
+                "percent": 14.72
+            },
+            {
+                "name": "AuthContext",
+                "total_seconds": 258.648,
+                "digital": "0:04:18",
+                "decimal": "0.07",
+                "text": "4 mins",
+                "hours": 0,
+                "minutes": 4,
+                "seconds": 18,
+                "percent": 14.72
+            },
+            {
+                "name": "react-router-dom",
+                "total_seconds": 258.648,
+                "digital": "0:04:18",
+                "decimal": "0.07",
+                "text": "4 mins",
+                "hours": 0,
+                "minutes": 4,
+                "seconds": 18,
+                "percent": 14.72
+            },
+            {
+                "name": "Authorization",
+                "total_seconds": 258.648,
+                "digital": "0:04:18",
+                "decimal": "0.07",
+                "text": "4 mins",
+                "hours": 0,
+                "minutes": 4,
+                "seconds": 18,
+                "percent": 14.72
+            },
+            {
+                "name": "react",
+                "total_seconds": 258.648,
+                "digital": "0:04:18",
+                "decimal": "0.07",
+                "text": "4 mins",
+                "hours": 0,
+                "minutes": 4,
+                "seconds": 18,
+                "percent": 14.72
+            },
+            {
+                "name": "POST",
+                "total_seconds": 154.509,
+                "digital": "0:02:34",
+                "decimal": "0.03",
+                "text": "2 mins",
+                "hours": 0,
+                "minutes": 2,
+                "seconds": 34,
+                "percent": 8.8
+            },
+            {
+                "name": "DELETE",
+                "total_seconds": 154.509,
+                "digital": "0:02:34",
+                "decimal": "0.03",
+                "text": "2 mins",
+                "hours": 0,
+                "minutes": 2,
+                "seconds": 34,
+                "percent": 8.8
+            },
+            {
+                "name": "PUT",
+                "total_seconds": 154.509,
+                "digital": "0:02:34",
+                "decimal": "0.03",
+                "text": "2 mins",
+                "hours": 0,
+                "minutes": 2,
+                "seconds": 34,
+                "percent": 8.8
+            }
+        ],
+        "machines": [
+            {
+                "name": "julio-Inspiron-5421",
+                "total_seconds": 258.648,
+                "machine_name_id": "d6fbe179-108e-48a5-aaf7-ca6a56c80220",
+                "digital": "0:04:18",
+                "decimal": "0.07",
+                "text": "4 mins",
+                "hours": 0,
+                "minutes": 4,
+                "seconds": 18,
+                "percent": 100.0
+            }
+        ],
+        "editors": [
+            {
+                "name": "VS Code",
+                "total_seconds": 258.648,
+                "digital": "0:04:18",
+                "decimal": "0.07",
+                "text": "4 mins",
+                "hours": 0,
+                "minutes": 4,
+                "seconds": 18,
+                "percent": 100.0
+            }
+        ],
+        "operating_systems": [
+            {
+                "name": "Linux",
+                "total_seconds": 258.648,
+                "digital": "0:04:18",
+                "decimal": "0.07",
+                "text": "4 mins",
+                "hours": 0,
+                "minutes": 4,
+                "seconds": 18,
+                "percent": 100.0
+            }
+        ],
+        "categories": [
+            {
+                "name": "Coding",
+                "total_seconds": 258.648,
+                "digital": "0:04:18",
+                "decimal": "0.07",
+                "text": "4 mins",
+                "hours": 0,
+                "minutes": 4,
+                "seconds": 18,
+                "percent": 100.0
+            }
+        ]
     }
 ]

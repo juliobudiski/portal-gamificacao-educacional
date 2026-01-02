@@ -3,13 +3,22 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FaPlus, FaSave, FaTrash, FaEdit, FaQuestion, FaList, FaCheck, FaClock, FaStar, FaGem } from 'react-icons/fa';
 import { useActivityCreation } from '../context/ActivityCreationContext';
+import ConfirmationModal from '../components/ConfirmationModal';
+
 function QuizEditorPage({ initialData, onSave, onCancel, isOfflineMode = false }) {
     const { activityId, stepId } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
     const location = useLocation();
     const { activityData } = useActivityCreation();
-
+    // Estado para controlar o Modal de Confirmação
+    const [modalConfig, setModalConfig] = useState({
+        isOpen: false,
+        type: null,      // 'student' ou 'activity'
+        itemId: null,    // ID do item a ser removido
+        title: '',
+        message: ''
+    });
     // INICIALIZAÇÃO DO ESTADO: Prioriza initialData (Modo Offline), depois tenta Contexto, depois array vazio
     const [questions, setQuestions] = useState(() => {
         if (initialData) return initialData;
@@ -103,11 +112,21 @@ function QuizEditorPage({ initialData, onSave, onCancel, isOfflineMode = false }
         setCurrentQuestion(questions[index]);
     };
 
-    const handleDeleteQuestion = (index) => {
-        if (window.confirm('Tem certeza que deseja remover esta pergunta?')) {
-            const updatedQuestions = questions.filter((_, i) => i !== index);
-            setQuestions(updatedQuestions);
-        }
+    const handleDeleteQuestionClick = (index) => {
+        setModalConfig({
+            isOpen: true,
+            type: 'delete_question',
+            itemId: index, // Aqui o ID é o índice do array
+            title: 'Remover Pergunta',
+            message: 'Tem certeza que deseja remover esta pergunta do quiz?'
+        });
+    };
+
+    const executeDeleteQuestion = () => {
+        const indexToDelete = modalConfig.itemId;
+        const updatedQuestions = questions.filter((_, i) => i !== indexToDelete);
+        setQuestions(updatedQuestions);
+        setModalConfig({ ...modalConfig, isOpen: false });
     };
 
     const handleSaveChanges = async () => {
@@ -331,7 +350,7 @@ function QuizEditorPage({ initialData, onSave, onCancel, isOfflineMode = false }
                                         </button>
                                         {/* Botão Excluir: Estilo Ghost Vermelho */}
                                         <button
-                                            onClick={() => handleDeleteQuestion(index)}
+                                            onClick={() => handleDeleteQuestionClick(index)}
                                             className="p-3 text-danger hover:bg-danger-bg rounded-xl transition-colors duration-300"
                                             aria-label="Excluir pergunta"
                                         >
@@ -368,6 +387,15 @@ function QuizEditorPage({ initialData, onSave, onCancel, isOfflineMode = false }
                     </div>
                 )}
             </div>
+            <ConfirmationModal
+                isOpen={modalConfig.isOpen}
+                onClose={() => setModalConfig({ ...modalConfig, isOpen: false })}
+                onConfirm={executeDeleteQuestion}
+                title={modalConfig.title}
+                message={modalConfig.message}
+                isDangerous={true}
+                confirmText="Remover"
+            />
         </div>
     );
 }

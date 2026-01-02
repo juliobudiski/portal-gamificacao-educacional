@@ -30,12 +30,14 @@ function NotFoundPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-primary-text overflow-hidden relative">
-      {/* Elementos de fundo decorativos */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-purple-500 rounded-full filter blur-3xl opacity-20 animate-pulse-slow" style={parallaxStyle}></div>
-        <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-teal-500 rounded-full filter blur-3xl opacity-20 animate-pulse-medium" style={parallaxStyle}></div>
-        <div className="absolute top-1/3 right-1/3 w-32 h-32 bg-yellow-500 rounded-full filter blur-3xl opacity-20 animate-pulse-fast" style={parallaxStyle}></div>
+    // Fundo alterado para primary-bg para respeitar o tema
+    <div className="min-h-screen bg-primary-bg text-primary-text overflow-hidden relative transition-colors duration-300">
+
+      {/* Elementos de fundo decorativos - Agora usam cores semânticas */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-accent-purple/20 rounded-full filter blur-3xl animate-pulse-slow" style={parallaxStyle}></div>
+        <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-accent-teal/20 rounded-full filter blur-3xl animate-pulse-medium" style={parallaxStyle}></div>
+        <div className="absolute top-1/3 right-1/3 w-32 h-32 bg-accent-yellow/20 rounded-full filter blur-3xl animate-pulse-fast" style={parallaxStyle}></div>
       </div>
 
       {/* Conteúdo principal */}
@@ -55,7 +57,8 @@ function NotFoundPage() {
             transition={{ repeat: Infinity, duration: 4 }}
             className="text-8xl mb-6 flex justify-center"
           >
-            <FaExclamationTriangle className="text-yellow-400" />
+            {/* Ícone amarelo semântico */}
+            <FaExclamationTriangle className="text-accent-yellow" />
           </motion.div>
 
           {/* Número 404 com efeito */}
@@ -63,7 +66,8 @@ function NotFoundPage() {
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.7 }}
-            className="text-9xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-red-500 mb-4"
+            // Gradiente semântico: Amarelo para Danger (Vermelho)
+            className="text-9xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-accent-yellow to-danger mb-4"
           >
             404
           </motion.h1>
@@ -73,7 +77,7 @@ function NotFoundPage() {
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.7 }}
-            className="text-3xl md:text-4xl font-bold mb-6"
+            className="text-3xl md:text-4xl font-bold mb-6 text-primary-text"
           >
             Oops! Página não encontrada
           </motion.h2>
@@ -88,33 +92,33 @@ function NotFoundPage() {
             Parece que você se perdeu no universo da gamificação. A página que você está procurando pode ter sido movida ou não existe mais.
           </motion.p>
 
-          {/* Ícones flutuantes */}
+          {/* Ícones flutuantes - Cores semânticas aplicadas */}
           <div className="flex justify-center space-x-6 mb-10">
             <motion.div
               animate={{ y: [0, -15, 0] }}
               transition={{ repeat: Infinity, duration: 3, delay: 0 }}
-              className="text-3xl text-purple-400"
+              className="text-3xl text-accent-purple"
             >
               <FaRobot />
             </motion.div>
             <motion.div
               animate={{ y: [0, -15, 0] }}
               transition={{ repeat: Infinity, duration: 3, delay: 0.5 }}
-              className="text-3xl text-teal-400"
+              className="text-3xl text-accent-teal"
             >
               <FaRocket />
             </motion.div>
             <motion.div
               animate={{ y: [0, -15, 0] }}
               transition={{ repeat: Infinity, duration: 3, delay: 1 }}
-              className="text-3xl text-yellow-400"
+              className="text-3xl text-accent-yellow"
             >
               <FaGamepad />
             </motion.div>
             <motion.div
               animate={{ y: [0, -15, 0] }}
               transition={{ repeat: Infinity, duration: 3, delay: 1.5 }}
-              className="text-3xl text-red-400"
+              className="text-3xl text-danger"
             >
               <FaRegSadTear />
             </motion.div>
@@ -133,7 +137,8 @@ function NotFoundPage() {
                 whileTap={{ scale: 0.95 }}
                 onHoverStart={() => setIsHovered(true)}
                 onHoverEnd={() => setIsHovered(false)}
-                className="flex items-center justify-center px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg font-semibold shadow-lg hover:shadow-purple-500/30 transition-all duration-300"
+                // Botão Gradiente: Roxo -> Azul (Info). Texto adaptável.
+                className="flex items-center justify-center px-6 py-3 bg-gradient-to-r from-accent-purple to-info text-white dark:text-primary-bg rounded-lg font-semibold shadow-lg hover:shadow-accent-purple/30 transition-all duration-300"
               >
                 <FaHome className="mr-2" />
                 Voltar ao Início
@@ -142,7 +147,8 @@ function NotFoundPage() {
 
             <button
               onClick={() => window.history.back()}
-              className="flex items-center justify-center px-6 py-3 bg-border-color rounded-lg font-semibold hover:bg-hover-bg-color transition-colors duration-300"
+              // Botão Secundário: Secondary BG com borda e hover para primary
+              className="flex items-center justify-center px-6 py-3 bg-secondary-bg text-primary-text border border-[var(--border-color)] rounded-lg font-semibold hover:bg-primary-bg transition-colors duration-300"
             >
               <FaSearch className="mr-2" />
               Voltar à Página Anterior
@@ -163,7 +169,7 @@ function NotFoundPage() {
         {/* Efeito de partículas no cursor */}
         {isHovered && (
           <motion.div
-            className="absolute w-4 h-4 bg-yellow-400 rounded-full pointer-events-none"
+            className="absolute w-4 h-4 bg-accent-yellow rounded-full pointer-events-none"
             style={{
               left: mousePosition.x - 8,
               top: mousePosition.y - 8,
@@ -174,8 +180,6 @@ function NotFoundPage() {
           />
         )}
       </div>
-
-
     </div>
   );
 }

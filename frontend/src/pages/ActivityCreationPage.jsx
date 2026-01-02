@@ -94,7 +94,14 @@ function ActivityCreationPage({ existingActivity }) {
   // (Todos os useEffects e handlers como handleNext, handlePrevious, handleInputChange, etc. são mantidos)
 
 
+  // Rola para o topo sempre que a etapa mudar, com um leve atraso para garantir a renderização
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      window.scrollTo({ top: 111, left: 0, behavior: 'smooth' });
+    }, 100); // 100ms é imperceptível para o olho, mas suficiente para o React terminar o render
 
+    return () => clearTimeout(timer); // Limpa o timer se o componente desmontar rápido
+  }, [currentStep]);
 
   useEffect(() => {
 
@@ -601,6 +608,7 @@ function ActivityCreationPage({ existingActivity }) {
 
     if (currentStep < totalSteps) {
       setCurrentStep(prevStep => prevStep + 1);
+
     } else {
       sessionStorage.removeItem('TUTORIAL_MODE');
       stopTour();
@@ -686,6 +694,7 @@ function ActivityCreationPage({ existingActivity }) {
         to_step: currentStep - 1
       });
       setCurrentStep(prevStep => prevStep - 1);
+
     }
   };
 

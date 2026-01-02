@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { FaUserPlus, FaBook, FaTrash, FaSave, FaUsers, FaTasks, FaPlusCircle } from 'react-icons/fa';
-
+import ConfirmationModal from '../components/ConfirmationModal';
 function ClassEditPage() {
     const { class_id } = useParams();
     const { user } = useContext(AuthContext);
@@ -25,43 +25,61 @@ function ClassEditPage() {
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(true);
 
+    // Estado para controlar o Modal de Confirmação
+    const [modalConfig, setModalConfig] = useState({
+        isOpen: false,
+        type: null,      // 'student' ou 'activity'
+        itemId: null,    // ID do item a ser removido
+        title: '',
+        message: ''
+    });
+
     // --- BUSCA DE DADOS ---
     // Função memoizada para buscar todos os dados de gerenciamento da turma de uma só vez.
-    const fetchManagementData = useCallback(async () => {
+    const fetchManagementData = useCallback(async (showLoading = true) => {
         if (!user?.token) return;
-        setIsLoading(true);
-        // Limpa mensagens antigas ao recarregar
-        setMessage('');
-        setError('');
+
+        // Só ativa o loading global se for solicitado (ex: primeira carga)
+        if (showLoading) setIsLoading(true);
+
+        // Se for loading silencioso, limpamos mensagens para garantir UI limpa
+        if (showLoading) {
+            setMessage('');
+            setError('');
+        }
+
         try {
-            // Usa a nova rota otimizada do backend
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/classes/${class_id}/management-details`, {
                 headers: { 'Authorization': `Bearer ${user.token}` },
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data.message || 'Erro ao carregar dados da turma.');
 
-            // Preenche todos os estados com os dados recebidos
             setClassDetails(data.details);
             setStudents(data.students);
             setAssignedActivities(data.assigned_activities);
             setAvailableActivities(data.available_activities);
 
-            // Pré-seleciona a primeira atividade disponível no dropdown, se houver
-            if (data.available_activities.length > 0) {
-                setActivityToAdd(data.available_activities[0].id);
-            }
+            // Lógica de pré-seleção CORRIGIDA
+            // Usamos o prev (estado anterior) para decidir, sem depender da variável externa
+            setActivityToAdd(prev => {
+                // Se já existe um valor selecionado pelo usuário, MANTÉM ele.
+                if (prev) return prev;
+                // Se não tem nada selecionado e existem atividades, pega a primeira.
+                if (data.available_activities.length > 0) return data.available_activities[0].id;
+                return '';
+            });
 
         } catch (err) {
             setError(err.message);
         } finally {
-            setIsLoading(false);
+            if (showLoading) setIsLoading(false);
         }
     }, [class_id, user?.token]);
 
     // Efeito para carregar os dados quando o componente monta
     useEffect(() => {
-        fetchManagementData();
+        fetchManagementData(true);
     }, [fetchManagementData]);
 
     // --- FUNÇÕES DE MANIPULAÇÃO (HANDLERS) ---
@@ -70,6 +88,8 @@ function ClassEditPage() {
     const handleApiCall = async (url, method, body, successMessage) => {
         setMessage('');
         setError('');
+        // Opcional: Crie um estado local setIsSubmitting(true) para desabilitar botões enquanto salva
+
         try {
             const response = await fetch(url, {
                 method,
@@ -80,7 +100,10 @@ function ClassEditPage() {
             if (!response.ok) throw new Error(data.message || 'Ocorreu um erro na operação.');
 
             setMessage(successMessage);
-            fetchManagementData(); // Recarrega todos os dados da página para refletir a mudança
+
+            // AQUI ESTÁ O PULO DO GATO: false = Não mostra spinner tela cheia
+            await fetchManagementData(false);
+
             return true;
         } catch (err) {
             setError(err.message);
@@ -116,39 +139,64 @@ function ClassEditPage() {
         });
     };
 
-    // Handler para remover um aluno da turma
-    const handleRemoveStudent = (studentId) => {
-        if (window.confirm("Tem certeza que deseja remover este aluno da turma?")) {
-            handleApiCall(
-                `${import.meta.env.VITE_API_URL}/api/classes/${class_id}/students/${studentId}`,
-                'DELETE',
-                null,
-                'Aluno removido com sucesso!'
-            );
-        }
+    // Handler para disparar a remoção de ALUNO (Abre o modal)
+    const handleRemoveStudentClick = (studentId) => {
+        setModalConfig({
+            isOpen: true,
+            type: 'student',
+            itemId: studentId,
+            title: 'Remover Aluno',
+            message: 'Tem certeza que deseja remover este aluno da turma? Ele perderá o acesso às atividades desta classe.'
+        });
     };
 
     // Handler para associar uma atividade existente à turma
-    const handleAddActivity = () => {
+    const handleAddActivity = (e) => { // Receba o evento 'e'
+        if (e) e.preventDefault(); // Previne comportamento padrão (refresh/scroll)
+
         if (!activityToAdd) return setError("Por favor, selecione uma atividade para associar.");
+
         handleApiCall(
             `${import.meta.env.VITE_API_URL}/api/classes/${class_id}/activities`,
             'POST',
-            { activity_id: parseInt(activityToAdd) }, // Garante que o ID é um número
+            { activity_id: parseInt(activityToAdd) },
             'Atividade associada com sucesso!'
         );
     };
 
-    // Handler para desassociar uma atividade da turma
-    const handleRemoveActivity = (activityId) => {
-        if (window.confirm("Tem certeza que deseja desassociar esta atividade? Ela não será excluída, apenas removida desta turma.")) {
+    // Handler para disparar a remoção de ATIVIDADE (Abre o modal)
+    const handleRemoveActivityClick = (activityId) => {
+        setModalConfig({
+            isOpen: true,
+            type: 'activity',
+            itemId: activityId,
+            title: 'Desassociar Atividade',
+            message: 'Tem certeza que deseja desassociar esta atividade? Ela não será excluída do sistema, apenas removida desta turma.'
+        });
+    };
+
+    // Esta função é chamada SOMENTE quando o usuário clica em "Confirmar" no modal
+    const executeRemoval = () => {
+        const { type, itemId } = modalConfig;
+
+        if (type === 'student') {
             handleApiCall(
-                `${import.meta.env.VITE_API_URL}/api/classes/${class_id}/activities/${activityId}`,
+                `${import.meta.env.VITE_API_URL}/api/classes/${class_id}/students/${itemId}`,
+                'DELETE',
+                null,
+                'Aluno removido com sucesso!'
+            );
+        } else if (type === 'activity') {
+            handleApiCall(
+                `${import.meta.env.VITE_API_URL}/api/classes/${class_id}/activities/${itemId}`,
                 'DELETE',
                 null,
                 'Atividade desassociada com sucesso!'
             );
         }
+
+        // Fecha o modal (embora o componente ConfirmationModal já chame o close, limpamos o state aqui)
+        setModalConfig({ ...modalConfig, isOpen: false });
     };
 
     // --- RENDERIZAÇÃO ---
@@ -239,7 +287,7 @@ function ClassEditPage() {
                                     <p className="font-medium">{s.name}</p>
                                     <p className="text-sm text-secondary-text">{s.email}</p>
                                 </div>
-                                <button onClick={() => handleRemoveStudent(s.id)} className="text-red-400 hover:text-red-600 p-2 rounded-full hover:bg-red-500/10"><FaTrash /></button>
+                                <button onClick={() => handleRemoveStudentClick(s.id)} className="text-red-400 hover:text-red-600 p-2 rounded-full hover:bg-red-500/10"><FaTrash /></button>
                             </li>
                         ))}
                     </ul>
@@ -255,18 +303,32 @@ function ClassEditPage() {
                                 <option key={a.id} value={a.id}>{a.title}</option>
                             ))}
                         </select>
-                        <button onClick={handleAddActivity} className="bg-green-600 hover:bg-green-700 text-primary-text font-bold py-2 px-4 rounded-lg flex items-center justify-center"><FaPlusCircle className="mr-2" /> Associar Atividade</button>
+                        <button type="button" onClick={handleAddActivity} className="bg-green-600 hover:bg-green-700 text-primary-text font-bold py-2 px-4 rounded-lg flex items-center justify-center"><FaPlusCircle className="mr-2" /> Associar Atividade</button>
                     </div>
                     <ul className="space-y-2 max-h-60 overflow-y-auto pr-2">
                         {assignedActivities.map(a => (
                             <li key={a.id} className="flex justify-between items-center bg-primary-bg p-3 rounded-lg">
                                 <p className="font-medium">{a.title}</p>
-                                <button onClick={() => handleRemoveActivity(a.id)} className="text-red-400 hover:text-red-600 p-2 rounded-full hover:bg-red-500/10"><FaTrash /></button>
+                                <button
+                                    type="button" // Adicione isto por segurança
+                                    onClick={() => handleRemoveActivityClick(a.id)}
+                                    className="text-red-400 hover:text-red-600 p-2 rounded-full hover:bg-red-500/10"
+                                ><FaTrash /></button>
                             </li>
                         ))}
                     </ul>
                 </div>
             </div>
+            {/* MODAL DE CONFIRMAÇÃO */}
+            <ConfirmationModal
+                isOpen={modalConfig.isOpen}
+                onClose={() => setModalConfig({ ...modalConfig, isOpen: false })}
+                onConfirm={executeRemoval}
+                title={modalConfig.title}
+                message={modalConfig.message}
+                isDangerous={true} // Deixa o topo vermelho para indicar perigo/remoção
+                confirmText="Sim, remover"
+            />
         </div>
     );
 }

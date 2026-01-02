@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useContext, useMemo } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import { ChevronUp, ChevronDown, Pencil, Trash2, Save, X } from 'lucide-react';
-
+import ConfirmationModal from '../../components/ConfirmationModal';
 /**
  * Componente UserManagementPage
  * * Página dedicada para listar, buscar, ordenar e gerenciar todos os usuários da plataforma.
@@ -16,7 +16,14 @@ function UserManagementPage() {
   const [editingUserId, setEditingUserId] = useState(null);
   const [editFormData, setEditFormData] = useState({});
   const { user } = useContext(AuthContext);
-
+  // Estado para controlar o Modal de Confirmação
+  const [modalConfig, setModalConfig] = useState({
+    isOpen: false,
+    type: null,      // 'student' ou 'activity'
+    itemId: null,    // ID do item a ser removido
+    title: '',
+    message: ''
+  });
   // Lógica de busca e carregamento de dados (similar à página de dashboard)
   useEffect(() => {
     const fetchUsers = async () => {
@@ -90,11 +97,22 @@ function UserManagementPage() {
     handleCancelEdit(); // Simula o salvamento
   };
 
-  const handleDeleteClick = async (userId, userName) => {
-    // A lógica de deletar permanece a mesma da sua AdminPage original
-    if (window.confirm(`Tem certeza que deseja deletar ${userName}?`)) {
-      alert(`Deletando usuário ${userId}... (Lógica a ser implementada)`);
-    }
+  const handleDeleteUserClick = (userId, userName) => {
+    setModalConfig({
+      isOpen: true,
+      type: 'delete_user',
+      itemId: userId,
+      title: 'Deletar Usuário',
+      message: `Tem certeza que deseja deletar o usuário ${userName}?`
+    });
+  };
+
+  const executeDeleteUser = async () => {
+    const userId = modalConfig.itemId;
+    // Coloque aqui sua lógica real de deleção (fetch DELETE...)
+    alert(`Simulando deleção do usuário ID: ${userId}`);
+
+    setModalConfig({ ...modalConfig, isOpen: false });
   };
 
 
@@ -149,7 +167,7 @@ function UserManagementPage() {
                       <td className="py-4 px-4 text-sm text-primary-text">{userItem.role}</td>
                       <td className="py-4 px-4 flex justify-end space-x-2">
                         <button onClick={() => handleEditClick(userItem)} className="p-2 hover:bg-yellow-500/20 rounded"><Pencil size={18} className="text-yellow-400" /></button>
-                        <button onClick={() => handleDeleteClick(userItem.id, userItem.name)} className="p-2 hover:bg-red-500/20 rounded"><Trash2 size={18} className="text-red-400" /></button>
+                        <button onClick={() => handleDeleteUserClick(userItem.id, userItem.name)} className="p-2 hover:bg-red-500/20 rounded"><Trash2 size={18} className="text-red-400" /></button>
                       </td>
                     </>
                   )}
@@ -159,6 +177,15 @@ function UserManagementPage() {
           </table>
         </div>
       </div>
+      <ConfirmationModal
+        isOpen={modalConfig.isOpen}
+        onClose={() => setModalConfig({ ...modalConfig, isOpen: false })}
+        onConfirm={executeDeleteUser}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        isDangerous={true}
+        confirmText="Deletar Usuário"
+      />
     </div>
   );
 }

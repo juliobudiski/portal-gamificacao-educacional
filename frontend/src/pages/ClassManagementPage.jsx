@@ -1,13 +1,20 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-
+import ConfirmationModal from '../components/ConfirmationModal';
 function ClassListPage() {
     const { user } = useContext(AuthContext); // Removido 'authToken' da desestruturação
     const [classes, setClasses] = useState([]);
     const [message, setMessage] = useState('');
     const [isLoading, setIsLoading] = useState(true);
-
+    // Estado para controlar o Modal de Confirmação
+    const [modalConfig, setModalConfig] = useState({
+        isOpen: false,
+        type: null,      // 'student' ou 'activity'
+        itemId: null,    // ID do item a ser removido
+        title: '',
+        message: ''
+    });
     // Log de montagem/desmontagem do componente
     useEffect(() => {
         console.log('[ClassListPage] Componente montado.');
@@ -68,12 +75,46 @@ function ClassListPage() {
         }
     }, [user?.token]); // Depende do user.token, não do authToken diretamente
 
-    const handleLeaveClass = async (classId) => {
-        console.log(`[ClassListPage] Tentando sair da turma ID: ${classId}`);
-        if (!window.confirm('Tem certeza que deseja sair desta turma?')) {
-            console.log('[ClassListPage] Ação de sair da turma cancelada pelo usuário.');
-            return;
+    // 1. Ação do Botão: Apenas abre o modal
+    const handleLeaveClassClick = (classId) => {
+        setModalConfig({
+            isOpen: true,
+            type: 'leave',
+            itemId: classId,
+            title: 'Sair da Turma',
+            message: 'Tem certeza que deseja sair desta turma? Você perderá acesso às atividades atribuídas.'
+        });
+    };
+
+    // 2. Ação do Botão: Apenas abre o modal
+    const handleDeleteClassClick = (classId) => {
+        setModalConfig({
+            isOpen: true,
+            type: 'delete',
+            itemId: classId,
+            title: 'Deletar Turma',
+            message: 'Tem certeza que deseja deletar esta turma? Esta ação é irreversível e desassociará todas as atividades e matrículas.'
+        });
+    };
+
+    // 3. Executor Central: Chamado pelo botão "Confirmar" do Modal
+    const executeModalAction = async () => {
+        const { type, itemId } = modalConfig;
+
+        // Fecha o modal imediatamente
+        setModalConfig({ ...modalConfig, isOpen: false });
+
+        // Redireciona para a lógica correta baseada no tipo
+        if (type === 'leave') {
+            await performLeaveClass(itemId);
+        } else if (type === 'delete') {
+            await performDeleteClass(itemId);
         }
+    };
+
+    const performLeaveClass = async (classId) => {
+        console.log(`[ClassListPage] Tentando sair da turma ID: ${classId}`);
+
         setMessage('');
         setIsLoading(true);
 
@@ -113,12 +154,9 @@ function ClassListPage() {
         }
     };
 
-    const handleDeleteClass = async (classId) => {
+    const performDeleteClass = async (classId) => {
         console.log(`[ClassListPage] Tentando deletar a turma ID: ${classId}`);
-        if (!window.confirm('Tem certeza que deseja deletar esta turma? Esta ação é irreversível e desassociará todas as atividades e matrículas.')) {
-            console.log('[ClassListPage] Ação de deletar turma cancelada pelo usuário.');
-            return;
-        }
+
         setMessage('');
         setIsLoading(true);
 
@@ -225,7 +263,7 @@ function ClassListPage() {
                                             Editar
                                         </Link>
                                         <button
-                                            onClick={() => handleDeleteClass(cls.id)}
+                                            onClick={() => handleDeleteClassClick(cls.id)}
                                             // Botão Deletar usando danger
                                             className="flex-1 bg-danger hover:bg-danger/90 text-white font-bold py-2 px-4 rounded-lg text-sm transition-all duration-200 shadow-md hover:shadow-lg"
                                         >
@@ -238,7 +276,7 @@ function ClassListPage() {
                             {user?.role === 'aluno' && (
                                 <div className="mt-5">
                                     <button
-                                        onClick={() => handleLeaveClass(cls.id)}
+                                        onClick={() => handleLeaveClassClick(cls.id)}
                                         // Botão Sair usando danger
                                         className="w-full bg-danger hover:bg-danger/90 text-white font-bold py-2 px-4 rounded-lg text-sm transition-all duration-200 shadow-md hover:shadow-lg"
                                     >
@@ -252,6 +290,16 @@ function ClassListPage() {
             ) : (
                 <p className="text-center text-secondary-text">Nenhuma turma encontrada.</p>
             )}
+            <ConfirmationModal
+                isOpen={modalConfig.isOpen}
+                onClose={() => setModalConfig({ ...modalConfig, isOpen: false })}
+                onConfirm={executeModalAction}
+                title={modalConfig.title}
+                message={modalConfig.message}
+                isDangerous={true} // Ambos são destrutivos
+                confirmText={modalConfig.type === 'delete' ? 'Deletar' : 'Sair'}
+            />
+
         </div>
     );
 }

@@ -3,7 +3,7 @@ import { AuthContext } from '../context/AuthContext';
 import ActivityCard from '../components/activity/ActivityCard';
 import { FaUserEdit, FaGlobeAmericas, FaPlusCircle, FaSearch, FaFilter, FaTrash } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
-
+import ConfirmationModal from '../components/ConfirmationModal';
 function ActivityBankPage() {
     const { user } = useContext(AuthContext);
     const [myActivities, setMyActivities] = useState([]);
@@ -16,7 +16,14 @@ function ActivityBankPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [isSearching, setIsSearching] = useState(false);
     const [assignmentFilter, setAssignmentFilter] = useState('all'); // Opções: 'all', 'assigned', 'unassigned'
-
+    // Estado para controlar o Modal de Confirmação
+    const [modalConfig, setModalConfig] = useState({
+        isOpen: false,
+        type: null,      // 'student' ou 'activity'
+        itemId: null,    // ID do item a ser removido
+        title: '',
+        message: ''
+    });
     // --- FUNÇÃO PARA BUSCAR ATIVIDADES (AGORA REUTILIZÁVEL) ---
     const fetchActivities = useCallback(async (currentSearchTerm) => {
         if (!user?.token) return;
@@ -65,8 +72,54 @@ function ActivityBankPage() {
         return () => clearTimeout(delayDebounceFn);
     }, [searchTerm, fetchActivities]); // Roda quando o termo de busca ou a função de fetch mudam
 
-    const handleCopyActivity = async (activityId) => {
-        if (!window.confirm("Tem certeza que deseja criar uma cópia editável desta atividade?")) return;
+    // Handlers de Clique (UI)
+    const handleCopyClick = (activityId) => {
+        setModalConfig({
+            isOpen: true,
+            type: 'copy',
+            itemId: activityId,
+            title: 'Copiar Atividade',
+            message: 'Deseja criar uma cópia editável desta atividade em "Minhas Atividades"?'
+        });
+    };
+
+    const handleDeleteClick = (activityId) => {
+        setModalConfig({
+            isOpen: true,
+            type: 'delete_single',
+            itemId: activityId,
+            title: 'Deletar Atividade',
+            message: 'Tem certeza que deseja deletar esta atividade? Esta ação é irreversível.'
+        });
+    };
+
+    const handleBulkDeleteClick = () => {
+        if (selectedActivities.length === 0) return;
+        setModalConfig({
+            isOpen: true,
+            type: 'delete_bulk',
+            itemId: null, // Não precisa de ID único aqui
+            title: 'Deletar Múltiplas Atividades',
+            message: `Tem certeza que deseja deletar ${selectedActivities.length} atividades selecionadas? Esta ação é irreversível.`
+        });
+    };
+
+    // Executor Central
+    const executeModalAction = async () => {
+        setModalConfig({ ...modalConfig, isOpen: false });
+        const { type, itemId } = modalConfig;
+
+        if (type === 'copy') {
+            await performCopyActivity(itemId);
+        } else if (type === 'delete_single') {
+            await performDeleteActivity(itemId);
+        } else if (type === 'delete_bulk') {
+            await performBulkDelete();
+        }
+    };
+
+    const performCopyActivity = async (activityId) => {
+
         setMessage('Copiando atividade...');
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${activityId}/copy`, {
@@ -86,8 +139,8 @@ function ActivityBankPage() {
         }
     };
 
-    const handleDeleteActivity = async (activityId) => {
-        if (!window.confirm("Tem certeza que deseja deletar esta atividade? Esta ação é irreversível.")) return;
+    const performDeleteActivity = async (activityId) => {
+
         setMessage('Deletando atividade...');
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${activityId}`, {
@@ -142,11 +195,9 @@ function ActivityBankPage() {
         }
     };
 
-    const handleBulkDelete = async () => {
+    const performBulkDelete = async () => {
         const count = selectedActivities.length;
         if (count === 0) return;
-
-        if (!window.confirm(`Tem certeza que deseja deletar ${count} atividades? Esta ação é irreversível.`)) return;
 
         setMessage('Deletando atividades selecionadas...');
         try {
@@ -256,7 +307,7 @@ function ActivityBankPage() {
                                 {selectedActivities.length > 0 && (
                                     <div className="sticky top-4 z-20 bg-blue-900/80 backdrop-blur-sm border border-blue-500 text-primary-text rounded-xl shadow-lg p-4 mb-6 flex justify-between items-center animate-fadeIn">
                                         <span className="font-bold">{selectedActivities.length} atividade(s) selecionada(s)</span>
-                                        <button onClick={handleBulkDelete} className="flex items-center gap-2 py-2 px-4 bg-red-600 hover:bg-red-700 rounded-lg font-bold transition-transform transform hover:scale-105">
+                                        <button onClick={handleBulkDeleteClick} className="flex items-center gap-2 py-2 px-4 bg-red-600 hover:bg-red-700 rounded-lg font-bold transition-transform transform hover:scale-105">
                                             <FaTrash />
                                             Apagar Selecionadas
                                         </button>
@@ -270,8 +321,8 @@ function ActivityBankPage() {
                                                 key={activity.id}
                                                 activity={activity}
                                                 isOwner={true}
-                                                onDelete={handleDeleteActivity}
-                                                onCopy={handleCopyActivity}
+                                                onDelete={handleDeleteClick}
+                                                onCopy={handleCopyClick}
                                                 // ===== 5. PASSANDO PROPS DE SELEÇÃO =====
                                                 isSelected={selectedActivities.includes(activity.id)}
                                                 onSelect={handleSelectActivity}
@@ -287,7 +338,7 @@ function ActivityBankPage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {publicActivities.length > 0 ? (
                                     publicActivities.map(activity => (
-                                        <ActivityCard key={activity.id} activity={activity} isOwner={false} onCopy={handleCopyActivity} />
+                                        <ActivityCard key={activity.id} activity={activity} isOwner={false} onCopy={handleCopyClick} />
                                     ))
                                 ) : (
                                     <p className="col-span-full text-center py-10 text-secondary-text">Nenhuma atividade pública disponível no momento.</p>
@@ -297,6 +348,15 @@ function ActivityBankPage() {
                     </div>
                 )}
             </div>
+            <ConfirmationModal
+                isOpen={modalConfig.isOpen}
+                onClose={() => setModalConfig({ ...modalConfig, isOpen: false })}
+                onConfirm={executeModalAction}
+                title={modalConfig.title}
+                message={modalConfig.message}
+                isDangerous={modalConfig.type !== 'copy'} // Copy é verde, Delete é vermelho
+                confirmText={modalConfig.type === 'copy' ? 'Sim, Copiar' : 'Sim, Deletar'}
+            />
         </div>
     );
 }

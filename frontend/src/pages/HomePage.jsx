@@ -1,8 +1,17 @@
 // frontend/src/pages/Homepage.jsx
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 
 function Homepage() {
+  const { user } = useContext(AuthContext);
+  // Função auxiliar para decidir para onde o botão "Dashboard" leva
+  const getDashboardPath = () => {
+    if (user?.role === 'professor') return '/professor/dashboard';
+    if (user?.role === 'admin') return '/admin/dashboard';
+    return '/aluno/dashboard';
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-primary-bg text-primary-text p-6 relative overflow-hidden">
       {/* Elementos decorativos */}
@@ -24,28 +33,44 @@ function Homepage() {
           </p>
         </div>
 
-        {/* Botões de ação com feedback visual */}
+        {/* Botões de ação com Lógica de Autenticação */}
         <div className="flex flex-col sm:flex-row justify-center gap-6 mb-16">
+          {user ? (
+            /* --- VISÃO PARA USUÁRIO LOGADO --- */
+            <Link
+              to={getDashboardPath()}
+              className="relative bg-gradient-to-r from-accent-teal to-green-600 px-10 py-5 rounded-xl shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 group"
+            >
+              <span className="text-xl font-bold text-white flex items-center gap-3">
+                Ir para o Dashboard
+                <svg className="w-6 h-6 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </span>
+            </Link>
+          ) : (
+            /* --- VISÃO PARA VISITANTE (Código Original) --- */
+            <>
+              <Link
+                to="/login"
+                className="relative group bg-secondary-bg px-8 py-4 rounded-xl shadow-lg border border-accent-teal transition-all duration-300 hover:border-accent-teal/60"
+              >
+                <span className="text-lg font-bold text-accent-teal transition-colors">
+                  Entrar
+                </span>
+                <div className="absolute inset-0 bg-accent-teal/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </Link>
 
-          <Link
-            to="/login"
-            className="relative group bg-secondary-bg px-8 py-4 rounded-xl shadow-lg border border-accent-teal transition-all duration-300 hover:border-accent-teal/60"
-          >
-            <span className="text-lg font-bold text-accent-teal transition-colors">
-              Entrar
-            </span>
-            {/* Efeito de brilho interno no hover */}
-            <div className="absolute inset-0 bg-accent-teal/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          </Link>
-
-          <Link
-            to="/cadastro"
-            className="relative bg-accent-yellow px-8 py-4 rounded-xl shadow-lg hover:shadow-xl hover:bg-accent-yellow/90 transition-all duration-300"
-          >
-            <span className="text-lg font-bold text-white dark:text-gray-900 transition-colors">
-              Cadastre-se
-            </span>
-          </Link>
+              <Link
+                to="/cadastro"
+                className="relative bg-accent-yellow px-8 py-4 rounded-xl shadow-lg hover:shadow-xl hover:bg-accent-yellow/90 transition-all duration-300"
+              >
+                <span className="text-lg font-bold text-white dark:text-gray-900 transition-colors">
+                  Cadastre-se
+                </span>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Seção de benefícios interativa */}
