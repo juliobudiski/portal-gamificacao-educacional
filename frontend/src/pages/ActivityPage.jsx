@@ -200,17 +200,36 @@ const ActivityPageContent = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-primary-bg text-primary-text relative">
+    // MUDANÇA 1: 'h-screen' em vez de 'min-h-screen' e 'overflow-hidden'
+    // Isso impede que a página inteira role, permitindo que apenas os painéis internos rolem.
+    <div className="flex h-screen w-full bg-primary-bg text-primary-text relative overflow-hidden">
 
+      {/* ÁREA PRINCIPAL */}
+      <main className="flex-1 flex flex-col h-full relative p-0 overflow-hidden">
 
-      <main className="flex-1 w-3/4 p-8">
-        <ActivityHeader />
-        {activity?.gamificationDesign && (
-          <GameBoardViewer>
-            <ViewRenderer />
-          </GameBoardViewer>
-        )}
+        {/* HEADER (Opcional): 
+           Se você quiser mostrar o título, descomente abaixo. 
+           Atualmente removi para dar foco total ao tabuleiro estilo "Imersivo".
+        */}
+        {/* <div className="absolute top-0 left-0 w-full z-20 p-6 pointer-events-none bg-gradient-to-b from-primary-bg/80 to-transparent">
+            <ActivityHeader />
+        </div> 
+        */}
+
+        {/* CONTAINER DO TABULEIRO (CORRIGIDO)
+           1. Removemos 'bg-secondary-bg', 'rounded', 'border' -> Adeus borda branca!
+           2. Adicionamos 'overflow-y-auto' -> Permite rolar o mapa verticalmente.
+           3. Adicionamos 'h-full w-full' -> Ocupa tudo.
+        */}
+        <div className="flex-grow relative w-full h-full overflow-y-auto overflow-x-hidden custom-scrollbar">
+          {activity?.gamificationDesign && (
+            <GameBoardViewer>
+              <ViewRenderer />
+            </GameBoardViewer>
+          )}
+        </div>
       </main>
+
       {showStatsModal && userProgress && <StatsModal stats={userProgress.stats} onClose={handleCloseStats} />}
     </div>
   );

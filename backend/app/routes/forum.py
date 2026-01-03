@@ -5,6 +5,8 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime
 from ..models import db, ForumTopic, ForumPost, User, Activity, ForumCategory, TopicLike, PostLike
 from sqlalchemy import case
+from ..utils.text_sanitizer import clean_text, censor_text
+from ..services.ai_service import ai_service
 
 forum_bp = Blueprint('forum', __name__)
 # --- FUNÇÃO AUXILIAR PARA CRIAR TÓPICOS PADRÃO ---
@@ -48,32 +50,58 @@ def get_category_topics(category_id):
     topics = ForumTopic.query.filter_by(category_id=category_id).order_by(ForumTopic.created_at.desc()).all()
     return jsonify([topic.to_dict() for topic in topics]), 200
 
+# --- CRIAÇÃO DE TÓPICO (COM FILTRO) ---
 @forum_bp.route('/category/<int:category_id>/topics', methods=['POST', 'OPTIONS'])
 @jwt_required()
 def create_topic_in_category(category_id):
-    """Cria um novo tópico dentro de uma categoria (qualquer aluno pode criar)."""
+    """Cria um novo tópico com Sanitização e Moderação."""
     if request.method == 'OPTIONS': return jsonify({'message': 'CORS preflight'}), 200
     user_id = get_jwt_identity()
     data = request.get_json()
 
-    title = data.get('title')
-    body = data.get('body')
-    if not title or not body:
+    raw_title = data.get('title')
+    raw_body = data.get('body')
+    
+    # VALIDAÇÃO DE TAMANHO
+    if len(raw_title) > 150:
+        return jsonify({"message": "O título é muito longo (máx 150 caracteres)."}), 400
+    if len(raw_body) > 5000:
+        return jsonify({"message": "O texto é muito longo (máx 5000 caracteres)."}), 400
+    
+    if not raw_title or not raw_body:
         return jsonify({"message": "Título e corpo são obrigatórios."}), 400
+
+    # 1. Sanitização de HTML (Segurança Técnica - XSS)
+    safe_title = clean_text(raw_title, context='forum')
+    safe_body = clean_text(raw_body, context='forum')
+
+    # 2. Censura de Palavrões (UX - Substitui por $@#!$)
+    censored_title = censor_text(safe_title)
+    censored_body = censor_text(safe_body)
+
+    # 3. Moderação por IA (Segurança Comportamental - Discurso de Ódio)
+    # Verifica o texto JÁ censurado. Se a IA detectar ódio no que sobrou, bloqueia.
+    full_text_analysis = f"TÍTULO: {censored_title}\n\nCONTEÚDO: {censored_body}"
+    ai_check = ai_service.moderate_content(full_text_analysis)
+    if not ai_check.get('safe', True):
+        return jsonify({
+            "message": "Seu tópico não pôde ser publicado.",
+            "reason": ai_check.get('reason', 'Violação das diretrizes da comunidade.'),
+            "detail": "Discurso de ódio ou assédio detectado."
+        }), 400
     
     new_topic = ForumTopic(
-        title=title, 
-        body=body, 
+        title=censored_title, 
+        body=censored_body, 
         category_id=category_id, 
         author_id=user_id,
-        activity_id=ForumCategory.query.get(category_id).activity_id # Garante a consistência
+        activity_id=ForumCategory.query.get(category_id).activity_id
     )
     db.session.add(new_topic)
     db.session.commit()
     return jsonify(new_topic.to_dict()), 201
 
-# --- ROTAS PARA UM TÓPICO ESPECÍFICO E SUAS RESPOSTAS ---
-
+# --- ROTA DETALHES DO TÓPICO ---
 @forum_bp.route('/topics/<int:topic_id>', methods=['GET', 'OPTIONS'])
 @jwt_required()
 def get_topic_details(topic_id):
@@ -101,18 +129,38 @@ def get_topic_details(topic_id):
     
     return jsonify(topic_details), 200
 
+# --- CRIAÇÃO DE POST (RESPOSTA) (COM FILTRO) ---
 @forum_bp.route('/topics/<int:topic_id>/posts', methods=['POST', 'OPTIONS'])
 @jwt_required()
 def create_post(topic_id):
-    """Adiciona uma nova resposta a um tópico."""
+    """Adiciona uma nova resposta a um tópico com Sanitização."""
     if request.method == 'OPTIONS': return jsonify({'message': 'CORS preflight'}), 200
     user_id = get_jwt_identity()
     data = request.get_json()
-    body = data.get('body')
-    if not body:
+    raw_body = data.get('body')
+    # VALIDAÇÃO DE TAMANHO
+    if len(raw_body) > 5000:
+        return jsonify({"message": "A resposta é muito longa (máx 5000 caracteres)."}), 400
+    if not raw_body:
         return jsonify({"message": "O corpo da resposta é obrigatório."}), 400
+
+    # 1. Sanitização HTML
+    safe_body = clean_text(raw_body, context='forum')
+
+    # 2. Censura Palavrões
+    censored_body = censor_text(safe_body)
+
+    # 3. IA Check (Opcional: Verifica apenas se o texto for longo o suficiente para ter contexto)
+    if len(censored_body) > 10:
+        ai_check = ai_service.moderate_content(censored_body)
+        if not ai_check.get('safe', True):
+            return jsonify({
+                "message": "Sua resposta não foi publicada.",
+                "reason": ai_check.get('reason', 'Conteúdo ofensivo detectado.'),
+            }), 400
+
     topic = ForumTopic.query.get_or_404(topic_id)
-    new_post = ForumPost(body=body, topic_id=topic.id, author_id=user_id)
+    new_post = ForumPost(body=censored_body, topic_id=topic.id, author_id=user_id)
     db.session.add(new_post)
     db.session.commit()
     return jsonify(new_post.to_dict()), 201

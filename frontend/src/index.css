@@ -43,6 +43,17 @@
   /* Fundo Azul Claro */
 }
 
+/* Ajuste crítico para permitir rolagem nas páginas normais */
+html,
+body {
+  min-height: 100%;
+  /* Permite crescer */
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  /* Evita scroll horizontal indesejado */
+}
+
 /* Definição de variáveis de cor para o tema escuro.
 */
 html.dark {
@@ -90,12 +101,20 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Garante que a aplicação ocupe toda a tela */
-#root,
+#root {
+  min-height: 100%;
+  /* O root acompanha o corpo */
+  display: flex;
+  flex-direction: column;
+}
+
+html,
 body,
-html {
+#root {
   height: 100%;
   width: 100%;
   margin: 0;
   padding: 0;
+  overflow: hidden;
+  /* Remove a barra de rolagem do navegador */
 }

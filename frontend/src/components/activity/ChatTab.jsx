@@ -125,19 +125,37 @@ const ChatTab = ({ onReturn }) => {
         )}
       </div>
 
-      <form onSubmit={handleSendMessage} className="flex-shrink-0 flex gap-2">
-        <input
-          type="text"
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Digite sua mensagem..."
-          className="flex-grow p-2 rounded-lg focus:outline-none 
-             bg-white dark:bg-gray-700 
-             text-gray-900 dark:text-gray-100 
-             placeholder-gray-500 dark:placeholder-gray-400"
-          disabled={isLoading || !!error} // Desabilita o input durante o loading ou em caso de erro
-        />
-        <button type="submit" className="bg-teal-600 px-4 py-2 rounded-lg font-bold" disabled={isLoading || !!error}>Enviar</button>
+      <form onSubmit={handleSendMessage} className="flex-shrink-0 flex flex-col gap-2">
+        {/* CONTADOR DE CARACTERES */}
+        <div className="flex justify-between text-xs px-1">
+          <span className="text-secondary-text">
+            {newMessage.length}/500
+          </span>
+          {newMessage.length >= 500 && <span className="text-red-400">Limite atingido!</span>}
+        </div>
+
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Digite sua mensagem..."
+            maxLength={500} // <--- O NAVEGADOR BLOQUEIA AQUI
+            className={`flex-grow p-2 rounded-lg focus:outline-none 
+                bg-white dark:bg-gray-700 
+                text-gray-900 dark:text-gray-100 
+                placeholder-gray-500 dark:placeholder-gray-400
+                ${newMessage.length >= 500 ? 'border border-red-500' : ''}`}
+            disabled={isLoading || !!error}
+          />
+          <button
+            type="submit"
+            className="bg-teal-600 px-4 py-2 rounded-lg font-bold hover:bg-teal-500 transition-colors disabled:opacity-50"
+            disabled={isLoading || !!error || !newMessage.trim()}
+          >
+            Enviar
+          </button>
+        </div>
       </form>
     </div>
   );

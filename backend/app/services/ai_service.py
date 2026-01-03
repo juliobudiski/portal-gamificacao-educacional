@@ -586,5 +586,73 @@ class AIService:
                     break
                 
         return content
+    
+    
+    def moderate_content(self, text: str) -> Dict:
+        """
+        @desc Analisa texto em busca de discurso de ódio usando hierarquia de modelos.
+        Itera sobre a lista de modelos (fallback) até conseguir uma resposta válida.
+        """
+        # Validação rápida para economizar tokens
+        if len(text) < 5:
+            return {"safe": True, "reason": "Texto muito curto", "category": "none"}
+
+        prompt = f"""
+        ATUE COMO: Um Moderador de Conteúdo para uma plataforma educacional (jovens e adolescentes).
+        
+        TAREFA: Analise o texto abaixo e classifique se ele viola regras de segurança.
+        
+        TEXTO DO USUÁRIO: "{text}"
+        
+        CATEGORIAS DE VIOLAÇÃO (Nível Estrito):
+        1. Hate Speech (Racismo, Homofobia, Xenofobia, Sexismo).
+        2. Harassment (Bullying, Ataques Pessoais, Ameaças).
+        3. Sexual (Conteúdo explícito ou sugestivo).
+        4. Violence (Incentivo à violência ou automutilação).
+        
+        SAÍDA ESPERADA (JSON):
+        {{
+            "safe": boolean, // True se puder ser publicado, False se violar regras.
+            "category": "string", // Categoria da violação ou "none".
+            "reason": "string" // Explicação curta (PT-BR) para o usuário.
+        }}
+        """
+
+        # Loop de Fallback: Tenta cada modelo na hierarquia
+        for model_name in self.MODEL_HIERARCHY:
+            try:
+                # Configura o modelo da vez
+                model = genai.GenerativeModel(
+                    model_name, 
+                    generation_config={"response_mime_type": "application/json"}
+                )
+                
+                logger.info(f"🛡️ Verificando segurança com modelo: {model_name}...")
+                response = model.generate_content(prompt)
+                
+                # Tenta parsear o JSON
+                result = json.loads(response.text)
+                
+                # Validação estrutural da resposta da IA
+                if 'safe' not in result:
+                    logger.warning(f"⚠️ Modelo {model_name} retornou JSON inválido (sem chave 'safe'). Tentando próximo...")
+                    continue # Força o loop a tentar o próximo modelo
+                
+                # SUCESSO: Retorna o resultado imediatamente
+                return result
+
+            except Exception as e:
+                # Se for erro de cota (429) ou erro interno da API, loga e tenta o próximo
+                logger.warning(f"⚠️ Falha na moderação com {model_name}: {str(e)}. Tentando fallback...")
+                time.sleep(1) # Breve pausa para não espamar a API em caso de erro sistêmico
+                continue
+
+        # Se o loop terminar e nenhum modelo responder:
+        logger.error("❌ Todos os modelos de moderação falharam.")
+        return {
+            "safe": False, 
+            "reason": "O sistema de verificação está indisponível no momento. Tente novamente mais tarde.", 
+            "category": "system_error"
+        }
 
 ai_service = AIService()

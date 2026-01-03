@@ -89,6 +89,8 @@ const GeolocationPrompt = ({ onAccept }) => (
   </div>
 );
 
+
+
 // Validação de PropTypes para GeolocationPrompt
 GeolocationPrompt.propTypes = {
   onAccept: PropTypes.func.isRequired,
@@ -109,13 +111,116 @@ function AppContent() {
   const [isStudentMenuOpen, setIsStudentMenuOpen] = useState(false);
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
   const locationRequestedRef = useRef(false);
+  const checkRunRef = useRef(false);
   const [loadingAuth, setLoadingAuth] = useState(true); // Começa true até a verificação inicial
   debugLog('AppContent: Renderizando...', { user, isAuthenticated, loadingAuth });
+
+  // --- LÓGICA DE LAYOUT IMERSIVO SIMPLIFICADA ---
+  // Verifica APENAS se é uma página de atividade jogável (/activities/ID)
+  const isActivityPage = /^\/activities\/\d+/.test(location.pathname);
+
   const closeAllMenus = () => {
     setIsProfileMenuOpen(false);
     setIsTeacherMenuOpen(false);
     setIsStudentMenuOpen(false);
   };
+
+  // --- LÓGICA INTELIGENTE DE GEOLOCALIZAÇÃO ---
+
+  const checkAndRequestLocation = useCallback(async () => {
+    if (!("geolocation" in navigator)) return;
+
+    try {
+      // 1. Verifica o status atual da permissão no navegador
+      // Nota: Alguns navegadores antigos podem não suportar 'permissions.query', então usamos try/catch
+      let permissionState = 'prompt'; // Default
+
+      if (navigator.permissions && navigator.permissions.query) {
+        const result = await navigator.permissions.query({ name: 'geolocation' });
+        permissionState = result.state; // 'granted', 'denied', ou 'prompt'
+      }
+
+      // CENÁRIO A: Já permitido ('granted')
+      // Não mostra modal nenhum, apenas coleta os dados silenciosamente para os logs.
+      if (permissionState === 'granted') {
+        debugLog('[Geo] Permissão já concedida. Coletando silenciosamente.');
+        navigator.geolocation.getCurrentPosition(
+          (position) => logEvent("location_auto_logged", {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          }),
+          (error) => console.warn("[Geo] Erro ao coletar mesmo com permissão:", error)
+        );
+        return;
+      }
+
+      // CENÁRIO B: Negado ('denied')
+      // O usuário bloqueou no navegador. Não adianta mostrar modal.
+      if (permissionState === 'denied') {
+        debugLog('[Geo] Permissão negada pelo navegador. Ignorando.');
+        return;
+      }
+
+      // CENÁRIO C: Perguntar ('prompt')
+      // Aqui aplicamos a regra de "Não incomodar sempre"
+      if (permissionState === 'prompt') {
+        const lastPromptDate = localStorage.getItem('geo_last_prompt_date');
+        const now = new Date().getTime();
+        const COOLDOWN_DAYS = 3; // Só pergunta a cada 3 dias se ele não aceitar
+        const COOLDOWN_MS = COOLDOWN_DAYS * 24 * 60 * 60 * 1000;
+
+        if (lastPromptDate && (now - parseInt(lastPromptDate) < COOLDOWN_MS)) {
+          debugLog('[Geo] Em período de silêncio (Cooldown). Não mostrar modal.');
+          return;
+        }
+
+        // Se passou do tempo ou nunca viu, mostra o modal
+        debugLog('[Geo] Mostrando modal de solicitação.');
+        setShowLocationPrompt(true);
+
+        // Atualiza a data da última exibição imediatamente para não mostrar de novo no próximo F5
+        localStorage.setItem('geo_last_prompt_date', now.toString());
+      }
+
+    } catch (error) {
+      console.error("[Geo] Erro ao verificar permissões:", error);
+      // Fallback: Se a API de permissões falhar, não mostramos nada para evitar bugs
+    }
+  }, [logEvent]);
+
+  // Função chamada quando o usuário clica em "Entendi, Continuar" no Modal
+  const handleUserAcceptedPrompt = useCallback(() => {
+    setShowLocationPrompt(false);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        logEvent("location_access_granted", {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
+        });
+        // Se ele aceitou, o navegador muda para 'granted' automaticamente para as próximas vezes
+      },
+      (error) => {
+        logEvent("location_access_denied_by_user", { code: error.code, message: error.message });
+      }
+    );
+  }, [logEvent]);
+
+  // UseEffect que dispara a verificação ao logar
+  useEffect(() => {
+    if (user && !checkRunRef.current) {
+      checkRunRef.current = true;
+      // Pequeno delay para não competir com renderização inicial
+      setTimeout(() => {
+        checkAndRequestLocation();
+      }, 2000);
+    }
+
+    if (!isAuthenticated) {
+      checkRunRef.current = false;
+      setShowLocationPrompt(false);
+    }
+  }, [user, isAuthenticated, checkAndRequestLocation]);
 
   // Handler inteligente para Professores
   const handleTeacherTour = (type) => {
@@ -166,19 +271,31 @@ function AppContent() {
   }, [logEvent]);
 
   useEffect(() => {
+    // Só roda se tiver usuário e ainda não tiver rodado nesta sessão
     if (user && !locationRequestedRef.current) {
-      debugLog('AppContent (useEffect [user]): Usuário autenticado. Agendando prompt de localização.');
+      debugLog('AppContent (useEffect [user]): Usuário autenticado. Iniciando verificação de geolocalização.');
+
       locationRequestedRef.current = true;
+
+      // Pequeno delay para não competir com renderização inicial
       setTimeout(() => {
-        debugLog('AppContent (useEffect [user] - setTimeout): Mostrando prompt de localização.');
-        setShowLocationPrompt(true);
+        debugLog('AppContent: Chamando checkAndRequestLocation()...');
+
+        // --- AQUI ESTÁ A MUDANÇA ---
+        // Antes estava: setShowLocationPrompt(true);
+        // Agora chamamos a função que verifica se já tem permissão antes de mostrar
+        checkAndRequestLocation();
+
       }, 2000);
     }
+
     if (!isAuthenticated) {
-      debugLog('AppContent (useEffect [user]): Usuário não autenticado. Resetando flag do prompt de localização.');
+      debugLog('AppContent: Usuário deslogou. Resetando flags.');
+      checkRunRef.current = false; // Resetar refs
       locationRequestedRef.current = false;
+      setShowLocationPrompt(false);
     }
-  }, [user, isAuthenticated]);
+  }, [user, isAuthenticated, checkAndRequestLocation]);
 
   const handleRestartTour = () => {
     debugLog('[AppContent] handleRestartTour: Reiniciando tour.');
@@ -201,13 +318,14 @@ function AppContent() {
   return (
     // TODO: Considerar extrair o Header para um componente separado para melhorar a legibilidade.
     // Usa a variável de cor do CSS para o fundo
-    <div className="min-h-screen w-full bg-primary-bg p-4 pt-4 flex flex-col">
+    <div className={`w-full bg-primary-bg flex flex-col transition-colors duration-300 h-full ${isActivityPage ? 'overflow-hidden' : 'overflow-y-auto custom-scrollbar'
+      }`}>
       <ScrollToTop />
       {/* Adiciona o botão de toggle do tema aqui */}
       <ThemeToggleButton />
-
+      {showLocationPrompt && <GeolocationPrompt onAccept={handleUserAcceptedPrompt} />}
       {/* O cabeçalho já tem cores que funcionam bem em ambos os temas */}
-      <header className="w-full max-w-6xl mx-auto bg-header-bg text-primary-text p-4 rounded-xl shadow-2xl border-t-4 border-accent-yellow z-50">
+      <header className={`flex-shrink-0 w-full max-w-6xl mx-auto bg-header-bg text-primary-text p-4 rounded-xl shadow-2xl border-t-4 border-accent-yellow z-50 transition-all duration-300 ${isActivityPage ? 'mt-0 mb-2 rounded-t-none' : 'mt-4 mb-4'}`}>
         <nav className="flex flex-col sm:flex-row justify-between items-center">
           <Link
             to="/"
@@ -457,7 +575,12 @@ function AppContent() {
       </header>
 
       {/* Usa as variáveis de cor para o container principal e o texto */}
-      <main className="flex-grow w-full max-w-6xl mx-auto bg-secondary-bg text-primary-text p-6 sm:p-8 rounded-xl shadow-xl border-2 border-accent-teal/30 mb-8">
+      <main className={`flex-grow mx-auto transition-all duration-300 
+        ${isActivityPage
+          ? 'w-full p-0 bg-transparent flex flex-col overflow-hidden' // MODO ATIVIDADE
+          : 'w-full max-w-6xl bg-secondary-bg text-primary-text p-6 sm:p-8 rounded-xl shadow-xl border-2 border-accent-teal/30 mb-8' // MODO PADRÃO
+        }
+      `}>
         <Routes>
           {/* As rotas permanecem as mesmas */}
           <Route path="/" element={<HomePage />} />
@@ -519,7 +642,7 @@ function AppContent() {
         </Routes>
       </main>
 
-      <Footer />
+      {!isActivityPage && <Footer />}
     </div>
   );
 }
