@@ -41,21 +41,30 @@
 /* === Container Principal do Mapa === */
 .rpg-map-board {
     width: 100%;
-    max-width: 900px;
+    max-width: 100%;
     margin: auto;
     padding: 1rem;
     font-family: var(--font-family-main);
-    background-image: url('/board/background_board.webp');
+
+    /* --- MUDANÇA AQUI: Usar Variável --- */
+    background-image: var(--theme-board-bg);
     background-size: cover;
     background-position: center;
+    background-repeat: no-repeat;
+
     border-radius: 2rem;
     border: 30px solid;
-    border-image: url('/board/tab_border.webp') 30 stretch;
+
+    /* --- MUDANÇA AQUI: Usar Variável --- */
+    border-image: var(--theme-board-border) 30 stretch;
+
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(0, 0, 0, 0.5);
     position: relative;
     display: flex;
     flex-direction: column;
     background-clip: padding-box;
+    transition: background-image 0.3s ease, border-image 0.3s ease;
+    /* Suaviza a troca */
 }
 
 /* === Área da Trilha de Progressão === */
@@ -174,34 +183,27 @@
 /* === Hub da Vila (sem alterações significativas) === */
 /* === Hub da Vila - LAYOUT GRID COM CONTROLE DE LINHAS === */
 .hub-village {
-    /* Layout Flexbox para alinhar os ícones */
     display: flex;
     justify-content: center;
-    /* Centraliza os ícones na linha */
     align-items: center;
     flex-wrap: wrap;
-    /* ESSA É A PROPRIEDADE CHAVE! Permite quebrar a linha. */
     gap: 1.5rem;
-    /* Espaçamento generoso entre os ícones */
     padding: 1.2rem 2rem;
     margin-top: 1rem;
 
-    /* Fundo e Bordas para Efeito de Deck de Madeira */
-    background-image: url('/board/wood_plank_bg.webp');
+    /* --- MUDANÇA AQUI: Usar Variável --- */
+    background-image: var(--theme-hub-bg);
     background-size: cover;
     border-radius: 1.5rem;
 
-    /* Borda de imagem para um visual mais rico */
     border: 15px solid;
-    border-image: url('/board/wood_border_hub.webp') 20 stretch;
+    /* --- MUDANÇA AQUI: Usar Variável --- */
+    border-image: var(--theme-hub-border) 20 stretch;
 
-    /* Sombras para dar profundidade e destacar do tabuleiro */
-    box-shadow:
-        0 10px 30px rgba(0, 0, 0, 0.7),
-        inset 0 0 15px rgba(0, 0, 0, 0.6);
-
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), inset 0 0 15px rgba(0, 0, 0, 0.6);
     position: relative;
     z-index: 20;
+    transition: background-image 0.3s ease, border-image 0.3s ease;
 }
 
 

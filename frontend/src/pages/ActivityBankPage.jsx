@@ -231,7 +231,7 @@ function ActivityBankPage() {
 
     return (
         <div className="min-h-screen bg-primary-bg p-4 md:p-8 text-primary-text animate-fade-in">
-            <div className="max-w-7xl mx-auto">
+            <div className="max-w-full mx-auto">
                 {/* Cabeçalho */}
                 <div className="flex flex-col md:flex-row justify-between items-center mb-8">
                     <h1 className="text-3xl font-bold bg-gradient-to-r from-accent-yellow to-accent-teal bg-clip-text text-transparent mb-4 md:mb-0">

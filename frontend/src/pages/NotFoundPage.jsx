@@ -87,7 +87,7 @@ function NotFoundPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.7 }}
-            className="text-xl text-secondary-text mb-8 max-w-2xl mx-auto"
+            className="text-xl text-secondary-text mb-8 max-w-full mx-auto"
           >
             Parece que você se perdeu no universo da gamificação. A página que você está procurando pode ter sido movida ou não existe mais.
           </motion.p>

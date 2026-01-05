@@ -108,6 +108,7 @@ body {
   flex-direction: column;
 }
 
+/*
 html,
 body,
 #root {
@@ -116,5 +117,21 @@ body,
   margin: 0;
   padding: 0;
   overflow: hidden;
-  /* Remove a barra de rolagem do navegador */
+   Remove a barra de rolagem do navegador 
+}/*
+
+/* --- SUBSTITUA POR ISSO (Comportamento Web Padrão) --- */
+html,
+body {
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  /* Evita scroll lateral, mas permite vertical */
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }

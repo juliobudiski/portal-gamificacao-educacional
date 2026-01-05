@@ -92,7 +92,7 @@ function LearningContentEditorPage({ initialData, onSave, isOfflineMode = false 
 
     return (
         <div className="min-h-screen bg-primary-bg text-primary-text p-4 md:p-8">
-            <div className="max-w-5xl mx-auto">
+            <div className="max-w-full mx-auto">
                 {/* Cabeçalho */}
                 <div className="flex items-center gap-3 mb-8">
                     <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-3 rounded-xl">

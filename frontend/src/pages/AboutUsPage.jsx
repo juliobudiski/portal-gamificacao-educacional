@@ -69,12 +69,12 @@ function AboutUsPage() {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-4 sm:p-6">
+    <div className="w-full max-w-full mx-auto p-4 sm:p-6">
       <div className="text-center mb-12 mt-8">
         <h1 className="text-4xl md:text-5xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-[#ffbd30] to-[#69e8cb]">
           Sobre o Portal
         </h1>
-        <p className="text-xl text-secondary-text dark:text-secondary-text max-w-3xl mx-auto">
+        <p className="text-xl text-secondary-text dark:text-secondary-text max-w-full mx-auto">
           Transformando a educação através da gamificação e engajamento
         </p>
       </div>
@@ -204,7 +204,7 @@ function AboutUsPage() {
       <div className="bg-gradient-to-r from-[#ffbd30]/10 to-[#69e8cb]/10 p-8 rounded-2xl border-2 border-[#9570d9]/30 text-center mb-8">
         <Heart className="w-12 h-12 mx-auto text-[#ff6b6b] mb-4" />
         <h2 className="text-3xl font-bold mb-4 dark:text-primary-text">Junte-se a Nossa Comunidade</h2>
-        <p className="text-xl text-secondary-text dark:text-secondary-text max-w-3xl mx-auto mb-6">
+        <p className="text-xl text-secondary-text dark:text-secondary-text max-w-full mx-auto mb-6">
           Faça parte desta revolução educacional que já transforma a vida de milhares de professores e alunos.
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4">

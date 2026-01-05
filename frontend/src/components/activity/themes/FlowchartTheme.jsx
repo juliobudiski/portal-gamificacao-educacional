@@ -1,12 +1,48 @@
 import React, { useRef, useLayoutEffect, useState, useMemo } from 'react';
 import { useActivity } from '../../../context/ActivityContext';
-import { elementConfig } from '../GameBoardConfig'; // Usamos apenas para os NOMES
+import GameHUD from '../GameHUD';
 
 // 1. IMPORTAR OS ÍCONES "CLEAN"
 import {
-    FaTrophy, FaGift, FaSyncAlt, FaGem, FaUsers, FaCoins, FaShoppingCart,
+    FaTrophy, FaGift, FaSyncAlt, FaGem, FaUsers, FaCoins, FaShoppingCart, FaLock,
     FaIdBadge, FaComments, FaPaintBrush, FaBookOpen, FaQuestionCircle, FaStar
 } from 'react-icons/fa';
+
+
+// --- CONFIGURAÇÃO VISUAL (Design System Local) ---
+const THEME_COLORS = {
+    path: {
+        bg: "stroke-gray-300 dark:stroke-gray-700",
+        fill: "stroke-blue-500 dark:stroke-blue-400", // Cor da "energia" fluindo
+    },
+    node: {
+        locked: {
+            fill: "fill-gray-200 dark:fill-gray-800",
+            stroke: "stroke-gray-400 dark:stroke-gray-600",
+            icon: "text-gray-400 dark:text-gray-600"
+        },
+        active: {
+            fill: "fill-white dark:fill-gray-900",
+            stroke: "stroke-blue-500 dark:stroke-blue-400",
+            icon: "text-blue-600 dark:text-blue-400"
+        },
+        completed: {
+            fill: "fill-green-100 dark:fill-green-900/30",
+            stroke: "stroke-green-500 dark:stroke-green-400",
+            icon: "text-green-600 dark:text-green-400"
+        },
+        mission: { // Especial
+            fill: "fill-yellow-100 dark:fill-yellow-900/30",
+            stroke: "stroke-yellow-500",
+            icon: "text-yellow-600"
+        },
+        final: { // Especial
+            fill: "fill-purple-100 dark:fill-purple-900/30",
+            stroke: "stroke-purple-500",
+            icon: "text-purple-600"
+        }
+    }
+};
 
 // --- FUNÇÕES AUXILIARES (Sem alteração) ---
 
@@ -97,7 +133,9 @@ const FlowchartTheme = ({ children }) => {
         hubElementsToRender,
         handleHubIconClick,
         handleFinalRewardClick,
-        finalRewardStatus
+        finalRewardStatus,
+        assets,
+        userProgress
     } = useActivity();
 
     const boardRef = useRef(null);
@@ -132,7 +170,7 @@ const FlowchartTheme = ({ children }) => {
                 id: missionElement.id,
                 type: 'mission',
                 // Pega o nome do config global
-                content: { title: elementConfig.hub.mission.name },
+                content: { title: assets?.hub?.mission?.name || "Missão" },
                 isMandatory: true
             });
         }
@@ -145,13 +183,13 @@ const FlowchartTheme = ({ children }) => {
             allNodes.push({
                 id: finalRewardElement.id,
                 type: 'final_reward',
-                content: { title: elementConfig.hub.final_reward.name },
+                content: { title: assets?.hub?.final_reward?.name || assets?.path?.final_reward?.name || "Fim" },
                 isMandatory: true
             });
         }
 
         return allNodes;
-    }, [gamificationDesign, hubElementsToRender]); // Depende do design E dos elementos do hub
+    }, [gamificationDesign, hubElementsToRender, assets]); // Depende do design E dos elementos do hub
 
 
     // 3. Hooks de Cálculo (agora usam fullPath)
@@ -179,100 +217,151 @@ const FlowchartTheme = ({ children }) => {
     }
 
     return (
-        <div className="flex w-full h-full bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden" style={{ minHeight: '600px' }}>
+        <div className="flex w-full h-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
 
-            {/* Coluna 1: O Fluxograma */}
-            <div className="flex-grow h-full p-4 overflow-auto" ref={boardRef}>
-                <div className="relative w-full" style={{ height: `${boardHeight}px` }}>
-                    {(boardWidth > 0) && (
-                        <svg width="100%" height="100%" viewBox={`0 0 ${boardWidth} ${boardHeight}`} className="absolute top-0 left-0">
-                            {/* Linha */}
-                            <path d={svgPath} className="stroke-gray-400 dark:stroke-gray-500" strokeWidth="3" fill="none" />
+            {/* Coluna 1: O Tabuleiro */}
+            <div className="relative flex-grow h-full flex flex-col">
+                <GameHUD progress={userProgress} />
 
-                            {/* Nós (Itera sobre fullPath) */}
-                            {fullPath.map((step, index) => {
-                                const position = stepCoordinates[index];
-                                if (!position) return null;
+                <div className="flex-grow h-full overflow-y-auto overflow-x-hidden custom-scrollbar" ref={boardRef}>
+                    {/* Background com Pattern (CSS Grid Dots) */}
+                    <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none"
+                        style={{ backgroundImage: 'radial-gradient(#64748b 1px, transparent 1px)', backgroundSize: '24px 24px' }}>
+                    </div>
 
-                                const { x, y } = position;
+                    <div className="relative w-full" style={{ height: `${boardHeight}px` }}>
+                        {boardWidth > 0 && (
+                            <svg width="100%" height="100%" viewBox={`0 0 ${boardWidth} ${boardHeight}`} className="absolute top-0 left-0">
+                                <defs>
+                                    {/* Sombra suave para os nós */}
+                                    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+                                        <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="#000" floodOpacity="0.15" />
+                                    </filter>
+                                    {/* Gradiente para a linha de progresso */}
+                                    <linearGradient id="pathGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" stopColor="#3B82F6" />
+                                        <stop offset="100%" stopColor="#8B5CF6" />
+                                    </linearGradient>
+                                </defs>
 
-                                // Pega o status (diferente para recompensa final)
-                                const status = (step.type === 'final_reward')
-                                    ? finalRewardStatus
-                                    : getStepStatus(step);
+                                {/* 1. Linha de Conexão (Fundo - Borda Grossa) */}
+                                <path d={svgPath} className={`${THEME_COLORS.path.bg}`} strokeWidth="12" fill="none" strokeLinecap="round" />
 
-                                const isClickable = status === 'active' || status === 'completed';
-                                const opacity = (status === 'locked') ? 0.4 : 1;
+                                {/* 2. Linha de Conexão (Frente - Mais fina e colorida) */}
+                                {/* Opcional: Usar strokeDasharray para animar o progresso se quiser complexidade extra */}
+                                <path d={svgPath} stroke="url(#pathGradient)" strokeWidth="4" fill="none" strokeLinecap="round" strokeOpacity="0.8" />
 
-                                const { shape, className } = getNodeStyle(step.type);
-                                const IconComponent = functionalIconMap[step.type] || functionalIconMap.default;
+                                {/* 3. Nós */}
+                                {fullPath.map((step, index) => {
+                                    const { x, y } = stepCoordinates[index] || { x: 0, y: 0 };
 
-                                // Define o click handler correto
-                                const handleClick = () => {
-                                    if (!isClickable) return;
-                                    if (step.type === 'final_reward') {
-                                        handleFinalRewardClick();
-                                    } else {
-                                        handleStepClick(step);
+                                    // Determinar Estado
+                                    let status = (step.type === 'final_reward') ? finalRewardStatus : getStepStatus(step);
+                                    const isLocked = status === 'locked';
+                                    const isActive = status === 'active';
+                                    const isCompleted = status === 'completed';
+
+                                    // Determinar Estilos baseados no tipo e estado
+                                    let styles = THEME_COLORS.node.locked;
+                                    if (isActive) styles = THEME_COLORS.node.active;
+                                    else if (isCompleted) styles = THEME_COLORS.node.completed;
+
+                                    // Override para tipos especiais se ativo/completo
+                                    if (!isLocked) {
+                                        if (step.type === 'mission') styles = THEME_COLORS.node.mission;
+                                        if (step.type === 'final_reward') styles = THEME_COLORS.node.final;
                                     }
-                                };
 
-                                return (
-                                    <g
-                                        key={step.id}
-                                        transform={`translate(${x}, ${y})`}
-                                        onClick={handleClick}
-                                        style={{ cursor: isClickable ? 'pointer' : 'default', opacity }}
-                                        className="transition-opacity"
-                                    >
-                                        {shape === 'circle' ? (
-                                            <circle cx="0" cy="0" r="30" className={`${className} ${isClickable ? 'hover:brightness-110' : ''} transition-all`} />
-                                        ) : (
-                                            <rect x="-45" y="-22.5" width="90" height="45" rx="8" className={`${className} ${isClickable ? 'hover:brightness-110' : ''} transition-all`} />
-                                        )}
+                                    const IconComponent = functionalIconMap[step.type] || functionalIconMap.default;
 
-                                        <foreignObject x="-20" y="-20" width="40" height="40">
-                                            <div className="w-full h-full flex items-center justify-center text-white text-2xl">
-                                                {IconComponent}
-                                            </div>
-                                        </foreignObject>
-                                    </g>
-                                );
-                            })}
-                        </svg>
-                    )}
+                                    const handleClick = () => {
+                                        if (isLocked) return;
+                                        step.type === 'final_reward' ? handleFinalRewardClick() : handleStepClick(step);
+                                    };
+
+                                    return (
+                                        <g
+                                            key={step.id}
+                                            transform={`translate(${x}, ${y})`}
+                                            onClick={handleClick}
+                                            style={{ cursor: isLocked ? 'not-allowed' : 'pointer' }}
+                                            className="transition-all duration-300"
+                                        >
+                                            {/* Efeito de "Pulsar" para o nó ativo */}
+                                            {isActive && (
+                                                <circle cx="0" cy="0" r="45" className="fill-blue-500/20 animate-ping" />
+                                            )}
+
+                                            {/* Container do Nó (Card com sombra) */}
+                                            <rect
+                                                x="-40" y="-40" width="80" height="80" rx="20"
+                                                className={`${styles.fill} ${styles.stroke} transition-all duration-300`}
+                                                strokeWidth={isActive ? 3 : 2}
+                                                filter={isActive || isCompleted ? "url(#shadow)" : ""}
+                                            />
+
+                                            {/* Ícone Centralizado */}
+                                            <foreignObject x="-25" y="-25" width="50" height="50">
+                                                <div className={`w-full h-full flex items-center justify-center text-3xl ${styles.icon}`}>
+                                                    {isLocked ? <FaLock className="opacity-50 text-2xl" /> :
+                                                        isCompleted && step.type !== 'final_reward' && step.type !== 'mission' ? <FaCheck /> :
+                                                            IconComponent}
+                                                </div>
+                                            </foreignObject>
+
+                                            {/* Badge/Label Flutuante (Opcional - exibe ID ou Ordem) */}
+                                            {!isLocked && (
+                                                <rect x="-15" y="45" width="30" height="16" rx="8" className="fill-slate-600 dark:fill-slate-700" />
+                                            )}
+                                            {!isLocked && (
+                                                <text x="0" y="56" textAnchor="middle" className="text-[10px] fill-white font-bold pointer-events-none">
+                                                    {index + 1}
+                                                </text>
+                                            )}
+                                        </g>
+                                    );
+                                })}
+                            </svg>
+                        )}
+                    </div>
                 </div>
             </div>
 
-            {/* Coluna 2: O Hub (sem alteração) */}
-            <div className="w-56 flex-shrink-0 bg-gray-100 dark:bg-gray-900 border-l border-gray-300 dark:border-gray-600 p-4 space-y-3 overflow-y-auto">
-                <h4 className="text-lg font-bold text-gray-800 dark:text-gray-200 text-center border-b border-gray-300 dark:border-gray-700 pb-2">
-                    Hub da Atividade
-                </h4>
-                {hubElements.map(element => {
-                    const config = elementConfig.hub[element.type];
-                    if (!config) return null;
+            {/* Coluna 2: Hub Flutuante (Estilo Glass) */}
+            <div className="w-20 md:w-64 flex-shrink-0 bg-white/80 dark:bg-slate-900/90 backdrop-blur-sm border-l border-slate-200 dark:border-slate-700 flex flex-col z-10 transition-all duration-300">
+                <div className="p-4 border-b border-slate-200 dark:border-slate-700">
+                    <h4 className="hidden md:block text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center">
+                        Menu
+                    </h4>
+                    <div className="md:hidden flex justify-center text-slate-500">
+                        <FaSyncAlt /> {/* Ícone simples para mobile */}
+                    </div>
+                </div>
 
-                    const IconComponent = functionalIconMap[element.type] || functionalIconMap.default;
+                <div className="p-3 space-y-3 overflow-y-auto custom-scrollbar">
+                    {hubElements.map(element => {
+                        const config = assets?.hub[element.type];
+                        if (!config) return null;
+                        const IconComponent = functionalIconMap[element.type] || functionalIconMap.default;
 
-                    return (
-                        <button
-                            key={element.id}
-                            onClick={() => handleHubIconClick(element.type)}
-                            className="w-full flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all text-left"
-                        >
-                            <div className="w-8 h-8 mr-3 flex items-center justify-center text-lg text-accent-teal dark:text-accent-teal">
-                                {IconComponent}
-                            </div>
-                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{config.name}</span>
-                        </button>
-                    );
-                })}
-                {hubElements.length === 0 && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400 text-center italic pt-4">
-                        Nenhum elemento de hub ativo.
-                    </p>
-                )}
+                        return (
+                            <button
+                                key={element.id}
+                                onClick={() => handleHubIconClick(element.type)}
+                                className="group w-full flex items-center p-3 rounded-xl transition-all duration-200 
+                                           hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:shadow-sm border border-transparent hover:border-blue-100 dark:hover:border-blue-800"
+                            >
+                                <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xl 
+                                                text-slate-600 dark:text-slate-400 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                                    {IconComponent}
+                                </div>
+                                <span className="hidden md:block ml-3 text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                                    {config.name}
+                                </span>
+                            </button>
+                        );
+                    })}
+                </div>
             </div>
         </div>
     );

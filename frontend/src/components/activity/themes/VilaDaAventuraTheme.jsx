@@ -1,5 +1,5 @@
 import React, { useRef, useState, useLayoutEffect, useMemo } from 'react';
-import { elementConfig } from '../GameBoardConfig';
+
 import '../GameBoard.css';
 import { useActivity } from '../../../context/ActivityContext';
 import GameHUD from '../GameHUD';
@@ -185,8 +185,23 @@ const VilaDaAventuraTheme = ({ children }) => {
         finalRewardStatus,
         hubElementsToRender,
         renderedDecorations,
-        userProgress
+        userProgress,
+        assets
     } = useActivity();
+
+    // === LÓGICA NOVA: PREPARAR ESTILOS DINÂMICOS ===
+    // Mapeamento baseado no array 'structural' do GameBoardConfig.js:
+    // [0]: Background Tabuleiro, [1]: Borda Hub, [2]: Background Hub, [3]: Borda Tabuleiro
+    const dynamicStyles = useMemo(() => {
+        if (!assets?.structural) return {};
+
+        return {
+            '--theme-board-bg': `url('${assets.structural[0]}')`,
+            '--theme-hub-border': `url('${assets.structural[1]}')`,
+            '--theme-hub-bg': `url('${assets.structural[2]}')`,
+            '--theme-board-border': `url('${assets.structural[3]}')`
+        };
+    }, [assets]);
 
     const boardRef = useRef(null);
     const [boardSize, setBoardSize] = useState(null);
@@ -218,8 +233,8 @@ const VilaDaAventuraTheme = ({ children }) => {
     }, [boardSize, missionNode, pathNodes, finalRewardNode]);
 
     const villageHubElements = hubElementsToRender.filter(el => el.type !== 'mission' && el.type !== 'final_reward');
-    const missionConfig = elementConfig.hub.mission;
-    const finalRewardConfig = elementConfig.hub.final_reward;
+    const missionConfig = assets?.hub?.mission;
+    const finalRewardConfig = assets?.path?.final_reward || assets?.hub?.final_reward;
 
     // --- LOG DE DEBUG PARA EQUIPE ---
     const teammatesPositions = userProgress?.teammates_positions || {};
@@ -264,7 +279,7 @@ const VilaDaAventuraTheme = ({ children }) => {
     }
     const badgeTitle = activity.is_team_activity ? "Sua Equipe:" : "Colegas:";
     return (
-        <div className="rpg-map-board" ref={boardRef}>
+        <div className="rpg-map-board" ref={boardRef} style={dynamicStyles}>
             <GameHUD progress={userProgress} />
 
             <div className="progress-path-area" style={{ height: `${requiredHeight}px` }}>
@@ -293,7 +308,7 @@ const VilaDaAventuraTheme = ({ children }) => {
                 {/* --- PASSOS DA TRILHA --- */}
                 {(activity.gamificationDesign.progression_path || []).map((step, index) => {
                     const status = getStepStatus(step);
-                    const config = elementConfig.path[step.type];
+                    const config = assets?.path[step.type];
                     const position = pathNodes[index];
                     if (!config || !position) return null;
 
@@ -335,7 +350,7 @@ const VilaDaAventuraTheme = ({ children }) => {
             <div className="hub-village">
                 {villageHubElements.map(hubElement => {
                     if (!hubElement.enabled) return null;
-                    const config = elementConfig.hub[hubElement.type];
+                    const config = assets?.hub[hubElement.type];
                     if (!config) return null;
                     return (
                         <div key={hubElement.id} className="hub-building hub-building--animated" title={config.name} onClick={() => handleHubIconClick(hubElement.type)}>

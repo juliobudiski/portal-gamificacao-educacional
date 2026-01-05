@@ -302,7 +302,7 @@ function NarrativeEditorPage({ initialData, onSave, onCancel, isOfflineMode = fa
 
     return (
         <div className="min-h-screen bg-primary-bg text-primary-text p-4 md:p-8 transition-colors duration-300">
-            <div className="max-w-6xl mx-auto">
+            <div className="max-w-full mx-auto">
                 <div className="flex items-center gap-3 mb-8">
                     {/* Ícone do cabeçalho usando accent-yellow */}
                     <div className="bg-accent-yellow p-3 rounded-xl shadow-lg">

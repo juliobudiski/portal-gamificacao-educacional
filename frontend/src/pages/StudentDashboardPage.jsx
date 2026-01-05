@@ -231,7 +231,7 @@ function StudentDashboardPage() {
 
   return (
     <div className="min-h-screen bg-primary-bg p-4 md:p-8 text-primary-text">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-full mx-auto">
         {/* Cabeçalho de Boas-vindas */}
         <header className="mb-12">
           <h1 className="text-4xl md:text-5xl font-extrabold">

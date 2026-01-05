@@ -262,6 +262,7 @@ function ActivityCreationPage({ existingActivity }) {
 
   useEffect(() => {
     const fetchActivityDataForBoard = async () => {
+
       if (activityId && user?.token) {
         if (import.meta.env.VITE_DEBUG_MODE) {
           console.log(`// LOG: [ActivityCreationPage] Buscando dados atualizados para Activity ID: ${activityId}`);
@@ -271,10 +272,11 @@ function ActivityCreationPage({ existingActivity }) {
           const response = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${activityId}`, {
             headers: { 'Authorization': `Bearer ${user.token}` }
           });
+          const data = await response.json();
           if (import.meta.env.VITE_DEBUG_MODE) {
             console.log("// LOG: [ActivityCreationPage] Dados recebidos da API.", { keys: Object.keys(data) });
           }
-          const data = await response.json();
+
           console.log("%cLOG 1: DADOS BRUTOS RECEBIDOS DA API", "color: blue; font-weight: bold;", data);
           console.log("--> O objeto acima tem a chave 'gamification_design' (com underline)?", data.hasOwnProperty('gamification_design'));
 

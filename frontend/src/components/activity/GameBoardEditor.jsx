@@ -4,7 +4,7 @@ import {
     FaPlus, FaTrash, FaPen, FaToggleOn, FaToggleOff,
     FaRoute, FaCity, FaMagic, FaRobot, FaCheckDouble, FaExclamationTriangle
 } from 'react-icons/fa';
-import { elementConfig } from '../../components/activity/GameBoardConfig';
+import { getThemeAssets, BOARD_THEMES, decorationSpawnPoints } from '../../components/activity/GameBoardConfig';
 import AIConfigModal from '../activity/AIConfigModal';
 import { useTutorial } from '../../context/TutorialContext';
 
@@ -15,6 +15,9 @@ import { useTutorial } from '../../context/TutorialContext';
  * @returns {JSX.Element} O elemento JSX do editor do tabuleiro.
  */
 function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditContent, onStructureChange, activityId, fullActivityData }) {
+
+    // TODO: Adicionar 'useMemo' aos imports do React na linha 1. Definindo aqui para evitar crash em tempo de execução.
+    const useMemo = React.useMemo;
 
     // LOG: Renderização do componente com metadados básicos
     if (import.meta.env.VITE_DEBUG_MODE === 'true') {
@@ -189,6 +192,29 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
         updateDesign('hub_elements', newHubElements);
     };
 
+    // 1. Recuperar ou definir tema padrão
+    const currentThemeId = gamificationDesign.theme || 'default';
+
+    // 2. Memoizar a configuração de assets baseada no tema atual
+    // Isso evita recálculos desnecessários e garante que os ícones atualizem quando o tema mudar
+    const assets = useMemo(() => getThemeAssets(currentThemeId), [currentThemeId]);
+
+    // TODO: A variável 'elementConfig' é usada no JSX mas não estava definida. Assumindo que ela se refere aos 'assets'.
+    const elementConfig = assets;
+
+    // 3. Função para trocar o tema
+    /**
+     * @function handleThemeChange
+     * @desc Atualiza o tema visual do tabuleiro no design da gamificação.
+     * @param {string} newThemeId - O identificador do novo tema selecionado.
+     */
+    const handleThemeChange = (newThemeId) => {
+        if (import.meta.env.VITE_DEBUG_MODE === 'true') {
+            console.log(`// LOG: [GameBoardEditor] Alterando tema do tabuleiro.`, { from: currentThemeId, to: newThemeId });
+        }
+        updateDesign('theme', newThemeId);
+    };
+
     return (
         <div className="mt-8 p-6 border border-teal-300 dark:border-teal-800 rounded-lg bg-teal-50 dark:bg-teal-900/20">
 
@@ -211,8 +237,29 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
                 structure={gamificationDesign.progression_path || []}
             />
 
-            <h3 className="text-xl font-bold text-teal-800 dark:text-teal-200 mb-2">Editor do Tabuleiro</h3>
-            <p className="text-sm text-secondary-text mb-6">Construa a jornada. Use a IA para conectar a história, mas lembre-se de <strong>validar o conteúdo</strong>.</p>
+            {/* --- CABEÇALHO COM SELETOR DE TEMA --- */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                <div>
+                    <h3 className="text-xl font-bold text-teal-800 dark:text-teal-200 mb-1">Editor do Tabuleiro</h3>
+                    <p className="text-sm text-secondary-text">
+                        Construa a jornada. Use a IA para conectar a história, mas lembre-se de <strong>validar o conteúdo</strong>.
+                    </p>
+                </div>
+
+                {/* Dropdown de Seleção de Tema */}
+                <div className="flex items-center gap-2 bg-white dark:bg-gray-800 p-2 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <span className="text-xs font-bold text-gray-500 uppercase">Tema:</span>
+                    <select
+                        value={currentThemeId}
+                        onChange={(e) => handleThemeChange(e.target.value)}
+                        className="text-sm bg-transparent font-semibold text-primary-text outline-none cursor-pointer min-w-[140px]"
+                    >
+                        {Object.values(BOARD_THEMES).map(theme => (
+                            <option key={theme.id} value={theme.id}>{theme.name}</option>
+                        ))}
+                    </select>
+                </div>
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Coluna da Esquerda: Trilha */}
@@ -246,17 +293,15 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
                                 return (
                                     <button
                                         key={type}
-                                        // ✅ ADICIONE ESTA LINHA: Gera id="tour-editor-add-narrative", "tour-editor-add-quiz", etc.
                                         id={`tour-editor-add-${type}`}
-
                                         onClick={() => !isDisabled && addPathStep(type)}
                                         disabled={isDisabled}
                                         className={`relative flex items-center pl-3 pr-4 py-2 text-sm border rounded-lg transition-all shadow-sm group
-                    ${isDisabled
+                                            ${isDisabled
                                                 ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed opacity-60'
                                                 : 'bg-white dark:bg-gray-800 border-blue-200 dark:border-blue-900 hover:bg-blue-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200'
                                             }
-                `}
+                                        `}
                                         title={isDisabled ? "Adicione uma Narrativa antes de incluir um Quiz." : config.name}
                                     >
                                         <img src={config.icon} alt="" className={`w-5 h-5 mr-2 ${isDisabled ? 'grayscale opacity-50' : ''}`} />
@@ -361,7 +406,7 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
                     </div>
                 </div>
 
-                {/* Coluna da Direita: Hub (Mantida igual) */}
+                {/* Coluna da Direita: Hub */}
                 <div>
                     <h4 className="flex items-center text-lg font-semibold mb-4 text-primary-text dark:text-secondary-text">
                         <FaCity className="mr-3 text-yellow-500" /> Hub e Elementos
@@ -407,7 +452,18 @@ GameBoardEditor.propTypes = {
     onEditContent: PropTypes.func.isRequired,
     onStructureChange: PropTypes.func.isRequired,
     activityId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    fullActivityData: PropTypes.object
+    // Validação da estrutura da atividade (activity) e dados completos
+    fullActivityData: PropTypes.shape({
+        id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        title: PropTypes.string,
+        class_name: PropTypes.string,
+        description: PropTypes.string,
+        areaKnowledge: PropTypes.string,
+        playerProfile: PropTypes.object,
+        ai_preset: PropTypes.object,
+        gamificationDesign: PropTypes.object,
+        gameElements: PropTypes.object
+    })
 };
 
 export default GameBoardEditor;

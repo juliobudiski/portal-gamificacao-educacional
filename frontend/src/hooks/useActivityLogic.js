@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { elementConfig, decorationConfig, decorationSpawnPoints, boardStructuralImages } from '../components/activity/GameBoardConfig';
+import { getThemeAssets, decorationSpawnPoints, boardStructuralImages } from '../components/activity/GameBoardConfig';
 import useAssetLoader from './useAssetLoader';
 
 const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === 'true';
@@ -29,6 +29,12 @@ export const useActivityLogic = (activityId) => {
     const [activeStepContent, setActiveStepContent] = useState(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [medalManifest, setMedalManifest] = useState([]);
+
+    const assets = useMemo(() => {
+        // Se a atividade ainda não carregou ou não tem tema, usa 'default'
+        const themeId = activity?.gamificationDesign?.theme || 'default';
+        return getThemeAssets(themeId);
+    }, [activity?.gamificationDesign?.theme]);
 
     const fetchWithAuth = useCallback(async (url, options = {}) => {
         const API_BASE = import.meta.env.VITE_API_URL;
@@ -227,13 +233,13 @@ export const useActivityLogic = (activityId) => {
         const urls = new Set();
 
         // 1. Imagens Estruturais do Board (Fundo, bordas)
-        boardStructuralImages.forEach(url => urls.add(url));
+        if (assets.structural && Array.isArray(assets.structural)) {
+            assets.structural.forEach(url => urls.add(url));
+        }
 
-        // 2. Ícones dos Passos (Quiz, Narrativa, Missão, Recompensa Final)
-        Object.values(elementConfig.path).forEach(p => urls.add(p.icon));
-
-        // 3. Ícones do Hub (Store, Ranking, Chat, etc.)
-        Object.values(elementConfig.hub).forEach(h => urls.add(h.icon));
+        // CORREÇÃO 3: Usar 'assets' em vez de 'elementConfig'
+        Object.values(assets.path).forEach(p => urls.add(p.icon));
+        Object.values(assets.hub).forEach(h => urls.add(h.icon));
 
         // 4. Avatares básicos (Pode haver um avatar default necessário para o HUD)
         // Se o avatar padrão for usado no HUD antes do progresso carregar, ele é CRÍTICO.
@@ -244,7 +250,7 @@ export const useActivityLogic = (activityId) => {
         urls.add('/board/slotmachine_board.webp');
 
         return Array.from(urls);
-    }, [activity]);
+    }, [activity, assets]);
 
     // Manifesto manual dos fundos de tabs e outros assets públicos
     const TAB_BACKGROUND_ASSETS = [
@@ -277,7 +283,7 @@ export const useActivityLogic = (activityId) => {
         const urls = new Set();
 
         // 1. Decorações (Árvores e Rochas)
-        decorationConfig.forEach(d => urls.add(d.src)); // ~12 itens
+        assets.decorations.forEach(d => urls.add(d.src));
 
         // 2. Fundos de Tabs (Arquivos em /src/assets)
         TAB_BACKGROUND_ASSETS.forEach(url => urls.add(url)); // ~8 itens
@@ -288,17 +294,8 @@ export const useActivityLogic = (activityId) => {
         if (medalManifest.length > 0) {
             medalManifest.forEach(medal => urls.add(medal.imageUrl)); // Puxa o imageUrl da API
         }
-        // 4. Avatares Adicionais (Se não estiverem em store_items)
-        // Se avatares forem compráveis, o item da loja deve ter o URL.
-        // Caso contrário, adicione a lista de avatares aqui:
-        // Avatares Fixos Adicionais:
-        // ['/avatars/robot.webp', '/avatars/wizard_cat.webp', ... etc]
-
-        // **NOTA CRÍTICA SOBRE MEDALHAS:** // O URL das medalhas virá do `get_all_medals` no backend (medals.py).
-        // Implementaremos a busca dessa lista a seguir.
-
         return Array.from(urls);
-    }, [activity, medalManifest]);
+    }, [activity, medalManifest, assets]);
 
     const stepCoordinates = useMemo(() => {
         const path = activity?.gamificationDesign?.progression_path;
@@ -331,14 +328,16 @@ export const useActivityLogic = (activityId) => {
 
     const renderedDecorations = useMemo(() => {
         if (!activity?.gamificationDesign?.progression_path) return [];
+        const currentDecorations = assets.decorations;
+
         const occupiedPositions = new Set(stepCoordinates.map(coord => `${coord.x}-${coord.y}`));
         const availablePoints = decorationSpawnPoints.filter(point => !occupiedPositions.has(`${point.x}-${point.y}`));
         const shuffledPoints = shuffleArray(availablePoints);
         return shuffledPoints.slice(0, 20).map((point, index) => {
-            const randomDecoration = decorationConfig[Math.floor(Math.random() * decorationConfig.length)];
+            const randomDecoration = currentDecorations[Math.floor(Math.random() * currentDecorations.length)];
             return { ...randomDecoration, style: { left: point.x, top: point.y }, id: `decoration-${index}` };
         });
-    }, [activity, stepCoordinates, shuffleArray]);
+    }, [activity, stepCoordinates, shuffleArray, assets]);
 
     const { loadingProgress: assetsProgress, isLoaded: assetsAreLoaded, etr: estimatedTimeRemaining } = useAssetLoader(criticalImageUrls);
 
@@ -506,7 +505,7 @@ export const useActivityLogic = (activityId) => {
     const handleOpenQuizEditor = useCallback(() => navigate(`/professor/activity/${activityId}/quiz/edit`), [navigate, activityId]);
     const handleOpenNarrativeEditor = useCallback(() => navigate(`/professor/activity/${activityId}/narrative/edit`), [navigate, activityId]);
     const hubElementsToRender = activity?.gamificationDesign?.hub_elements || [];
-    const finalRewardConfig = activity?.gamificationDesign?.finalReward ? elementConfig.path.final_reward : null;
+    const finalRewardConfig = activity?.gamificationDesign?.finalReward ? assets.path.final_reward : null;
 
     debugLog('DADOS CALCULADOS ANTES DE RETORNAR', {
         hubElementsToRender,
@@ -528,7 +527,7 @@ export const useActivityLogic = (activityId) => {
         estimatedTimeRemaining,
 
         hubElementsToRender: activity?.gamificationDesign?.hub_elements || [],
-        finalRewardConfig: activity?.gamificationDesign?.finalReward ? elementConfig.path.final_reward : null,
+        finalRewardConfig: activity?.gamificationDesign?.finalReward ? assets.path.final_reward : null,
 
         // Dados
         user,
@@ -541,6 +540,7 @@ export const useActivityLogic = (activityId) => {
         renderedDecorations,
         stepCoordinates,
         finalRewardStatus,
+        assets,
 
         // Funções e Handlers
         getStepStatus,

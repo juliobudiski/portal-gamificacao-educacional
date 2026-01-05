@@ -34,7 +34,7 @@ function TeacherDashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br bg-primary-bg  p-4 md:p-8">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-full mx-auto">
         {/* Cabeçalho com gradiente */}
         <header className="mb-12 text-center bg-gradient-to-r from-[#ffbd30] to-[#ffa000] p-6 rounded-2xl shadow-2xl border-b-4 border-[#ffcc5c]">
           <h1 className="text-3xl md:text-4xl font-extrabold text-[#2c3135]">

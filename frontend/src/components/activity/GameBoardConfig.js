@@ -1,48 +1,93 @@
 // frontend/src/components/activity/GameBoardConfig.js
 // Este arquivo centraliza todas as configurações visuais do tabuleiro para fácil manutenção.
 
-// 1. Configuração dos ÍCONES para os passos da trilha e elementos do hub
-export const elementConfig = {
-    path: {
-        // 'mission' e 'final_reward' foram removidos daqui
-        narrative: { icon: '/board/narrative_board.webp', name: 'Narrativa' },
-        quiz: { icon: '/board/quiz_board.webp', name: 'Quiz' },
-        content: { icon: '/board/content_board.webp', name: 'Conteúdo' },
+// frontend/src/components/activity/GameBoardConfig.js
 
+// 1. Definição dos Temas Disponíveis
+export const BOARD_THEMES = {
+    default: {
+        id: 'default',
+        name: 'Vila da Aventura (Padrão)',
+        basePath: '/board/default',
+        style: 'realistic' // pode ser usado para classes CSS específicas se precisar
     },
-    hub: {
-        // Adicionados aqui para serem tratados como elementos do hub/tabuleiro
-        mission: { icon: '/board/mission_character_board.webp', name: 'Missão' },
-        final_reward: { icon: '/board/end_board.webp', name: 'Recompensa Final' },
-        roulette: { icon: '/board/roleta_board.webp', name: 'Roleta' },
-        slot_machine: { icon: '/board/slotmachine_board.webp', name: 'Caça-níquel' },
-        ranking: { icon: '/board/ranking_board.webp', name: 'Ranking' },
-        badges: { icon: '/board/badges_board.webp', name: 'Medalhas' },
-        chat: { icon: '/board/chat_board.webp', name: 'Chat' },
-        store: { icon: '/board/store_board.webp', name: 'Loja' },
-        avatar_customization: { icon: '/board/meuestilo_board.webp', name: 'Meu Estilo' },
-        forum: { icon: '/board/fox_board.webp', name: 'Fórum' },
+    fluxograma: {
+        id: 'fluxograma', // O Editor salvará 'fluxograma' no banco
+        name: 'Fluxograma (Clean)',
+        basePath: '/board/default', // Reusa assets do default para o Editor não quebrar
+        style: 'minimalist'
+    },
+    tibia: {
+        id: 'tibia',
+        name: 'RPG Clássico (Tibia)',
+        basePath: '/board/tibia',
+        style: 'pixelated' // útil para aplicar image-rendering: pixelated no CSS
+    },
+    adventure_time: {
+        id: 'adventure_time',
+        name: 'Reino da Aventura',
+        basePath: '/board/adventure_time',
+        style: 'cartoon'
     }
 };
 
-// 2. Lista de todas as DECORAÇÕES disponíveis para o mapa
-export const decorationConfig = [
-    // Árvores (agora com mais variedade)
-    { id: 'tree1', src: '/board/tree_board.webp', className: 'decoration-tree', weight: 3 },
-    { id: 'tree2', src: '/board/tree_board_2.webp', className: 'decoration-tree', weight: 3 },
-    { id: 'tree3', src: '/board/tree_board_3.webp', className: 'decoration-tree', weight: 2 },
-    { id: 'tree4', src: '/board/tree_board_4.webp', className: 'decoration-tree', weight: 2 },
-    { id: 'tree5', src: '/board/tree_board_5.webp', className: 'decoration-tree', weight: 1 },
-    { id: 'tree6', src: '/board/tree_board_6.webp', className: 'decoration-tree', weight: 1 },
-    { id: 'tree7', src: '/board/tree_board_7.webp', className: 'decoration-tree', weight: 1 },
+/**
+ * Retorna a configuração completa dos assets baseada no tema.
+ * @param {string} themeId - O ID do tema (default, tibia, etc).
+ */
+export const getThemeAssets = (themeId = 'default') => {
+    // Fallback para default se o tema não existir
+    const theme = BOARD_THEMES[themeId] || BOARD_THEMES.default;
 
-    // Rochas (expandida)
-    { id: 'rock1', src: '/board/rock_board.webp', className: 'decoration-rock', weight: 3 },
-    { id: 'rock2', src: '/board/rock_board_2.webp', className: 'decoration-rock', weight: 3 },
-    { id: 'rock3', src: '/board/rock_board_3.webp', className: 'decoration-rock', weight: 2 },
-    { id: 'rock4', src: '/board/rock_board_4.webp', className: 'decoration-rock', weight: 2 },
-    { id: 'rock5', src: '/board/rock_board_5.webp', className: 'decoration-rock', weight: 1 },
-];
+    // ATENÇÃO: Se suas pastas são físicas em public/board, o basePath já deve começar com /
+    // Ex: '/board/default'
+    const path = theme.basePath;
+
+    return {
+        // Elementos da trilha
+        // OBS: Note o uso de CRASE (backtick) ` ` para permitir a variável ${path}
+        path: {
+            narrative: { icon: `${path}/narrative_board.webp`, name: 'Narrativa' },
+            quiz: { icon: `${path}/quiz_board.webp`, name: 'Quiz' },
+            content: { icon: `${path}/content_board.webp`, name: 'Conteúdo' },
+        },
+        hub: {
+            mission: { icon: `${path}/mission_character_board.webp`, name: 'Missão' },
+            final_reward: { icon: `${path}/end_board.webp`, name: 'Recompensa Final' },
+            roulette: { icon: `${path}/roleta_board.webp`, name: 'Roleta' },
+            slot_machine: { icon: `${path}/slotmachine_board.webp`, name: 'Caça-níquel' },
+            ranking: { icon: `${path}/ranking_board.webp`, name: 'Ranking' },
+            badges: { icon: `${path}/badges_board.webp`, name: 'Medalhas' },
+            chat: { icon: `${path}/chat_board.webp`, name: 'Chat' },
+            store: { icon: `${path}/store_board.webp`, name: 'Loja' },
+            avatar_customization: { icon: `${path}/meuestilo_board.webp`, name: 'Meu Estilo' },
+            forum: { icon: `${path}/fox_board.webp`, name: 'Fórum' },
+        },
+        // Decorações
+        decorations: [
+            { id: 'tree1', src: `${path}/tree_board.webp`, className: 'decoration-tree', weight: 3 },
+            { id: 'tree2', src: `${path}/tree_board_2.webp`, className: 'decoration-tree', weight: 3 },
+            { id: 'tree3', src: `${path}/tree_board_3.webp`, className: 'decoration-tree', weight: 2 },
+            { id: 'tree4', src: `${path}/tree_board_4.webp`, className: 'decoration-tree', weight: 2 },
+            { id: 'tree5', src: `${path}/tree_board.webp`, className: 'decoration-tree', weight: 1 },
+            { id: 'tree6', src: `${path}/tree_board_3.webp`, className: 'decoration-tree', weight: 1 },
+            { id: 'tree7', src: `${path}/tree_board_4.webp`, className: 'decoration-tree', weight: 1 },
+
+            { id: 'rock1', src: `${path}/rock_board.webp`, className: 'decoration-rock', weight: 3 },
+            { id: 'rock2', src: `${path}/rock_board_2.webp`, className: 'decoration-rock', weight: 3 },
+            { id: 'rock3', src: `${path}/rock_board_3.webp`, className: 'decoration-rock', weight: 2 },
+            { id: 'rock4', src: `${path}/rock_board_4.webp`, className: 'decoration-rock', weight: 2 },
+            { id: 'rock5', src: `${path}/rock_board.webp`, className: 'decoration-rock', weight: 1 },
+        ],
+        // Imagens Estruturais
+        structural: [
+            `${path}/background_board.webp`, // Verifique o nome correto do background
+            `${path}/wood_border_hub.webp`,
+            `${path}/bg_tile.webp`,
+            `${path}/tab_border.webp`
+        ]
+    };
+};
 
 // PONTOS DE APARIÇÃO OTIMIZADOS - Evitando a área inferior do hub
 // 3. Grade de PONTOS DE APARIÇÃO possíveis para as decorações
@@ -96,10 +141,11 @@ export const decorationSpawnPoints = [
     { x: '85%', y: '97%', size: 'large' }, { x: '95%', y: '92%', size: 'small' }
 ];
 
-// 4. Todas as IMAGENS ESTRUTURAIS fixas do tabuleiro
+// Structural Images para pré-load (Global ou Default)
+// Como isso é usado apenas para pré-load, podemos apontar para o default ou fazer dinâmico se necessário
 export const boardStructuralImages = [
-    '/board/background_board.webp',
-    '/board/wood_border_hub.webp',
-    '/board/wood_plank_bg.webp',
-    '/board/tab_border.webp'
+    '/board/default/background_board.webp',
+    '/board/default/wood_border_hub.webp',
+    '/board/default/wood_plank_bg.webp',
+    '/board/default/tab_border.webp'
 ];

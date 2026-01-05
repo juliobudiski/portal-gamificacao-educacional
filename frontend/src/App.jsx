@@ -325,7 +325,7 @@ function AppContent() {
       <ThemeToggleButton />
       {showLocationPrompt && <GeolocationPrompt onAccept={handleUserAcceptedPrompt} />}
       {/* O cabeçalho já tem cores que funcionam bem em ambos os temas */}
-      <header className={`flex-shrink-0 w-full max-w-6xl mx-auto bg-header-bg text-primary-text p-4 rounded-xl shadow-2xl border-t-4 border-accent-yellow z-50 transition-all duration-300 ${isActivityPage ? 'mt-0 mb-2 rounded-t-none' : 'mt-4 mb-4'}`}>
+      <header className={`flex-shrink-0 w-full max-w-full mx-auto bg-header-bg text-primary-text p-4 rounded-xl shadow-2xl border-t-4 border-accent-yellow z-50 transition-all duration-300 ${isActivityPage ? 'mt-0 mb-2 rounded-t-none' : 'mt-4 mb-4'}`}>
         <nav className="flex flex-col sm:flex-row justify-between items-center">
           <Link
             to="/"
@@ -578,7 +578,7 @@ function AppContent() {
       <main className={`flex-grow mx-auto transition-all duration-300 
         ${isActivityPage
           ? 'w-full p-0 bg-transparent flex flex-col overflow-hidden' // MODO ATIVIDADE
-          : 'w-full max-w-6xl bg-secondary-bg text-primary-text p-6 sm:p-8 rounded-xl shadow-xl border-2 border-accent-teal/30 mb-8' // MODO PADRÃO
+          : 'w-full max-w-full bg-secondary-bg text-primary-text p-6 sm:p-8 rounded-xl shadow-xl border-2 border-accent-teal/30 mb-8' // MODO PADRÃO
         }
       `}>
         <Routes>

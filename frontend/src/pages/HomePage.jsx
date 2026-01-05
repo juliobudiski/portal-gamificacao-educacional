@@ -19,7 +19,7 @@ function Homepage() {
       <div className="absolute bottom-10 left-0 w-80 h-80 rounded-full bg-[#69e8cb]/10 blur-3xl"></div>
 
       {/* Conteúdo principal */}
-      <div className="z-10 max-w-4xl w-full space-y-12">
+      <div className="z-10 max-w-full w-full space-y-12">
         {/* Cabeçalho */}
         <div className="text-center mb-8 animate-fade-in">
           <h1 className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">
@@ -28,7 +28,7 @@ function Homepage() {
             </span>
           </h1>
 
-          <p className="text-xl md:text-2xl max-w-3xl mx-auto text-secondary-text dark:text-secondary-text leading-relaxed">
+          <p className="text-xl md:text-2xl max-w-full mx-auto text-secondary-text dark:text-secondary-text leading-relaxed">
             Transforme a educação em uma jornada envolvente e interativa. Crie, compartilhe e participe de atividades gamificadas que <span className="text-[#ffbd30]">inspiram o aprendizado</span> e o <span className="text-[#69e8cb]">engajamento</span>.
           </p>
         </div>

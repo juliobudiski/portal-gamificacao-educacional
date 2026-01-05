@@ -146,7 +146,7 @@ function UserProfilePage() {
       )}
 
       <div className="min-h-screen bg-primary-bg py-12 px-4">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-full mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-accent-teal to-accent-purple">
               Minhas Configurações

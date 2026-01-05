@@ -53,7 +53,7 @@ const TeacherRankingPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br bg-primary-bg  p-4 md:p-8">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-full mx-auto">
         <header className="mb-8 text-center">
           <h1 className="text-3xl md:text-4xl font-extrabold text-primary-text">
             Quadro de Honra dos Professores
