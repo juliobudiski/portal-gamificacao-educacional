@@ -571,3 +571,41 @@ def rate_activity(activity_id):
         db.session.rollback()
         logger.error(f"[rate_activity] Erro ao avaliar atividade {activity_id}: {str(e)}", exc_info=True)
         return jsonify({"message": f"Erro ao salvar avaliação: {str(e)}"}), 500
+    
+# --- ROTAS DE RASCUNHO (AUTOSAVE) ---
+
+
+@activity_bp.route('/autosave', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def autosave_route():
+    """Rota silenciosa para salvar progresso automaticamente."""
+    print("--- [DEBUG BACKEND] Entrou na função autosave_route ---")
+    return activity_service.save_autosave(current_user, request.json)
+
+@activity_bp.route('/drafts', methods=['GET'])
+@jwt_required()
+def get_drafts_route():
+    """Lista rascunhos do professor."""
+    if current_user.role != 'professor':
+        return jsonify({"message": "Acesso negado"}), 403
+    drafts = activity_service.get_user_drafts(current_user.id)
+    return jsonify(drafts), 200
+
+@activity_bp.route('/<int:activity_id>/publish', methods=['POST'])
+@jwt_required()
+def publish_route(activity_id):
+    """Converte um rascunho em atividade final."""
+    return activity_service.publish_draft(current_user, activity_id, request.json)
+
+
+# --- ADICIONE ESTE BLOCO DE DEBUG ---
+@activity_bp.before_request
+def debug_request_info():
+    # Filtra apenas a rota problemática para não poluir o log
+    if 'autosave' in request.path:
+        print(f"\n--- [DEBUG BACKEND] Request para {request.path} ---")
+        print(f"Método: {request.method}")
+        print(f"Headers Recebidos:\n{request.headers}")
+        print("---------------------------------------------------\n")
+# ------------------------------------

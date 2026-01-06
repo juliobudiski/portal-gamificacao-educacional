@@ -2,18 +2,11 @@
 
 from flask import Flask, send_from_directory
 from flask_cors import CORS
-from flask_migrate import Migrate
-from flask_sqlalchemy import SQLAlchemy
-from .extensions import socketio
+from .extensions import socketio, scheduler, db, migrate
 
 import os
 import logging
 
-# 1. Crie as instâncias das extensões FORA da função, sem associá-las a um app
-
-
-db = SQLAlchemy()
-migrate = Migrate()
 
 def create_app():
     """
@@ -35,6 +28,16 @@ def create_app():
     
     # Inicializa o socketio importado do extensions.py
     socketio.init_app(app)
+    # --- INICIALIZAÇÃO DO SCHEDULER ---
+    # Precisamos permitir que o APScheduler use as configs do Flask
+    app.config['SCHEDULER_API_ENABLED'] = True 
+    scheduler.init_app(app)
+    scheduler.start()
+    
+    # Registra as tarefas (importação local para evitar ciclo)
+    from .tasks import register_tasks
+    register_tasks(app)
+    # ----------------------------------
     
     seed.init_app(app)
     triggers.init_app(app)

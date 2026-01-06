@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useContext, useCallback, useMemo } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import ActivityCard from '../components/activity/ActivityCard';
-import { FaUserEdit, FaGlobeAmericas, FaPlusCircle, FaSearch, FaFilter, FaTrash } from 'react-icons/fa';
+import { FaTimes, FaCheckCircle, FaPencilAlt, FaUserEdit, FaGlobeAmericas, FaPlusCircle, FaSearch, FaFilter, FaTrash } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import ConfirmationModal from '../components/ConfirmationModal';
+import activityService from '../services/activityService'; // Importe o serviço
+import { useNavigate } from 'react-router-dom'; // Importe useNavigate
+
 function ActivityBankPage() {
     const { user } = useContext(AuthContext);
     const [myActivities, setMyActivities] = useState([]);
@@ -16,6 +19,10 @@ function ActivityBankPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [isSearching, setIsSearching] = useState(false);
     const [assignmentFilter, setAssignmentFilter] = useState('all'); // Opções: 'all', 'assigned', 'unassigned'
+
+    const [drafts, setDrafts] = useState([]); // Novo estado para rascunhos
+    const navigate = useNavigate(); // Hook de navegação
+
     // Estado para controlar o Modal de Confirmação
     const [modalConfig, setModalConfig] = useState({
         isOpen: false,
@@ -46,6 +53,13 @@ function ActivityBankPage() {
 
             const myData = await myRes.json();
             const publicData = await publicRes.json();
+
+            // --- NOVO: Buscar Rascunhos ---
+            // Só buscamos rascunhos se não houver termo de busca (ou implemente busca no endpoint de drafts se quiser)
+            if (!currentSearchTerm) {
+                const draftsData = await activityService.getDrafts();
+                setDrafts(draftsData);
+            }
 
             if (myRes.ok) setMyActivities(myData);
             else throw new Error(myData.message || 'Erro ao buscar minhas atividades');
@@ -262,12 +276,34 @@ function ActivityBankPage() {
                     <button onClick={() => setActiveTab('my')} className={`flex items-center gap-2 py-3 px-6 font-semibold transition-colors ${activeTab === 'my' ? 'border-b-2 border-accent-yellow text-accent-yellow' : 'text-secondary-text hover:text-primary-text'}`}>
                         <FaUserEdit /> Minhas Atividades ({myActivities.length})
                     </button>
+                    {/* --- NOVA ABA RASCUNHOS --- */}
+                    <button onClick={() => setActiveTab('drafts')} className={`flex items-center gap-2 py-3 px-6 font-semibold transition-colors ${activeTab === 'drafts' ? 'border-b-2 border-gray-400 text-gray-400' : 'text-secondary-text hover:text-primary-text'}`}>
+                        <FaPencilAlt /> Rascunhos ({drafts.length})
+                    </button>
                     <button onClick={() => setActiveTab('public')} className={`flex items-center gap-2 py-3 px-6 font-semibold transition-colors ${activeTab === 'public' ? 'border-b-2 border-accent-teal text-accent-teal' : 'text-secondary-text hover:text-primary-text'}`}>
                         <FaGlobeAmericas /> Banco Público ({publicActivities.length})
                     </button>
                 </div>
 
-                {message && <div className="bg-border-color p-3 rounded-lg mb-4 text-center">{message}</div>}
+                {/* --- MENSAGEM DE FEEDBACK (TOAST) --- */}
+                {message && (
+                    <div className="fixed bottom-5 right-5 z-50 animate-slide-in-right">
+                        <div className="bg-secondary-bg border-l-4 border-accent-yellow text-primary-text px-6 py-4 rounded shadow-2xl flex items-center gap-4 min-w-[300px] max-w-md">
+                            <div className="text-accent-yellow text-xl">
+                                <FaCheckCircle />
+                            </div>
+                            <div className="flex-1">
+                                <p className="font-medium">{message}</p>
+                            </div>
+                            <button
+                                onClick={() => setMessage('')}
+                                className="text-secondary-text hover:text-primary-text transition-colors"
+                            >
+                                <FaTimes />
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {loading ? (
                     <p className="text-center py-10">Carregando atividades...</p>
@@ -333,6 +369,47 @@ function ActivityBankPage() {
                                     )}
                                 </div>
                             </>
+                        )}
+                        {activeTab === 'drafts' && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {drafts.length > 0 ? (
+                                    drafts.map(draft => (
+                                        <div key={draft.id} className="bg-secondary-bg border border-gray-600 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all relative group">
+                                            {/* Badge de Rascunho */}
+                                            <span className="absolute top-4 right-4 bg-gray-700 text-xs text-gray-300 px-2 py-1 rounded">
+                                                Rascunho
+                                            </span>
+
+                                            <h3 className="text-xl font-bold text-primary-text mb-2 truncate">{draft.title || 'Sem título'}</h3>
+                                            <p className="text-sm text-secondary-text mb-4">
+                                                Última edição: {new Date(draft.updatedAt || draft.updated_at).toLocaleDateString()} às {new Date(draft.updatedAt || draft.updated_at).toLocaleTimeString()}
+                                            </p>
+
+                                            <div className="mt-4 flex gap-3">
+                                                <button
+                                                    onClick={() => navigate(`/professor/criar-atividade/${draft.id}`)}
+                                                    className="flex-1 bg-accent-yellow text-primary-bg py-2 rounded-lg font-bold hover:brightness-110 transition-all flex items-center justify-center gap-2"
+                                                >
+                                                    <FaPencilAlt /> Continuar Editando
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteClick(draft.id)}
+                                                    className="p-2 bg-red-600/20 text-red-500 rounded-lg hover:bg-red-600 hover:text-white transition-all"
+                                                    title="Descartar Rascunho"
+                                                >
+                                                    <FaTrash />
+                                                </button>
+                                            </div>
+
+                                            <p className="text-xs text-gray-500 mt-4 text-center">
+                                                Expira em 7 dias se não editado.
+                                            </p>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p className="col-span-full text-center py-10 text-secondary-text">Nenhum rascunho pendente.</p>
+                                )}
+                            </div>
                         )}
                         {activeTab === 'public' && (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

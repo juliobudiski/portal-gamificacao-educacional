@@ -112,6 +112,7 @@ class Activity(db.Model):
     expires_at = db.Column(db.DateTime, nullable=True)     # Data final (prazo)
     ratings = db.relationship('ActivityRating', backref='activity', lazy=True)
     is_team_activity = db.Column(db.Boolean, default=False, nullable=False, server_default='f')
+    is_draft = db.Column(db.Boolean, default=False, index=True, nullable=False, server_default='f')
     
     def to_dict(self):
         design = self.gamification_design or {}

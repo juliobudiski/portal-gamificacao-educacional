@@ -1,9 +1,10 @@
 // frontend/src/context/ActivityCreationContext.jsx
-import React, { createContext, useState, useContext } from 'react';
-
+import React, { createContext, useState, useContext, useCallback } from 'react';
+import { useAutoSave } from '../hooks/useAutoSave';
 const ActivityCreationContext = createContext();
 
 const initialState = {
+    id: null,
     title: '',
     description: '',
     areaKnowledge: '',
@@ -24,6 +25,22 @@ export const ActivityCreationProvider = ({ children }) => {
     const [currentStep, setCurrentStep] = useState(0); // 0 = Seleção Inicial
     const [showInitialSelection, setShowInitialSelection] = useState(true);
 
+    // --- LÓGICA DE AUTOSAVE ---
+
+    // Callback para atualizar só o ID sem causar re-render desnecessário ou loop
+    const updateActivityId = useCallback((newId) => {
+        setActivityData(prev => {
+            // Só atualiza se o ID realmente mudou (de null para número)
+            if (prev.id === newId) return prev;
+            return { ...prev, id: newId };
+        });
+    }, []);
+
+    // O hook roda "em background". Monitora activityData e chama o serviço.
+    const { saveStatus, lastSavedAt } = useAutoSave(activityData, updateActivityId, 2000);
+
+    // ---------------------------
+
     // Função para resetar tudo ao iniciar uma nova criação
     const startNewActivity = (template = null) => {
         setActivityData(template || initialState);
@@ -37,6 +54,14 @@ export const ActivityCreationProvider = ({ children }) => {
         setShowInitialSelection(true);
     }
 
+    // Nova função para carregar um rascunho existente (usaremos na Parte 4)
+    const loadDraft = (draftData) => {
+        setActivityData(draftData);
+        // Podemos definir lógica para pular para a última etapa editada depois
+        setCurrentStep(1);
+        setShowInitialSelection(false);
+    };
+
     const value = {
         activityData,
         setActivityData,
@@ -45,7 +70,11 @@ export const ActivityCreationProvider = ({ children }) => {
         showInitialSelection,
         setShowInitialSelection,
         startNewActivity,
-        resetCreation
+        resetCreation,
+        loadDraft,
+        // Exporta status do salvamento para UI (ex: mostrar "Salvando..." no topo)
+        autoSaveStatus: saveStatus,
+        lastSavedAt
     };
 
     return (

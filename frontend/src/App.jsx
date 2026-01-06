@@ -602,6 +602,7 @@ function AppContent() {
             {/* 1. Crie uma rota "pai" que simplesmente fornece o contexto para as rotas filhas */}
             <Route element={<ActivityCreationProvider><Outlet /></ActivityCreationProvider>}>
               <Route path="/professor/criar-atividade" element={<ActivityCreationPage />} />
+              <Route path="/professor/criar-atividade/:activityId" element={<ActivityCreationPage />} />
               <Route path="/professor/atividades/:activityId/edit" element={<ActivityEditPage />} />
               <Route path="/professor/criar-atividade/criar/:type/:stepId/edit" element={<QuizEditorPage />} /> {/* Exemplo, ajuste se necessário */}
               <Route path="/professor/atividades/:activityId/quiz/:stepId/edit" element={<QuizEditorPage />} />

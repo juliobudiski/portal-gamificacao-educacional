@@ -9806,5 +9806,156 @@
                 "percent": 100.0
             }
         ]
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2026-01-06T03:00:00Z",
+            "end": "2026-01-07T02:59:59Z",
+            "date": "2026-01-06",
+            "text": "Tue Jan 6th 2026",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [
+            {
+                "name": "portal-gamificacao-educacional",
+                "total_seconds": 0.0,
+                "ai_additions": 0,
+                "ai_deletions": 0,
+                "human_additions": 0,
+                "human_deletions": 0,
+                "color": null,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            }
+        ],
+        "languages": [
+            {
+                "name": "JavaScript",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            }
+        ],
+        "dependencies": [
+            {
+                "name": "fa",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            },
+            {
+                "name": "GameHUD",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            },
+            {
+                "name": "react",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            },
+            {
+                "name": "ActivityContext",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            }
+        ],
+        "machines": [
+            {
+                "name": "julio-Inspiron-5421",
+                "total_seconds": 0.0,
+                "machine_name_id": "97ccdd36-6cda-44df-aede-06e25ada2553",
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            }
+        ],
+        "editors": [
+            {
+                "name": "VS Code",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            }
+        ],
+        "operating_systems": [
+            {
+                "name": "Linux",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            }
+        ],
+        "categories": [
+            {
+                "name": "Coding",
+                "total_seconds": 0.0,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0
+            }
+        ]
     }
 ]

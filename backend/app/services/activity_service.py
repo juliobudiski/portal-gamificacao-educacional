@@ -10,7 +10,7 @@ from sqlalchemy import or_
 import json
 logger = logging.getLogger(__name__)
 from ..utils.logging import _log_system_event
-
+from datetime import datetime, timedelta
 
 DEFAULT_COSMETICS = [
     {
@@ -136,43 +136,11 @@ def create_activity(user, data):
                          )
                          db.session.add(new_learning)
 
-        # --- INÍCIO DA NOVA LÓGICA: POPULAR A LOJA ---
-        logger.info(f"Populando loja padrão para a nova atividade ID {new_activity.id}")
-        
-        # Adiciona Cosméticos Padrão
-        for item_data in DEFAULT_COSMETICS:
-            db.session.add(StoreItem(activity_id=new_activity.id, **item_data))
-            
-        # Adiciona Avatares Padrão
-        for item_data in DEFAULT_AVATARS:
-            db.session.add(StoreItem(activity_id=new_activity.id, **item_data))
-        
-        # Adiciona Títulos Padrão
-        for item_data in DEFAULT_TITLES:
-            # Títulos precisam ser criados na tabela 'Title' primeiro
-            title_effect_id = item_data["effect_id"]
-            existing_title = Title.query.filter_by(effect_id=title_effect_id).first()
-            if not existing_title:
-                db.session.add(Title(
-                    effect_id=title_effect_id,
-                    display_text=item_data["name"],
-                    description=item_data["description"]
-                ))
-            
-            # Adiciona o item na loja
-            db.session.add(StoreItem(
-                activity_id=new_activity.id,
-                name=item_data["name"],
-                description=item_data["description"],
-                price=item_data["price"],
-                icon=item_data["icon"],
-                item_type=item_data["item_type"],
-                effect_id=title_effect_id # Salva o ID string, não o JSON
-            ))
-        
-        # --- FIM DA NOVA LÓGICA ---
+        # 4. POPULAR LOJA (Agora usando a função auxiliar)
+        # Passamos o new_activity.id que foi gerado no flush()
+        _populate_default_store(new_activity.id)
 
-        # 4. COMMIT FINAL: Salva atividade + tags + conteúdos + itens da loja
+        # 5 COMMIT FINAL: Salva atividade + tags + conteúdos + itens da loja
         db.session.commit()
         
         _log_system_event(
@@ -562,3 +530,144 @@ def bulk_delete_activities(user, activity_ids):
     except Exception as e:
         db.session.rollback()
         return {"message": f"Erro interno ao deletar atividades: {str(e)}"}, 500
+    
+    
+    
+def save_autosave(user, data):
+    """
+    Salva o estado atual da criação como rascunho.
+    Funciona como UPSERT: Cria se não tiver ID, Atualiza se tiver.
+    """
+    activity_id = data.get('id')
+    
+    # --- CASO 1: ATUALIZAÇÃO (Já existe ID) ---
+    if activity_id:
+        activity = Activity.query.get(activity_id)
+        if not activity:
+            return {"message": "Rascunho não encontrado (pode ter expirado)."}, 404
+        if activity.professor_id != user.id:
+            return {"message": "Acesso negado."}, 403
+        
+        # Atualiza campos
+        activity.title = data.get('title') or "Rascunho sem nome"
+        activity.description = data.get('description', '')
+        activity.gamification_design = data.get('gamification_design', {})
+        activity.activity_planning = data.get('activityPlanning', {})
+        activity.player_profile = data.get('playerProfile', {})
+        activity.game_elements = data.get('gameElements', {})
+        activity.rewards_offered = data.get('rewardsOffered', {})
+        activity.rewarded_actions = data.get('rewardedActions', {})
+        activity.gamification_rules = data.get('gamificationRules', {})
+        
+        activity.updated_at = datetime.utcnow()
+        
+        try:
+            db.session.commit()
+            return {"id": activity.id, "status": "updated", "updated_at": activity.updated_at.isoformat()}, 200
+        except Exception as e:
+            db.session.rollback()
+            return {"message": str(e)}, 500
+
+    # --- CASO 2: CRIAÇÃO (Primeiro Autosave) ---
+    else:
+        try:
+            # Cria rascunho
+            new_draft = Activity(
+                professor_id=user.id,
+                title=data.get('title') or "Rascunho sem nome",
+                description=data.get('description', ''),
+                is_draft=True,  # Flag importante
+                gamification_design=data.get('gamification_design', {}),
+                activity_planning=data.get('activityPlanning', {}),
+                player_profile=data.get('playerProfile', {}),
+                game_elements=data.get('gameElements', {}),
+                rewards_offered=data.get('rewardsOffered', {}),
+                rewarded_actions=data.get('rewardedActions', {}),
+                gamification_rules=data.get('gamificationRules', {})
+            )
+            
+            db.session.add(new_draft)
+            db.session.flush() # Gera ID
+            
+            # Popula loja no rascunho também!
+            _populate_default_store(new_draft.id)
+            
+            db.session.commit()
+            return {"id": new_draft.id, "status": "created", "updated_at": new_draft.created_at.isoformat()}, 201
+            
+        except Exception as e:
+            db.session.rollback()
+            return {"message": f"Erro ao criar rascunho: {str(e)}"}, 500
+        
+def _populate_default_store(activity_id):
+    """
+    Helper interno para popular a loja.
+    CORREÇÃO: Usar 'activity_id' (parâmetro) em vez de 'new_activity.id'.
+    """
+    try:
+        # Adiciona Cosméticos Padrão
+        for item_data in DEFAULT_COSMETICS:
+            
+            
+            db.session.add(StoreItem(activity_id=activity_id, **item_data))
+            
+        # Adiciona Avatares Padrão
+        for item_data in DEFAULT_AVATARS:
+            db.session.add(StoreItem(activity_id=activity_id, **item_data))
+        
+        # Adiciona Títulos Padrão
+        for item_data in DEFAULT_TITLES:
+            title_effect_id = item_data["effect_id"]
+            existing_title = Title.query.filter_by(effect_id=title_effect_id).first()
+            if not existing_title:
+                db.session.add(Title(
+                    effect_id=title_effect_id,
+                    display_text=item_data["name"],
+                    description=item_data["description"]
+                ))
+            
+            db.session.add(StoreItem(
+                activity_id=activity_id,
+                name=item_data["name"],
+                description=item_data["description"],
+                price=item_data["price"],
+                icon=item_data["icon"],
+                item_type=item_data["item_type"],
+                effect_id=title_effect_id
+            ))
+            
+    except Exception as e:
+        logger.error(f"Erro ao popular loja padrão: {str(e)}")
+        # Não damos raise para não travar o autosave por causa de loja
+
+def get_user_drafts(user_id):
+    """Retorna rascunhos recentes do usuário."""
+    # Filtro de segurança visual (embora o job apague depois)
+    limit_date = datetime.utcnow() - timedelta(days=7)
+    
+    drafts = Activity.query.filter(
+        Activity.professor_id == user_id,
+        Activity.is_draft == True,
+        Activity.updated_at >= limit_date
+    ).order_by(Activity.updated_at.desc()).all()
+    
+    return [d.to_dict() for d in drafts]
+
+def publish_draft(user, activity_id, data):
+    """Finaliza o rascunho transformando-o em atividade oficial."""
+    activity = Activity.query.get(activity_id)
+    if not activity or activity.professor_id != user.id:
+        return {"message": "Rascunho não encontrado."}, 404
+        
+    # Atualiza com os dados finais do formulário
+    update_response = update_activity(user, activity_id, data)
+    
+    if update_response[1] != 200:
+        return update_response # Retorna erro se o update falhar
+        
+    # Vira oficial
+    activity.is_draft = False
+    activity.is_public = data.get('isPublic', False) # Respeita a escolha final
+    db.session.commit()
+    
+    return {"message": "Atividade publicada com sucesso!", "activity": activity.to_dict()}, 200
