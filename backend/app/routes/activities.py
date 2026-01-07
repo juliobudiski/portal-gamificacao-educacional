@@ -599,13 +599,3 @@ def publish_route(activity_id):
     return activity_service.publish_draft(current_user, activity_id, request.json)
 
 
-# --- ADICIONE ESTE BLOCO DE DEBUG ---
-@activity_bp.before_request
-def debug_request_info():
-    # Filtra apenas a rota problemática para não poluir o log
-    if 'autosave' in request.path:
-        print(f"\n--- [DEBUG BACKEND] Request para {request.path} ---")
-        print(f"Método: {request.method}")
-        print(f"Headers Recebidos:\n{request.headers}")
-        print("---------------------------------------------------\n")
-# ------------------------------------

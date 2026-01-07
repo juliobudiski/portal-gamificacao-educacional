@@ -60,7 +60,7 @@ class AIService:
 
         # Centraliza constantes de controle para fácil ajuste.
         self.max_retries = 2
-        self.cooldown_seconds = 5 # Tempo de espera entre chamadas para evitar rate limit.
+        self.cooldown_seconds = 2 # Tempo de espera entre chamadas para evitar rate limit.
 
     def orchestrate_story(self, activity_context: Dict, path_structure: List[Dict], ai_config: Dict, room_id: str = None) -> Dict:
         """
@@ -96,6 +96,7 @@ class AIService:
             if room_id:
                 percent = int((index / total_steps) * 100)
                 socketio.emit('ai_progress', {'percent': percent, 'message': f"Criando {self._get_step_label(step_type)}..."}, to=room_id)
+                socketio.sleep(0.1)
 
             # Build prompt usando a memória atualizada
             full_prompt = self._build_prompt(step_type, index+1, total_steps, activity_context, ai_config, execution_trace)
@@ -132,7 +133,7 @@ class AIService:
                 logger.error(f"Falha ao gerar passo {step_id}. Usando fallback estático.")
                 final_map[step_id] = self._get_fallback_content(step_type)
 
-            time.sleep(self.cooldown_seconds)
+            socketio.sleep(self.cooldown_seconds)
 
         if room_id:
              socketio.emit('ai_complete', {'result': final_map}, to=room_id)
@@ -140,7 +141,7 @@ class AIService:
         return final_map
 
     def _build_prompt(self, step_type: str, step_idx: int, total_steps: int, context: Dict, config: Dict, execution_trace: Dict) -> str:
-        """Constrói o prompt completo para um passo."""
+        """Constrói o prompt completo com lógica de progressão curricular."""
         teaching_focus = config.get('teachingFocus') or context.get('title', 'Tópico não definido')
         target_audience = config.get('targetAudience', 'Junior')
         characters_list = config.get('charactersList', [])
@@ -150,10 +151,22 @@ class AIService:
             for c in characters_list
         ])
 
-        progress_ratio = step_idx / total_steps
-        story_phase = "INTRODUÇÃO (O Problema Surge)"
-        if progress_ratio > 0.3: story_phase = "DESENVOLVIMENTO (Tentativa e Erro)"
-        if progress_ratio > 0.8: story_phase = "CLÍMAX (A Solução Final)"
+        # Calcula o progresso (0.0 a 1.0)
+        progress_ratio = step_idx / total_steps if total_steps > 0 else 0
+        
+        # Define a fase da história E o foco pedagógico baseado no progresso
+        story_phase = "INTRODUÇÃO"
+        pacing_instruction = "Apresente o conceito básico. Não aprofunde demais ainda."
+        
+        if progress_ratio <= 0.35:
+            story_phase = "INTRODUÇÃO (O Problema Surge)"
+            pacing_instruction = f"Foque APENAS na introdução e definições básicas de: {teaching_focus}. Não fale de conceitos avançados ainda."
+        elif progress_ratio <= 0.75:
+            story_phase = "DESENVOLVIMENTO (Aprofundamento Técnico)"
+            pacing_instruction = f"Agora aprofunde. O aluno já sabe o básico. Explique 'como funciona por baixo do capô' ou detalhes de implementação de: {teaching_focus}."
+        else:
+            story_phase = "CLÍMAX (Aplicação e Conclusão)"
+            pacing_instruction = f"Foque na aplicação prática, casos de uso complexos ou erros comuns sobre: {teaching_focus}. Conecte tudo."
 
         system_persona = self._get_system_persona(config)
         specific_instruction = self._get_dynamic_instruction(step_type, execution_trace, story_phase, formatted_cast, teaching_focus, config)
@@ -162,22 +175,31 @@ class AIService:
         return f"""
         {system_persona}
 
-        --- CONTEXTO ATUAL ---
-        TÓPICO DE ENSINO: "{teaching_focus}"
-        NÍVEL DO ALUNO: {target_audience} (Ajuste a complexidade técnica para este nível)
-        FASE DA NARRATIVA: {story_phase}
+        --- ESTRUTURA DA TRILHA DE APRENDIZADO ---
+        Estamos no PASSO {step_idx} de {total_steps}.
+        
+        TÓPICO GLOBAL: "{teaching_focus}"
+        NÍVEL DO ALUNO: {target_audience}
+        
+        --- INSTRUÇÃO DE PROGRESSÃO (EXTREMAMENTE IMPORTANTE) ---
+        Você NÃO deve tentar ensinar o tópico global inteiro neste único passo.
+        Sua meta para este passo específico ({step_idx}/{total_steps}) é:
+        >>> {pacing_instruction} <<<
         
         --- MEMÓRIA (O que já aconteceu) ---
-        Último Evento: "{execution_trace['last_narrative_event']}"
-        Conceito Ensinado Recentemente: "{execution_trace['last_taught_concept']}"
+        Último Evento Narrativo: "{execution_trace['last_narrative_event']}"
+        Último Conceito Ensinado: "{execution_trace['last_taught_concept']}"
+        
+        REGRA DE CONTINUIDADE: 
+        1. Se o campo "Último Conceito Ensinado" não for "Nenhum", assuma que o aluno JÁ SABE isso. Não repita explicações. Construa EM CIMA desse conhecimento.
+        2. Se este passo é um QUIZ, ele deve cobrar o conteúdo do passo IMEDIATAMENTE ANTERIOR.
 
         --- SUA MISSÃO AGORA ({step_type.upper()}) ---
         {specific_instruction}
 
-        --- REGRAS DE SAÍDA (EXTREMAMENTE CRÍTICO) ---
+        --- REGRAS DE SAÍDA ---
         1. Responda APENAS com JSON válido.
-        2. NÃO use Markdown (sem ```json).
-        3. Siga estritamente o schema abaixo.
+        2. Siga estritamente o schema abaixo.
         
         {json_schema}
         """
@@ -314,12 +336,20 @@ class AIService:
     def _update_memory_trace(self, trace, step_type, content):
         """Atualiza a memória de curto prazo para o próximo passo."""
         if step_type == 'narrative':
+            # Pega o diálogo
             dialogues = " ".join([f"{d.get('characterRole', 'Alguém')}: {d.get('text', '')}" for d in content.get('dialogue', [])])
             trace["last_narrative_event"] = dialogues[:800] + "..." 
+            
+            # Tenta inferir se houve alguma explicação técnica no diálogo e adiciona à memória
+            # Isso ajuda a evitar que o próximo 'content' repita o que o mentor acabou de falar
+            if len(dialogues) > 100:
+                 trace["last_taught_concept"] = f"Tópico discutido brevemente na narrativa: {dialogues[:200]}..."
+
         elif step_type == 'content':
-            topic = content.get('text_content', '')[:300]
-            trace["last_taught_concept"] = topic
-            trace["accumulated_knowledge"].append(topic[:50])
+            topic = content.get('text_content', '')
+            # Guarda um resumo maior para a IA saber exatamente o que já foi passado
+            trace["last_taught_concept"] = topic[:600] 
+            trace["accumulated_knowledge"].append(topic[:100])
 
     def _get_step_label(self, step_type: str) -> str:
         """Retorna um rótulo amigável para o tipo de passo."""

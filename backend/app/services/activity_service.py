@@ -183,7 +183,7 @@ def update_activity_structure(user, activity_id, data):
 
 def update_activity(user, activity_id, data):
     print("--- PAYLOAD RECEBIDO NA ROTA DE UPDATE ---", flush=True)
-    print(json.dumps(data, indent=2), flush=True)
+    # print(json.dumps(data, indent=2), flush=True)
     print("--- FIM DO PAYLOAD ---", flush=True)
 
     """Atualiza uma atividade existente."""
@@ -201,6 +201,13 @@ def update_activity(user, activity_id, data):
         activity.description = data.get('description', activity.description)
         activity.area_knowledge = data.get('areaKnowledge', activity.area_knowledge)
         activity.is_public = data.get('isPublic', activity.is_public)
+        
+        # Se o frontend enviar isDraft: false, o backend acata e publica a atividade.
+        if 'isDraft' in data:
+            activity.is_draft = data['isDraft']
+        elif 'is_draft' in data:
+            activity.is_draft = data['is_draft']
+        
         activity.current_scenario = data.get('currentScenario', activity.current_scenario)
         activity.desired_scenario = data.get('desiredScenario', activity.desired_scenario)
         activity.activity_planning = data.get('activityPlanning', activity.activity_planning)
@@ -540,6 +547,27 @@ def save_autosave(user, data):
     """
     activity_id = data.get('id')
     
+    # Prepara os dados comuns (extração segura com fallback)
+    # NOTA: O Frontend envia camelCase (ex: gamificationDesign), 
+    # então usamos .get('gamificationDesign')
+    update_data = {
+        'title': data.get('title') or "Rascunho sem nome",
+        'description': data.get('description', ''),
+        'area_knowledge': data.get('areaKnowledge', ''),
+        # Mapeamento camelCase -> snake_case do Banco
+        'current_scenario': data.get('currentScenario', {}),
+        'desired_scenario': data.get('desiredScenario', {}),
+        'activity_planning': data.get('activityPlanning', {}),
+        'player_profile': data.get('playerProfile', {}),
+        'game_elements': data.get('gameElements', {}),
+        'rewards_offered': data.get('rewardsOffered', {}),
+        'rewarded_actions': data.get('rewardedActions', {}),
+        'gamification_rules': data.get('gamificationRules', {}),
+        # CORREÇÃO CRÍTICA DA TRILHA DO TABULEIRO:
+        # Tenta pegar 'gamificationDesign' (frontend) ou 'gamification_design' (fallback)
+        'gamification_design': data.get('gamificationDesign', data.get('gamification_design', {}))
+    }
+
     # --- CASO 1: ATUALIZAÇÃO (Já existe ID) ---
     if activity_id:
         activity = Activity.query.get(activity_id)
@@ -549,15 +577,8 @@ def save_autosave(user, data):
             return {"message": "Acesso negado."}, 403
         
         # Atualiza campos
-        activity.title = data.get('title') or "Rascunho sem nome"
-        activity.description = data.get('description', '')
-        activity.gamification_design = data.get('gamification_design', {})
-        activity.activity_planning = data.get('activityPlanning', {})
-        activity.player_profile = data.get('playerProfile', {})
-        activity.game_elements = data.get('gameElements', {})
-        activity.rewards_offered = data.get('rewardsOffered', {})
-        activity.rewarded_actions = data.get('rewardedActions', {})
-        activity.gamification_rules = data.get('gamificationRules', {})
+        for key, value in update_data.items():
+            setattr(activity, key, value)
         
         activity.updated_at = datetime.utcnow()
         
@@ -574,16 +595,8 @@ def save_autosave(user, data):
             # Cria rascunho
             new_draft = Activity(
                 professor_id=user.id,
-                title=data.get('title') or "Rascunho sem nome",
-                description=data.get('description', ''),
                 is_draft=True,  # Flag importante
-                gamification_design=data.get('gamification_design', {}),
-                activity_planning=data.get('activityPlanning', {}),
-                player_profile=data.get('playerProfile', {}),
-                game_elements=data.get('gameElements', {}),
-                rewards_offered=data.get('rewardsOffered', {}),
-                rewarded_actions=data.get('rewardedActions', {}),
-                gamification_rules=data.get('gamificationRules', {})
+                **update_data   # Desempacota o dicionário criado acima
             )
             
             db.session.add(new_draft)

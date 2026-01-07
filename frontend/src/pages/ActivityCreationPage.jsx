@@ -18,6 +18,7 @@ import QuizEditor from './QuizEditorPage';
 import NarrativeEditor from './NarrativeEditorPage';
 import LearningContentEditor from './LearningContentEditorPage';
 import { useTutorial } from '../context/TutorialContext';
+import { useToast } from '../context/ToastContext';
 
 // Nota: O GameBoardEditor é usado dentro do Step5, mas o mantemos importado aqui
 // caso seja necessário em outro local ou para referência.
@@ -67,7 +68,7 @@ function ActivityCreationPage({ existingActivity }) {
   const { activityId } = useParams();
   const isEditMode = !!activityId || !!existingActivity;
   const { logEvent } = useAnalytics('activity_creation', user?.token, activityId);
-
+  const { showToast } = useToast();
   const [showTemplateList, setShowTemplateList] = useState(false);
   const [templates, setTemplates] = useState([]);
   const [loadingTemplates, setLoadingTemplates] = useState(true);
@@ -287,7 +288,34 @@ function ActivityCreationPage({ existingActivity }) {
           if (response.ok) {
             console.log('[ActivityCreationPage] DADOS FRESCOS RECEBIDOS DO BACKEND:', data);
             // Aqui é onde o estado deveria ser atualizado com os novos dados
-            setActivityData(prev => ({ ...prev, ...data }));
+            setActivityData(prev => ({
+              ...prev,
+              id: data.id,
+              title: data.title || prev.title,
+              description: data.description || prev.description,
+              areaKnowledge: data.area_knowledge || data.areaKnowledge || prev.areaKnowledge,
+              isPublic: data.is_public ?? prev.isPublic,
+
+              // Objetos complexos
+              currentScenario: data.current_scenario || data.currentScenario || prev.currentScenario,
+              desiredScenario: data.desired_scenario || data.desiredScenario || prev.desiredScenario,
+              activityPlanning: data.activity_planning || data.activityPlanning || prev.activityPlanning,
+              playerProfile: data.player_profile || data.playerProfile || prev.playerProfile,
+              gameElements: data.game_elements || data.gameElements || prev.gameElements,
+              rewardsOffered: data.rewards_offered || data.rewardsOffered || prev.rewardsOffered,
+              rewardedActions: data.rewarded_actions || data.rewardedActions || prev.rewardedActions,
+              gamificationRules: data.gamification_rules || data.gamificationRules || prev.gamificationRules,
+
+              // CRÍTICO: Gamification Design (O Tabuleiro)
+              gamificationDesign: data.gamification_design || data.gamificationDesign || prev.gamificationDesign,
+            }));
+
+            // 2. CORREÇÃO DE UX: Pular a tela de seleção de template
+            console.log("Forçando saída da tela de seleção e indo para Etapa 1");
+            setShowInitialSelection(false);
+
+            // 3. Forçar ir para o Step 1 (Cenário)
+            setCurrentStep(1);
           } else {
             console.error('[ActivityCreationPage] Erro ao buscar dados frescos:', data.message);
           }
@@ -304,7 +332,7 @@ function ActivityCreationPage({ existingActivity }) {
     };
 
     fetchActivityDataForBoard();
-  }, [activityId, user?.token]);
+  }, [activityId, user?.token, setActivityData, setShowInitialSelection, setCurrentStep]);
 
   /**
    * @function handleAutoSaveStructure
@@ -607,7 +635,7 @@ function ActivityCreationPage({ existingActivity }) {
     // Validação da Etapa 3: Dinâmica de Participação
     if (currentStep === 3) {
       if (typeof activityData.activityPlanning?.isTeamActivity !== 'boolean') {
-        alert('Por favor, selecione a Dinâmica de Participação (Individual ou em Equipe) antes de prosseguir.');
+        showToast('Por favor, selecione a Dinâmica de Participação (Individual ou em Equipe) antes de prosseguir.');
         return; // Impede o avanço
       }
     }
@@ -649,7 +677,10 @@ function ActivityCreationPage({ existingActivity }) {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${user.token}`
           },
-          body: JSON.stringify(activityData),
+          body: JSON.stringify({
+            ...activityData,
+            isDraft: false
+          }),
         });
 
         const result = await response.json();
@@ -658,7 +689,7 @@ function ActivityCreationPage({ existingActivity }) {
           if (import.meta.env.VITE_DEBUG_MODE) {
             console.log("// LOG: [ActivityCreationPage] Atividade salva com sucesso.");
           }
-          alert(isEditMode ? 'Atividade atualizada com sucesso!' : 'Atividade criada com sucesso!');
+          showToast(isEditMode ? 'Atividade atualizada com sucesso!' : 'Atividade criada com sucesso!');
           navigate('/professor/banco-atividades');
           // Não precisamos destravar o ref aqui porque vamos sair da página
         } else {
@@ -666,7 +697,7 @@ function ActivityCreationPage({ existingActivity }) {
             console.error("// LOG: [ActivityCreationPage] Erro na resposta da API ao salvar.", result);
           }
           stopTour();
-          alert('Erro: ' + (result.message || 'Erro desconhecido do servidor.'));
+          showToast('Erro: ' + (result.message || 'Erro desconhecido do servidor.'));
           // Se deu erro, destravamos para o usuário tentar de novo
           isSubmittingRef.current = false;
           setIsSaving(false);
@@ -677,7 +708,7 @@ function ActivityCreationPage({ existingActivity }) {
         }
         console.error(error);
         stopTour();
-        alert('Ocorreu um erro de rede. Verifique sua conexão.');
+        showToast('Ocorreu um erro de rede. Verifique sua conexão.');
         // Se deu erro de rede, destravamos
         isSubmittingRef.current = false;
         setIsSaving(false);
@@ -828,6 +859,7 @@ function ActivityCreationPage({ existingActivity }) {
   // --- O JSX ESTRUTURAL DA PÁGINA É MANTIDO ---
   return (
     <div className="min-h-screen bg-primary-bg dark:bg-primary-bg">
+
       <div className="container mx-auto px-4 py-8">
         {/* Cabeçalho */}
         <div className="text-center mb-8">

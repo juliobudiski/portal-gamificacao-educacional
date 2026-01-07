@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getThemeAssets, decorationSpawnPoints, boardStructuralImages } from '../components/activity/GameBoardConfig';
 import useAssetLoader from './useAssetLoader';
+import { useToast } from '../context/ToastContext';
 
 const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === 'true';
 const debugLog = (message, ...optionalParams) => {
@@ -16,7 +17,7 @@ export const useActivityLogic = (activityId) => {
     const navigate = useNavigate();
     debugLog('Hook useActivityLogic INICIALIZADO para activityId:', activityId);
     debugLog('Estado inicial do useAuth():', { user, token: token ? '[TOKEN_EXISTS]' : null });
-
+    const { showToast } = useToast();
     const [activity, setActivity] = useState(null);
     const [userProgress, setUserProgress] = useState(null);
     const [analytics, setAnalytics] = useState(null);
@@ -376,7 +377,7 @@ export const useActivityLogic = (activityId) => {
             setActiveStepContent({ ...step.content, step_id: step.id });
             setCurrentView(step.type);
         } else {
-            alert("Conteúdo não disponível.");
+            showToast("Conteúdo não disponível.");
         }
     }, []);
 

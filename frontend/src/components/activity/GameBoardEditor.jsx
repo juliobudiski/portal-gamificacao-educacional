@@ -7,6 +7,7 @@ import {
 import { getThemeAssets, BOARD_THEMES, decorationSpawnPoints } from '../../components/activity/GameBoardConfig';
 import AIConfigModal from '../activity/AIConfigModal';
 import { useTutorial } from '../../context/TutorialContext';
+import { useToast } from '../../context/ToastContext';
 
 /**
  * @component GameBoardEditor
@@ -26,6 +27,8 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
 
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
     const { startTour, stopTour } = useTutorial();
+    const { showToast } = useToast();
+
     useEffect(() => {
         // Se o modal abriu, inicia o tour específico da IA
         if (import.meta.env.VITE_DEBUG_MODE === 'true') {
@@ -72,7 +75,7 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
             if (import.meta.env.VITE_DEBUG_MODE === 'true') {
                 console.warn('// LOG: [GameBoardEditor] Bloqueio: Quiz não pode ser o primeiro passo.');
             }
-            alert("Incoerência Pedagógica: Um Quiz não pode ser o primeiro passo. Adicione uma Narrativa ou Conteúdo antes para preparar o aluno.");
+            showToast("Incoerência Pedagógica: Um Quiz não pode ser o primeiro passo. Adicione uma Narrativa ou Conteúdo antes para preparar o aluno.");
             return;
         }
 
@@ -97,11 +100,11 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
         if (indexToRemove === -1) return;
 
         if (indexToRemove === 0 && currentPath.length > 1 && currentPath[1].type === 'quiz') {
-            // TODO: Substituir alerts nativos por um sistema de notificação (Toast) mais amigável.
+            // TODO: Substituir showToasts nativos por um sistema de notificação (Toast) mais amigável.
             if (import.meta.env.VITE_DEBUG_MODE === 'true') {
                 console.warn('// LOG: [GameBoardEditor] Bloqueio: Remoção impedida pois tornaria um Quiz o primeiro passo.');
             }
-            alert("Ação Bloqueada: Você não pode remover este passo pois o próximo item é um Quiz. O Quiz não pode se tornar o início da trilha.");
+            showToast("Ação Bloqueada: Você não pode remover este passo pois o próximo item é um Quiz. O Quiz não pode se tornar o início da trilha.");
             return;
         }
 
@@ -172,7 +175,7 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
         });
 
         updateDesign('progression_path', newPath);
-        alert("Roteiro gerado! Observe os itens marcados como 'Rascunho Automático' e valide-os clicando no lápis.");
+        showToast("Roteiro gerado! Observe os itens marcados como 'Rascunho Automático' e valide-os clicando no lápis.");
     };
 
     // --- MANIPULAÇÃO DO HUB ---

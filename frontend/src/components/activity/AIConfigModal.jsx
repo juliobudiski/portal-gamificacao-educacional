@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { FaMagic, FaTimes, FaRobot, FaBook, FaUsers, FaPlus, FaTrash, FaSlidersH, FaBullseye, FaGraduationCap, FaToggleOn, FaToggleOff } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { io } from 'socket.io-client';
+import { useToast } from '../../context/ToastContext';
+
 const PERSONALITIES = [
     { id: 'Socrático', label: 'Mestre Socrático (Faz pensar)', desc: 'Foca em perguntas reflexivas e aprendizado guiado.' },
     { id: 'Hardcore', label: 'Desafiador (Hardcore)', desc: 'Perguntas difíceis, tom sério de urgência.' },
@@ -25,7 +27,7 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
     const [progressMessage, setProgressMessage] = useState("Iniciando...");
     const socketRef = useRef(null); // Referência para o socket
     const progressInterval = useRef(null); // Referência para o intervalo de progresso
-
+    const { showToast } = useToast();
     // Refs para garantir que o socket não reconecte se as funções do pai mudarem (evita desconexões no log)
     const onSuccessRef = useRef(onSuccess);
     const onCloseRef = useRef(onClose);
@@ -71,9 +73,11 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
         // 2. Conexão com o Socket
         const socketUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
         const socket = io(socketUrl, {
-            transports: ['websocket', 'polling'], // Prioriza websocket
-            reconnectionAttempts: 3,
-            forceNew: true // Garante uma nova conexão
+            transports: ['websocket'], // Força WebSocket (evita polling em túneis)
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000,
+            timeout: 60000, // Aumenta timeout de conexão para 60s
+            forceNew: true
         });
         socketRef.current = socket;
 
@@ -86,18 +90,17 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
 
         // 4. Listeners para os eventos de progresso da IA
         socket.on('ai_progress', (data) => {
-            setProgress(data.percent);
+            // Garante que o progresso não ultrapasse 100% ou seja inválido
+            const safePercent = Math.min(Math.max(data.percent || 0, 0), 99);
+            setProgress(safePercent);
             setProgressMessage(data.message || "Processando...");
         });
 
         socket.on('ai_complete', (data) => {
-            // O backend deve enviar { result: {...} }. Para sermos mais robustos,
-            // vamos verificar se 'data.result' existe, ou se 'data' é o próprio mapa.
             const contentMap = data.result || data;
 
-            // A validação agora é feita no mapa de conteúdo extraído.
             if (!contentMap || typeof contentMap !== 'object' || Object.keys(contentMap).length === 0) {
-                alert("A IA não conseguiu gerar o conteúdo devido a limites de cota. Tente novamente em alguns minutos.");
+                showToast("A IA não conseguiu gerar o conteúdo. Tente novamente.");
                 setLoading(false);
                 return;
             }
@@ -111,7 +114,7 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
         });
 
         socket.on('ai_error', (data) => {
-            alert(`Erro na geração: ${data.message}`);
+            showToast(`Erro na geração: ${data.message}`);
             setLoading(false); // Libera o botão para nova tentativa
         });
 
@@ -153,9 +156,9 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
 
     const handleOrchestrate = async () => {
         if (!config.teachingFocus.trim()) {
-            return alert("Por favor, defina o Tópico de Ensino (ex: 'Ponteiros em C', 'Loop For'). A IA precisa disso para criar as questões.");
+            return showToast("Por favor, defina o Tópico de Ensino (ex: 'Ponteiros em C', 'Loop For'). A IA precisa disso para criar as questões.");
         }
-        if (!config.narrativeGoal.trim()) return alert("Descreva o enredo.");
+        if (!config.narrativeGoal.trim()) return showToast("Descreva o enredo.");
 
         setLoading(true);
         setProgress(2);
@@ -178,11 +181,11 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                 console.log("Geração assíncrona iniciada...");
             } else {
                 const errorData = await response.json();
-                alert(`Erro ao iniciar: ${errorData.message}`);
+                showToast(`Erro ao iniciar: ${errorData.message}`);
                 setLoading(false);
             }
         } catch (error) {
-            alert("Erro de conexão com o servidor.");
+            showToast("Erro de conexão com o servidor.");
             setLoading(false);
         }
     };
@@ -190,6 +193,7 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
 
     return (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl border border-purple-500/30 overflow-hidden flex flex-col max-h-[90vh]">
 
                 {/* Header */}

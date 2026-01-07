@@ -5,6 +5,7 @@ import ItemCard from './ItemCard';
 import { HexColorPicker } from 'react-colorful';
 import { useAuth } from '../../context/AuthContext'; // <-- IMPORTADO
 import { useParams } from 'react-router-dom'; // <-- IMPORTADO
+import { useToast } from '../../context/ToastContext';
 
 // --- LISTA DE ITENS PRÉ-DEFINIDOS (sem alterações) ---
 const PREDEFINED_COSMETICS = [
@@ -81,7 +82,7 @@ const AddItemForm = ({ onAddItem, onCancel }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!name || !description || !price) {
-            alert('Por favor, preencha todos os campos.');
+            showToast('Por favor, preencha todos os campos.');
             return;
         }
         let finalEffectId = null;
@@ -145,7 +146,7 @@ const AddItemForm = ({ onAddItem, onCancel }) => {
 const StoreTab = ({ items, userPoints, onPurchaseSuccess, onAddItem, onDeleteItem, onReturn, userRole }) => {
     const [showAddForm, setShowAddForm] = useState(false);
     const [modalState, setModalState] = useState({ isOpen: false, title: '', message: '', onConfirm: null });
-
+    const { showToast } = useToast();
     // --- INÍCIO DA CORREÇÃO ---
     const { user } = useAuth();
     const { activityId } = useParams();
@@ -168,14 +169,14 @@ const StoreTab = ({ items, userPoints, onPurchaseSuccess, onAddItem, onDeleteIte
                 throw new Error(data.message || "Não foi possível completar a compra.");
             }
 
-            alert("Compra realizada com sucesso!");
+            showToast("Compra realizada com sucesso!");
             console.log("[StoreTab] Compra realizada com sucesso!Resposta do servidor:", data);
 
 
             // 3. CHAME A FUNÇÃO CORRETA ('onPurchaseSuccess') que veio pela prop
             onPurchaseSuccess(data.updated_progress);
         } catch (err) {
-            alert(`Erro: ${err.message}`);
+            showToast(`Erro: ${err.message}`);
         }
     };
 
