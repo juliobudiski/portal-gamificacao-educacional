@@ -80,12 +80,7 @@ def _check_medal_fenix(user, activity_id, **kwargs):
     # Se encontrarmos uma resposta incorreta anterior, o critério foi cumprido.
     return previous_incorrect_response is not None
 
-def _check_medal_peca_chave(user, activity_id, **kwargs):
-    """Verifica a Medalha "Peça-Chave": completar um passo 'bloqueador'."""
-    # Placeholder: Esta lógica requer que o professor possa marcar um passo como 'bloqueador'.
-    # O gatilho seria no 'handleStepCompletion'.
-    # A verificação seria: if kwargs.get('step_is_blocker'): return True
-    return False
+
 
 # ------------------------------------------------------------------------------
 # FUNÇÃO PRINCIPAL DE CONCESSÃO DE MEDALHAS
@@ -193,29 +188,5 @@ MEDAL_CHECK_FUNCTIONS = {
     "Medalha do Explorador": _check_medal_explorador,
     "Medalha do Inspetor": _check_medal_inspetor,
     "Medalha do Velocista": _check_medal_velocista,
-    "Medalha Fênix": _check_medal_fenix,
-    "Peça-Chave": _check_medal_peca_chave,
-    #"Diamante": _check_medal_diamante,
-
-    # Medalhas de Interação
-    #"Conector": _check_medal_conector,
-    #"Embaixador": _check_medal_embaixador,
-    #"Semear Saber": _check_medal_semear_saber,
-    #"Sinergia": _check_medal_sinergia,
-
-    # Medalhas de Performance
-    #"Mestre": _check_medal_mestre,
-    #"Maratonista": _check_medal_maratonista,
-
-    # Medalhas de Engajamento
-    #"Pioneiro": _check_medal_pioneiro,
-    #"Veterano": _check_medal_veterano,
-    #"Caçador": _check_medal_cacador,
-
-    # Medalhas Especiais/Complexas
-    #"Arquiteto": _check_medal_arquiteto,
-    #"Inovador": _check_medal_inovador,
-   # "Curioso": _check_medal_curioso,
-    #"Polimata": _check_medal_polimata,
-    #"Equipe": _check_medal_equipe,
+    "Medalha \"Fênix\"": _check_medal_fenix
 }

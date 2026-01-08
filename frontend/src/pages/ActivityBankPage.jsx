@@ -173,12 +173,30 @@ function ActivityBankPage() {
         }
     };
 
+    const currentList = useMemo(() => {
+        if (activeTab === 'drafts') return drafts;
+        // Lógica existente para 'my'
+        if (assignmentFilter === 'all') return myActivities;
+        if (assignmentFilter === 'assigned') return myActivities.filter(a => a.class_id !== null);
+        if (assignmentFilter === 'unassigned') return myActivities.filter(a => a.class_id === null);
+        return [];
+    }, [activeTab, drafts, myActivities, assignmentFilter]);
+
+    const handleSelectAll = () => {
+        const visibleIds = currentList.map(a => a.id);
+        if (isAllSelected) {
+            setSelectedActivities([]); // Desmarcar todos
+        } else {
+            setSelectedActivities(visibleIds); // Marcar todos
+        }
+    };
+
     const handleSelectActivity = (activityId) => {
-        setSelectedActivities(prevSelected => {
-            if (prevSelected.includes(activityId)) {
-                return prevSelected.filter(id => id !== activityId); // Desmarcar
+        setSelectedActivities(prev => {
+            if (prev.includes(activityId)) {
+                return prev.filter(id => id !== activityId); // Remove se já estiver selecionado
             } else {
-                return [...prevSelected, activityId]; // Marcar
+                return [...prev, activityId]; // Adiciona se não estiver
             }
         });
     };
@@ -199,16 +217,6 @@ function ActivityBankPage() {
         return myActivities;
     }, [myActivities, assignmentFilter]);
 
-    const handleSelectAll = () => {
-        // Seleciona ou deseleciona todos os IDs das atividades *visíveis*
-        const visibleIds = filteredMyActivities.map(a => a.id);
-        if (selectedActivities.length === visibleIds.length) {
-            setSelectedActivities([]); // Desmarcar todos
-        } else {
-            setSelectedActivities(visibleIds); // Marcar todos
-        }
-    };
-
     const performBulkDelete = async () => {
         const count = selectedActivities.length;
         if (count === 0) return;
@@ -226,8 +234,15 @@ function ActivityBankPage() {
             const data = await response.json();
             if (response.ok) {
                 setMessage(data.message);
-                // Remove as atividades deletadas do estado local
-                setMyActivities(prev => prev.filter(act => !selectedActivities.includes(act.id)));
+
+                // --- ATUALIZAÇÃO AQUI ---
+                // Remove do estado visual correto dependendo da aba
+                if (activeTab === 'my') {
+                    setMyActivities(prev => prev.filter(act => !selectedActivities.includes(act.id)));
+                } else if (activeTab === 'drafts') {
+                    setDrafts(prev => prev.filter(d => !selectedActivities.includes(d.id)));
+                }
+
                 setSelectedActivities([]); // Limpa a seleção
             } else {
                 throw new Error(data.message);
@@ -238,10 +253,15 @@ function ActivityBankPage() {
     };
 
     const isAllSelected = useMemo(() => {
-        const visibleIds = filteredMyActivities.map(a => a.id);
+        const visibleIds = currentList.map(a => a.id);
         return visibleIds.length > 0 && visibleIds.every(id => selectedActivities.includes(id));
-    }, [selectedActivities, filteredMyActivities]);
+    }, [selectedActivities, currentList]);
 
+    const handleTabChange = (tab) => {
+        setActiveTab(tab);
+        setSelectedActivities([]); // Limpa seleção ao trocar de aba
+        setAssignmentFilter('all'); // Reseta filtros
+    };
 
     return (
         <div className="min-h-screen bg-primary-bg p-4 md:p-8 text-primary-text animate-fade-in">
@@ -271,16 +291,15 @@ function ActivityBankPage() {
                     </div>
                 </div>
 
-                {/* Abas de Navegação */}
+                {/* Abas de Navegação (Atualizado com handleTabChange) */}
                 <div className="mb-6 flex border-b border-border-color">
-                    <button onClick={() => setActiveTab('my')} className={`flex items-center gap-2 py-3 px-6 font-semibold transition-colors ${activeTab === 'my' ? 'border-b-2 border-accent-yellow text-accent-yellow' : 'text-secondary-text hover:text-primary-text'}`}>
+                    <button onClick={() => handleTabChange('my')} className={`flex items-center gap-2 py-3 px-6 font-semibold transition-colors ${activeTab === 'my' ? 'border-b-2 border-accent-yellow text-accent-yellow' : 'text-secondary-text hover:text-primary-text'}`}>
                         <FaUserEdit /> Minhas Atividades ({myActivities.length})
                     </button>
-                    {/* --- NOVA ABA RASCUNHOS --- */}
-                    <button onClick={() => setActiveTab('drafts')} className={`flex items-center gap-2 py-3 px-6 font-semibold transition-colors ${activeTab === 'drafts' ? 'border-b-2 border-gray-400 text-gray-400' : 'text-secondary-text hover:text-primary-text'}`}>
+                    <button onClick={() => handleTabChange('drafts')} className={`flex items-center gap-2 py-3 px-6 font-semibold transition-colors ${activeTab === 'drafts' ? 'border-b-2 border-gray-400 text-gray-400' : 'text-secondary-text hover:text-primary-text'}`}>
                         <FaPencilAlt /> Rascunhos ({drafts.length})
                     </button>
-                    <button onClick={() => setActiveTab('public')} className={`flex items-center gap-2 py-3 px-6 font-semibold transition-colors ${activeTab === 'public' ? 'border-b-2 border-accent-teal text-accent-teal' : 'text-secondary-text hover:text-primary-text'}`}>
+                    <button onClick={() => handleTabChange('public')} className={`flex items-center gap-2 py-3 px-6 font-semibold transition-colors ${activeTab === 'public' ? 'border-b-2 border-accent-teal text-accent-teal' : 'text-secondary-text hover:text-primary-text'}`}>
                         <FaGlobeAmericas /> Banco Público ({publicActivities.length})
                     </button>
                 </div>
@@ -309,57 +328,53 @@ function ActivityBankPage() {
                     <p className="text-center py-10">Carregando atividades...</p>
                 ) : (
                     <div>
+                        {/* BARRA DE AÇÕES FLUTUANTE (MOVIDA PARA FORA DOS IFs DAS ABAS PARA SER GLOBAL) */}
+                        {/* Aparece se houver seleção, independente se é Minhas Atividades ou Rascunhos */}
+                        {selectedActivities.length > 0 && (
+                            <div className="sticky top-4 z-20 bg-blue-900/80 backdrop-blur-sm border border-blue-500 text-primary-text rounded-xl shadow-lg p-4 mb-6 flex justify-between items-center animate-fadeIn">
+                                <span className="font-bold">{selectedActivities.length} item(s) selecionado(s)</span>
+                                <button onClick={handleBulkDeleteClick} className="flex items-center gap-2 py-2 px-4 bg-red-600 hover:bg-red-700 rounded-lg font-bold transition-transform transform hover:scale-105">
+                                    <FaTrash />
+                                    Apagar Selecionados
+                                </button>
+                            </div>
+                        )}
+
                         {activeTab === 'my' && (
                             <>
-                                {/* ===== 3. BOTÕES DE FILTRO ADICIONADOS AQUI ===== */}
+                                {/* Filtros e Selecionar Todos de "Minhas Atividades" */}
                                 <div className="flex flex-wrap justify-center items-center gap-4 mb-8 bg-secondary-bg p-3 rounded-xl">
+                                    {/* ... (Botões de filtro 'assignmentFilter' permanecem iguais) ... */}
+
                                     <span className="font-semibold text-secondary-text mr-2 flex items-center"><FaFilter className="mr-2" />Filtrar por:</span>
-                                    <button onClick={() => setAssignmentFilter('all')} className={`py-2 px-4 rounded-lg text-sm font-bold transition-all ${assignmentFilter === 'all' ? 'bg-accent-yellow text-primary-text shadow-lg' : 'bg-border-color hover:bg-hover-bg-color text-secondary-text'}`}>
-                                        Todas
-                                    </button>
-                                    <button onClick={() => setAssignmentFilter('assigned')} className={`py-2 px-4 rounded-lg text-sm font-bold transition-all ${assignmentFilter === 'assigned' ? 'bg-accent-yellow text-primary-text shadow-lg' : 'bg-border-color hover:bg-hover-bg-color text-secondary-text'}`}>
-                                        Atribuídas
-                                    </button>
-                                    <button onClick={() => setAssignmentFilter('unassigned')} className={`py-2 px-4 rounded-lg text-sm font-bold transition-all ${assignmentFilter === 'unassigned' ? 'bg-accent-yellow text-primary-text shadow-lg' : 'bg-border-color hover:bg-hover-bg-color text-secondary-text'}`}>
-                                        Não Atribuídas (Modelos)
-                                    </button>
-                                    {/* ===== 4. CHECKBOX "SELECIONAR TODOS" E BARRA DE AÇÕES ===== */}
-                                    <div className="flex items-center gap-4">
-                                        <div className="flex items-center">
+                                    <button onClick={() => setAssignmentFilter('all')} className={`py-2 px-4 rounded-lg text-sm font-bold transition-all ${assignmentFilter === 'all' ? 'bg-accent-yellow text-primary-text shadow-lg' : 'bg-border-color hover:bg-hover-bg-color text-secondary-text'}`}>Todas</button>
+                                    <button onClick={() => setAssignmentFilter('assigned')} className={`py-2 px-4 rounded-lg text-sm font-bold transition-all ${assignmentFilter === 'assigned' ? 'bg-accent-yellow text-primary-text shadow-lg' : 'bg-border-color hover:bg-hover-bg-color text-secondary-text'}`}>Atribuídas</button>
+                                    <button onClick={() => setAssignmentFilter('unassigned')} className={`py-2 px-4 rounded-lg text-sm font-bold transition-all ${assignmentFilter === 'unassigned' ? 'bg-accent-yellow text-primary-text shadow-lg' : 'bg-border-color hover:bg-hover-bg-color text-secondary-text'}`}>Não Atribuídas</button>
+
+                                    {/* Checkbox Selecionar Todos */}
+                                    <div className="flex items-center gap-4 border-l border-gray-600 pl-4 ml-2">
+                                        <div className="flex items-center cursor-pointer" onClick={handleSelectAll}>
                                             <input
                                                 type="checkbox"
-                                                id="selectAll"
                                                 checked={isAllSelected}
-                                                onChange={handleSelectAll}
+                                                onChange={() => { }} // Controlado pelo onClick da div pai para melhor UX
                                                 className="h-5 w-5 rounded bg-border-color border-gray-500 text-accent-yellow focus:ring-accent-yellow cursor-pointer"
                                             />
-                                            <label htmlFor="selectAll" className="ml-2 text-sm font-medium text-secondary-text">Selecionar Todos</label>
+                                            <label className="ml-2 text-sm font-medium text-secondary-text cursor-pointer">Selecionar Todos</label>
                                         </div>
                                     </div>
                                 </div>
 
-
-                                {/* BARRA DE AÇÕES FLUTUANTE */}
-                                {selectedActivities.length > 0 && (
-                                    <div className="sticky top-4 z-20 bg-blue-900/80 backdrop-blur-sm border border-blue-500 text-primary-text rounded-xl shadow-lg p-4 mb-6 flex justify-between items-center animate-fadeIn">
-                                        <span className="font-bold">{selectedActivities.length} atividade(s) selecionada(s)</span>
-                                        <button onClick={handleBulkDeleteClick} className="flex items-center gap-2 py-2 px-4 bg-red-600 hover:bg-red-700 rounded-lg font-bold transition-transform transform hover:scale-105">
-                                            <FaTrash />
-                                            Apagar Selecionadas
-                                        </button>
-                                    </div>
-                                )}
-
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {filteredMyActivities.length > 0 ? (
-                                        filteredMyActivities.map(activity => (
+                                    {/* ... (Mapeamento de ActivityCard permanece igual) ... */}
+                                    {currentList.length > 0 ? (
+                                        currentList.map(activity => (
                                             <ActivityCard
                                                 key={activity.id}
                                                 activity={activity}
                                                 isOwner={true}
                                                 onDelete={handleDeleteClick}
                                                 onCopy={handleCopyClick}
-                                                // ===== 5. PASSANDO PROPS DE SELEÇÃO =====
                                                 isSelected={selectedActivities.includes(activity.id)}
                                                 onSelect={handleSelectActivity}
                                             />
@@ -370,46 +385,82 @@ function ActivityBankPage() {
                                 </div>
                             </>
                         )}
+
                         {activeTab === 'drafts' && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {drafts.length > 0 ? (
-                                    drafts.map(draft => (
-                                        <div key={draft.id} className="bg-secondary-bg border border-gray-600 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all relative group">
-                                            {/* Badge de Rascunho */}
-                                            <span className="absolute top-4 right-4 bg-gray-700 text-xs text-gray-300 px-2 py-1 rounded">
-                                                Rascunho
-                                            </span>
+                            <>
+                                {/* BARRA DE CONTROLE APENAS PARA RASCUNHOS (Só tem Selecionar Todos) */}
+                                <div className="flex justify-end items-center mb-6 bg-secondary-bg p-3 rounded-xl">
+                                    <div className="flex items-center cursor-pointer" onClick={handleSelectAll}>
+                                        <input
+                                            type="checkbox"
+                                            checked={isAllSelected}
+                                            onChange={() => { }}
+                                            className="h-5 w-5 rounded bg-border-color border-gray-500 text-accent-yellow focus:ring-accent-yellow cursor-pointer"
+                                        />
+                                        <label className="ml-2 text-sm font-medium text-secondary-text cursor-pointer">Selecionar Todos</label>
+                                    </div>
+                                </div>
 
-                                            <h3 className="text-xl font-bold text-primary-text mb-2 truncate">{draft.title || 'Sem título'}</h3>
-                                            <p className="text-sm text-secondary-text mb-4">
-                                                Última edição: {new Date(draft.updatedAt || draft.updated_at).toLocaleDateString()} às {new Date(draft.updatedAt || draft.updated_at).toLocaleTimeString()}
-                                            </p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {currentList.length > 0 ? (
+                                        currentList.map(draft => (
+                                            <div key={draft.id}
+                                                className={`
+                                bg-secondary-bg border rounded-xl p-6 shadow-lg hover:shadow-xl transition-all relative group
+                                ${selectedActivities.includes(draft.id) ? 'border-accent-yellow ring-1 ring-accent-yellow' : 'border-gray-600'}
+                             `}
+                                            // Permite selecionar clicando no card (opcional, mas cuidado para não conflitar com botões)
+                                            >
+                                                {/* --- CHECKBOX DE SELEÇÃO NO CARD DO RASCUNHO --- */}
+                                                <div className="absolute top-4 left-4 z-10">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedActivities.includes(draft.id)}
+                                                        onChange={(e) => {
+                                                            e.stopPropagation();
+                                                            handleSelectActivity(draft.id);
+                                                        }}
+                                                        className="h-5 w-5 rounded bg-secondary-bg border-gray-400 text-accent-yellow focus:ring-accent-yellow cursor-pointer"
+                                                    />
+                                                </div>
 
-                                            <div className="mt-4 flex gap-3">
-                                                <button
-                                                    onClick={() => navigate(`/professor/criar-atividade/${draft.id}`)}
-                                                    className="flex-1 bg-accent-yellow text-primary-bg py-2 rounded-lg font-bold hover:brightness-110 transition-all flex items-center justify-center gap-2"
-                                                >
-                                                    <FaPencilAlt /> Continuar Editando
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteClick(draft.id)}
-                                                    className="p-2 bg-red-600/20 text-red-500 rounded-lg hover:bg-red-600 hover:text-white transition-all"
-                                                    title="Descartar Rascunho"
-                                                >
-                                                    <FaTrash />
-                                                </button>
+                                                {/* Badge de Rascunho */}
+                                                <span className="absolute top-4 right-4 bg-gray-700 text-xs text-gray-300 px-2 py-1 rounded">
+                                                    Rascunho
+                                                </span>
+
+                                                {/* Conteúdo do Card */}
+                                                <h3 className="text-xl font-bold text-primary-text mb-2 truncate mt-6">{draft.title || 'Sem título'}</h3>
+                                                <p className="text-sm text-secondary-text mb-4">
+                                                    Última edição: {new Date(draft.updatedAt || draft.updated_at).toLocaleDateString()} às {new Date(draft.updatedAt || draft.updated_at).toLocaleTimeString()}
+                                                </p>
+
+                                                <div className="mt-4 flex gap-3">
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); navigate(`/professor/criar-atividade/${draft.id}`); }}
+                                                        className="flex-1 bg-accent-yellow text-primary-bg py-2 rounded-lg font-bold hover:brightness-110 transition-all flex items-center justify-center gap-2"
+                                                    >
+                                                        <FaPencilAlt /> Continuar
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); handleDeleteClick(draft.id); }}
+                                                        className="p-2 bg-red-600/20 text-red-500 rounded-lg hover:bg-red-600 hover:text-white transition-all"
+                                                        title="Descartar Rascunho"
+                                                    >
+                                                        <FaTrash />
+                                                    </button>
+                                                </div>
+
+                                                <p className="text-xs text-gray-500 mt-4 text-center">
+                                                    Expira em 7 dias se não editado.
+                                                </p>
                                             </div>
-
-                                            <p className="text-xs text-gray-500 mt-4 text-center">
-                                                Expira em 7 dias se não editado.
-                                            </p>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <p className="col-span-full text-center py-10 text-secondary-text">Nenhum rascunho pendente.</p>
-                                )}
-                            </div>
+                                        ))
+                                    ) : (
+                                        <p className="col-span-full text-center py-10 text-secondary-text">Nenhum rascunho pendente.</p>
+                                    )}
+                                </div>
+                            </>
                         )}
                         {activeTab === 'public' && (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

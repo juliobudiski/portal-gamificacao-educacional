@@ -19,7 +19,8 @@ import NarrativeEditor from './NarrativeEditorPage';
 import LearningContentEditor from './LearningContentEditorPage';
 import { useTutorial } from '../context/TutorialContext';
 import { useToast } from '../context/ToastContext';
-
+import ActivityCreationStepper from '../components/activity/ActivityCreationStepper';
+import { FaCheckCircle, FaTimesCircle, FaSync } from 'react-icons/fa';
 // Nota: O GameBoardEditor é usado dentro do Step5, mas o mantemos importado aqui
 // caso seja necessário em outro local ou para referência.
 //import GameBoardEditor from '../../components/activity/GameBoardEditor';
@@ -74,6 +75,7 @@ function ActivityCreationPage({ existingActivity }) {
   const [loadingTemplates, setLoadingTemplates] = useState(true);
   const [templateError, setTemplateError] = useState(null);
 
+
   const {
     activityData,
     setActivityData,
@@ -96,7 +98,29 @@ function ActivityCreationPage({ existingActivity }) {
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [helpContent, setHelpContent] = useState({ title: '', text: '' });
   const [isSaving, setIsSaving] = useState(false);
-  // (Todos os useEffects e handlers como handleNext, handlePrevious, handleInputChange, etc. são mantidos)
+  const [maxReachedStep, setMaxReachedStep] = useState(1);
+  // Atualiza o passo máximo alcançado sempre que o currentStep avança
+  useEffect(() => {
+    if (isEditMode) {
+      setMaxReachedStep(8);
+    } else {
+      // Se for criação do zero, atualiza apenas se avançou para um novo passo
+      if (currentStep > maxReachedStep) {
+        setMaxReachedStep(currentStep);
+      }
+    }
+  }, [currentStep, isEditMode, maxReachedStep]);
+
+  // Efeito especial: Se selecionou um template, libera navegação total
+  useEffect(() => {
+    // Se o formulário começou e temos dados preenchidos (ex: template), podemos liberar
+    // Uma forma simples é verificar se já temos um Title preenchido que não seja vazio
+    if (formStartedRef.current && activityData.title && !isEditMode) {
+      // Opcional: Liberar tudo se for template, ou manter progressivo. 
+      // Para UX de template, geralmente liberar tudo é melhor:
+      setMaxReachedStep(8);
+    }
+  }, [formStartedRef.current, activityData.title, isEditMode]);
 
 
   // Rola para o topo sempre que a etapa mudar, com um leve atraso para garantir a renderização
@@ -333,6 +357,22 @@ function ActivityCreationPage({ existingActivity }) {
 
     fetchActivityDataForBoard();
   }, [activityId, user?.token, setActivityData, setShowInitialSelection, setCurrentStep]);
+
+  /**
+   * Navegação direta pelo Stepper
+   */
+  const handleStepJump = (stepId) => {
+    // Validação extra de segurança
+    if (isSubmittingRef.current) return;
+
+    // Log de Analytics
+    logEvent("stepper_navigation", {
+      from_step: currentStep,
+      to_step: stepId
+    });
+
+    setCurrentStep(stepId);
+  };
 
   /**
    * @function handleAutoSaveStructure
@@ -869,36 +909,68 @@ function ActivityCreationPage({ existingActivity }) {
           <p className="mt-2 text-secondary-text dark:text-secondary-text">
             Siga as etapas para criar uma experiência de aprendizado envolvente.
           </p>
-          {/* --- INDICADOR DE AUTOSAVE --- */}
-          {!showInitialSelection && (
-            // ALTERAÇÃO AQUI: Mudamos de 'absolute' para 'fixed' e adicionamos background/borda para destaque
-            <div className="fixed top-24 right-8 z-50 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 px-4 py-2 rounded-full shadow-lg text-sm font-medium transition-all duration-500">
-              {autoSaveStatus === 'saving' && (
-                <span className="text-yellow-500 flex items-center gap-2">
-                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Salvando...
-                </span>
-              )}
-              {autoSaveStatus === 'saved' && lastSavedAt && (
-                <span className="text-green-500 flex items-center gap-2">
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Salvo às {lastSavedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </span>
-              )}
-              {autoSaveStatus === 'error' && (
-                <span className="text-red-500 flex items-center gap-2">
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Erro ao salvar
-                </span>
-              )}
-            </div>
+          {/* --- INDICADOR DE AUTOSAVE (Refatorado e Robusto) --- */}
+          {!showInitialSelection && autoSaveStatus !== 'idle' && (
+            (() => {
+              // 1. Definimos a configuração baseada no status ATUAL para garantir consistência
+              let statusConfig = {
+                borderColor: 'border-gray-300',
+                icon: null,
+                text: ''
+              };
+
+              switch (autoSaveStatus) {
+                case 'saving':
+                  statusConfig = {
+                    borderColor: 'border-accent-yellow',
+                    icon: <FaSync className="animate-spin text-accent-yellow" />,
+                    text: 'Salvando alterações...'
+                  };
+                  break;
+                case 'saved':
+                  statusConfig = {
+                    borderColor: 'border-green-500',
+                    icon: <FaCheckCircle className="text-green-500" />,
+                    // Fallback: Se não tiver hora, mostra "agora" para não quebrar o layout
+                    text: lastSavedAt
+                      ? `Salvo às ${lastSavedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                      : 'Alterações salvas'
+                  };
+                  break;
+                case 'error':
+                  statusConfig = {
+                    borderColor: 'border-red-500',
+                    icon: <FaTimesCircle className="text-red-500" />,
+                    text: 'Erro ao salvar alterações'
+                  };
+                  break;
+                default:
+                  return null; // Se não for nenhum dos 3, não renderiza nada (evita caixa vazia)
+              }
+
+              return (
+                <div className="fixed bottom-5 right-5 z-[60] animate-slide-in-right">
+                  <div className={`
+                    bg-secondary-bg border-l-4 px-6 py-4 rounded shadow-2xl 
+                    flex items-center gap-4 min-w-[300px] max-w-md border border-[#3e4a52]
+                    transition-all duration-300
+                    ${statusConfig.borderColor}
+                  `}>
+                    {/* ÍCONE */}
+                    <div className="text-xl">
+                      {statusConfig.icon}
+                    </div>
+
+                    {/* TEXTO */}
+                    <div className="flex-1">
+                      <p className="font-medium text-sm md:text-base text-primary-text">
+                        {statusConfig.text}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()
           )}
         </div>
 
@@ -1044,12 +1116,12 @@ function ActivityCreationPage({ existingActivity }) {
         ) : (
           <>
             {/* Barra de Progresso */}
-            <div id="tour-progress-bar" className="w-full bg-gray-200 dark:bg-border-color rounded-full h-2.5 mb-6">
-              <div
-                className="bg-teal-500 h-2.5 rounded-full transition-all duration-500"
-                style={{ width: `${(currentStep / totalSteps) * 100}%` }}
-              ></div>
-            </div>
+            <ActivityCreationStepper
+              currentStep={currentStep}
+              maxReachedStep={maxReachedStep}
+              onStepClick={handleStepJump}
+              isEditMode={isEditMode || (maxReachedStep === 8)} // Se já chegou ao fim ou é edit, trata como modo livre
+            />
 
             {/* Contêiner do Formulário */}
             <div id="tour-form-container" className="bg-secondary-bg dark:bg-primary-bg p-8 rounded-lg shadow-md">

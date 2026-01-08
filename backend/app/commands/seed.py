@@ -39,13 +39,6 @@ MEDALS_DATA = [
         "image_url": "/medalhas/fenix.webp",
         "type": "PLATFORM",
         "notes": "Promove a resiliência e o aprendizado com os próprios erros."
-    },
-    {
-        "name": "Medalha \"Peça-Chave\"",
-        "description": "Concedida por completar um passo crucial definido pelo professor.",
-        "image_url": "/medalhas/peca-chave.webp",
-        "type": "PLATFORM",
-        "notes": "Permite ao professor destacar e recompensar a conclusão de etapas importantes."
     }
 ]
 

@@ -17,12 +17,12 @@ def create_app():
     # 2. Carregue a configuração a partir de um arquivo/objeto
     from .config import Config
     app.config.from_object(Config)
-    from app.commands import seed, triggers, simulations
+    from app.commands import seed, triggers, simulations, maintenance
     
     # 3. Associe as instâncias das extensões com o objeto 'app'
     db.init_app(app)
     migrate.init_app(app, db)
-    
+    maintenance.init_app(app)
     # Habilita o CORS globalmente
     CORS(app, resources={r"/api/*": {"origins": "*"}}) 
     
