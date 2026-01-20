@@ -11,10 +11,12 @@ from google.auth.transport import requests
 import requests
 from datetime import datetime
 from sqlalchemy.orm.attributes import flag_modified
-from ..utils.geo import update_user_location_data  # <--- ADICIONE ISSO
-
+from ..utils.geo import update_user_location_data  
+from ..utils.email_sender import send_reset_email
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 
 auth_bp = Blueprint('auth', __name__)
+
 # --- ESTRUTURA DOS AVATARES PADRÃO ---
 # Defina esta lista no topo do arquivo para ser reutilizada
 DEFAULT_AVATARS = [
@@ -27,6 +29,10 @@ DEFAULT_AVATARS = [
     {"url": "/avatars/default_avatar.webp", "name": "Avatar Padrão", "type": "normal"},
 ]
 DEFAULT_PROFILE_PICTURE = "/avatars/default_avatar.webp"
+
+def get_serializer():
+    return URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+
 # --- 2. FUNÇÃO AUXILIAR PARA LOGGING DE AUTENTICAÇÃO ---
 def _log_auth_event(user_id, action, details, is_success=True):
     """
@@ -604,3 +610,75 @@ def update_onboarding():
         db.session.rollback()
         current_app.logger.error(f"Erro ao salvar onboarding: {str(e)}")
         return jsonify({"msg": "Erro ao salvar progresso."}), 500
+    
+@auth_bp.route('/forgot-password', methods=['POST'])
+@cross_origin()
+def forgot_password():
+    current_app.logger.info("=== INÍCIO RECUPERAÇÃO DE SENHA ===")
+    
+    try:
+        data = request.get_json()
+        email = data.get('email')
+        current_app.logger.info(f"Solicitação recebida para o email: {email}")
+        
+        user = User.query.filter_by(email=email).first()
+        
+        # Se usuário não existe, fingimos sucesso por segurança
+        if not user:
+            current_app.logger.warning(f"Email {email} não encontrado no banco.")
+            return jsonify({"message": "Se o e-mail existir, um link foi enviado."}), 200
+
+        s = get_serializer()
+        token = s.dumps(user.email, salt='password-reset')
+        
+        # Verifica se a URL do frontend está configurada
+        frontend_url = current_app.config.get('FRONTEND_URL')
+        if not frontend_url:
+            # Fallback para localhost se não estiver no config
+            frontend_url = 'http://localhost:5173'
+            current_app.logger.warning(f"FRONTEND_URL não configurada. Usando fallback: {frontend_url}")
+
+        reset_url = f"{frontend_url}/reset-password/{token}"
+        current_app.logger.info(f"Gerando link de reset: {reset_url}")
+        
+        # Tenta enviar o e-mail
+        email_sent = send_reset_email(user.email, reset_url)
+        
+        if email_sent:
+            current_app.logger.info("E-mail enviado com sucesso via Resend.")
+            return jsonify({"message": "Se o e-mail existir, um link foi enviado."}), 200
+        else:
+            current_app.logger.error("Falha no envio do e-mail (retorno False do send_reset_email).")
+            return jsonify({"error": "Erro interno ao enviar e-mail."}), 500
+
+    except Exception as e:
+        current_app.logger.error(f"ERRO CRÍTICO na rota forgot-password: {str(e)}")
+        return jsonify({"error": "Erro interno do servidor."}), 500
+
+@auth_bp.route('/reset-password/<token>', methods=['POST'])
+@cross_origin() # <--- IMPORTANTE
+def reset_password(token):
+    current_app.logger.info("=== INÍCIO RESET DE SENHA ===")
+    s = get_serializer()
+    data = request.get_json()
+    new_password = data.get('password')
+
+    try:
+        email = s.loads(token, salt='password-reset', max_age=3600)
+        current_app.logger.info(f"Token válido para o email: {email}")
+    except SignatureExpired:
+        current_app.logger.warning("Token expirado.")
+        return jsonify({"error": "O link expirou."}), 400
+    except BadSignature:
+        current_app.logger.warning("Token inválido.")
+        return jsonify({"error": "Link inválido."}), 400
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({"error": "Usuário não encontrado."}), 404
+
+    user.password_hash = generate_password_hash(new_password)
+    db.session.commit()
+    current_app.logger.info("Senha atualizada no banco com sucesso.")
+
+    return jsonify({"message": "Senha atualizada com sucesso!"}), 200

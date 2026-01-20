@@ -10939,5 +10939,409 @@
         "editors": [],
         "operating_systems": [],
         "categories": []
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 16,
+            "total_seconds": 1016.443,
+            "digital": "0:16",
+            "decimal": "0.27",
+            "text": "16 mins",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 3,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2026-01-14T03:00:00Z",
+            "end": "2026-01-15T02:59:59Z",
+            "date": "2026-01-14",
+            "text": "Wed Jan 14th 2026",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [
+            {
+                "name": "Aula 1B",
+                "total_seconds": 1016.443,
+                "ai_additions": 0,
+                "ai_deletions": 0,
+                "human_additions": 3,
+                "human_deletions": 0,
+                "color": null,
+                "digital": "0:16:56",
+                "decimal": "0.27",
+                "text": "16 mins",
+                "hours": 0,
+                "minutes": 16,
+                "seconds": 56,
+                "percent": 100.0
+            },
+            {
+                "name": "aulaUnicesumar",
+                "total_seconds": 0.0,
+                "ai_additions": 0,
+                "ai_deletions": 0,
+                "human_additions": 0,
+                "human_deletions": 0,
+                "color": null,
+                "digital": "0:00:00",
+                "decimal": "0.00",
+                "text": "0 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0,
+                "percent": 0.0
+            }
+        ],
+        "languages": [
+            {
+                "name": "Java",
+                "total_seconds": 1016.443,
+                "digital": "0:16:56",
+                "decimal": "0.27",
+                "text": "16 mins",
+                "hours": 0,
+                "minutes": 16,
+                "seconds": 56,
+                "percent": 100.0
+            }
+        ],
+        "dependencies": [],
+        "machines": [
+            {
+                "name": "julio-Inspiron-5421",
+                "total_seconds": 1016.443,
+                "machine_name_id": "48856419-6e6f-4d93-b196-2d6b4f8f3f7f",
+                "digital": "0:16:56",
+                "decimal": "0.27",
+                "text": "16 mins",
+                "hours": 0,
+                "minutes": 16,
+                "seconds": 56,
+                "percent": 100.0
+            }
+        ],
+        "editors": [
+            {
+                "name": "VS Code",
+                "total_seconds": 1016.443,
+                "digital": "0:16:56",
+                "decimal": "0.27",
+                "text": "16 mins",
+                "hours": 0,
+                "minutes": 16,
+                "seconds": 56,
+                "percent": 100.0
+            }
+        ],
+        "operating_systems": [
+            {
+                "name": "Linux",
+                "total_seconds": 1016.443,
+                "digital": "0:16:56",
+                "decimal": "0.27",
+                "text": "16 mins",
+                "hours": 0,
+                "minutes": 16,
+                "seconds": 56,
+                "percent": 100.0
+            }
+        ],
+        "categories": [
+            {
+                "name": "Coding",
+                "total_seconds": 1010.347,
+                "digital": "0:16:50",
+                "decimal": "0.27",
+                "text": "16 mins",
+                "hours": 0,
+                "minutes": 16,
+                "seconds": 50,
+                "percent": 99.4
+            },
+            {
+                "name": "Debugging",
+                "total_seconds": 6.096,
+                "digital": "0:00:06",
+                "decimal": "0.00",
+                "text": "6 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 6,
+                "percent": 0.6
+            }
+        ]
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2026-01-15T03:00:00Z",
+            "end": "2026-01-16T02:59:59Z",
+            "date": "2026-01-15",
+            "text": "Thu Jan 15th 2026",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [],
+        "languages": [],
+        "dependencies": [],
+        "machines": [],
+        "editors": [],
+        "operating_systems": [],
+        "categories": []
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2026-01-16T03:00:00Z",
+            "end": "2026-01-17T02:59:59Z",
+            "date": "2026-01-16",
+            "text": "Fri Jan 16th 2026",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [],
+        "languages": [],
+        "dependencies": [],
+        "machines": [],
+        "editors": [],
+        "operating_systems": [],
+        "categories": []
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2026-01-17T03:00:00Z",
+            "end": "2026-01-18T02:59:59Z",
+            "date": "2026-01-17",
+            "text": "Sat Jan 17th 2026",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [],
+        "languages": [],
+        "dependencies": [],
+        "machines": [],
+        "editors": [],
+        "operating_systems": [],
+        "categories": []
+    },
+    {
+        "languages": [],
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "editors": [],
+        "operating_systems": [],
+        "categories": [],
+        "dependencies": [],
+        "machines": [],
+        "projects": [],
+        "range": {
+            "start": "2026-01-18T03:00:00Z",
+            "end": "2026-01-19T02:59:59Z",
+            "date": "2026-01-18",
+            "text": "Sun Jan 18th 2026",
+            "timezone": "America/Sao_Paulo"
+        }
+    },
+    {
+        "languages": [
+            {
+                "name": "Java",
+                "total_seconds": 9138.606,
+                "digital": "2:32:18",
+                "decimal": "2.53",
+                "text": "2 hrs 32 mins",
+                "hours": 2,
+                "minutes": 32,
+                "seconds": 18,
+                "percent": 100.0
+            }
+        ],
+        "grand_total": {
+            "hours": 2,
+            "minutes": 32,
+            "total_seconds": 9138.606,
+            "digital": "2:32",
+            "decimal": "2.53",
+            "text": "2 hrs 32 mins",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 145,
+            "human_deletions": 45
+        },
+        "editors": [
+            {
+                "name": "VS Code",
+                "total_seconds": 9138.606,
+                "digital": "2:32:18",
+                "decimal": "2.53",
+                "text": "2 hrs 32 mins",
+                "hours": 2,
+                "minutes": 32,
+                "seconds": 18,
+                "percent": 100.0
+            }
+        ],
+        "operating_systems": [
+            {
+                "name": "Linux",
+                "total_seconds": 9138.606,
+                "digital": "2:32:18",
+                "decimal": "2.53",
+                "text": "2 hrs 32 mins",
+                "hours": 2,
+                "minutes": 32,
+                "seconds": 18,
+                "percent": 100.0
+            }
+        ],
+        "categories": [
+            {
+                "name": "Coding",
+                "total_seconds": 9117.539,
+                "digital": "2:31:57",
+                "decimal": "2.52",
+                "text": "2 hrs 31 mins",
+                "hours": 2,
+                "minutes": 31,
+                "seconds": 57,
+                "percent": 99.77
+            },
+            {
+                "name": "Debugging",
+                "total_seconds": 21.067,
+                "digital": "0:00:21",
+                "decimal": "0.00",
+                "text": "21 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 21,
+                "percent": 0.23
+            }
+        ],
+        "dependencies": [],
+        "machines": [
+            {
+                "name": "julio-Inspiron-5421",
+                "total_seconds": 9138.606,
+                "machine_name_id": "a953cbd6-2339-44b5-97e5-2552b492bb00",
+                "digital": "2:32:18",
+                "decimal": "2.53",
+                "text": "2 hrs 32 mins",
+                "hours": 2,
+                "minutes": 32,
+                "seconds": 18,
+                "percent": 100.0
+            }
+        ],
+        "projects": [
+            {
+                "name": "Unicesumar",
+                "total_seconds": 6744.003,
+                "ai_additions": 0,
+                "ai_deletions": 0,
+                "human_additions": 123,
+                "human_deletions": 43,
+                "digital": "1:52:24",
+                "decimal": "1.87",
+                "text": "1 hr 52 mins",
+                "hours": 1,
+                "minutes": 52,
+                "seconds": 24,
+                "percent": 73.8
+            },
+            {
+                "name": "Aula 2A",
+                "total_seconds": 2394.603,
+                "ai_additions": 0,
+                "ai_deletions": 0,
+                "human_additions": 22,
+                "human_deletions": 2,
+                "digital": "0:39:54",
+                "decimal": "0.65",
+                "text": "39 mins",
+                "hours": 0,
+                "minutes": 39,
+                "seconds": 54,
+                "percent": 26.2
+            }
+        ],
+        "range": {
+            "start": "2026-01-19T03:00:00Z",
+            "end": "2026-01-20T02:59:59Z",
+            "date": "2026-01-19",
+            "text": "Mon Jan 19th 2026",
+            "timezone": "America/Sao_Paulo"
+        }
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2026-01-20T03:00:00Z",
+            "end": "2026-01-21T02:59:59Z",
+            "date": "2026-01-20",
+            "text": "Tue Jan 20th 2026",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [],
+        "languages": [],
+        "dependencies": [],
+        "machines": [],
+        "editors": [],
+        "operating_systems": [],
+        "categories": []
     }
 ]

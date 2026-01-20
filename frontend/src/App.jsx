@@ -17,6 +17,7 @@ import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage'
 import UserProfilePage from './pages/UserProfilePage';
 import AboutUsPage from './pages/AboutUsPage';
 import NotFoundPage from './pages/NotFoundPage';
@@ -588,6 +589,7 @@ function AppContent() {
           <Route path="/cadastro" element={<RegisterPage />} />
           <Route path="/sobre-nos" element={<AboutUsPage />} />
           <Route path="/recuperar-senha" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
           <Route path="/contact" element={<ContactPage />} />
 
           <Route element={<PrivateRoute />}>

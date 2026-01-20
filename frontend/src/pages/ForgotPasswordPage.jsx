@@ -7,18 +7,34 @@ function ForgotPasswordPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => { // Adicionado async
     e.preventDefault();
     if (!email) return;
 
     setIsLoading(true);
 
-    // Simulação de chamada de API (delay de 1.5s)
-    setTimeout(() => {
-      console.log(`// LOG: [ForgotPasswordPage] Solicitação de recuperação enviada para: ${email}`);
+    try {
+      // Chamada real à API
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/forgot-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      // Não importa se deu 200 ou 404 (segurança), mostramos sucesso
+      if (response.ok) {
+        setIsSubmitted(true);
+      } else {
+        alert('Ocorreu um erro ao tentar enviar o e-mail. Tente novamente.');
+      }
+    } catch (error) {
+      console.error("Erro na recuperação:", error);
+      alert('Erro de conexão com o servidor.');
+    } finally {
       setIsLoading(false);
-      setIsSubmitted(true);
-    }, 1500);
+    }
   };
 
   return (
