@@ -7,7 +7,7 @@ from ..models import db, User, EventLog
 from ..config import Config
 from flask_cors import cross_origin
 from google.oauth2 import id_token
-from google.auth.transport import requests
+from google.auth.transport import requests as google_requests
 import requests
 from datetime import datetime
 from sqlalchemy.orm.attributes import flag_modified
@@ -190,7 +190,7 @@ def google_auth():
 
     try:
         # Verifica o token com o backend do Google
-        idinfo = id_token.verify_oauth2_token(token, requests.Request(), Config.GOOGLE_CLIENT_ID_BACKEND)
+        idinfo = id_token.verify_oauth2_token(token, google_requests.Request(), Config.GOOGLE_CLIENT_ID_BACKEND)
         current_app.logger.debug(f"Informações do token Google verificado: {idinfo.get('email')}")
 
         google_id = idinfo['sub']
