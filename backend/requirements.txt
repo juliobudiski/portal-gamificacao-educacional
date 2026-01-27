@@ -12,7 +12,6 @@ charset-normalizer==3.4.2
 click==8.2.1
 dill==0.4.1
 dnspython==2.8.0
-eralchemy2==1.4.1
 eventlet==0.40.4
 Flask==3.1.1
 Flask-APScheduler==1.13.1
