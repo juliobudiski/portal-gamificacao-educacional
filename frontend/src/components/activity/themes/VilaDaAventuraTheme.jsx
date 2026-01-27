@@ -293,8 +293,8 @@ const VilaDaAventuraTheme = ({ children }) => {
 
                 {/* --- NÓ DA MISSÃO --- */}
                 {missionNode && missionConfig && (
-                    <div className="path-node-wrapper" style={{ top: `${missionNode.y}px`, left: `${missionNode.x}px` }} onClick={() => handleStepClick({ type: 'mission' })}>
-                        <div className={`path-node path-node--active`}>
+                    <div className="path-node-wrapper" style={{ top: `${missionNode.y}px`, left: `${missionNode.x}px` }}>
+                        <div className={`path-node path-node--active cursor-default`}>
                             <img className="path-node-image" src={missionConfig.icon} alt={missionConfig.name} />
                         </div>
                         <div className="path-label">{missionConfig.name}</div>

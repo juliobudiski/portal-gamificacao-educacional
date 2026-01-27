@@ -417,17 +417,19 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
                     <div className="p-4 bg-secondary-bg/50 dark:bg-primary-bg/30 rounded-lg">
                         <p className="text-xs text-secondary-text mb-4">Ative os pontos de interesse da vila.</p>
                         <div className="space-y-3">
-                            {(gamificationDesign.hub_elements || []).map((element) => {
-                                const config = elementConfig.hub[element.type];
-                                if (!config) return null;
-                                return (
-                                    <div key={element.id} onClick={() => toggleHubElement(element.type)} className="flex items-center p-3 bg-secondary-bg dark:bg-primary-bg rounded-lg shadow-sm cursor-pointer hover:bg-white dark:hover:bg-gray-700 transition-colors">
-                                        <img src={config.icon} alt={config.name} className="w-8 h-8 mr-3" />
-                                        <span className="flex-grow font-medium text-primary-text text-sm">{config.name}</span>
-                                        {element.enabled ? <FaToggleOn className="text-green-500 h-6 w-6" /> : <FaToggleOff className="text-gray-400 h-6 w-6" />}
-                                    </div>
-                                );
-                            })}
+                            {(gamificationDesign.hub_elements || [])
+                                .filter(el => el.type !== 'mission')
+                                .map((element) => {
+                                    const config = elementConfig.hub[element.type];
+                                    if (!config) return null;
+                                    return (
+                                        <div key={element.id} onClick={() => toggleHubElement(element.type)} className="flex items-center p-3 bg-secondary-bg dark:bg-primary-bg rounded-lg shadow-sm cursor-pointer hover:bg-white dark:hover:bg-gray-700 transition-colors">
+                                            <img src={config.icon} alt={config.name} className="w-8 h-8 mr-3" />
+                                            <span className="flex-grow font-medium text-primary-text text-sm">{config.name}</span>
+                                            {element.enabled ? <FaToggleOn className="text-green-500 h-6 w-6" /> : <FaToggleOff className="text-gray-400 h-6 w-6" />}
+                                        </div>
+                                    );
+                                })}
                             {(!gamificationDesign.hub_elements || gamificationDesign.hub_elements.length === 0) && <p className="text-center text-sm text-secondary-text py-4">Nenhum elemento selecionado na Etapa 5.</p>}
                         </div>
                     </div>

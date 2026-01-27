@@ -65,11 +65,13 @@ def _get_progress_json(user_id, activity_id):
     # Se o progresso não existir, cria um registro inicial para o aluno
     if not progress:
         current_app.logger.info(f"Nenhum progresso encontrado para o usuário {user.id}. Criando novo registro para a turma {activity.class_id}.")
+        progression_path = activity.gamification_design.get('progression_path', [])
+        first_step_id = progression_path[0]['id'] if progression_path else None
         progress = ActivityProgress(
             student_id=user.id,
             activity_id=activity.id,
             class_id=activity.class_id,
-            status='not_started'
+            status='in_progress'
         )
         db.session.add(progress)
         db.session.commit() # Commita aqui para que 'progress' tenha um ID

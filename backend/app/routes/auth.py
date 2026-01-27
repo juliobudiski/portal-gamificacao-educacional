@@ -181,103 +181,92 @@ def google_auth():
     current_app.logger.info("Tentativa de autenticação com Google iniciada.")
     data = request.get_json()
     token = data.get('id_token')
-    selected_role = data.get('role', 'aluno')
-    current_app.logger.debug(f"Token do Google recebido. Role selecionada: {selected_role}")
-
+    
+    # IMPORTANTE: A role selecionada só será usada se for um NOVO cadastro.
+    selected_role = data.get('role', 'aluno') 
+    
     if not token:
-        current_app.logger.warning("Token do Google não fornecido na requisição.")
         return jsonify({"message": "Token do Google não fornecido."}), 400
 
     try:
         # Verifica o token com o backend do Google
-        idinfo = id_token.verify_oauth2_token(token, google_requests.Request(), Config.GOOGLE_CLIENT_ID_BACKEND)
-        current_app.logger.debug(f"Informações do token Google verificado: {idinfo.get('email')}")
+        idinfo = id_token.verify_oauth2_token(
+            token, 
+            google_requests.Request(), 
+            Config.GOOGLE_CLIENT_ID_BACKEND
+        )
 
         google_id = idinfo['sub']
         email = idinfo['email']
         name = idinfo.get('name', '')
         picture = idinfo.get('picture', '')
 
-        user = User.query.filter_by(google_id=google_id).first()
+        # 1. Busca por e-mail para evitar duplicidade
+        user = User.query.filter_by(email=email).first()
         status_code = 200
 
         if user:
-            current_app.logger.info(f"Usuário encontrado pelo google_id: {email}")
-            _log_auth_event(user_id=user.id, action='login_success', details={'email': user.email, 'method': 'google'})
-            if user.role != selected_role:
-                current_app.logger.info(f"Atualizando role do usuário {email} de '{user.role}' para '{selected_role}'.")
-                user.role = selected_role
+            current_app.logger.info(f"Usuário existente encontrado: {email}")
+            
+            # Vincula o google_id caso o usuário tenha sido criado via cadastro comum
+            if not user.google_id:
+                user.google_id = google_id
+                if picture:
+                    user.profile_picture = picture
                 db.session.commit()
+            
+            # PROTEÇÃO: Não alteramos a role de um usuário que já existe no sistema.
+            # Isso evita que um Professor vire Aluno por acidente.
+            _log_auth_event(user_id=user.id, action='login_success', details={'method': 'google'})
+        
         else:
-            current_app.logger.info(f"Usuário não encontrado pelo google_id. Buscando por e-mail: {email}")
-            existing_email_user = User.query.filter_by(email=email).first()
-            if existing_email_user:
-                current_app.logger.info(f"Usuário existente encontrado por e-mail. Vinculando conta Google para {email}.")
-                existing_email_user.google_id = google_id
-                existing_email_user.name = name
-                existing_email_user.profile_picture = picture
-                if existing_email_user.role != selected_role:
-                    current_app.logger.info(f"Atualizando role do usuário {email} de '{existing_email_user.role}' para '{selected_role}'.")
-                    existing_email_user.role = selected_role
-                db.session.commit()
-                user = existing_email_user
-                _log_auth_event(user_id=user.id, action='link_google_account', details={'email': user.email})
-            else:
-                current_app.logger.info(f"Nenhum usuário encontrado. Criando novo usuário Google para {email}.")
-                _log_auth_event(user_id=None, action='register_success', details={'email': email, 'method': 'google'})
-                user = User(
-                    email=email, password_hash='google_auth_only', google_id=google_id,
-                    name=name, profile_picture=picture, role=selected_role,
-                    unlocked_global_avatars=DEFAULT_AVATARS # Adiciona os avatares padrão
-                )
-                if not user.profile_picture:
-                    user.profile_picture = DEFAULT_PROFILE_PICTURE # Define o avatar padrão se o Google não fornecer um
+            # 2. Se não existe, criamos um novo usuário com a role selecionada
+            current_app.logger.info(f"Criando novo usuário ({selected_role}) via Google: {email}")
+            
+            user = User(
+                email=email,
+                name=name,
+                google_id=google_id,
+                profile_picture=picture or DEFAULT_PROFILE_PICTURE,
+                role=selected_role, # Aqui aplicamos a escolha do usuário no front
+                password_hash='google_auth_only',
+                unlocked_global_avatars=DEFAULT_AVATARS,
+                is_verified=True # Logins sociais são implicitamente verificados
+            )
+            db.session.add(user)
+            db.session.commit()
+            status_code = 201
+            _log_auth_event(user_id=user.id, action='register_success', details={'method': 'google'})
 
-                db.session.add(user)
-                db.session.commit()
-                status_code = 201
-            # --- FIM DA ALTERAÇÃO ---
-
-        current_app.logger.info(f"Gerando token de acesso para o usuário {user.email}")
+        # 3. Geração do Token JWT (Mantendo suas claims originais)
         additional_claims = {
-            "email": user.email, "name": user.name, "role": user.role,
+            "email": user.email,
+            "name": user.name,
+            "role": user.role,
             "profile_picture": user.profile_picture,
-            "institutionName": user.institution_name,
-            "discipline": user.discipline,
-            "unlocked_global_avatars": user.unlocked_global_avatars,
             "onboarding_status": user.onboarding_status
         }
         access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
 
-        user_data = {
-            "id": user.id, "email": user.email, "name": user.name, "role": user.role,
-            "profile_picture": user.profile_picture, "google_id": user.google_id,
-            "institutionName": user.institution_name, "discipline": user.discipline,
-            "token": access_token,
-            "unlocked_global_avatars": user.unlocked_global_avatars,
-            "onboarding_status": user.onboarding_status
-        }
-        return jsonify(access_token=access_token, user=user_data), status_code
+        return jsonify({
+            "access_token": access_token, 
+            "user": {
+                "id": user.id,
+                "email": user.email,
+                "name": user.name,
+                "role": user.role,
+                "profile_picture": user.profile_picture,
+                "token": access_token
+            }
+        }), status_code
 
     except ValueError as e:
-        current_app.logger.error(f"Erro de validação do token Google: {str(e)}", exc_info=True)
-        _log_auth_event(
-            user_id=None,
-            action='google_auth_fail',
-            details={'reason': 'invalid_token', 'error': str(e)},
-            is_success=False
-        )
-        return jsonify({"message": f"Token do Google inválido ou expirado. {str(e)}"}), 401
+        return jsonify({"message": f"Token inválido: {str(e)}"}), 401
     except Exception as e:
         db.session.rollback()
-        current_app.logger.error(f"Erro inesperado na autenticação Google: {str(e)}", exc_info=True)
-        _log_auth_event(
-            user_id=None,
-            action='google_auth_fail',
-            details={'reason': 'internal_server_error', 'error': str(e)},
-            is_success=False
-        )
-        return jsonify({"message": f"Erro interno no servidor durante autenticação Google: {str(e)}"}), 500
+        current_app.logger.error(f"Erro interno: {str(e)}")
+        return jsonify({"message": "Erro interno no servidor."}), 500
+    
 
 # Rota para professores atualizarem informações de instituição e disciplina
 @auth_bp.route('/user/update-profile', methods=['POST'])
