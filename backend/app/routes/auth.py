@@ -108,7 +108,7 @@ def register_user():
             "institutionName": new_user.institution_name,
             "discipline": new_user.discipline,
             "unlocked_global_avatars": new_user.unlocked_global_avatars,
-            "onboarding_status": user.onboarding_status
+            "onboarding_status": new_user.onboarding_status
         }
         access_token = create_access_token(identity=str(new_user.id), additional_claims=additional_claims)
 
@@ -119,7 +119,7 @@ def register_user():
             "discipline": new_user.discipline,
             "unlocked_global_avatars": new_user.unlocked_global_avatars,
             "token": access_token,
-            "onboarding_status": user.onboarding_status
+            "onboarding_status": new_user.onboarding_status
         }
         return jsonify(access_token=access_token, user=user_data), 201
     except Exception as e:
