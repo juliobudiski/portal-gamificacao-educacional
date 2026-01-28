@@ -178,94 +178,52 @@ def login_user():
 @auth_bp.route('/google', methods=['POST'])
 @cross_origin()
 def google_auth():
-    current_app.logger.info("Tentativa de autenticação com Google iniciada.")
     data = request.get_json()
     token = data.get('id_token')
-    
-    # IMPORTANTE: A role selecionada só será usada se for um NOVO cadastro.
-    selected_role = data.get('role', 'aluno') 
-    
-    if not token:
-        return jsonify({"message": "Token do Google não fornecido."}), 400
+    # Adicionamos uma flag opcional enviada pelo frontend
+    is_registration = data.get('is_registration', False) 
+    role = data.get('role', 'aluno')
 
     try:
-        # Verifica o token com o backend do Google
-        idinfo = id_token.verify_oauth2_token(
-            token, 
-            google_requests.Request(), 
-            Config.GOOGLE_CLIENT_ID_BACKEND
-        )
-
-        google_id = idinfo['sub']
+        # Validação do token com o Google
+        idinfo = id_token.verify_oauth2_token(token, google_requests.Request(), Config.GOOGLE_CLIENT_ID)
         email = idinfo['email']
-        name = idinfo.get('name', '')
-        picture = idinfo.get('picture', '')
+        name = idinfo.get('name', 'Usuário Google')
 
-        # 1. Busca por e-mail para evitar duplicidade
         user = User.query.filter_by(email=email).first()
-        status_code = 200
 
-        if user:
-            current_app.logger.info(f"Usuário existente encontrado: {email}")
-            
-            # Vincula o google_id caso o usuário tenha sido criado via cadastro comum
-            if not user.google_id:
-                user.google_id = google_id
-                if picture:
-                    user.profile_picture = picture
-                db.session.commit()
-            
-            # PROTEÇÃO: Não alteramos a role de um usuário que já existe no sistema.
-            # Isso evita que um Professor vire Aluno por acidente.
-            _log_auth_event(user_id=user.id, action='login_success', details={'method': 'google'})
-        
-        else:
-            # 2. Se não existe, criamos um novo usuário com a role selecionada
-            current_app.logger.info(f"Criando novo usuário ({selected_role}) via Google: {email}")
-            
+        if not user:
+            # SE NÃO EXISTE E NÃO É REGISTRO: Retorna erro para o frontend redirecionar
+            if not is_registration:
+                return jsonify({
+                    "error": "user_not_found",
+                    "message": "Conta não encontrada. Por favor, registre-se primeiro selecionando seu perfil e aceitando os termos."
+                }), 404
+
+            # SE É REGISTRO: Cria o usuário normalmente
             user = User(
+                username=email.split('@')[0],
                 email=email,
                 name=name,
-                google_id=google_id,
-                profile_picture=picture or DEFAULT_PROFILE_PICTURE,
-                role=selected_role, # Aqui aplicamos a escolha do usuário no front
-                password_hash='google_auth_only',
-                unlocked_global_avatars=DEFAULT_AVATARS,
-                is_verified=True # Logins sociais são implicitamente verificados
+                role=role,
+                is_google_user=True,
+                avatar_url=idinfo.get('picture', DEFAULT_AVATARS[0]['url'])
             )
             db.session.add(user)
             db.session.commit()
             status_code = 201
-            _log_auth_event(user_id=user.id, action='register_success', details={'method': 'google'})
+        else:
+            status_code = 200
 
-        # 3. Geração do Token JWT (Mantendo suas claims originais)
-        additional_claims = {
-            "email": user.email,
-            "name": user.name,
-            "role": user.role,
-            "profile_picture": user.profile_picture,
-            "onboarding_status": user.onboarding_status
-        }
-        access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
-
+        # Login bem-sucedido (ou usuário acabou de ser criado)
+        access_token = create_access_token(identity=str(user.id))
         return jsonify({
-            "access_token": access_token, 
-            "user": {
-                "id": user.id,
-                "email": user.email,
-                "name": user.name,
-                "role": user.role,
-                "profile_picture": user.profile_picture,
-                "token": access_token
-            }
+            "access_token": access_token,
+            "user": user.to_dict()
         }), status_code
 
-    except ValueError as e:
-        return jsonify({"message": f"Token inválido: {str(e)}"}), 401
-    except Exception as e:
-        db.session.rollback()
-        current_app.logger.error(f"Erro interno: {str(e)}")
-        return jsonify({"message": "Erro interno no servidor."}), 500
+    except ValueError:
+        return jsonify({"error": "Token inválido"}), 400
     
 
 # Rota para professores atualizarem informações de instituição e disciplina

@@ -22,52 +22,34 @@ function LoginPage() {
 
   // --- 5. FUNÇÃO DE CALLBACK PARA O LOGIN COM GOOGLE ---
   const handleGoogleSignInCallback = useCallback(async (response) => {
-    console.log('[Google Callback] Resposta recebida do Google:', response);
-
     if (response.credential) {
-      console.log('[Google Callback] Credencial (ID Token) encontrada. Enviando para o backend...');
       try {
-        const backendResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/google`, {
+        const backendResponse = await fetch(`${import.meta.env.VITE_API_URL}/auth/google`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ id_token: response.credential }),
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id_token: response.credential,
+            is_registration: false // Indica que a intenção é apenas LOGIN
+          }),
         });
 
-        console.log('[Google Callback] Resposta bruta do backend:', backendResponse);
         const data = await backendResponse.json();
-        console.log('[Google Callback] Dados recebidos do backend:', data);
 
-        if (backendResponse.ok) {
-          setSuccess('Login com Google bem-sucedido! Redirecionando para o perfil...');
-          console.log('[Google Callback] Login bem-sucedido. Token de acesso:', data.access_token);
-
-
-          login(data);
-
+        if (backendResponse.status === 404) {
+          // Usuário não existe: manda para o registro com a mensagem de erro
+          navigate('/cadastro', {
+            state: { message: "Conta não encontrada. Selecione seu perfil e aceite os termos para se cadastrar com o Google." }
+          });
+        } else if (backendResponse.ok) {
+          login(data.access_token);
           const userRole = data.user?.role;
-          setTimeout(() => {
-            if (userRole === 'professor') {
-              navigate('/professor/dashboard');
-            } else if (userRole === 'aluno') {
-              navigate('/aluno/dashboard');
-            } else {
-              navigate('/perfil');
-            }
-          }, 2000);
+          navigate(userRole === 'professor' ? '/professor/dashboard' : '/aluno/dashboard');
         } else {
-          setError(data.message || 'Erro ao fazer login com Google. Tente novamente.');
-          console.error('[Google Callback] Erro do backend:', data.message);
-          console.error('Detalhes do erro (vindo do data):', data);
+          setError(data.message || 'Erro ao realizar login.');
         }
       } catch (err) {
-        setError('Erro de conexão ao tentar autenticar com Google. Verifique sua rede.');
-        console.error('[Google Callback] Erro de fetch:', err);
+        setError('Erro de conexão com o servidor.');
       }
-    } else {
-      setError('Autenticação Google falhou. Nenhuma credencial recebida.');
-      console.error('[Google Callback] Nenhuma credencial recebida na resposta.');
     }
   }, [navigate, login]);
 

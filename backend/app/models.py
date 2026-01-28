@@ -707,3 +707,20 @@ class Team(db.Model):
     
     # Relação com Enrollments (Membros)
     members = db.relationship('Enrollment', backref='team', lazy=True)
+    
+class SystemFeedback(db.Model):
+    __tablename__ = 'system_feedback'
+
+    id = db.Column(db.Integer, primary_key=True)
+    # CORREÇÃO 1: Mudado de 'users.id' para 'user.id' (sua tabela é singular)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    role = db.Column(db.String(20), nullable=False) # 'professor' ou 'aluno'
+    
+    # Armazena perguntas e respostas
+    data = db.Column(JSONB, nullable=False) 
+    
+    # CORREÇÃO 2: Mudado de datetime.utcnow para db.func.current_timestamp()
+    # Isso evita o erro de import e mantém o padrão do resto do arquivo
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    user = db.relationship('User', backref='feedbacks')

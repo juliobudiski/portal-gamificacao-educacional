@@ -5,13 +5,16 @@ import { useAuth } from '../context/AuthContext';
 import { useLocation } from 'react-router-dom'; // <--- Importante
 import { TEACHER_DASHBOARD_STEPS } from '../data/tutorialSteps';
 import { useTutorial } from '../context/TutorialContext';
-
+import { useAuthOperations } from '../hooks/useAuthOperations';
+import FeedbackModal from '../components/FeedbackModal';
 
 function TeacherDashboardPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { startTour } = useTutorial();
+  const [showFeedback, setShowFeedback] = useState(false);
+  const { performAuthRequest } = useAuthOperations();
 
   useEffect(() => {
     // Verifica se veio do botão "Ver Tutorial" com ordem de força
@@ -32,8 +35,22 @@ function TeacherDashboardPage() {
     return null;
   }
 
+  useEffect(() => {
+    const checkFeedback = async () => {
+      // Adicione um pequeno delay para não impactar o LCP (Largest Contentful Paint)
+      setTimeout(async () => {
+        const response = await performAuthRequest('/api/feedback/check-eligibility', 'GET');
+        if (response.success && response.data.show_modal) {
+          setShowFeedback(true);
+        }
+      }, 2000); // Aparece 2 segundos após carregar o dashboard
+    };
+    checkFeedback();
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br bg-primary-bg  p-4 md:p-8">
+      <FeedbackModal isOpen={showFeedback} onClose={() => setShowFeedback(false)} userRole="professor" />
       <div className="max-w-full mx-auto">
         {/* Cabeçalho com gradiente */}
         <header className="mb-12 text-center bg-gradient-to-r from-[#ffbd30] to-[#ffa000] p-6 rounded-2xl shadow-2xl border-b-4 border-[#ffcc5c]">

@@ -35,8 +35,12 @@ function RegisterPage() {
   // Armazenam mensagens de feedback para o usuário.
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-
-  const { googleButtonRef, googleLoaded } = useGoogleSignIn('signup_with');
+  const location = useLocation();
+  useEffect(() => {
+    if (location.state?.message) {
+      setError(location.state.message);
+    }
+  }, [location]);
 
   // --- Hooks de Navegação e Contexto ---
   // Hook do React Router para navegar programaticamente para outras rotas.
@@ -51,49 +55,43 @@ function RegisterPage() {
    * @param {object} response - O objeto de resposta da API do Google, contendo a credencial (id_token).
    */
   const handleGoogleSignInCallback = useCallback(async (response) => {
-    console.log("handleGoogleSignInCallback: Resposta recebida do Google:", response);
+    // Validação local antes de chamar o backend
+    if (!termsAccepted) {
+      setError('Você deve aceitar os Termos de Uso antes de usar o Google Sign-In.');
+      return;
+    }
 
     if (response.credential) {
-      console.log("handleGoogleSignInCallback: Credencial recebida. Enviando para o backend com o perfil:", selectedRole);
       try {
         const backendResponse = await fetch(`${import.meta.env.VITE_API_URL}/auth/google`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ id_token: response.credential, role: selectedRole }), // Envia o token e o perfil
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id_token: response.credential,
+            role: selectedRole,    // Perfil selecionado nos cards (aluno/professor)
+            is_registration: true  // Indica que a intenção é CADASTRO (permite criação)
+          }),
         });
 
         const data = await backendResponse.json();
-        console.log("handleGoogleSignInCallback: Resposta do backend:", data);
 
         if (backendResponse.ok) {
-          setSuccess('Login com Google bem-sucedido! Redirecionando...');
-          console.log("handleGoogleSignInCallback: Login bem-sucedido. Chamando a função login do contexto.");
-          login(data.access_token); // Salva o token no contexto e localStorage
-          const userRole = data.user?.role;
+          setSuccess('Cadastro realizado com sucesso!');
+          login(data.access_token);
           setTimeout(() => {
-            if (userRole === 'professor') {
-              navigate('/professor/dashboard');
-            } else if (userRole === 'aluno') {
-              navigate('/aluno/dashboard');
-            } else {
-              navigate('/perfil'); // Redirecionamento padrão
-            }
-          }, 2000);
+            navigate(selectedRole === 'professor' ? '/professor/dashboard' : '/aluno/dashboard');
+          }, 1500);
         } else {
-          console.error("handleGoogleSignInCallback: Erro na resposta do backend:", data.message);
-          setError(data.message || 'Erro ao fazer login com Google. Tente novamente.');
+          setError(data.message || 'Erro ao realizar cadastro.');
         }
       } catch (err) {
-        console.error('handleGoogleSignInCallback: Erro de conexão ao tentar autenticar com Google:', err);
-        setError('Erro de conexão ao tentar autenticar com Google. Verifique sua rede.');
+        setError('Erro de conexão com o servidor.');
       }
-    } else {
-      console.error('handleGoogleSignInCallback: Autenticação Google falhou. Nenhuma credencial recebida.');
-      setError('Autenticação Google falhou. Nenhuma credencial recebida.');
     }
-  }, [navigate, login, selectedRole]); // Dependências da função de callback
+  }, [navigate, login, selectedRole, termsAccepted]);
+
+  // 2. Chame o hook passando o callback
+  const { googleButtonRef, googleLoaded } = useGoogleSignIn(handleGoogleSignInCallback, 'signup_with');
 
 
 

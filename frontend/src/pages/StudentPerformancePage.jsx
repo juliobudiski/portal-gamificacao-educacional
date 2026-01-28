@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { Search, Award, Clock, CheckCircle, BookOpen, Target, TrendingUp, XCircle } from 'lucide-react';
+import { useAuthOperations } from '../hooks/useAuthOperations';
+import FeedbackModal from '../components/FeedbackModal';
 
 
 // Componente de Badge Refatorado para usar cores semânticas
@@ -78,11 +80,23 @@ const StudentPerformancePage = () => {
   const [selectedClass, setSelectedClass] = useState('');
   const [selectedActivity, setSelectedActivity] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-
+  const [showFeedback, setShowFeedback] = useState(false);
+  const { performAuthRequest } = useAuthOperations();
   // Estados de Dados (Inicializado com estrutura segura)
   const [performanceData, setPerformanceData] = useState({ stats: { total_students: 0 }, students: [] });
   const [loading, setLoading] = useState(false);
-
+  useEffect(() => {
+    const checkFeedback = async () => {
+      // Adicione um pequeno delay para não impactar o LCP (Largest Contentful Paint)
+      setTimeout(async () => {
+        const response = await performAuthRequest('/api/feedback/check-eligibility', 'GET');
+        if (response.success && response.data.show_modal) {
+          setShowFeedback(true);
+        }
+      }, 2000); // Aparece 2 segundos após carregar o dashboard
+    };
+    checkFeedback();
+  }, []);
   // Função auxiliar para lidar com erros de Token (401)
   const handleFetchError = (response) => {
     if (response.status === 401) {
@@ -156,7 +170,7 @@ const StudentPerformancePage = () => {
 
   return (
     <div className="p-6 min-h-screen bg-primary-bg text-primary-text transition-colors duration-300">
-
+      <FeedbackModal isOpen={showFeedback} onClose={() => setShowFeedback(false)} userRole="aluno" />
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Desempenho da Turma</h1>

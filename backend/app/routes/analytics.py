@@ -3,7 +3,7 @@
 from flask import Blueprint, jsonify, request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy import func, desc
-from ..models import db, User, Class, Activity, ActivityProgress, Enrollment, StudentResponse, EventLog, QuizContent
+from ..models import db, User, Class, Activity, ActivityProgress, Enrollment, StudentResponse, EventLog, QuizContent, SystemFeedback
 
 # O prefixo registrado no __init__.py é '/api/analytics'
 analytics_bp = Blueprint('analytics', __name__)
@@ -197,3 +197,51 @@ def get_student_performance():
     except Exception as e:
         current_app.logger.error(f"Erro em performance: {str(e)}", exc_info=True)
         return jsonify({"error": str(e)}), 500
+    
+@analytics_bp.route('/feedback/check-eligibility', methods=['GET'])
+@jwt_required()
+def check_feedback_eligibility():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+
+    # 1. Se já respondeu, aborta
+    if SystemFeedback.query.filter_by(user_id=user.id).first():
+        return jsonify({"show_modal": False}), 200
+
+    show_modal = False
+    
+    # 2. Critérios por Role
+    if user.role == 'professor':
+        # Verifica se criou pelo menos 1 atividade
+        activity_count = Activity.query.filter_by(creator_id=user.id).count()
+        if activity_count >= 1:
+            show_modal = True
+            
+    elif user.role == 'aluno':
+        # Verifica se interagiu com alguma atividade (tabela ActivityProgress)
+        progress_count = ActivityProgress.query.filter_by(student_id=user.id).count()
+        if progress_count >= 1:
+            show_modal = True
+
+    return jsonify({"show_modal": show_modal, "role": user.role}), 200
+
+@analytics_bp.route('/feedback/submit', methods=['POST'])
+@jwt_required()
+def submit_feedback():
+    user_id = get_jwt_identity()
+    data = request.get_json()
+    
+    # Prevenção de duplicidade
+    if SystemFeedback.query.filter_by(user_id=user_id).first():
+        return jsonify({"message": "Feedback já enviado."}), 400
+
+    feedback = SystemFeedback(
+        user_id=user_id,
+        role=data.get('role'),
+        data=data.get('responses') # O JSON com as respostas do form
+    )
+    
+    db.session.add(feedback)
+    db.session.commit()
+    
+    return jsonify({"message": "Obrigado pelo feedback!"}), 201
