@@ -57,49 +57,71 @@ def create_activity(user, data):
     if user.role != 'professor':
         return {"message": "Acesso negado"}, 403
     
+    activity_planning_data = data.get('activityPlanning', {})
+    
+    # --- CORREÇÃO: VERIFICA SE JÁ É UM RASCUNHO EXISTENTE ---
+    existing_id = data.get('id')
+    activity = None
+    
+    if existing_id:
+        activity = Activity.query.get(existing_id)
+        # Verifica se existe e se pertence ao professor
+        if activity and activity.professor_id == user.id:
+            logger.info(f"Atualizando rascunho existente ID {activity.id} para oficial.")
+            
+            # Limpa conteúdos antigos para recriar (Evita duplicação de Quiz/Narrativa)
+            QuizContent.query.filter_by(activity_id=activity.id).delete()
+            NarrativeContent.query.filter_by(activity_id=activity.id).delete()
+            LearningContent.query.filter_by(activity_id=activity.id).delete()
+            
+            # Se a loja estava vazia (bug antigo), popula agora.
+            if not activity.store_items:
+                 _populate_default_store(activity.id)
+    # --------------------------------------------------------
+
     try:
-        activity_planning_data = data.get('activityPlanning', {})
-        # 1. Cria a Atividade Principal
-        new_activity = Activity(
-            professor_id=user.id,
-            title=data.get('title'),
-            description=data.get('description', ''),
-            current_scenario=data.get('currentScenario', {}),
-            desired_scenario=data.get('desiredScenario', {}),
-            activity_planning=activity_planning_data,
-            player_profile=data.get('playerProfile', {}),
-            game_elements=data.get('gameElements', {}), 
-            rewards_offered=data.get('rewardsOffered', {}),
-            rewarded_actions=data.get('rewardedActions', {}),
-            gamification_rules=data.get('gamificationRules', {}),
-            gamification_design=data.get('gamificationDesign', {}), # Importante pegar o design aqui
-            area_knowledge=data.get('areaKnowledge'),
-            is_public=data.get('isPublic', False),
-            is_team_activity=activity_planning_data.get('isTeamActivity', False)
-        )
+        # SE NÃO EXISTE (Novo) -> Instancia
+        if not activity:
+            activity = Activity(professor_id=user.id)
+            db.session.add(activity)
+            db.session.flush() # Gera o ID
+            _populate_default_store(activity.id) # Popula loja apenas se for novo
+
+        # ATUALIZA CAMPOS (Seja novo ou existente)
+        activity.title = data.get('title')
+        activity.description = data.get('description', '')
+        activity.current_scenario = data.get('currentScenario', {})
+        activity.desired_scenario = data.get('desiredScenario', {})
+        activity.activity_planning = activity_planning_data
+        activity.player_profile = data.get('playerProfile', {})
+        activity.game_elements = data.get('gameElements', {})
+        activity.rewards_offered = data.get('rewardsOffered', {})
+        activity.rewarded_actions = data.get('rewardedActions', {})
+        activity.gamification_rules = data.get('gamificationRules', {})
+        activity.gamification_design = data.get('gamificationDesign', {})
+        activity.area_knowledge = data.get('areaKnowledge')
+        activity.is_public = data.get('isPublic', False)
+        activity.is_team_activity = activity_planning_data.get('isTeamActivity', False)
         
+        # O PULO DO GATO: Remove a marcação de rascunho
+        activity.is_draft = False 
+
         # Tratamento de Tags
         if 'tags' in data:
+            activity.tags = [] # Limpa tags anteriores
             for tag_name in data['tags']:
                 tag = Tag.query.filter_by(name=tag_name).first()
                 if not tag:
                     tag = Tag(name=tag_name)
                     db.session.add(tag)
-                new_activity.tags.append(tag)
+                activity.tags.append(tag)
         
-        db.session.add(new_activity)
-        
-        # 2. FLUSH: Gera o ID da atividade sem fechar a transação
-        db.session.flush() 
-        
-        # 3. PROCESSAMENTO DE CONTEÚDO (Quiz e Narrativa)
-        # O frontend deve enviar o conteúdo EMBUTIDO dentro de gamificationDesign -> progression_path -> step -> content
+        # 3. PROCESSAMENTO DE CONTEÚDO (Extração para Tabelas)
         gamification_design = data.get('gamificationDesign', {})
         progression_path = gamification_design.get('progression_path', [])
 
         if progression_path and isinstance(progression_path, list):
             for step in progression_path:
-                # Verifica se o passo tem conteúdo vinculado
                 content = step.get('content')
                 step_id = step.get('id')
 
@@ -108,27 +130,25 @@ def create_activity(user, data):
 
                     if content_type == 'quiz':
                         new_quiz = QuizContent(
-                            activity_id=new_activity.id, # Usa o ID gerado pelo flush
+                            activity_id=activity.id,
                             step_id=str(step_id),
                             questions=content.get('questions', [])
                         )
                         db.session.add(new_quiz)
-                        logger.info(f"Quiz adicionado ao passo {step_id} da nova atividade {new_activity.id}")
 
                     elif content_type == 'narrative':
                         new_narrative = NarrativeContent(
-                            activity_id=new_activity.id,
+                            activity_id=activity.id,
                             step_id=str(step_id),
                             scenario=content.get('scenario', ''),
                             characters=content.get('characters', []),
                             dialogue=content.get('dialogue', [])
                         )
                         db.session.add(new_narrative)
-                        logger.info(f"Narrativa adicionada ao passo {step_id} da nova atividade {new_activity.id}")
                     
-                    elif content_type == 'content': # ou 'learning_content'
+                    elif content_type == 'content' or content_type == 'learning_material':
                          new_learning = LearningContent(
-                            activity_id=new_activity.id,
+                            activity_id=activity.id,
                             step_id=str(step_id),
                             video_url=content.get('video_url'),
                             text_content=content.get('text_content'),
@@ -136,25 +156,20 @@ def create_activity(user, data):
                          )
                          db.session.add(new_learning)
 
-        # 4. POPULAR LOJA (Agora usando a função auxiliar)
-        # Passamos o new_activity.id que foi gerado no flush()
-        _populate_default_store(new_activity.id)
-
-        # 5 COMMIT FINAL: Salva atividade + tags + conteúdos + itens da loja
         db.session.commit()
         
         _log_system_event(
             user_id=user.id,
-            action='activity_created',
-            activity_id=new_activity.id,
-            details={'title': new_activity.title, 'steps_count': len(progression_path)}
+            action='activity_created_official',
+            activity_id=activity.id,
+            details={'title': activity.title}
         )
         
-        return {"message": "Atividade criada com sucesso!", "activity": new_activity.to_dict()}, 201
+        return {"message": "Atividade salva com sucesso!", "activity": activity.to_dict()}, 201
     
     except Exception as e:
         db.session.rollback()
-        logger.error(f"Erro ao criar atividade (Batch): {str(e)}")
+        logger.error(f"Erro ao salvar atividade (Service): {str(e)}")
         return {"message": f"Erro ao salvar atividade: {str(e)}"}, 500
 
 def update_activity_structure(user, activity_id, data):
