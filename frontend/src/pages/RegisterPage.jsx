@@ -312,12 +312,12 @@ Professora Orientadora: Prof.ª Dr.ª Aline Maria Malachini Miotto Amaral - ammm
                 </div>
               )}
 
-              {/* 3. Botão do Google */}
+              {/* 3. Botão do Google 
               <div className="text-center">
                 <p className="text-secondary-text text-sm mb-2">Ou cadastre-se rapidamente com o Google:</p>
                 <div ref={googleButtonRef} className="w-full flex justify-center bg-secondary-bg rounded-xl overflow-hidden hover:shadow-lg transition-shadow duration-300" />
                 {!googleLoaded && (<button className="w-full py-3 px-4 bg-gray-200 rounded-xl animate-pulse"><div className="h-6 bg-gray-300 rounded w-3/4 mx-auto"></div></button>)}
-              </div>
+              </div>*/}
             </div>
 
             <div className="relative my-8">

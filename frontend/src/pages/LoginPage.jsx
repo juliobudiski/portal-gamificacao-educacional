@@ -210,7 +210,7 @@ function LoginPage() {
             </div>
           )}
 
-          {/* Botão do Google no topo */}
+          {/* Botão do Google no topo 
           <div className="mb-6">
             <div className="text-center mb-4">
               <p className="text-secondary-text mb-2">Faça login rapidamente com sua conta Google:</p>
@@ -224,7 +224,7 @@ function LoginPage() {
                 </button>
               )}
             </div>
-          </div>
+          </div>*/}
 
           {/* Divisor */}
           <div className="relative my-8">
