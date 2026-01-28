@@ -7,6 +7,8 @@ import {
   FaBook, FaChalkboardTeacher, FaChevronRight,
   FaStar, FaTrophy, FaTasks, FaUserGraduate
 } from 'react-icons/fa';
+import FeedbackModal from '../components/FeedbackModal';
+import { useAuthOperations } from '../hooks/useAuthOperations';
 
 /**
  * Cartão que representa uma turma no dashboard
@@ -123,7 +125,20 @@ function StudentDashboardPage() {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
+  const [showFeedback, setShowFeedback] = useState(false);
+  const { performAuthRequest } = useAuthOperations();
+  useEffect(() => {
+    const checkFeedback = async () => {
+      // Adicione um pequeno delay para não impactar o LCP (Largest Contentful Paint)
+      setTimeout(async () => {
+        const response = await performAuthRequest('/api/analytics/feedback/check-eligibility', 'GET');
+        if (response.success && response.data.show_modal) {
+          setShowFeedback(true);
+        }
+      }, 2000); // Aparece 2 segundos após carregar o dashboard
+    };
+    checkFeedback();
+  }, []);
   useEffect(() => {
     if (import.meta.env.VITE_DEBUG_MODE) {
       console.debug('[StudentDashboardPage] Iniciando carregamento');
@@ -231,6 +246,7 @@ function StudentDashboardPage() {
 
   return (
     <div className="min-h-screen bg-primary-bg p-4 md:p-8 text-primary-text">
+      <FeedbackModal isOpen={showFeedback} onClose={() => setShowFeedback(false)} userRole="aluno" />
       <div className="max-w-full mx-auto">
         {/* Cabeçalho de Boas-vindas */}
         <header className="mb-12">
@@ -280,6 +296,16 @@ function StudentDashboardPage() {
 
           {/* Coluna Lateral (Desempenho e Ações Rápidas) */}
           <aside className="space-y-8">
+            {/* Card de Ações Rápidas (sem alteração) */}
+            <section className="bg-secondary-bg p-6 rounded-2xl shadow-xl">
+              <h2 className="text-2xl font-bold mb-4 text-center">Ações Rápidas</h2>
+              <Link to="/aluno/entrar-turma" className="block w-full text-center mb-3 py-3 px-4 bg-gradient-to-r from-[#ffbd30] to-[#ffa000] text-[#2c3135] hover:opacity-90 rounded-lg font-bold">
+                Entrar em Nova Turma
+              </Link>
+              <Link to="/aluno/minhas-atividades" className="block w-full text-center py-3 px-4 bg-[#69e8cb] text-[#2c3135] hover:opacity-90 rounded-lg font-bold">
+                Ver Todas as Atividades
+              </Link>
+            </section>
             {/* Card de Desempenho (AGORA COM DADOS REAIS) */}
             <section id="tour-xp-display" className="bg-secondary-bg p-6 rounded-2xl shadow-xl border-t-4 border-[#9570d9]">
               <h2 className="text-2xl font-bold mb-6 text-center">Meu Desempenho Global</h2>
@@ -331,16 +357,7 @@ function StudentDashboardPage() {
               </Link>
             </section>
 
-            {/* Card de Ações Rápidas (sem alteração) */}
-            <section className="bg-secondary-bg p-6 rounded-2xl shadow-xl">
-              <h2 className="text-2xl font-bold mb-4 text-center">Ações Rápidas</h2>
-              <Link to="/aluno/entrar-turma" className="block w-full text-center mb-3 py-3 px-4 bg-gradient-to-r from-[#ffbd30] to-[#ffa000] text-[#2c3135] hover:opacity-90 rounded-lg font-bold">
-                Entrar em Nova Turma
-              </Link>
-              <Link to="/aluno/minhas-atividades" className="block w-full text-center py-3 px-4 bg-[#69e8cb] text-[#2c3135] hover:opacity-90 rounded-lg font-bold">
-                Ver Todas as Atividades
-              </Link>
-            </section>
+
           </aside>
         </main>
       </div>

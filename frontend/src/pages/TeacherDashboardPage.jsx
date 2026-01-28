@@ -39,7 +39,7 @@ function TeacherDashboardPage() {
     const checkFeedback = async () => {
       // Adicione um pequeno delay para não impactar o LCP (Largest Contentful Paint)
       setTimeout(async () => {
-        const response = await performAuthRequest('/api/feedback/check-eligibility', 'GET');
+        const response = await performAuthRequest('/api/analytics/feedback/check-eligibility', 'GET');
         if (response.success && response.data.show_modal) {
           setShowFeedback(true);
         }

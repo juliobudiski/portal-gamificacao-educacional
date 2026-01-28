@@ -213,14 +213,18 @@ def check_feedback_eligibility():
     # 2. Critérios por Role
     if user.role == 'professor':
         # Verifica se criou pelo menos 1 atividade
-        activity_count = Activity.query.filter_by(creator_id=user.id).count()
+        activity_count = Activity.query.filter_by(professor_id=user.id).count()
         if activity_count >= 1:
             show_modal = True
             
     elif user.role == 'aluno':
-        # Verifica se interagiu com alguma atividade (tabela ActivityProgress)
-        progress_count = ActivityProgress.query.filter_by(student_id=user.id).count()
-        if progress_count >= 1:
+        
+        log_count = EventLog.query.filter_by(user_id=user.id).count()
+        
+        # Opcional: Você pode checar também se ele tem XP acumulado, se seu modelo User tiver esse campo
+        # has_xp = user.total_xp_earned > 0 
+        
+        if log_count >= 5: 
             show_modal = True
 
     return jsonify({"show_modal": show_modal, "role": user.role}), 200

@@ -4,43 +4,63 @@ import { useAuth } from '../context/AuthContext';
 
 export function useAuthOperations() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, token } = useAuth();
 
   const handleAuthResponse = useCallback(async (response, successMessage) => {
-    const data = await response.json();
-    
+    // Tenta fazer o parse do JSON. Se falhar (ex: erro 500 html), evita quebrar a app.
+    let data;
+    try {
+      data = await response.json();
+    } catch (e) {
+      data = { message: 'Erro inesperado do servidor.' };
+    }
+
     if (response.ok) {
-      login(data);
-      const userRole = data.user?.role;
-      setTimeout(() => {
-        if (userRole === 'professor') {
-          navigate('/professor/dashboard');
-        } else if (userRole === 'aluno') {
-          navigate('/aluno/dashboard');
-        } else {
-          navigate('/perfil'); // Redirecionamento padrão
-        }
-      }, 2000);
-      return { success: true, message: successMessage };
+      // Se a resposta trouxer um novo token/login, atualiza (útil para login/registro)
+      if (data.access_token || data.user) {
+        login(data);
+        const userRole = data.user?.role;
+        setTimeout(() => {
+          if (userRole === 'professor') {
+            navigate('/professor/dashboard');
+          } else if (userRole === 'aluno') {
+            navigate('/aluno/dashboard');
+          } else {
+            navigate('/perfil');
+          }
+        }, 2000);
+      }
+      return { success: true, message: successMessage, data };
     }
     return { success: false, message: data.message || 'Erro na operação' };
   }, [login, navigate]);
 
   const performAuthRequest = useCallback(async (url, method, body) => {
     try {
-      console.log(`[useAuthOperations] Tentando fazer uma requisição ${method} para: ${url}`);
+      console.log(`[useAuthOperations] ${method} para: ${url}`);
+
+      // 2. Monta os cabeçalhos com o Token
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body)
+        headers,
+        // 3. Só envia body se ele existir (evita erro em GET)
+        body: body ? JSON.stringify(body) : undefined
       });
+
       return await handleAuthResponse(response, 'Operação bem-sucedida!');
     } catch (error) {
+      console.error("Erro na requisição:", error);
       return { success: false, message: 'Erro de conexão' };
     }
-  }, [handleAuthResponse]);
+  }, [handleAuthResponse, token]);
 
   return { performAuthRequest };
 }

@@ -24,7 +24,7 @@ export default function FeedbackModal({ isOpen, onClose, userRole }) {
             responses: { ...answers, collected_at: new Date().toISOString() }
         };
 
-        await performAuthRequest('/api/feedback/submit', 'POST', payload);
+        await performAuthRequest('/api/analytics/feedback/submit', 'POST', payload);
         onClose(); // Fecha e nunca mais abre
     };
 
