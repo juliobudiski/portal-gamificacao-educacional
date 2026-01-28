@@ -6,6 +6,7 @@ import useGoogleSignIn from '../hooks/useGoogleSignIn';
 import { useAuthOperations } from '../hooks/useAuthOperations';
 import TermsOfUseModal from '../components/TermsOfUseModal';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { useLocation } from 'react-router-dom';
 
 /**}
 
