@@ -226,16 +226,16 @@ function LoginPage() {
             </div>
           </div>*/}
 
-          {/* Divisor */}
+          {/* Divisor 
           <div className="relative my-8">
             <div className="absolute inset-0 flex items-center">
-              {/* --- CORREÇÃO: Borda ciente do tema --- */}
+              {/* --- CORREÇÃO: Borda ciente do tema --- 
               <div className="w-full border-t border-border-color"></div>
             </div>
             <div className="relative flex justify-center">
               <span className="px-3 bg-secondary-bg text-secondary-text text-sm">Ou com email</span>
             </div>
-          </div>
+          </div> */}
 
           {/* Formulário de login */}
           <form onSubmit={handleLogin} className="space-y-6">

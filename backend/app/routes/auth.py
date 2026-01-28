@@ -6,9 +6,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from ..models import db, User, EventLog
 from ..config import Config
 from flask_cors import cross_origin
-from google.oauth2 import id_token
-from google.auth.transport import requests as google_requests
-import requests
+#from google.oauth2 import id_token
+#from google.auth.transport import requests as google_requests
+#import requests
 from datetime import datetime
 from sqlalchemy.orm.attributes import flag_modified
 from ..utils.geo import update_user_location_data  
@@ -174,56 +174,7 @@ def login_user():
         )
         return jsonify({"message": "Credenciais inválidas."}), 401
 
-# Rota para autenticação via Google Sign-In
-@auth_bp.route('/google', methods=['POST'])
-@cross_origin()
-def google_auth():
-    data = request.get_json()
-    token = data.get('id_token')
-    # Adicionamos uma flag opcional enviada pelo frontend
-    is_registration = data.get('is_registration', False) 
-    role = data.get('role', 'aluno')
 
-    try:
-        # Validação do token com o Google
-        idinfo = id_token.verify_oauth2_token(token, google_requests.Request(), Config.GOOGLE_CLIENT_ID)
-        email = idinfo['email']
-        name = idinfo.get('name', 'Usuário Google')
-
-        user = User.query.filter_by(email=email).first()
-
-        if not user:
-            # SE NÃO EXISTE E NÃO É REGISTRO: Retorna erro para o frontend redirecionar
-            if not is_registration:
-                return jsonify({
-                    "error": "user_not_found",
-                    "message": "Conta não encontrada. Por favor, registre-se primeiro selecionando seu perfil e aceitando os termos."
-                }), 404
-
-            # SE É REGISTRO: Cria o usuário normalmente
-            user = User(
-                username=email.split('@')[0],
-                email=email,
-                name=name,
-                role=role,
-                is_google_user=True,
-                avatar_url=idinfo.get('picture', DEFAULT_AVATARS[0]['url'])
-            )
-            db.session.add(user)
-            db.session.commit()
-            status_code = 201
-        else:
-            status_code = 200
-
-        # Login bem-sucedido (ou usuário acabou de ser criado)
-        access_token = create_access_token(identity=str(user.id))
-        return jsonify({
-            "access_token": access_token,
-            "user": user.to_dict()
-        }), status_code
-
-    except ValueError:
-        return jsonify({"error": "Token inválido"}), 400
     
 
 # Rota para professores atualizarem informações de instituição e disciplina

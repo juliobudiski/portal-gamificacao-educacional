@@ -319,13 +319,13 @@ Professora Orientadora: Prof.ª Dr.ª Aline Maria Malachini Miotto Amaral - ammm
                 {!googleLoaded && (<button className="w-full py-3 px-4 bg-gray-200 rounded-xl animate-pulse"><div className="h-6 bg-gray-300 rounded w-3/4 mx-auto"></div></button>)}
               </div>*/}
             </div>
-
+            {/*
             <div className="relative my-8">
-              {/* --- CORREÇÃO: Borda ciente do tema --- */}
+              {/* --- CORREÇÃO: Borda ciente do tema --- *
               <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border-color"></div></div>
-              <div className="relative flex justify-center"><span className="px-3 bg-secondary-bg text-secondary-text text-sm">Ou preencha seus dados</span></div>
+              <div className="relative flex justify-center"><span className="px-3 bg-secondary-bg text-secondary-text text-sm">Preencha seus dados</span></div>
             </div>
-
+*/}
             <form onSubmit={handleRegister} className="space-y-6">
               <div className="space-y-2">
                 <label htmlFor="name" className="block text-sm font-medium text-secondary-text">Nome Completo</label>

@@ -1,5 +1,5 @@
 // frontend/src/pages/TeacherDashboardPage.jsx
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLocation } from 'react-router-dom'; // <--- Importante
