@@ -176,7 +176,7 @@ const AchievementsTab = ({ onReturn, activityId }) => {
                             }}
                         >
                             <img
-                                src={`${import.meta.env.VITE_API_URL}${medal.imageUrl}`}
+                                src={medal.imageUrl}
                                 alt={`Medalha ${medal.name}`}
                                 loading="lazy"
                                 className={`w-24 h-24 transition-all duration-300 ${isUnlocked ? '' : 'filter grayscale opacity-60'}`}

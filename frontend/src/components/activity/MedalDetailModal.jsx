@@ -28,7 +28,7 @@ const MedalDetailModal = ({ medal, isUnlocked, onClose }) => {
                 {/* Imagem com container para evitar layout shift */}
                 <div className="flex justify-center mb-6">
                     <img
-                        src={`${import.meta.env.VITE_API_URL}${medal.imageUrl}`}
+                        src={medal.imageUrl}
                         alt={medal.name}
                         className={`w-48 h-48 object-contain transition-all duration-500 drop-shadow-lg ${isUnlocked ? 'filter-none' : 'filter grayscale opacity-70'}`}
                     />

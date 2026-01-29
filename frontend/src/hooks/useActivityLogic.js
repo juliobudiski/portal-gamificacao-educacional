@@ -79,7 +79,10 @@ export const useActivityLogic = (activityId) => {
 
         } catch (err) {
             debugLog(`fetchWithAuth: Exceção CATCH ao buscar ${url}. Erro:`, err);
-            setError(`Falha ao buscar ${url}: ${err.message}`);
+            // Só define o erro global se NÃO tivermos pedido para suprimir
+            if (!options.suppressGlobalError) {
+                setError(`Falha ao buscar ${url}: ${err.message}`);
+            }
             // Propaga o erro para que a função chamadora (ex: updateUserProgress) possa lidar com ele
             throw err;
         }
@@ -455,27 +458,29 @@ export const useActivityLogic = (activityId) => {
 
     // --- FUNÇÕES NOVAS PARA ROLETA E SLOT ---
 
-    const handleSpin = useCallback(async () => {
-        debugLog('Acionando a Roleta...');
+    const handleSpin = useCallback(async (isRetryAttempt = false) => { // 1. Aceita o parâmetro
+        debugLog('Acionando a Roleta...', { isRetryAttempt });
         try {
-            // A função 'fetchWithAuth' já lida com o token e erros
             const data = await fetchWithAuth(`/api/progress/${activityId}/spin`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                // 2. Agora enviamos o body que o backend espera
+                body: JSON.stringify({ is_retry: isRetryAttempt }),
+                suppressGlobalError: true
             });
 
             if (data.updated_progress) {
-                setUserProgress(data.updated_progress); // ATUALIZA O ESTADO
+                setUserProgress(data.updated_progress);
                 debugLog('Progresso atualizado após Roleta.', data.updated_progress);
             }
 
-            fetchLeaderboard(); // Atualiza o ranking se o XP mudou
-            return data; // Retorna os dados do prêmio para o <RouletteTab>
+            fetchLeaderboard();
+            return data;
 
         } catch (error) {
             console.error('Erro ao girar roleta:', error);
-            setError(`Erro na roleta: ${error.message}`);
-            throw error; // Re-lança para o <RouletteTab>
+            //setError(`Erro na roleta: ${error.message}`);
+            throw error;
         }
     }, [activityId, fetchWithAuth, fetchLeaderboard]);
 
@@ -485,6 +490,7 @@ export const useActivityLogic = (activityId) => {
             const data = await fetchWithAuth(`/api/progress/${activityId}/play-slot`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                suppressGlobalError: true
             });
 
             if (data.updated_progress) {
@@ -497,7 +503,7 @@ export const useActivityLogic = (activityId) => {
 
         } catch (error) {
             console.error('Erro ao jogar caça-níquel:', error);
-            setError(`Erro no caça-níquel: ${error.message}`);
+            //setError(`Erro no caça-níquel: ${error.message}`);
             throw error; // Re-lança para o <SlotMachineTab>
         }
     }, [activityId, fetchWithAuth, fetchLeaderboard]);

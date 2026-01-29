@@ -13295,5 +13295,145 @@
                 "percent": 100.0
             }
         ]
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 2,
+            "total_seconds": 124.987,
+            "digital": "0:02",
+            "decimal": "0.03",
+            "text": "2 mins",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2026-01-29T03:00:00Z",
+            "end": "2026-01-30T02:59:59Z",
+            "date": "2026-01-29",
+            "text": "Thu Jan 29th 2026",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [
+            {
+                "name": "portal-gamificacao-educacional",
+                "total_seconds": 124.987,
+                "ai_additions": 0,
+                "ai_deletions": 0,
+                "human_additions": 0,
+                "human_deletions": 0,
+                "color": null,
+                "digital": "0:02:04",
+                "decimal": "0.03",
+                "text": "2 mins",
+                "hours": 0,
+                "minutes": 2,
+                "seconds": 4,
+                "percent": 100.0
+            }
+        ],
+        "languages": [
+            {
+                "name": "Python",
+                "total_seconds": 124.987,
+                "digital": "0:02:04",
+                "decimal": "0.03",
+                "text": "2 mins",
+                "hours": 0,
+                "minutes": 2,
+                "seconds": 4,
+                "percent": 100.0
+            }
+        ],
+        "dependencies": [
+            {
+                "name": "flask",
+                "total_seconds": 124.987,
+                "digital": "0:02:04",
+                "decimal": "0.03",
+                "text": "2 mins",
+                "hours": 0,
+                "minutes": 2,
+                "seconds": 4,
+                "percent": 33.33
+            },
+            {
+                "name": "click",
+                "total_seconds": 124.987,
+                "digital": "0:02:04",
+                "decimal": "0.03",
+                "text": "2 mins",
+                "hours": 0,
+                "minutes": 2,
+                "seconds": 4,
+                "percent": 33.33
+            },
+            {
+                "name": "app",
+                "total_seconds": 124.987,
+                "digital": "0:02:04",
+                "decimal": "0.03",
+                "text": "2 mins",
+                "hours": 0,
+                "minutes": 2,
+                "seconds": 4,
+                "percent": 33.33
+            }
+        ],
+        "machines": [
+            {
+                "name": "julio-Inspiron-5421",
+                "total_seconds": 124.987,
+                "machine_name_id": "568c6e84-d052-4b59-b43d-058ae8463360",
+                "digital": "0:02:04",
+                "decimal": "0.03",
+                "text": "2 mins",
+                "hours": 0,
+                "minutes": 2,
+                "seconds": 4,
+                "percent": 100.0
+            }
+        ],
+        "editors": [
+            {
+                "name": "VS Code",
+                "total_seconds": 124.987,
+                "digital": "0:02:04",
+                "decimal": "0.03",
+                "text": "2 mins",
+                "hours": 0,
+                "minutes": 2,
+                "seconds": 4,
+                "percent": 100.0
+            }
+        ],
+        "operating_systems": [
+            {
+                "name": "Linux",
+                "total_seconds": 124.987,
+                "digital": "0:02:04",
+                "decimal": "0.03",
+                "text": "2 mins",
+                "hours": 0,
+                "minutes": 2,
+                "seconds": 4,
+                "percent": 100.0
+            }
+        ],
+        "categories": [
+            {
+                "name": "Coding",
+                "total_seconds": 124.987,
+                "digital": "0:02:04",
+                "decimal": "0.03",
+                "text": "2 mins",
+                "hours": 0,
+                "minutes": 2,
+                "seconds": 4,
+                "percent": 100.0
+            }
+        ]
     }
 ]

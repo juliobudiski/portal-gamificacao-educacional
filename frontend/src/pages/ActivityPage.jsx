@@ -135,7 +135,7 @@ const ViewRenderer = () => {
     case 'store':
       return <StoreTab
         items={storeItems}
-        userPoints={userProgress?.points_earned || 0}
+        userPoints={userProgress?.coins || 0}
         onPurchaseSuccess={handlePurchaseSuccess}
         onAddItem={fetchAllData}
         onDeleteItem={fetchAllData}

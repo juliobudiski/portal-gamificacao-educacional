@@ -70,7 +70,7 @@ const GameHUD = ({ progress }) => {
                             <FaTrophy className="mr-2 text-green-500" />
                             {currentPoints}
                         </div>
-                        <span className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Pontos (Loja)</span>
+                        <span className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Pontos</span>
                     </div>
                 </div>
 

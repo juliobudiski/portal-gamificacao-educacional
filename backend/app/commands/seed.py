@@ -15,28 +15,28 @@ MEDALS_DATA = [
     {
         "name": "Medalha do Explorador",
         "description": "Concedida por completar bravamente todos os passos de uma atividade.",
-        "image_url": "/medalhas/explorador.webp",
+        "image_url": "/medals/explorador.webp",
         "type": "PLATFORM",
         "notes": "Incentiva a conclusão completa das trilhas de aprendizagem."
     },
     {
         "name": "Medalha do Inspetor",
         "description": "Concedida por concluir uma atividade sem cometer um único erro.",
-        "image_url": "/medalhas/inspetor.webp",
+        "image_url": "/medals/inspetor.webp",
         "type": "PLATFORM",
         "notes": "Recompensa a precisão e o domínio do conteúdo."
     },
     {
         "name": "Medalha do Velocista",
         "description": "Concedida por estar entre os três primeiros a finalizar uma atividade.",
-        "image_url": "/medalhas/velocista.webp",
+        "image_url": "/medals/velocista.webp",
         "type": "PLATFORM",
         "notes": "Incentiva a agilidade e a rápida aplicação do conhecimento."
     },
     {
         "name": "Medalha \"Fênix\"",
         "description": "Concedida por corrigir um erro e acertar uma questão que errou anteriormente.",
-        "image_url": "/medalhas/fenix.webp",
+        "image_url": "/medals/fenix.webp",
         "type": "PLATFORM",
         "notes": "Promove a resiliência e o aprendizado com os próprios erros."
     }
@@ -54,44 +54,45 @@ def seed():
 @seed.command()
 @with_appcontext
 def run():
-    """Popula o banco de dados com as medalhas padrão da plataforma."""
+    """Popula e ATUALIZA as medalhas no banco de dados."""
     
-    # --- INÍCIO DA CORREÇÃO ---
-    # Importe o db e os modelos AQUI, dentro da função.
     from app import db
     from app.models import Medal
-    # --- FIM DA CORREÇÃO ---
 
-    click.echo("Iniciando o processo de 'seeding' de medalhas...")
+    click.echo("Iniciando atualização de medalhas...")
 
     try:
-        # Pega os nomes de todas as medalhas que já existem para não criar duplicatas
-        existing_medals = {medal.name for medal in Medal.query.all()}
-        medals_to_add = []
+        count_new = 0
+        count_updated = 0
 
-        for medal_data in MEDALS_DATA:
-            if medal_data["name"] not in existing_medals:
-                new_medal = Medal(**medal_data)
-                medals_to_add.append(new_medal)
-                click.echo(f"  -> Preparando medalha: {medal_data['name']}")
+        for data in MEDALS_DATA:
+            # Procura a medalha pelo nome
+            medal = Medal.query.filter_by(name=data["name"]).first()
+
+            if medal:
+                # SE JÁ EXISTE: Atualiza a URL da imagem e descrição
+                if medal.image_url != data["image_url"] or medal.description != data["description"]:
+                    medal.image_url = data["image_url"]
+                    medal.description = data["description"]
+                    medal.type = data["type"]
+                    medal.notes = data["notes"]
+                    count_updated += 1
+                    click.echo(f"  -> [ATUALIZADO] {data['name']}")
+                else:
+                    click.echo(f"  -> [INTACTO] {data['name']}")
             else:
-                click.echo(f"  -> Medalha já existe, pulando: {medal_data['name']}")
+                # SE NÃO EXISTE: Cria nova
+                new_medal = Medal(**data)
+                db.session.add(new_medal)
+                count_new += 1
+                click.echo(f"  -> [CRIADO] {data['name']}")
 
-        if not medals_to_add:
-            click.secho("\nNenhuma nova medalha para adicionar. O banco de dados já está atualizado.", fg="yellow")
-            return
-
-        db.session.add_all(medals_to_add)
         db.session.commit()
-
-        click.secho(f"\nSUCESSO! {len(medals_to_add)} novas medalhas foram adicionadas ao banco de dados.", fg="green")
+        click.secho(f"\nConcluído! {count_new} criadas, {count_updated} atualizadas.", fg="green")
 
     except Exception as e:
         db.session.rollback()
-        click.secho(f"\nERRO: Ocorreu um problema durante o 'seeding': {e}", fg="red")
-
-# Função para registrar o grupo de comandos no aplicativo Flask
+        click.secho(f"\nERRO: {e}", fg="red")
+        
 def init_app(app):
-    """Registra os comandos de CLI no app Flask."""
     app.cli.add_command(seed)
-

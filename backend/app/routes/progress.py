@@ -316,13 +316,13 @@ def purchase_store_item(activity_id):
     if not item or not progress:
         return jsonify({"message": "Item ou progresso não encontrado."}), 404
     
-    current_points = progress.points_earned if progress.points_earned is not None else 0
+    current_coins = progress.coins if progress.coins is not None else 0
 
-    if current_points < item.price:
-        return jsonify({"message": "Pontos insuficientes."}), 400
+    if current_coins < item.price:
+        return jsonify({"message": "Moedas insuficientes."}), 400
 
     try:
-        progress.points_earned = current_points - item.price
+        progress.coins = current_coins - item.price
         
         new_purchase = Purchase(
             user_id=user_id, activity_id=activity_id, item_id=item.id,
@@ -530,6 +530,10 @@ def update_activity_progress(activity_id):
 def spin_roulette_for_activity(activity_id):
     user_id = get_jwt_identity()
     user = User.query.get(user_id)
+    
+    data = request.get_json() or {}
+    is_retry = data.get('is_retry', False)
+
     if user.role != 'aluno':
         return jsonify({"message": "Apenas alunos podem girar a roleta."}), 403
 
@@ -540,92 +544,117 @@ def spin_roulette_for_activity(activity_id):
         progress = ActivityProgress(student_id=user.id, activity_id=activity_id, class_id=activity.class_id)
         db.session.add(progress)
 
+    # --- [MODO TESTE] COOLDOWN DESATIVADO ---
+    # Para voltar ao normal, descomente as linhas abaixo:
+    if not is_retry and progress.last_spin_date:
+        last_spin = progress.last_spin_date.date()
+        today = datetime.utcnow().date()
+        if last_spin == today:
+            return jsonify({"message": "Você já girou a roleta hoje! Volte amanhã."}), 400
+
+    # --- LISTA DE PRÊMIOS (XP -> MOEDAS) ---
     prizes = [
-        {"type": "xp", "value": 50, "label": "50 XP"},
-        {"type": "xp", "value": 100, "label": "100 XP"},
-        {"type": "xp", "value": 150, "label": "150 XP"},
+        {"type": "coins", "value": 50, "label": "50 Moedas"},
+        {"type": "coins", "value": 100, "label": "100 Moedas"},
+        {"type": "coins", "value": 150, "label": "150 Moedas"},
         {"type": "title", "value": "TITLE_LUCKY", "label": "Título: O Sortudo"},
         {"type": "avatar", "value": {"url": "/avatars/avatar_special.webp", "name": "Sortudo", "promotable": True}, "label": "Avatar Raro!"},
     ]
 
-    unlocked_avatar_urls = [avatar['url'] for avatar in (progress.unlocked_activity_avatars or []) if isinstance(avatar, dict)]
-    
+    # --- [HACK DE PROBABILIDADE] ---
+    # Pesos correspondentes à lista acima. Aumente o do Título (índice 3) para testar.
+    # Ex: [10, 10, 10, 50, 10] -> Título tem 5x mais chance que o resto.
+    prize_weights = [20, 20, 20, 10, 10] 
+
+    # Loop para garantir que não caia avatar repetido (mantendo os pesos)
     prize = None
     attempts = 0
+    
+    unlocked_avatar_urls = [av['url'] for av in (progress.unlocked_activity_avatars or []) if isinstance(av, dict)]
+
     while attempts < 20:
-        selected_prize = random.choice(prizes)
-        if selected_prize['type'] != 'avatar':
-            prize = selected_prize
-            break
-        if selected_prize['value']['url'] not in unlocked_avatar_urls:
+        # random.choices retorna uma lista, pegamos o primeiro [0]
+        selected_prize = random.choices(prizes, weights=prize_weights, k=1)[0]
+        
+        # Se for avatar e já tiver, tenta de novo
+        if selected_prize['type'] == 'avatar':
+            if selected_prize['value']['url'] in unlocked_avatar_urls:
+                # Opcional: Se quiser permitir retry para avatar repetido, pare aqui e deixe a lógica de duplicidade abaixo tratar
+                prize = selected_prize
+                break
+            else:
+                prize = selected_prize
+                break
+        else:
             prize = selected_prize
             break
         attempts += 1
     
-    if prize is None:
-        prize = {"type": "xp", "value": 50, "label": "50 XP"}
+    # Fallback se o loop falhar
+    if not prize: prize = prizes[0]
 
-    if prize['type'] == 'xp':
+    # --- LÓGICA DE DUPLICIDADE (RETRY) ---
+    is_duplicate = False
+    
+    if prize['type'] == 'avatar':
+        if prize['value']['url'] in unlocked_avatar_urls:
+            is_duplicate = True
+
+    elif prize['type'] == 'title':
+        effect_id = prize['value']
+        title_obj = Title.query.filter_by(effect_id=effect_id).first()
+        if not title_obj:
+            # Cria o título se não existir
+            title_obj = Title(effect_id=effect_id, display_text="O Sortudo", description="Concedido pela Roda da Fortuna.")
+            db.session.add(title_obj)
+            db.session.flush()
+            
+        existing_unlock = UserUnlockedTitle.query.filter_by(user_id=user.id, activity_id=activity_id, title_id=title_obj.id).first()
+        if existing_unlock:
+            is_duplicate = True
+
+    if is_duplicate:
+        return jsonify({
+            "message": "Item repetido! Gire novamente.",
+            "prize": {
+                "label": prize['label'],
+                "type": prize['type'],
+                "is_duplicate": True
+            }
+        }), 200
+
+    # --- CONSOLIDAÇÃO DO PRÊMIO ---
+    if prize['type'] == 'coins':
+        # [MUDANÇA] Agora soma Moedas, não XP
+        progress.coins = (progress.coins or 0) + prize['value']
+        # Se quiser somar pontos ganhos também (para ranking), descomente:
+        progress.points_earned = (progress.points_earned or 0) + prize['value']
         progress.total_xp_earned = (progress.total_xp_earned or 0) + prize['value']
+        
+        
     elif prize['type'] == 'avatar':
-        avatar_to_unlock = prize['value']
-        if progress.unlocked_activity_avatars is None:
-            progress.unlocked_activity_avatars = []
-        progress.unlocked_activity_avatars.append(avatar_to_unlock)
+        if progress.unlocked_activity_avatars is None: progress.unlocked_activity_avatars = []
+        progress.unlocked_activity_avatars.append(prize['value'])
         flag_modified(progress, "unlocked_activity_avatars")
 
     elif prize['type'] == 'title':
-        # --- LOG DE DEPURAÇÃO 2 ---
-        current_app.logger.info("[SPIN_DEBUG] Entrou no bloco de lógica para títulos.")
-        title_to_unlock = Title.query.filter_by(effect_id=prize['value']).first()
-        
-        # --- LOG DE DEPURAÇÃO 3 ---
-        current_app.logger.info(f"[SPIN_DEBUG] Buscando título com effect_id '{prize['value']}'. Resultado: {title_to_unlock}")
-        
-        if title_to_unlock:
-            existing_unlock = UserUnlockedTitle.query.filter_by(
-                user_id=user.id, activity_id=activity_id, title_id=title_to_unlock.id).first()
-            
-            # --- LOG DE DEPURAÇÃO 4 ---
-            current_app.logger.info(f"[SPIN_DEBUG] Verificando se o título já foi desbloqueado. Resultado: {existing_unlock}")
+        title_obj = Title.query.filter_by(effect_id=prize['value']).first()
+        new_unlock = UserUnlockedTitle(user_id=user.id, activity_id=activity_id, title_id=title_obj.id)
+        db.session.add(new_unlock)
+        progress.equipped_title_id = title_obj.id # Equipa automático para feedback visual
 
-            if not existing_unlock:
-                new_unlock = UserUnlockedTitle(user_id=user.id, activity_id=activity_id, title_id=title_to_unlock.id)
-                db.session.add(new_unlock)
-                # --- LOG DE DEPURAÇÃO 5 ---
-                current_app.logger.info(f"[SPIN_DEBUG] Criando novo registro de desbloqueio: {new_unlock}")
-
-            # --- LOG DE DEPURAÇÃO 6 (O MAIS IMPORTANTE) ---
-            current_app.logger.info(f"[SPIN_DEBUG] Título equipado ANTES da atribuição: {progress.equipped_title_id}")
-            progress.equipped_title_id = title_to_unlock.id
-            current_app.logger.info(f"[SPIN_DEBUG] Título equipado DEPOIS da atribuição: {progress.equipped_title_id}")
-    
-        
+    # Salva data (Em teste, isso não vai bloquear devido ao comentário lá em cima)
     progress.last_spin_date = datetime.utcnow()
     
     new_win = RouletteWin(user_id=user.id, activity_id=activity_id, prize_label=prize['label'])
     db.session.add(new_win)
-
-    # --- LOG DE DEPURAÇÃO 7 ---
-    # O .dirty verifica o que o SQLAlchemy marcou para UPDATE/INSERT
-    if progress in db.session.dirty:
-        current_app.logger.info("[SPIN_DEBUG] O objeto 'progress' está marcado como modificado (dirty) para o commit.")
-    else:
-        current_app.logger.warning("[SPIN_DEBUG] AVISO: O objeto 'progress' NÃO está marcado como modificado (dirty). A mudança pode não ser salva.")
-    
-    current_app.logger.info(f"[SPIN_DEBUG] Objetos a serem commitados (novos): {list(db.session.new)}")
-    current_app.logger.info(f"[SPIN_DEBUG] Objetos a serem commitados (modificados): {list(db.session.dirty)}")
-
     db.session.commit()
-    
-    # --- LOG DE DEPURAÇÃO 8 ---
-    current_app.logger.info("[SPIN_DEBUG] db.session.commit() foi executado.")
 
     updated_progress_data = _get_progress_json(user_id, activity_id)
     return jsonify({
         "message": f"Você ganhou {prize['label']}!", 
-        "prize": prize, 
-        "updated_progress": updated_progress_data # Retorna o JSON completo
+        "prize": {"label": prize['label'], "type": prize['type'], "is_duplicate": False},
+        "updated_progress": updated_progress_data
     }), 200
 
 
@@ -658,77 +687,113 @@ def get_roulette_winners(activity_id):
     
     return jsonify(winners_data), 200
 
-# ... (outros imports e funções)
+
+
+# Configuração dos Símbolos (Emojis) e Pesos
+# Quanto menor o peso, mais raro. O multiplicador é aplicado na aposta.
+SLOT_SYMBOLS = {
+    "orange":  {"icon": "🍊", "weight": 40, "multiplier": 2},  # Comum
+    "bell":    {"icon": "🔔", "weight": 30, "multiplier": 5},  # Médio
+    "diamond": {"icon": "💎", "weight": 15, "multiplier": 10}, # Raro
+    "wild":    {"icon": "🐯", "weight": 5,  "multiplier": 50}, # Jackpot (Tigre)
+    "bomb":    {"icon": "💣", "weight": 10, "multiplier": 0},  # Perda (ajuda a diluir)
+}
+
+PAYLINES = [
+    [(0,0), (0,1), (0,2)], # Linha Topo
+    [(1,0), (1,1), (1,2)], # Linha Meio
+    [(2,0), (2,1), (2,2)], # Linha Baixo
+    [(0,0), (1,1), (2,2)], # Diagonal \
+    [(2,0), (1,1), (0,2)], # Diagonal /
+]
 
 @progress_bp.route('/<int:activity_id>/play-slot', methods=['POST'])
 @jwt_required()
-@cross_origin()
 def play_slot_machine(activity_id):
     user_id = get_jwt_identity()
     user = User.query.get(user_id)
     
-    spin_cost = 0 #custo para rodar tigrinho
+    # 1. Validar Custo da Aposta
+    BET_COST = 10
+    current_coins = getattr(user, 'coins', 0) # Ou buscar na tabela de progresso se for por atividade
     
-    progress = ActivityProgress.query.filter_by(student_id=user_id, activity_id=activity_id).first()
+    # Se as moedas ficarem no ActivityProgress, ajuste aqui:
+    progress = ActivityProgress.query.filter_by(student_id=user.id, activity_id=activity_id).first()
+    if not progress: return jsonify({"message": "Progresso não encontrado"}), 404
     
-        
-    # Se não houver registro de progresso, ou se as moedas forem Nulas, não pode jogar.
-    if not progress:
-        return jsonify({"message": "Você precisa iniciar a atividade antes de jogar."}), 404
-        
-    # Converte moedas nulas para 0 antes de comparar
-    current_coins = progress.coins if progress.coins is not None else 0
+    current_coins = progress.coins or 0
     
-    if current_coins < spin_cost:
-        return jsonify({"message": f"Moedas insuficientes! Você tem {current_coins} e precisa de {spin_cost}."}), 400
+    if current_coins < BET_COST:
+        return jsonify({"message": f"Saldo insuficiente. Custo: {BET_COST} moedas."}), 400
 
-    # Deduz o custo
-    progress.coins = current_coins - spin_cost
+    # 2. Debitar Aposta
+    progress.coins = current_coins - BET_COST
     
-    # --- FIM DA CORREÇÃO ---
+    # 3. Gerar Matriz 3x3 (O coração do jogo)
+    # Escolhemos 9 símbolos baseados em seus pesos (probabilidade)
+    keys = list(SLOT_SYMBOLS.keys())
+    weights = [SLOT_SYMBOLS[k]['weight'] for k in keys]
     
-    outcomes = { "gem": 80, "star": 15, "trophy": 4, "gift": 1 }
-    symbols = list(outcomes.keys())
-    weights = list(outcomes.values())
-    result = random.choices(symbols, weights=weights, k=3)
-    
-    prize_data = None
-    if result[0] == result[1] == result[2]:
-        winning_symbol = result[0]
-        current_points = progress.points_earned if progress.points_earned is not None else 0
-        
-        if winning_symbol == 'gem':
-            prize_data = {"description": "Pequeno Bônus de 25 XP!", "type": "xp", "value": 25}
-            progress.points_earned = current_points + 25
-            progress.total_xp_earned = (progress.total_xp_earned or 0) + 25
-        elif winning_symbol == 'star':
-            prize_data = {"description": "Bônus Médio de 75 XP!", "type": "xp", "value": 75}
-            progress.points_earned = current_points + 75
-            progress.total_xp_earned = (progress.total_xp_earned or 0) + 75
-        elif winning_symbol == 'trophy':
-            prize_data = {"description": "Grande Bônus de 200 XP!", "type": "xp", "value": 200}
-            progress.points_earned = current_points + 200
-            progress.total_xp_earned = (progress.total_xp_earned or 0) + 200
-        elif winning_symbol == 'gift':
-            prize_data = {"description": "Prêmio Especial! +1 item!", "type": "special", "value": 1}
+    matrix = []
+    for _ in range(3): # 3 Linhas
+        row = random.choices(keys, weights=weights, k=3)
+        matrix.append(row)
 
-        # ===> ADICIONE ESTE TRECHO PARA SALVAR O PRÊMIO <===
-        if prize_data:
+    # 4. Verificar Vitórias (Linhas de Pagamento)
+    total_win = 0
+    winning_lines = [] # Para mostrar no frontend onde ganhou
+    
+    for line_index, coords in enumerate(PAYLINES):
+        # Pega os símbolos dessa linha
+        s1 = matrix[coords[0][0]][coords[0][1]]
+        s2 = matrix[coords[1][0]][coords[1][1]]
+        s3 = matrix[coords[2][0]][coords[2][1]]
+        
+        # Lógica de Vitória: 3 Iguais OU (2 Iguais + 1 Wild)
+        # Simplificação: Vamos exigir 3 iguais (ou Wild conta como coringa)
+        if s1 == s2 == s3 or (s1 == s2 and s3 == 'wild') or (s1 == 'wild' and s2 == s3):
+            # Determina qual é o símbolo vencedor (não pode ser a bomba se ganhar)
+            winner_symbol = s1 if s1 != 'wild' else s2
+            if winner_symbol == 'bomb': continue # Bomba nunca paga
+
+            win_amount = BET_COST * SLOT_SYMBOLS[winner_symbol]['multiplier']
+            total_win += win_amount
+            winning_lines.append({
+                "line_index": line_index, 
+                "symbol": winner_symbol,
+                "amount": win_amount
+            })
+
+    # 5. Creditar Vitória (Se houver)
+    if total_win > 0:
+        # Soma nas MOEDAS
+        progress.coins += total_win
+        
+        # --- CORREÇÃO: Soma no XP (para o Ranking) e Pontos ---
+        progress.total_xp_earned = (progress.total_xp_earned or 0) + total_win
+        progress.points_earned = (progress.points_earned or 0) + total_win
+        # Registra vencedor histórico APENAS para grandes vitórias
+        if total_win >= 50: 
+            # CORREÇÃO AQUI:
+            # 1. Usamos SlotWin em vez de RouletteWin
+            # 2. O campo correto é 'prize_description' (baseado na sua rota get_slot_winners)
             new_win = SlotWin(
-                user_id=user_id,
-                activity_id=activity_id,
-                prize_description=prize_data['description']
+                user_id=user.id, 
+                activity_id=activity_id, 
+                prize_description=f"{total_win} Moedas"
             )
             db.session.add(new_win)
 
     db.session.commit()
     
-    updated_progress_data = _get_progress_json(user_id, activity_id)
+    # 6. Retorno Rico para o Frontend
     return jsonify({
-        "result": result,
-        "prize": prize_data,
-        "updated_progress": updated_progress_data # Retorna o JSON completo
-    }), 200
+        "matrix": matrix, # [['orange', 'bell', 'orange'], [...]]
+        "total_win": total_win,
+        "winning_lines": winning_lines,
+        "updated_progress": _get_progress_json(user_id, activity_id), # Sua função auxiliar existente
+        "is_jackpot": total_win >= (BET_COST * 20)
+    })
 
 @progress_bp.route('/<int:activity_id>/slot-winners', methods=['GET'])
 @jwt_required()

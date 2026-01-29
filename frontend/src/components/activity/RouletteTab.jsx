@@ -17,13 +17,12 @@ const style = `
 `;
 
 const basePrizes = [
-  //{"type": "avatar", "value": {"url": "/images/avatars/wizard_cat.webp", "name": "Gato Mago", "promotable": True}, "label": "Avatar Raro: Gato Mago!"},
-  { id: "prize-1", text: "50 XP", icon: FaTrophy, type: "xp", value: 50 },
-  { id: "prize-2", text: "200 XP", icon: FaTrophy, type: "xp", value: 200 },
-  { id: "prize-3", text: "Título: O Sortudo", icon: FaGift, type: "title" },
-  { id: "prize-4", text: "100 XP", icon: FaTrophy, type: "xp", value: 100 },
-  { id: "prize-5", text: "Avatar Raro!", icon: FaGift, type: "avatar" },
-  { id: "prize-6", text: "150 XP", icon: FaTrophy, type: "xp", value: 150 },
+  { id: "prize-1", text: "50 Moedas", icon: FaGift, type: "coins", value: 50 }, // Mudou Icone e Texto
+  { id: "prize-2", text: "100 Moedas", icon: FaGift, type: "coins", value: 100 },
+  { id: "prize-3", text: "Título: O Sortudo", icon: FaTrophy, type: "title" },
+  { id: "prize-4", text: "150 Moedas", icon: FaGift, type: "coins", value: 150 },
+  { id: "prize-5", text: "Avatar Raro!", icon: FaTrophy, type: "avatar" },
+  { id: "prize-6", text: "200 Moedas!", icon: FaGift, type: "coins", value: 200 }, // Repeti para preencher 6 slots
 ];
 
 const RouletteTab = ({ onReturn, onSpin }) => {
@@ -74,18 +73,29 @@ const RouletteTab = ({ onReturn, onSpin }) => {
           setIsSpinning(true);
           setWinningPrizeIndex(prizeIndex);
         } else {
-          // Fallback visual caso o texto não bata exatamente (evita travar a roleta)
-          // Em prod, idealmente usamos IDs, mas seguindo sua lógica atual:
           setWinningPrizeIndex(0);
         }
-      } else {
-        throw new Error("Resposta inválida do servidor.");
       }
     } catch (err) {
-      setError(err.message || "Não foi possível girar.");
-      setLoading(false); // Reseta loading se der erro imediato
+      // --- TRATAMENTO DE ERRO AMIGÁVEL ---
+      let msg = err.message || "Não foi possível girar.";
+
+      // 1. Tenta limpar se vier como JSON string (aquele erro feio)
+      try {
+        if (msg.includes('{')) {
+          const parsed = JSON.parse(msg.substring(msg.indexOf('{')));
+          if (parsed.message) msg = parsed.message;
+        }
+      } catch (e) { /* Se falhar o parse, usa a mensagem original */ }
+
+      // 2. Traduz para algo mais instrucional
+      if (msg.includes("já girou") || msg.includes("hoje")) {
+        msg = "⏳ Você já tentou sua sorte hoje! Volte amanhã para mais prêmios.";
+      }
+
+      setError(msg);
+      setLoading(false);
     }
-    // Nota: O setLoading(false) final acontece no handleWheelStop agora
   };
 
   // --- 3. ATUALIZE A FUNÇÃO handleWheelStop ---
@@ -119,21 +129,22 @@ const RouletteTab = ({ onReturn, onSpin }) => {
   return (
     <div className="w-full relative pt-16 flex flex-col lg:flex-row items-center lg:items-start justify-center gap-8 p-4">
       <style>{style}</style>
-      <div className='flex-shrink-0'>
-        <button
-          onClick={onReturn}
-          className="absolute top-4 left-4 z-20 flex items-center gap-2 py-2 px-4 
+
+      <button
+        onClick={onReturn}
+        className="absolute top-4 left-4 z-20 flex items-center gap-2 py-2 px-4 
                     bg-secondary-bg text-secondary-text 
                     border border-border-color rounded-full shadow-lg 
                     hover:bg-primary-bg hover:shadow-xl transition-all"
-        >
-          <FaArrowLeft /> Voltar ao Tabuleiro
-        </button>
-      </div>
+      >
+        <FaArrowLeft /> Voltar ao Tabuleiro
+      </button>
+
 
       {/* Coluna da Roleta */}
       <div className="flex flex-col items-center gap-4 flex-shrink-0">
         <h2 className="text-3xl font-bold text-primary-text">Roda da Fortuna</h2>
+
         {/* Texto dinâmico de status */}
         {!retryAvailable ? (
           <p className="text-secondary-text">Teste sua sorte uma vez por dia!</p>
@@ -142,22 +153,48 @@ const RouletteTab = ({ onReturn, onSpin }) => {
             <FaRedo /> Ops! Item repetido. Gire novamente GRÁTIS!
           </p>
         )}
-        <CustomWheel
-          segments={segments}
-          winningSegmentIndex={winningPrizeIndex}
-          onFinished={handleWheelStop}
-          onSpin={handleSpinClick}
-          isSpinning={isSpinning}
-          isLoading={loading}
-        />
-        {/* Mensagem de Feedback de Duplicata (Aparece abaixo da roleta) */}
+
+        {/* CONTAINER COM POSICIONAMENTO RELATIVO (O segredo está aqui) */}
+        <div className="relative flex justify-center items-center">
+
+          {/* A Roleta fica no fundo */}
+          <div className={`${error ? 'opacity-50 blur-sm pointer-events-none' : ''} transition-all duration-500`}>
+            <CustomWheel
+              segments={segments}
+              winningSegmentIndex={winningPrizeIndex}
+              onFinished={handleWheelStop}
+              onSpin={handleSpinClick}
+              isSpinning={isSpinning}
+              isLoading={loading}
+            />
+          </div>
+
+          {/* MENSAGEM DE ERRO (SOBREPOSTA) */}
+          {error && (
+            <div className="absolute inset-0 z-50 flex items-center justify-center animate-fadeIn">
+              <div className="bg-primary-bg/90 backdrop-blur-md border-2 border-red-500 p-6 rounded-2xl shadow-2xl max-w-xs text-center transform scale-100 hover:scale-105 transition-transform">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="bg-red-500/20 p-4 rounded-full">
+                    <FaExclamationTriangle className="text-4xl text-red-500" />
+                  </div>
+                  <h3 className="text-xl font-bold text-red-100">Ops!</h3>
+                  <p className="text-red-200 text-sm leading-relaxed font-medium">
+                    {error}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* MENSAGEM DE DUPLICATA (Também pode ser sobreposta se quiser, mas deixei abaixo por enquanto) */}
+        </div>
+
         {retryAvailable && !isSpinning && (
-          <div className="mt-2 bg-yellow-500/20 border border-yellow-500 text-yellow-200 px-4 py-2 rounded-lg animate-fadeIn text-center">
+          <div className="mt-[-20px] z-10 bg-yellow-500/20 border border-yellow-500 text-yellow-200 px-6 py-3 rounded-full animate-fadeIn text-center shadow-lg backdrop-blur-sm">
             Você caiu em <strong>{apiPrize?.label}</strong>, mas já possui este item.<br />
-            Aproveite sua segunda chance!
+            <strong className="uppercase tracking-wide text-yellow-400">Gire de novo!</strong>
           </div>
         )}
-        {error && <div className="mt-4 text-red-400 animate-fadeIn">{error}</div>}
       </div>
 
       {/* Coluna de Vencedores */}
@@ -185,6 +222,7 @@ const RouletteTab = ({ onReturn, onSpin }) => {
           </div>
         </div>
       )}
+
     </div>
   );
 };
