@@ -11,7 +11,7 @@ from .medals import check_and_award_medals
 from datetime import datetime, time
 activity_bp = Blueprint('activities', __name__)
 logger = logging.getLogger(__name__)
-
+from app.services.recommendation_engine import ContextualRecommendationEngine
 from ..presets.activity_templates import PREDEFINED_TEMPLATES
 
 # --- ROTA PARA SUBMETER RESPOSTAS DO QUIZ (COM CORREÇÃO DE TIPO) ---
@@ -599,3 +599,21 @@ def publish_route(activity_id):
     return activity_service.publish_draft(current_user, activity_id, request.json)
 
 
+@activity_bp.route('/recommendations', methods=['POST'])
+@jwt_required() # Correção: Usar jwt_required() padrão do arquivo
+def get_activity_recommendations(): # Removemos current_user dos argumentos
+    """
+    Gera recomendações contextuais baseadas no estado atual da atividade.
+    """
+    try:
+        current_user_id = get_jwt_identity()
+        data = request.get_json()
+        
+        # Instancia o motor e calcula
+        engine = ContextualRecommendationEngine()
+        results = engine.calculate_recommendations(data)
+        
+        return jsonify(results), 200
+    except Exception as e:
+        logger.error(f"Erro ao gerar recomendações: {str(e)}", exc_info=True)
+        return jsonify({"message": "Erro ao processar recomendações."}), 500

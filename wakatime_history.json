@@ -13435,5 +13435,617 @@
                 "percent": 100.0
             }
         ]
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2026-02-01T03:00:00Z",
+            "end": "2026-02-02T02:59:59Z",
+            "date": "2026-02-01",
+            "text": "Sun Feb 1st 2026",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [],
+        "languages": [],
+        "dependencies": [],
+        "machines": [],
+        "editors": [],
+        "operating_systems": [],
+        "categories": []
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2026-02-02T03:00:00Z",
+            "end": "2026-02-03T02:59:59Z",
+            "date": "2026-02-02",
+            "text": "Mon Feb 2nd 2026",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [],
+        "languages": [],
+        "dependencies": [],
+        "machines": [],
+        "editors": [],
+        "operating_systems": [],
+        "categories": []
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2026-02-03T03:00:00Z",
+            "end": "2026-02-04T02:59:59Z",
+            "date": "2026-02-03",
+            "text": "Tue Feb 3rd 2026",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [],
+        "languages": [],
+        "dependencies": [],
+        "machines": [],
+        "editors": [],
+        "operating_systems": [],
+        "categories": []
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2026-02-04T03:00:00Z",
+            "end": "2026-02-05T02:59:59Z",
+            "date": "2026-02-04",
+            "text": "Wed Feb 4th 2026",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [],
+        "languages": [],
+        "dependencies": [],
+        "machines": [],
+        "editors": [],
+        "operating_systems": [],
+        "categories": []
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2026-02-05T03:00:00Z",
+            "end": "2026-02-06T02:59:59Z",
+            "date": "2026-02-05",
+            "text": "Thu Feb 5th 2026",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [],
+        "languages": [],
+        "dependencies": [],
+        "machines": [],
+        "editors": [],
+        "operating_systems": [],
+        "categories": []
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 57,
+            "total_seconds": 3440.316,
+            "digital": "0:57",
+            "decimal": "0.95",
+            "text": "57 mins",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 32,
+            "human_deletions": 5
+        },
+        "range": {
+            "start": "2026-02-06T03:00:00Z",
+            "end": "2026-02-07T02:59:59Z",
+            "date": "2026-02-06",
+            "text": "Fri Feb 6th 2026",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [
+            {
+                "name": "vendasSistema",
+                "total_seconds": 3014.287,
+                "ai_additions": 0,
+                "ai_deletions": 0,
+                "human_additions": 32,
+                "human_deletions": 5,
+                "color": null,
+                "digital": "0:50:14",
+                "decimal": "0.83",
+                "text": "50 mins",
+                "hours": 0,
+                "minutes": 50,
+                "seconds": 14,
+                "percent": 87.62
+            },
+            {
+                "name": "portal-gamificacao-educacional",
+                "total_seconds": 426.029,
+                "ai_additions": 0,
+                "ai_deletions": 0,
+                "human_additions": 0,
+                "human_deletions": 0,
+                "color": null,
+                "digital": "0:07:06",
+                "decimal": "0.12",
+                "text": "7 mins",
+                "hours": 0,
+                "minutes": 7,
+                "seconds": 6,
+                "percent": 12.38
+            }
+        ],
+        "languages": [
+            {
+                "name": "Java",
+                "total_seconds": 3014.287,
+                "digital": "0:50:14",
+                "decimal": "0.83",
+                "text": "50 mins",
+                "hours": 0,
+                "minutes": 50,
+                "seconds": 14,
+                "percent": 87.62
+            },
+            {
+                "name": "Python",
+                "total_seconds": 426.029,
+                "digital": "0:07:06",
+                "decimal": "0.12",
+                "text": "7 mins",
+                "hours": 0,
+                "minutes": 7,
+                "seconds": 6,
+                "percent": 12.38
+            }
+        ],
+        "dependencies": [
+            {
+                "name": "flask_jwt_extended",
+                "total_seconds": 426.029,
+                "digital": "0:07:06",
+                "decimal": "0.12",
+                "text": "7 mins",
+                "hours": 0,
+                "minutes": 7,
+                "seconds": 6,
+                "percent": 25.0
+            },
+            {
+                "name": "logging",
+                "total_seconds": 426.029,
+                "digital": "0:07:06",
+                "decimal": "0.12",
+                "text": "7 mins",
+                "hours": 0,
+                "minutes": 7,
+                "seconds": 6,
+                "percent": 25.0
+            },
+            {
+                "name": "flask",
+                "total_seconds": 426.029,
+                "digital": "0:07:06",
+                "decimal": "0.12",
+                "text": "7 mins",
+                "hours": 0,
+                "minutes": 7,
+                "seconds": 6,
+                "percent": 25.0
+            },
+            {
+                "name": "flask_cors",
+                "total_seconds": 426.029,
+                "digital": "0:07:06",
+                "decimal": "0.12",
+                "text": "7 mins",
+                "hours": 0,
+                "minutes": 7,
+                "seconds": 6,
+                "percent": 25.0
+            }
+        ],
+        "machines": [
+            {
+                "name": "julio-Inspiron-5421",
+                "total_seconds": 3440.316,
+                "machine_name_id": "0b9de8f0-4d21-4533-a56b-f27160e808bd",
+                "digital": "0:57:20",
+                "decimal": "0.95",
+                "text": "57 mins",
+                "hours": 0,
+                "minutes": 57,
+                "seconds": 20,
+                "percent": 100.0
+            }
+        ],
+        "editors": [
+            {
+                "name": "VS Code",
+                "total_seconds": 3440.316,
+                "digital": "0:57:20",
+                "decimal": "0.95",
+                "text": "57 mins",
+                "hours": 0,
+                "minutes": 57,
+                "seconds": 20,
+                "percent": 100.0
+            }
+        ],
+        "operating_systems": [
+            {
+                "name": "Linux",
+                "total_seconds": 3440.316,
+                "digital": "0:57:20",
+                "decimal": "0.95",
+                "text": "57 mins",
+                "hours": 0,
+                "minutes": 57,
+                "seconds": 20,
+                "percent": 100.0
+            }
+        ],
+        "categories": [
+            {
+                "name": "Coding",
+                "total_seconds": 3316.128,
+                "digital": "0:55:16",
+                "decimal": "0.92",
+                "text": "55 mins",
+                "hours": 0,
+                "minutes": 55,
+                "seconds": 16,
+                "percent": 96.39
+            },
+            {
+                "name": "AI Coding",
+                "total_seconds": 99.131,
+                "digital": "0:01:39",
+                "decimal": "0.02",
+                "text": "1 min",
+                "hours": 0,
+                "minutes": 1,
+                "seconds": 39,
+                "percent": 2.88
+            },
+            {
+                "name": "Debugging",
+                "total_seconds": 25.057,
+                "digital": "0:00:25",
+                "decimal": "0.00",
+                "text": "25 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 25,
+                "percent": 0.73
+            }
+        ]
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 9,
+            "total_seconds": 569.696,
+            "digital": "0:09",
+            "decimal": "0.15",
+            "text": "9 mins",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 28,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2026-02-07T03:00:00Z",
+            "end": "2026-02-08T02:59:59Z",
+            "date": "2026-02-07",
+            "text": "Sat Feb 7th 2026",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [
+            {
+                "name": "portal-gamificacao-educacional",
+                "total_seconds": 569.696,
+                "ai_additions": 0,
+                "ai_deletions": 0,
+                "human_additions": 28,
+                "human_deletions": 0,
+                "color": null,
+                "digital": "0:09:29",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 29,
+                "percent": 100.0
+            }
+        ],
+        "languages": [
+            {
+                "name": "Python",
+                "total_seconds": 330.794,
+                "digital": "0:05:30",
+                "decimal": "0.08",
+                "text": "5 mins",
+                "hours": 0,
+                "minutes": 5,
+                "seconds": 30,
+                "percent": 58.07
+            },
+            {
+                "name": "JavaScript",
+                "total_seconds": 238.902,
+                "digital": "0:03:58",
+                "decimal": "0.05",
+                "text": "3 mins",
+                "hours": 0,
+                "minutes": 3,
+                "seconds": 58,
+                "percent": 41.93
+            }
+        ],
+        "dependencies": [
+            {
+                "name": "HelpModalContext",
+                "total_seconds": 238.902,
+                "digital": "0:03:58",
+                "decimal": "0.05",
+                "text": "3 mins",
+                "hours": 0,
+                "minutes": 3,
+                "seconds": 58,
+                "percent": 10.4
+            },
+            {
+                "name": "GameBoardEditor",
+                "total_seconds": 238.902,
+                "digital": "0:03:58",
+                "decimal": "0.05",
+                "text": "3 mins",
+                "hours": 0,
+                "minutes": 3,
+                "seconds": 58,
+                "percent": 10.4
+            },
+            {
+                "name": "react",
+                "total_seconds": 238.902,
+                "digital": "0:03:58",
+                "decimal": "0.05",
+                "text": "3 mins",
+                "hours": 0,
+                "minutes": 3,
+                "seconds": 58,
+                "percent": 10.4
+            },
+            {
+                "name": "fa",
+                "total_seconds": 238.902,
+                "digital": "0:03:58",
+                "decimal": "0.05",
+                "text": "3 mins",
+                "hours": 0,
+                "minutes": 3,
+                "seconds": 58,
+                "percent": 10.4
+            },
+            {
+                "name": "flask_jwt_extended",
+                "total_seconds": 206.804,
+                "digital": "0:03:26",
+                "decimal": "0.05",
+                "text": "3 mins",
+                "hours": 0,
+                "minutes": 3,
+                "seconds": 26,
+                "percent": 9.0
+            },
+            {
+                "name": "datetime",
+                "total_seconds": 206.804,
+                "digital": "0:03:26",
+                "decimal": "0.05",
+                "text": "3 mins",
+                "hours": 0,
+                "minutes": 3,
+                "seconds": 26,
+                "percent": 9.0
+            },
+            {
+                "name": "flask_cors",
+                "total_seconds": 206.804,
+                "digital": "0:03:26",
+                "decimal": "0.05",
+                "text": "3 mins",
+                "hours": 0,
+                "minutes": 3,
+                "seconds": 26,
+                "percent": 9.0
+            },
+            {
+                "name": "flask",
+                "total_seconds": 206.804,
+                "digital": "0:03:26",
+                "decimal": "0.05",
+                "text": "3 mins",
+                "hours": 0,
+                "minutes": 3,
+                "seconds": 26,
+                "percent": 9.0
+            },
+            {
+                "name": "logging",
+                "total_seconds": 178.967,
+                "digital": "0:02:58",
+                "decimal": "0.03",
+                "text": "2 mins",
+                "hours": 0,
+                "minutes": 2,
+                "seconds": 58,
+                "percent": 7.79
+            },
+            {
+                "name": "copy",
+                "total_seconds": 178.967,
+                "digital": "0:02:58",
+                "decimal": "0.03",
+                "text": "2 mins",
+                "hours": 0,
+                "minutes": 2,
+                "seconds": 58,
+                "percent": 7.79
+            },
+            {
+                "name": "app",
+                "total_seconds": 73.643,
+                "digital": "0:01:13",
+                "decimal": "0.02",
+                "text": "1 min",
+                "hours": 0,
+                "minutes": 1,
+                "seconds": 13,
+                "percent": 3.2
+            },
+            {
+                "name": "sqlalchemy",
+                "total_seconds": 27.837,
+                "digital": "0:00:27",
+                "decimal": "0.00",
+                "text": "27 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 27,
+                "percent": 1.21
+            },
+            {
+                "name": "random",
+                "total_seconds": 27.837,
+                "digital": "0:00:27",
+                "decimal": "0.00",
+                "text": "27 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 27,
+                "percent": 1.21
+            },
+            {
+                "name": "json",
+                "total_seconds": 27.837,
+                "digital": "0:00:27",
+                "decimal": "0.00",
+                "text": "27 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 27,
+                "percent": 1.21
+            }
+        ],
+        "machines": [
+            {
+                "name": "julio-Inspiron-5421",
+                "total_seconds": 569.696,
+                "machine_name_id": "c7c811bd-96e2-48dc-8134-506cbdab97a2",
+                "digital": "0:09:29",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 29,
+                "percent": 100.0
+            }
+        ],
+        "editors": [
+            {
+                "name": "VS Code",
+                "total_seconds": 569.696,
+                "digital": "0:09:29",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 29,
+                "percent": 100.0
+            }
+        ],
+        "operating_systems": [
+            {
+                "name": "Linux",
+                "total_seconds": 569.696,
+                "digital": "0:09:29",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 29,
+                "percent": 100.0
+            }
+        ],
+        "categories": [
+            {
+                "name": "Coding",
+                "total_seconds": 569.696,
+                "digital": "0:09:29",
+                "decimal": "0.15",
+                "text": "9 mins",
+                "hours": 0,
+                "minutes": 9,
+                "seconds": 29,
+                "percent": 100.0
+            }
+        ]
     }
 ]

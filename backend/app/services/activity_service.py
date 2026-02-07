@@ -361,15 +361,18 @@ def get_activity(user, activity_id):
 
 
 def get_activities_by_professor(professor_id, search_term=None):
-    """Busca todas as atividades criadas por um professor, com filtro opcional."""
-    logger.info(f"Buscando atividades para o professor ID {professor_id} com termo de busca: '{search_term}'")
-    query = Activity.query.filter_by(professor_id=professor_id)
+    """Busca todas as atividades OFICIAIS (não rascunhos) criadas por um professor."""
+    logger.info(f"Buscando atividades oficiais para o professor ID {professor_id}")
+    
+    # CORREÇÃO: Adicionado filtro is_draft=False (ou None)
+    # Usamos o operador 'isnot' ou comparamos com False explicitamente
+    query = Activity.query.filter(
+        Activity.professor_id == professor_id,
+        Activity.is_draft.isnot(True) # Garante que rascunhos (True) fiquem de fora
+    )
 
-    # --- 2. LÓGICA DE BUSCA ATUALIZADA ---
     if search_term:
-        # Faz um "join" com a tabela de Turmas para conseguir pesquisar pelo nome da turma
         query = query.outerjoin(Class, Activity.class_id == Class.id)
-        # Filtra usando OR para buscar em qualquer um dos três campos
         query = query.filter(
             or_(
                 Activity.title.ilike(f'%{search_term}%'),

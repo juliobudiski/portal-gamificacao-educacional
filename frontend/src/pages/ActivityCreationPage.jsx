@@ -177,43 +177,7 @@ function ActivityCreationPage({ existingActivity }) {
 
   }, [logEvent]);
 
-  useEffect(() => {
-    // Executa apenas quando o usuário chega na etapa 5
-    if (currentStep === 5) {
-      if (import.meta.env.VITE_DEBUG_MODE) {
-        console.log("// LOG: [ActivityCreationPage] Etapa 5 (Elementos de Jogo) iniciada. Executando lógica de recomendação.");
-      }
-      console.log("ActivityCreationPage: Etapa 5 alcançada. Calculando e mesclando elementos de jogo recomendados.");
-      const recommendedElements = new Set();
-      if (activityData.playerProfile.selectedProfiles.includes("Competitivo")) { ["Níveis", "Sistema de pontuação", "Estatísticas (métricas de progresso)", "Reconhecimento", "Competição", "Progressão baseada em habilidade", "Sistema de classificação e ranking"].forEach(el => recommendedElements.add(el)); }
-      if (activityData.playerProfile.selectedProfiles.includes("Cooperativo")) { ["Cooperação", "Chat ou sistema de mensagens", "Interação social com outros jogadores"].forEach(el => recommendedElements.add(el)); }
-      if (activityData.playerProfile.selectedProfiles.includes("Imersivo")) { ["Narrativas envolventes", "Storytelling", "Sensação (imersão, experiência sensorial)", "Customização de personagem", "Customização de equipamento"].forEach(el => recommendedElements.add(el)); }
-      if (activityData.playerProfile.selectedProfiles.includes("Realizador")) { ["Níveis", "Sistema de pontuação", "Conquistas digitais para metas alcançadas", "Recompensas atraentes", "Progressão baseada em habilidade", "Feedback claro sobre o desempenho"].forEach(el => recommendedElements.add(el)); }
-      if (activityData.playerProfile.selectedProfiles.includes("Social")) { ["Interação social com outros jogadores", "Chat ou sistema de mensagens", "Reputação (prestígio, renome, status)", "Cooperação", "Feedback claro sobre o desempenho"].forEach(el => recommendedElements.add(el)); }
 
-      setActivityData(prevData => {
-        const mergedElements = new Set([...prevData.gameElements.selectedElements, ...recommendedElements]);
-        // Combina os elementos já selecionados com os novos recomendados, evitando duplicatas.
-        if (import.meta.env.VITE_DEBUG_MODE) {
-          console.log(`// LOG: [ActivityCreationPage] Elementos mesclados. Total: ${mergedElements.size}`);
-        }
-
-
-        if (import.meta.env.VITE_DEBUG_MODE) {
-          console.log("// LOG: [ActivityCreationPage] Verificando credenciais do usuário.");
-        }
-        console.log("ActivityCreationPage: Elementos mesclados para salvar no estado:", Array.from(mergedElements));
-
-        return {
-          ...prevData,
-          gameElements: {
-            ...prevData.gameElements,
-            selectedElements: Array.from(mergedElements)
-          }
-        };
-      });
-    }
-  }, [currentStep, activityData.playerProfile.selectedProfiles]);
 
   const location = useLocation();
   const startTourRef = useRef(startTour);
@@ -672,6 +636,12 @@ function ActivityCreationPage({ existingActivity }) {
     }
     console.log(`%c[handleNext] Botão clicado na Etapa ${currentStep}.`, "background: #FFD700; color: black;");
 
+    if (currentStep === 1) {
+      if (!activityData.title || !activityData.areaKnowledge) {
+        showToast('Por favor, preencha o Título e selecione a Área de Conhecimento antes de avançar.');
+        return; // <--- ISSO IMPEDE DE AVANÇAR
+      }
+    }
     // Validação da Etapa 3: Dinâmica de Participação
     if (currentStep === 3) {
       if (typeof activityData.activityPlanning?.isTeamActivity !== 'boolean') {
