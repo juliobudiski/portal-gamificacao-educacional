@@ -61,7 +61,7 @@ class ContextualRecommendationEngine:
                 self.element_mapping["Cooperação"]: -30
             },
             "cooperativo": {
-                self.element_mapping["Ranking"]: -60,
+                self.element_mapping["Ranking"]: -40,
                 self.element_mapping["Competição"]: -60,
                 self.element_mapping["Cooperação"]: 45,
                 self.element_mapping["Social"]: 30
@@ -258,43 +258,67 @@ class ContextualRecommendationEngine:
             }
         }
 
+    def _apply_psychosocial_safety(self, scores: dict, conflicts: dict, context_text: str):
+        """
+        Implementação do Algoritmo de Supressão Condicional (Capítulo 4).
+        ATENÇÃO: Isso NÃO impede o uso (Soft Block), apenas joga o score para negativo,
+        classificando o item como "Não Recomendado" e acionando o alerta no frontend.
+        """
+        risk_markers = ["baixa autoeficácia", "turma desunida", "ansiedade", "bullying", "exclusão"]
+        
+        detected_risks = [risk for risk in risk_markers if risk in context_text]
+        
+        if detected_risks:
+            risk_msg = f"Risco Psicossocial ({', '.join(detected_risks)}). Recomendamos cautela."
+            logger.warning(f"[MRC Safety] {risk_msg}")
+            
+            elements_to_suppress = [
+                self.element_mapping["Ranking"],
+                self.element_mapping["Competição"],
+                self.element_mapping["Pressão Social"],
+                self.element_mapping["Status"]
+            ]
+            
+            for element in elements_to_suppress:
+                if element in scores:
+                    # Subtrair 50 garante que o score fique baixo, 
+                    # movendo para a categoria de alerta, mas o item ainda existe.
+                    scores[element] -= 50
+                    conflicts[element] = risk_msg
+
     def calculate_recommendations(self, context: dict) -> dict:
         scores = {element: 0 for element in self.all_frontend_elements}
         conflicts = {} 
         
         # 1. Normalização do Contexto
         context_text = ""
-        
-        # Extração Segura de Dados
         profiles = context.get('playerProfile', {}).get('selectedProfiles', [])
         context_text += " ".join(profiles).lower() if isinstance(profiles, list) else str(profiles).lower()
         context_text += " "
-        
         objectives = context.get('desiredScenario', {}).get('objectives', [])
         context_text += " ".join(objectives).lower() + " "
-        
         problems = context.get('currentScenario', {}).get('problems', [])
         context_text += " ".join(problems).lower() + " "
         
+        # Variáveis Logísticas
         logistics = context.get('logistics', {})
         environment = logistics.get('environment', '')
         time_constraint = logistics.get('time', '')
         
-        logger.info(f"[MRC Engine] Analisando contexto: {context_text[:150]}...")
+        logger.info(f"[MRC Engine] Processando contexto normalizado...")
 
-        # 2. Heurísticas
+        # 2. Heurísticas Base (Pattern Matching via Dicionário)
         for keyword, impacts in self.heuristics.items():
             if keyword in context_text:
                 for element, adjustment in impacts.items():
                     if element in scores:
                         scores[element] += adjustment
+                        # Registra conflitos suaves baseados no dicionário
                         if adjustment <= -30:
-                            conflicts[element] = f"Conflito com o contexto: '{keyword}'."
+                            conflicts[element] = f"Conflito pedagógico: Tópico '{keyword}'."
 
-        # 3. Regra de Segurança (Hard Coded para evitar furos no Perfil)
-        if ("competitivo" in context_text or "predador" in context_text) and "colaboração" not in context_text:
-             scores[self.element_mapping["Ranking"]] += 20
-             scores[self.element_mapping["Competição"]] += 20
+        # 3. SEGURANÇA (Supressão Condicional)
+        self._apply_psychosocial_safety(scores, conflicts, context_text)
 
         # 4. Regras de Logística
         if environment == "Presencial sem Tecnologia":
@@ -306,36 +330,42 @@ class ContextualRecommendationEngine:
             ]
             for item in tech_blocklist:
                 if item in scores:
-                    scores[item] = -999
-                    conflicts[item] = "Incompatível com ambiente sem tecnologia."
+                    # Penalidade alta para classificar como "Não Recomendado"
+                    scores[item] -= 200 
+                    conflicts[item] = "Requer tecnologia (incompatível com ambiente físico)."
 
         if time_constraint == "Curto (1 aula)":
             rpg = self.element_mapping["Narrativa"]
             if rpg in scores:
                 scores[rpg] -= 50
-                conflicts[rpg] = "Narrativas complexas exigem muito tempo."
+                conflicts[rpg] = "Narrativas complexas exigem longo prazo."
             
             fast = self.element_mapping["Tempo"]
             if fast in scores: scores[fast] += 30
 
         return self._clusterize_results(scores, conflicts)
+    
 
     def _clusterize_results(self, scores: dict, conflicts: dict) -> dict:
-        response = {"recommended": [], "neutral": [], "forbidden": []}
+        # Renomeado 'forbidden' para 'not_recommended' para refletir o Soft Block
+        response = {"recommended": [], "neutral": [], "not_recommended": []}
 
         for element, score in scores.items():
             item_data = {"name": element, "score": score}
             
             if score >= 30: 
                 item_data["pre_selected"] = True
-                item_data["reason"] = "Alta sinergia com o perfil e objetivos da turma."
+                item_data["reason"] = "Alta sinergia detectada."
                 response["recommended"].append(item_data)
             elif score < 0: 
-                item_data["warning_msg"] = conflicts.get(element, "Conflito pedagógico ou logístico detectado.")
-                response["forbidden"].append(item_data)
+                # Item continua acessível, mas carrega o aviso (warning_msg)
+                # O Frontend deve usar 'warning_msg' para exibir o Modal de Confirmação.
+                item_data["warning_msg"] = conflicts.get(element, "Não recomendado para este cenário.")
+                response["not_recommended"].append(item_data)
             else: 
                 response["neutral"].append(item_data)
         
+        # Ordenação
         for k in response:
             response[k].sort(key=lambda x: x['score'], reverse=True)
 
