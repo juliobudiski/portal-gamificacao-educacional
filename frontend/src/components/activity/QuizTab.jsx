@@ -70,9 +70,13 @@ const QuizTab = ({ content, gameElements, onAnswerCorrect, onComplete, isReplay 
     const points = isCorrect ? questions[currentIndex].points : 0;
     const coins = isCorrect ? questions[currentIndex].coins : 0;
 
-    if (isCorrect) {
-      // Nota: updateUserProgress é async, mantemos o bloqueio
-      await updateUserProgress(points, coins);
+    // CORREÇÃO AQUI: Só tenta atualizar os pontos no backend se for um ALUNO
+    if (isCorrect && user?.role === 'aluno') {
+      try {
+        await updateUserProgress(points, coins);
+      } catch (err) {
+        console.error("Erro ao atualizar progresso do aluno:", err);
+      }
     }
 
     const feedbackMessage = isCorrect
@@ -84,6 +88,7 @@ const QuizTab = ({ content, gameElements, onAnswerCorrect, onComplete, isReplay 
       message: feedbackMessage
     });
 
+    // O restante do salvamento detalhado da resposta já estava protegido
     if (user?.role === 'aluno') {
       try {
         await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${activityId}/submit_answer`, {
@@ -105,7 +110,7 @@ const QuizTab = ({ content, gameElements, onAnswerCorrect, onComplete, isReplay 
           onAnswerCorrect(points);
         }
       } catch (error) {
-        console.error("Erro ao salvar resposta:", error);
+        console.error("Erro ao salvar resposta detalhada:", error);
       }
     }
 
