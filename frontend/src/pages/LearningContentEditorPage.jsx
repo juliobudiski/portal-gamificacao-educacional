@@ -1,21 +1,35 @@
-// frontend/src/pages/LearningContentEditorPage.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FaVideo, FaEye, FaSave, FaExternalLinkAlt, FaAlignLeft } from 'react-icons/fa';
-import ReactPlayer from 'react-player';
 import { useActivityCreation } from '../context/ActivityCreationContext';
 import LearningMaterialViewer from '../components/activity/LearningMaterialViewer';
+
+// Helper focado no YouTube
+const getYouTubeEmbedUrl = (input) => {
+    if (!input) return null;
+    let urlString = input.trim();
+    const iframeMatch = urlString.match(/src=["'](.*?)["']/i);
+    if (iframeMatch) {
+        urlString = iframeMatch[1];
+    }
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = urlString.match(regExp);
+
+    if (match && match[2].length === 11) {
+        return `https://www.youtube.com/embed/${match[2]}`;
+    }
+    return /^https?:\/\//i.test(urlString) ? urlString : `https://${urlString}`;
+};
+
 function LearningContentEditorPage({ initialData, onSave, isOfflineMode = false }) {
     const { activityId, stepId } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
     const { activityData } = useActivityCreation();
 
-    // Estado inicial
     const [contentConfig, setContentConfig] = useState(() => {
         if (initialData) return initialData;
-        // Tenta pegar do contexto (Modo Criação)
         const stepContent = activityData?.gamificationDesign?.progression_path?.find(p => p.id === stepId)?.content;
         return {
             video_url: stepContent?.video_url || '',
@@ -28,10 +42,8 @@ function LearningContentEditorPage({ initialData, onSave, isOfflineMode = false 
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
 
-    // Fetch de dados (Apenas Online/Edição)
     const fetchContent = useCallback(async () => {
         if (isOfflineMode || !activityId || !stepId || !user?.token) return;
-
         setLoading(true);
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/content_editor/activity/${activityId}/step/${stepId}/content?type=content`, {
@@ -60,13 +72,11 @@ function LearningContentEditorPage({ initialData, onSave, isOfflineMode = false 
     };
 
     const handleSaveChanges = async () => {
-        // 1. Modo Offline (Wizard de Criação)
         if (isOfflineMode) {
             if (onSave) onSave(contentConfig);
             return;
         }
 
-        // 2. Modo Online (Edição de Atividade Existente)
         setLoading(true);
         setMessage('');
         setError('');
@@ -90,10 +100,11 @@ function LearningContentEditorPage({ initialData, onSave, isOfflineMode = false 
         }
     };
 
+    const finalVideoUrl = getYouTubeEmbedUrl(contentConfig.video_url);
+
     return (
         <div className="min-h-screen bg-primary-bg text-primary-text p-4 md:p-8">
             <div className="max-w-full mx-auto">
-                {/* Cabeçalho */}
                 <div className="flex items-center gap-3 mb-8">
                     <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-3 rounded-xl">
                         <FaVideo className="text-xl text-white" />
@@ -105,11 +116,7 @@ function LearningContentEditorPage({ initialData, onSave, isOfflineMode = false 
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-
-                    {/* Coluna da Esquerda: Formulário */}
                     <div className="space-y-6">
-
-                        {/* Campo de Vídeo */}
                         <div className="bg-secondary-bg p-6 rounded-xl border border-border-color shadow-lg">
                             <label className="block text-sm font-bold mb-2 flex items-center gap-2">
                                 <FaVideo className="text-red-500" /> Link do YouTube
@@ -123,11 +130,10 @@ function LearningContentEditorPage({ initialData, onSave, isOfflineMode = false 
                                 className="w-full p-3 bg-primary-bg rounded-lg border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                             />
                             <p className="text-xs text-gray-400 mt-2">
-                                Dica: Copie o link completo do vídeo do navegador.
+                                Dica: Cole o link direto do vídeo ou o código de incorporação (iframe).
                             </p>
                         </div>
 
-                        {/* Campo de Material Extra */}
                         <div className="bg-secondary-bg p-6 rounded-xl border border-border-color shadow-lg">
                             <label className="block text-sm font-bold mb-2 flex items-center gap-2">
                                 <FaExternalLinkAlt className="text-blue-400" /> Link de Material Complementar (PDF/Slide)
@@ -142,7 +148,6 @@ function LearningContentEditorPage({ initialData, onSave, isOfflineMode = false 
                             />
                         </div>
 
-                        {/* Campo de Texto (Markdown) */}
                         <div className="bg-secondary-bg p-6 rounded-xl border border-border-color shadow-lg">
                             <label className="block text-sm font-bold mb-2 flex items-center gap-2">
                                 <FaAlignLeft className="text-green-400" /> Conteúdo em Texto (Markdown suportado)
@@ -158,20 +163,21 @@ function LearningContentEditorPage({ initialData, onSave, isOfflineMode = false 
                         </div>
                     </div>
 
-                    {/* Coluna da Direita: Preview */}
                     <div className="space-y-6">
                         <h3 className="text-xl font-bold text-secondary-text">Pré-visualização do Vídeo</h3>
 
-                        <div className="aspect-video bg-black rounded-xl overflow-hidden shadow-2xl border border-gray-700 flex items-center justify-center">
-                            {contentConfig.video_url ? (
-                                <ReactPlayer
-                                    url={contentConfig.video_url}
-                                    width="100%"
-                                    height="100%"
-                                    controls
-                                />
+                        <div className="relative pt-[56.25%] bg-black rounded-xl overflow-hidden shadow-2xl border border-gray-700">
+                            {finalVideoUrl ? (
+                                <iframe
+                                    className="absolute top-0 left-0 w-full h-full"
+                                    src={finalVideoUrl}
+                                    title="Video player"
+                                    frameBorder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    allowFullScreen
+                                ></iframe>
                             ) : (
-                                <div className="text-gray-500 flex flex-col items-center">
+                                <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500">
                                     <FaVideo size={40} className="mb-2 opacity-50" />
                                     <p>Cole um link para visualizar</p>
                                 </div>
@@ -190,19 +196,13 @@ function LearningContentEditorPage({ initialData, onSave, isOfflineMode = false 
                             <div className="border-2 border-dashed border-border-color rounded-2xl overflow-hidden bg-secondary-bg shadow-2xl overflow-y-auto max-h-[80vh]">
                                 <LearningMaterialViewer
                                     content={contentConfig}
-                                    onComplete={() => { }} // Função dummy para o preview
+                                    onComplete={() => { }}
                                 />
                             </div>
-
-                            <p className="text-xs text-secondary-text text-center italic">
-                                Esta é uma prévia em tempo real de como o conteúdo aparecerá no tabuleiro.
-                            </p>
                         </div>
-
                     </div>
                 </div>
 
-                {/* Footer de Ação */}
                 <div className="mt-8 pt-6 border-t border-border-color flex flex-col md:flex-row gap-4 items-center">
                     <button
                         onClick={handleSaveChanges}
