@@ -182,11 +182,24 @@ export const useActivityLogic = (activityId) => {
 
     const completeStep = useCallback(async (completedStepId) => {
         debugLog(`Completando passo: ${completedStepId}`);
+
+        // 1. Atualiza a interface (volta para o tabuleiro) IMEDIATAMENTE
+        setCurrentView('board');
+
+        // 2. BYPASS PARA PROFESSORES:
+        // Se não for aluno, não tentamos salvar no backend nem buscar progresso atualizado.
+        // Apenas encerramos a função aqui.
+        if (user?.role !== 'aluno') {
+            debugLog("Modo Visualização (Professor/Admin): Fechando passo sem salvar progresso.");
+            return;
+        }
+
+        // 3. FLUXO NORMAL PARA ALUNOS
         setUserProgress(prev => ({
             ...prev,
             completed_steps: Array.from(new Set([...(prev?.completed_steps || []), completedStepId]))
         }));
-        setCurrentView('board');
+
         try {
             await fetch(`${import.meta.env.VITE_API_URL}/api/progress/${activityId}/complete-step`, {
                 method: 'POST',
@@ -198,7 +211,7 @@ export const useActivityLogic = (activityId) => {
             // As duas chamadas podem rodar em paralelo para ser mais rápido
             const [updatedProgress] = await Promise.all([
                 fetchWithAuth(`/api/progress/${activityId}`),
-                fetchLeaderboard() // <-- ADICIONE A CHAMADA AQUI
+                fetchLeaderboard()
             ]);
 
             if (updatedProgress) {
@@ -208,7 +221,7 @@ export const useActivityLogic = (activityId) => {
         } catch (err) {
             console.error("Erro ao salvar progresso:", err);
         }
-    }, [activityId, token, fetchWithAuth, fetchLeaderboard]);
+    }, [activityId, token, fetchWithAuth, fetchLeaderboard, user?.role]);
 
     const finalState = { activity, userProgress, loading, error /* adicione outros estados relevantes */ };
     debugLog('Estado final do hook antes do return:', finalState);

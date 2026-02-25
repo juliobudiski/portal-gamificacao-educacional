@@ -60,7 +60,11 @@ function Step5_GameElements({ activityData, handleInputChange, setActivityData, 
         const response = await api.post('/activities/recommendations', activityData);
         const data = response.data;
 
-        setClusters(data);
+        setClusters({
+          recommended: data.recommended || [],
+          neutral: data.neutral || [],
+          forbidden: data.forbidden || []
+        });
 
         // Auto-selecionar recomendados (Opcional, conforme spec [cite: 42])
         // Cuidado para não sobrescrever seleções manuais se o usuário voltar para este passo

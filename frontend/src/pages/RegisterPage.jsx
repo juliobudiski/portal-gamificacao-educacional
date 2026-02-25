@@ -103,10 +103,25 @@ function RegisterPage() {
     setError('');
     setSuccess('');
 
+    // --- Validação de Domínio de E-mail ---
+    const allowedDomains = [
+      'gmail.com', 'hotmail.com', 'outlook.com', 'outlook.com.br',
+      'yahoo.com', 'yahoo.com.br', 'icloud.com', 'live.com', 'uem.br'
+    ];
+
+    const emailDomain = email.split('@')[1]?.toLowerCase();
+
+    if (!allowedDomains.includes(emailDomain)) {
+      setError(`Provedor de e-mail inválido. Utilize um domínio conhecido (ex: gmail.com, outlook.com, uem.br).`);
+      return;
+    }
+    // --------------------------------------
+
     if (password !== confirmPassword) {
       setError('As senhas não coincidem!');
       return;
     }
+
     // Validação dos termos de uso
     if (!termsAccepted) {
       setError('Você deve aceitar os Termos de Uso para continuar.');

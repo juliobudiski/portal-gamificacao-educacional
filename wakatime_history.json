@@ -14047,5 +14047,338 @@
                 "percent": 100.0
             }
         ]
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2026-02-19T03:00:00Z",
+            "end": "2026-02-20T02:59:59Z",
+            "date": "2026-02-19",
+            "text": "Thu Feb 19th 2026",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [],
+        "languages": [],
+        "dependencies": [],
+        "machines": [],
+        "editors": [],
+        "operating_systems": [],
+        "categories": []
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2026-02-20T03:00:00Z",
+            "end": "2026-02-21T02:59:59Z",
+            "date": "2026-02-20",
+            "text": "Fri Feb 20th 2026",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [],
+        "languages": [],
+        "dependencies": [],
+        "machines": [],
+        "editors": [],
+        "operating_systems": [],
+        "categories": []
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2026-02-21T03:00:00Z",
+            "end": "2026-02-22T02:59:59Z",
+            "date": "2026-02-21",
+            "text": "Sat Feb 21st 2026",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [],
+        "languages": [],
+        "dependencies": [],
+        "machines": [],
+        "editors": [],
+        "operating_systems": [],
+        "categories": []
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2026-02-22T03:00:00Z",
+            "end": "2026-02-23T02:59:59Z",
+            "date": "2026-02-22",
+            "text": "Sun Feb 22nd 2026",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [],
+        "languages": [],
+        "dependencies": [],
+        "machines": [],
+        "editors": [],
+        "operating_systems": [],
+        "categories": []
+    },
+    {
+        "languages": [
+            {
+                "name": "Java",
+                "total_seconds": 7564.964,
+                "digital": "2:06:04",
+                "decimal": "2.10",
+                "text": "2 hrs 6 mins",
+                "hours": 2,
+                "minutes": 6,
+                "seconds": 4,
+                "percent": 98.77
+            },
+            {
+                "name": "JSON",
+                "total_seconds": 94.328,
+                "digital": "0:01:34",
+                "decimal": "0.02",
+                "text": "1 min",
+                "hours": 0,
+                "minutes": 1,
+                "seconds": 34,
+                "percent": 1.23
+            }
+        ],
+        "grand_total": {
+            "hours": 2,
+            "minutes": 7,
+            "total_seconds": 7659.292,
+            "digital": "2:07",
+            "decimal": "2.12",
+            "text": "2 hrs 7 mins",
+            "ai_additions": 226,
+            "ai_deletions": 0,
+            "human_additions": 38,
+            "human_deletions": 41
+        },
+        "editors": [
+            {
+                "name": "VS Code",
+                "total_seconds": 7659.292,
+                "digital": "2:07:39",
+                "decimal": "2.12",
+                "text": "2 hrs 7 mins",
+                "hours": 2,
+                "minutes": 7,
+                "seconds": 39,
+                "percent": 100.0
+            }
+        ],
+        "operating_systems": [
+            {
+                "name": "Linux",
+                "total_seconds": 7659.292,
+                "digital": "2:07:39",
+                "decimal": "2.12",
+                "text": "2 hrs 7 mins",
+                "hours": 2,
+                "minutes": 7,
+                "seconds": 39,
+                "percent": 100.0
+            }
+        ],
+        "categories": [
+            {
+                "name": "Coding",
+                "total_seconds": 7470.356,
+                "digital": "2:04:30",
+                "decimal": "2.07",
+                "text": "2 hrs 4 mins",
+                "hours": 2,
+                "minutes": 4,
+                "seconds": 30,
+                "percent": 97.53
+            },
+            {
+                "name": "AI Coding",
+                "total_seconds": 183.111,
+                "digital": "0:03:03",
+                "decimal": "0.05",
+                "text": "3 mins",
+                "hours": 0,
+                "minutes": 3,
+                "seconds": 3,
+                "percent": 2.39
+            },
+            {
+                "name": "Debugging",
+                "total_seconds": 5.825,
+                "digital": "0:00:05",
+                "decimal": "0.00",
+                "text": "5 secs",
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 5,
+                "percent": 0.08
+            }
+        ],
+        "dependencies": [
+            {
+                "name": "br.com",
+                "total_seconds": 1116.452,
+                "digital": "0:18:36",
+                "decimal": "0.30",
+                "text": "18 mins",
+                "hours": 0,
+                "minutes": 18,
+                "seconds": 36,
+                "percent": 100.0
+            }
+        ],
+        "machines": [
+            {
+                "name": "julio-Inspiron-5421",
+                "total_seconds": 7659.292,
+                "machine_name_id": "d59ada77-7f88-4768-82f7-fa832696cfa3",
+                "digital": "2:07:39",
+                "decimal": "2.12",
+                "text": "2 hrs 7 mins",
+                "hours": 2,
+                "minutes": 7,
+                "seconds": 39,
+                "percent": 100.0
+            }
+        ],
+        "projects": [
+            {
+                "name": "vendasSistema",
+                "total_seconds": 7539.375,
+                "ai_additions": 226,
+                "ai_deletions": 0,
+                "human_additions": 38,
+                "human_deletions": 41,
+                "digital": "2:05:39",
+                "decimal": "2.08",
+                "text": "2 hrs 5 mins",
+                "hours": 2,
+                "minutes": 5,
+                "seconds": 39,
+                "percent": 98.43
+            },
+            {
+                "name": "Aula 2A Biblioteca",
+                "total_seconds": 119.917,
+                "ai_additions": 0,
+                "ai_deletions": 0,
+                "human_additions": 0,
+                "human_deletions": 0,
+                "digital": "0:01:59",
+                "decimal": "0.02",
+                "text": "1 min",
+                "hours": 0,
+                "minutes": 1,
+                "seconds": 59,
+                "percent": 1.57
+            }
+        ],
+        "range": {
+            "start": "2026-02-23T03:00:00Z",
+            "end": "2026-02-24T02:59:59Z",
+            "date": "2026-02-23",
+            "text": "Mon Feb 23rd 2026",
+            "timezone": "America/Sao_Paulo"
+        }
+    },
+    {
+        "languages": [],
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "editors": [],
+        "operating_systems": [],
+        "categories": [],
+        "dependencies": [],
+        "machines": [],
+        "projects": [],
+        "range": {
+            "start": "2026-02-24T03:00:00Z",
+            "end": "2026-02-25T02:59:59Z",
+            "date": "2026-02-24",
+            "text": "Tue Feb 24th 2026",
+            "timezone": "America/Sao_Paulo"
+        }
+    },
+    {
+        "grand_total": {
+            "hours": 0,
+            "minutes": 0,
+            "total_seconds": 0.0,
+            "digital": "0:00",
+            "decimal": "0.00",
+            "text": "0 secs",
+            "ai_additions": 0,
+            "ai_deletions": 0,
+            "human_additions": 0,
+            "human_deletions": 0
+        },
+        "range": {
+            "start": "2026-02-25T03:00:00Z",
+            "end": "2026-02-26T02:59:59Z",
+            "date": "2026-02-25",
+            "text": "Wed Feb 25th 2026",
+            "timezone": "America/Sao_Paulo"
+        },
+        "projects": [],
+        "languages": [],
+        "dependencies": [],
+        "machines": [],
+        "editors": [],
+        "operating_systems": [],
+        "categories": []
     }
 ]
