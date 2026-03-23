@@ -1,8 +1,38 @@
 # backend/app/services/recommendation_engine.py
 import logging
+from pydantic import BaseModel, Field, ValidationError
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
+# ==========================================
+# 1. Schemas de Validação (Pydantic)
+# ==========================================
+class CurrentScenarioInput(BaseModel):
+    problems: list[str] = Field(default_factory=list)
+
+class DesiredScenarioInput(BaseModel):
+    objectives: list[str] = Field(default_factory=list)
+
+class PlayerProfileInput(BaseModel):
+    selectedProfiles: list[str] = Field(default_factory=list)
+
+class LogisticsInput(BaseModel):
+    environment: str = Field(default="")
+    time: str = Field(default="")
+
+class GameficaContextInput(BaseModel):
+    title: str = Field(default="")
+    greatArea: str = Field(default="")
+    areaKnowledge: str = Field(default="")
+    currentScenario: CurrentScenarioInput = Field(default_factory=CurrentScenarioInput)
+    desiredScenario: DesiredScenarioInput = Field(default_factory=DesiredScenarioInput)
+    playerProfile: PlayerProfileInput = Field(default_factory=PlayerProfileInput)
+    logistics: LogisticsInput = Field(default_factory=LogisticsInput)
+
+# ==========================================
+# 2. Motor de Recomendação
+# ==========================================
 class ContextualRecommendationEngine:
     def __init__(self):
         # Mapeamento: Nome Interno (Conceito) -> Nome Frontend (Visual)
@@ -32,7 +62,6 @@ class ContextualRecommendationEngine:
             "Habilidade": "Progressão baseada em habilidade",
             "Competição": "Competição",
             "Pressão Social": "Pressão social",
-            # --- NOVAS CHAVES ADICIONADAS PARA EVITAR KEYERROR ---
             "Objetivo": "Objetivo (missão, meta do jogo)",
             "Estatísticas": "Estatísticas (métricas de progresso)",
             "Renovação": "Renovação (atualizações de conteúdo)",
@@ -40,16 +69,11 @@ class ContextualRecommendationEngine:
             "Reconhecimento": "Reconhecimento"
         }
         
-        # Lista completa baseada nos valores do mapa
         self.all_frontend_elements = list(self.element_mapping.values())
 
-        # --- MATRIZ DE HEURÍSTICAS REFINADA ---
-        # Chaves (keywords) devem estar em minúsculo para o match funcionar
-        
+        # Matriz Completa de Heurísticas
         self.heuristics = {
-            # ==========================================
-            # 1. PERFIL DO JOGADOR (Step 4)
-            # ==========================================
+            # 1. PERFIL DO JOGADOR
             "competitivo": {
                 self.element_mapping["Ranking"]: 35,
                 self.element_mapping["Competição"]: 35,
@@ -77,16 +101,14 @@ class ContextualRecommendationEngine:
                 self.element_mapping["Raridade"]: 20
             },
 
-            # ==========================================
-            # 2. ÁREA: EXATAS & ENGENHARIAS
-            # ==========================================
+            # 2. EXATAS & ENGENHARIAS (Match com "abstração lógica", "teoria na prática", etc.)
             "abstração": { 
                 self.element_mapping["Imersão"]: 30, 
                 self.element_mapping["Storytelling"]: 25
             },
             "teoria na prática": {
                 self.element_mapping["Puzzle"]: 30,
-                self.element_mapping["Objetivo"]: 20 # Corrigido
+                self.element_mapping["Objetivo"]: 20
             },
             "erros técnicos": { 
                 self.element_mapping["Feedback"]: 35,
@@ -109,9 +131,7 @@ class ContextualRecommendationEngine:
                 self.element_mapping["Decisão"]: 20
             },
 
-            # ==========================================
-            # 3. ÁREA: HUMANAS
-            # ==========================================
+            # 3. HUMANAS
             "leitura": { 
                 self.element_mapping["Narrativa"]: 35, 
                 self.element_mapping["Puzzle"]: 20 
@@ -125,7 +145,7 @@ class ContextualRecommendationEngine:
                 self.element_mapping["Customização"]: 30, 
                 self.element_mapping["Pressão Social"]: -50 
             },
-            "crítico": { # Pensamento crítico
+            "crítico": { 
                 self.element_mapping["Decisão"]: 35, 
                 self.element_mapping["Fórum"]: 25
             },
@@ -138,14 +158,12 @@ class ContextualRecommendationEngine:
                 self.element_mapping["Imersão"]: 25
             },
 
-            # ==========================================
-            # 4. ÁREA: SAÚDE
-            # ==========================================
-            "memoriza": { # "memorizar" (Problema) e "Memorização" (Objetivo)
+            # 4. SAÚDE
+            "memoriza": { 
                 self.element_mapping["Tempo"]: 30, 
                 self.element_mapping["Feedback"]: 30
             },
-            "clínica": { # "decisão clínica" e "teoria com a clínica"
+            "clínica": { 
                 self.element_mapping["Imersão"]: 35, 
                 self.element_mapping["Decisão"]: 30
             },
@@ -166,16 +184,14 @@ class ContextualRecommendationEngine:
                 self.element_mapping["Social"]: 25
             },
 
-            # ==========================================
-            # 5. ÁREA: SOCIAIS APLICADAS
-            # ==========================================
+            # 5. SOCIAIS APLICADAS
             "legislações": { 
                 self.element_mapping["Puzzle"]: 25,
                 self.element_mapping["Níveis"]: 20
             },
             "sistêmica": { 
                 self.element_mapping["Economia"]: 45,
-                self.element_mapping["Estatísticas"]: 30 # Corrigido
+                self.element_mapping["Estatísticas"]: 30
             },
             "negociação": {
                 self.element_mapping["Cooperação"]: 35, 
@@ -186,7 +202,7 @@ class ContextualRecommendationEngine:
                 self.element_mapping["Status"]: 35
             },
             "análise de dados": {
-                self.element_mapping["Estatísticas"]: 40, # Corrigido
+                self.element_mapping["Estatísticas"]: 40,
                 self.element_mapping["Puzzle"]: 20
             },
             "ética": { 
@@ -194,9 +210,7 @@ class ContextualRecommendationEngine:
                 self.element_mapping["Status"]: 20
             },
 
-            # ==========================================
-            # 6. ÁREA: ARTES & LETRAS
-            # ==========================================
+            # 6. ARTES & LETRAS
             "bloqueio criativo": {
                 self.element_mapping["Customização"]: 40, 
                 self.element_mapping["Equipamento"]: 30,
@@ -223,9 +237,7 @@ class ContextualRecommendationEngine:
                 self.element_mapping["Imersão"]: 20
             },
 
-            # ==========================================
-            # 7. TRANSVERSAL / GERAL
-            # ==========================================
+            # 7. GERAL / TRANSVERSAL
             "colaboração": {
                 self.element_mapping["Cooperação"]: 50,
                 self.element_mapping["Ranking"]: -60, 
@@ -242,7 +254,7 @@ class ContextualRecommendationEngine:
             },
             "prazos": { 
                 self.element_mapping["Tempo"]: -40, 
-                self.element_mapping["Estatísticas"]: 20 # Corrigido
+                self.element_mapping["Estatísticas"]: 20
             },
             "autonomia": {
                 self.element_mapping["Customização"]: 30,
@@ -259,18 +271,14 @@ class ContextualRecommendationEngine:
         }
 
     def _apply_psychosocial_safety(self, scores: dict, conflicts: dict, context_text: str):
-        """
-        Implementação do Algoritmo de Supressão Condicional (Capítulo 4).
-        ATENÇÃO: Isso NÃO impede o uso (Soft Block), apenas joga o score para negativo,
-        classificando o item como "Não Recomendado" e acionando o alerta no frontend.
-        """
-        risk_markers = ["baixa autoeficácia", "turma desunida", "ansiedade", "bullying", "exclusão"]
+        """Soft Block para riscos psicossociais detectados no texto de contexto."""
+        risk_markers = ["baixa autoeficácia", "turma desunida", "ansiedade", "bullying", "exclusão", "insegurança", "timidez"]
         
         detected_risks = [risk for risk in risk_markers if risk in context_text]
         
         if detected_risks:
             risk_msg = f"Risco Psicossocial ({', '.join(detected_risks)}). Recomendamos cautela."
-            logger.warning(f"[MRC Safety] {risk_msg}")
+            logger.warning(f"[MDC Safety] {risk_msg}")
             
             elements_to_suppress = [
                 self.element_mapping["Ranking"],
@@ -281,46 +289,45 @@ class ContextualRecommendationEngine:
             
             for element in elements_to_suppress:
                 if element in scores:
-                    # Subtrair 50 garante que o score fique baixo, 
-                    # movendo para a categoria de alerta, mas o item ainda existe.
                     scores[element] -= 50
                     conflicts[element] = risk_msg
 
-    def calculate_recommendations(self, context: dict) -> dict:
+    def calculate_recommendations(self, context_data: dict[str, Any]) -> dict:
+        """Processamento principal com validação Pydantic."""
+        try:
+            validated_input = GameficaContextInput(**context_data)
+        except ValidationError as e:
+            logger.error(f"[MDC] Payload inválido: {e.errors()}")
+            raise ValueError(f"Payload inválido: {e}")
+
         scores = {element: 0 for element in self.all_frontend_elements}
         conflicts = {} 
         
-        # 1. Normalização do Contexto
-        context_text = ""
-        profiles = context.get('playerProfile', {}).get('selectedProfiles', [])
-        context_text += " ".join(profiles).lower() if isinstance(profiles, list) else str(profiles).lower()
-        context_text += " "
-        objectives = context.get('desiredScenario', {}).get('objectives', [])
-        context_text += " ".join(objectives).lower() + " "
-        problems = context.get('currentScenario', {}).get('problems', [])
-        context_text += " ".join(problems).lower() + " "
+        # 1. Normalização do Contexto em Texto Único (Lower Case para Pattern Matching)
+        context_text = " ".join([
+            " ".join(validated_input.playerProfile.selectedProfiles),
+            " ".join(validated_input.desiredScenario.objectives),
+            " ".join(validated_input.currentScenario.problems),
+            validated_input.greatArea,
+            validated_input.areaKnowledge
+        ]).lower()
         
-        # Variáveis Logísticas
-        logistics = context.get('logistics', {})
-        environment = logistics.get('environment', '')
-        time_constraint = logistics.get('time', '')
-        
-        logger.info(f"[MRC Engine] Processando contexto normalizado...")
-
-        # 2. Heurísticas Base (Pattern Matching via Dicionário)
+        # 2. Heurísticas Base
         for keyword, impacts in self.heuristics.items():
             if keyword in context_text:
                 for element, adjustment in impacts.items():
                     if element in scores:
                         scores[element] += adjustment
-                        # Registra conflitos suaves baseados no dicionário
                         if adjustment <= -30:
                             conflicts[element] = f"Conflito pedagógico: Tópico '{keyword}'."
 
-        # 3. SEGURANÇA (Supressão Condicional)
+        # 3. Regras de Segurança
         self._apply_psychosocial_safety(scores, conflicts, context_text)
 
         # 4. Regras de Logística
+        environment = validated_input.logistics.environment
+        time_constraint = validated_input.logistics.time
+
         if environment == "Presencial sem Tecnologia":
             tech_blocklist = [
                 self.element_mapping["Economia"], 
@@ -330,7 +337,6 @@ class ContextualRecommendationEngine:
             ]
             for item in tech_blocklist:
                 if item in scores:
-                    # Penalidade alta para classificar como "Não Recomendado"
                     scores[item] -= 200 
                     conflicts[item] = "Requer tecnologia (incompatível com ambiente físico)."
 
@@ -345,9 +351,7 @@ class ContextualRecommendationEngine:
 
         return self._clusterize_results(scores, conflicts)
     
-
     def _clusterize_results(self, scores: dict, conflicts: dict) -> dict:
-        # Renomeado 'forbidden' para 'not_recommended' para refletir o Soft Block
         response = {"recommended": [], "neutral": [], "not_recommended": []}
 
         for element, score in scores.items():
@@ -358,14 +362,11 @@ class ContextualRecommendationEngine:
                 item_data["reason"] = "Alta sinergia detectada."
                 response["recommended"].append(item_data)
             elif score < 0: 
-                # Item continua acessível, mas carrega o aviso (warning_msg)
-                # O Frontend deve usar 'warning_msg' para exibir o Modal de Confirmação.
                 item_data["warning_msg"] = conflicts.get(element, "Não recomendado para este cenário.")
                 response["not_recommended"].append(item_data)
             else: 
                 response["neutral"].append(item_data)
         
-        # Ordenação
         for k in response:
             response[k].sort(key=lambda x: x['score'], reverse=True)
 

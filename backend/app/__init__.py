@@ -32,7 +32,8 @@ def create_app():
     # Precisamos permitir que o APScheduler use as configs do Flask
     app.config['SCHEDULER_API_ENABLED'] = True 
     scheduler.init_app(app)
-    scheduler.start()
+    if os.environ.get('WERKZEUG_RUN_MAIN') == 'true' or not app.debug:
+        scheduler.start()
     
     # Registra as tarefas (importação local para evitar ciclo)
     from .tasks import register_tasks

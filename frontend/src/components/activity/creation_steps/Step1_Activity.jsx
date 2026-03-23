@@ -1,16 +1,14 @@
 // frontend/src/components/activity/creation_steps/Step1_Activity.jsx
 import React, { useState, useEffect } from 'react';
 import {
-  FaCode, FaTools, FaUsers, FaFrown, FaTasks, FaHeadSideVirus,
+  FaCode, FaTools, FaUsers, FaFrown, FaTasks, FaHeadSideVirus, FaProjectDiagram, FaBug,
   FaRocket, FaComments, FaBalanceScale, FaHeartbeat, FaCogs,
   FaBriefcase, FaCalendarTimes, FaGlobeAmericas, FaBookReader, FaHistory, FaPenFancy,
   FaTheaterMasks, FaChartLine, FaCalculator, FaBullhorn, FaLightbulb, FaPalette,
   FaStethoscope, FaBrain
-
 } from 'react-icons/fa';
 import { useHelpModal } from "../../../context/HelpModalContext";
 
-// Dados baseados na Tabela de Áreas do Conhecimento do CNPq
 const CNPQ_AREAS = {
   "Ciências Exatas e da Terra": ["Ciência da Computação", "Matemática", "Física", "Química", "Astronomia", "Estatística"],
   "Engenharias": ["Engenharia de Software", "Engenharia Civil", "Engenharia Elétrica", "Engenharia Mecânica", "Engenharia de Produção"],
@@ -21,7 +19,28 @@ const CNPQ_AREAS = {
   "Outros": ["Multidisciplinar", "Geral"]
 };
 
-// Problemas Dinâmicos por Grande Área
+// MAPEAMENTO TEÓRICO
+const SUBDOMAINS_COMPUTING = [
+  "Fundamentos e Programação Introdutória",
+  "Engenharia de Software e Projetos",
+  "Testes e Qualidade de Software"
+];
+
+const SUBDOMAIN_PROBLEMS = {
+  "Fundamentos e Programação Introdutória": [
+    { text: "Barreira de abstração: foco na sintaxe em vez da lógica algorítmica.", icon: <FaCode /> },
+    { text: "Medo de errar e frustração com depuração (debugging).", icon: <FaTools /> }
+  ],
+  "Engenharia de Software e Projetos": [
+    { text: "Dificuldade de colaboração e adoção de papéis (ex: Scrum).", icon: <FaUsers /> },
+    { text: "Dificuldade em visualizar consequências a longo prazo (débito técnico).", icon: <FaProjectDiagram /> }
+  ],
+  "Testes e Qualidade de Software": [
+    { text: "Percepção de testes como atividade tediosa e secundária.", icon: <FaBug /> },
+    { text: "Baixo engajamento para atingir alta cobertura de código.", icon: <FaChartLine /> }
+  ]
+};
+
 const PROBLEM_SETS = {
   "Exatas": [
     { text: "Dificuldade com abstração lógica e matemática.", icon: <FaBrain /> },
@@ -44,14 +63,14 @@ const PROBLEM_SETS = {
     { text: "Falta de tato/empatia no atendimento simulado.", icon: <FaUsers /> },
     { text: "Sobrecarga com o volume de conteúdo.", icon: <FaBookReader /> }
   ],
-  "Sociais": [ // Sociais Aplicadas
+  "Sociais": [
     { text: "Dificuldade em entender legislações complexas.", icon: <FaBalanceScale /> },
     { text: "Falta de visão sistêmica de mercado.", icon: <FaChartLine /> },
     { text: "Dificuldade com análise de dados e estatísticas.", icon: <FaCalculator /> },
     { text: "Timidez em apresentações e oratória.", icon: <FaBullhorn /> },
     { text: "Bloqueio criativo em projetos de solução.", icon: <FaLightbulb /> }
   ],
-  "Artes": [ // Linguística, Letras e Artes
+  "Artes": [
     { text: "Bloqueio criativo (síndrome da página em branco).", icon: <FaPalette /> },
     { text: "Dificuldade com o domínio técnico de ferramentas.", icon: <FaTools /> },
     { text: "Insegurança ao expor trabalhos a críticas.", icon: <FaFrown /> },
@@ -69,69 +88,69 @@ const PROBLEM_SETS = {
 
 function Step1_InitialDetails({ activityData, handleInputChange, setActivityData }) {
   const { openHelp } = useHelpModal();
-  const [selectedGreatArea, setSelectedGreatArea] = useState("");
+  const [selectedGreatArea, setSelectedGreatArea] = useState(activityData.greatArea || "");
   const [displayedProblems, setDisplayedProblems] = useState(PROBLEM_SETS["Geral"]);
-
+  const isComputingArea = activityData.areaKnowledge === "Ciência da Computação" || activityData.areaKnowledge === "Engenharia de Software";
   // Sincroniza Grande Área ao carregar (Edição)
   useEffect(() => {
     if (activityData.areaKnowledge && !selectedGreatArea) {
       const foundGreatArea = Object.keys(CNPQ_AREAS).find(key =>
         CNPQ_AREAS[key].includes(activityData.areaKnowledge)
       );
-      if (foundGreatArea) setSelectedGreatArea(foundGreatArea);
+      if (foundGreatArea) {
+        setSelectedGreatArea(foundGreatArea);
+        setActivityData(prev => ({ ...prev, greatArea: foundGreatArea }));
+      }
     }
-  }, [activityData.areaKnowledge]);
+  }, [activityData.areaKnowledge, selectedGreatArea, setActivityData]);
 
-  // Atualiza a lista de problemas quando a Grande Área muda
+  // Atualiza a lista de problemas (Divulgação Progressiva)
   useEffect(() => {
-    if (!selectedGreatArea) {
-      setDisplayedProblems(PROBLEM_SETS["Geral"]);
-      return;
-    }
-
     let specificSet = [];
 
-    // Mapeia a String da Grande Área para a lista de problemas correta
-    switch (selectedGreatArea) {
-      case "Ciências Exatas e da Terra":
-      case "Engenharias":
-        specificSet = PROBLEM_SETS["Exatas"];
-        break;
-
-      case "Ciências Humanas":
-        specificSet = PROBLEM_SETS["Humanas"];
-        break;
-
-      case "Ciências da Saúde":
-        specificSet = PROBLEM_SETS["Saude"];
-        break;
-
-      case "Ciências Sociais Aplicadas":
-        specificSet = PROBLEM_SETS["Sociais"];
-        break;
-
-      case "Linguística, Letras e Artes":
-        specificSet = PROBLEM_SETS["Artes"];
-        break;
-
-      default:
-        // Caso seja "Outros" ou não mapeado
-        specificSet = [];
+    // Prioridade 1: Subdomínio de Computação selecionado
+    if (isComputingArea && activityData.subdomain && SUBDOMAIN_PROBLEMS[activityData.subdomain]) {
+      specificSet = SUBDOMAIN_PROBLEMS[activityData.subdomain];
+    }
+    // Prioridade 2: Grande Área selecionada
+    else if (selectedGreatArea) {
+      switch (selectedGreatArea) {
+        case "Ciências Exatas e da Terra":
+        case "Engenharias": specificSet = PROBLEM_SETS["Exatas"]; break;
+        case "Ciências Humanas": specificSet = PROBLEM_SETS["Humanas"]; break;
+        case "Ciências da Saúde": specificSet = PROBLEM_SETS["Saude"]; break;
+        case "Ciências Sociais Aplicadas": specificSet = PROBLEM_SETS["Sociais"]; break;
+        case "Linguística, Letras e Artes": specificSet = PROBLEM_SETS["Artes"]; break;
+        default: specificSet = [];
+      }
     }
 
-    // Lógica de Combinação:
-    // Se encontrou um set específico, mistura com os 3 primeiros problemas "Gerais" (ex: Gestão de tempo)
-    // Isso garante variedade e consistência.
-    if (specificSet && specificSet.length > 0) {
+    if (specificSet.length > 0) {
+      // Mistura com os genéricos para manter variedade
       setDisplayedProblems([...specificSet, ...PROBLEM_SETS["Geral"].slice(0, 3)]);
     } else {
       setDisplayedProblems(PROBLEM_SETS["Geral"]);
     }
-  }, [selectedGreatArea]);
+  }, [selectedGreatArea, activityData.subdomain, activityData.areaKnowledge, isComputingArea]);
 
   const handleGreatAreaChange = (e) => {
-    setSelectedGreatArea(e.target.value);
-    setActivityData(prev => ({ ...prev, areaKnowledge: "" }));
+    const newGreatArea = e.target.value;
+    setSelectedGreatArea(newGreatArea);
+    setActivityData(prev => ({
+      ...prev,
+      greatArea: newGreatArea,
+      areaKnowledge: "",
+      subdomain: "" // Limpa o subdomínio se trocar a área
+    }));
+  };
+
+  const handleAreaKnowledgeChange = (e) => {
+    handleInputChange(e);
+    // Limpa o subdomínio se selecionar uma área que não seja computação/engenharia
+    const val = e.target.value;
+    if (val !== "Ciência da Computação" && val !== "Engenharia de Software") {
+      setActivityData(prev => ({ ...prev, subdomain: "" }));
+    }
   };
 
   const handleProblemSelection = (problemText) => {
@@ -148,7 +167,6 @@ function Step1_InitialDetails({ activityData, handleInputChange, setActivityData
 
   return (
     <div className="space-y-8 animate-fade-in">
-      {/* CABEÇALHO */}
       <div>
         <h2 className="text-2xl font-bold text-primary-text dark:text-primary-text">
           Definindo o Cenário
@@ -158,7 +176,6 @@ function Step1_InitialDetails({ activityData, handleInputChange, setActivityData
         </p>
       </div>
 
-      {/* FORMULÁRIO BÁSICO */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-secondary-text">Título da Atividade *</label>
@@ -173,21 +190,19 @@ function Step1_InitialDetails({ activityData, handleInputChange, setActivityData
           />
         </div>
 
-        {/* GRANDE ÁREA */}
         <div>
-          {/* Adicionei o * para indicar obrigatoriedade visualmente */}
           <label className="block text-sm font-medium text-secondary-text mb-1">Grande Área (CNPq) *</label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
               <FaGlobeAmericas />
             </div>
             <select
-              required // <--- Adicionei aqui (ajuda o navegador a entender que é obrigatório)
+              required
               value={selectedGreatArea}
               onChange={handleGreatAreaChange}
               className={`pl-10 block w-full px-4 py-2 bg-secondary-bg dark:bg-primary-bg border rounded-md focus:ring-teal-500 sm:text-sm 
                 ${!selectedGreatArea ? 'border-red-300 dark:border-red-900' : 'border-border-color dark:border-gray-600'} 
-              `} // <--- Truque: Borda vermelha se estiver vazio
+              `}
             >
               <option value="">Selecione...</option>
               {Object.keys(CNPQ_AREAS).map(area => (
@@ -197,18 +212,17 @@ function Step1_InitialDetails({ activityData, handleInputChange, setActivityData
           </div>
         </div>
 
-        {/* ÁREA ESPECÍFICA */}
         <div>
           <label className="block text-sm font-medium text-secondary-text mb-1">Área Específica *</label>
           <select
-            required // <--- Adicionei aqui
+            required
             name="areaKnowledge"
             value={activityData.areaKnowledge || ""}
             onChange={handleInputChange}
             disabled={!selectedGreatArea}
             className={`block w-full px-4 py-2 bg-secondary-bg dark:bg-primary-bg border rounded-md focus:ring-teal-500 sm:text-sm disabled:opacity-50
                ${!activityData.areaKnowledge ? 'border-red-300 dark:border-red-900' : 'border-border-color dark:border-gray-600'}
-            `} // <--- Truque: Borda vermelha se estiver vazio
+            `}
           >
             <option value="">{selectedGreatArea ? "Selecione..." : "Aguardando Grande Área"}</option>
             {selectedGreatArea && CNPQ_AREAS[selectedGreatArea].map(subArea => (
@@ -216,9 +230,25 @@ function Step1_InitialDetails({ activityData, handleInputChange, setActivityData
             ))}
           </select>
         </div>
+        {/* --- NOVO DROPDOWN CONDICIONAL (SUBDOMÍNIO) --- */}
+        {isComputingArea && (
+          <div className="md:col-span-2 animate-fade-in">
+            <label className="block text-sm font-medium text-teal-600 dark:text-teal-400 mb-1">Subdomínio da Computação (Opcional para focar a estratégia)</label>
+            <select
+              name="subdomain"
+              value={activityData.subdomain || ""}
+              onChange={handleInputChange}
+              className="block w-full px-4 py-2 bg-teal-50 dark:bg-teal-900/20 border border-teal-300 dark:border-teal-700 rounded-md focus:ring-teal-500 sm:text-sm"
+            >
+              <option value="">Geral / Não focar em um subdomínio específico</option>
+              {SUBDOMAINS_COMPUTING.map(sub => (
+                <option key={sub} value={sub}>{sub}</option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
-      {/* SELEÇÃO DE PROBLEMAS DINÂMICA */}
       <div className="pt-4 border-t dark:border-gray-700">
         <h3 className="text-lg font-semibold text-primary-text">
           Quais desafios seus alunos enfrentam em <span className="text-teal-600">{selectedGreatArea || "Geral"}</span>?
@@ -251,8 +281,8 @@ function Step1_InitialDetails({ activityData, handleInputChange, setActivityData
       </div>
 
       <button
-        onClick={() => openHelp('analise_preliminar')} // Chama pelo ID
-        className="bg-blue-500 text-white px-4 py-2 rounded"
+        onClick={() => openHelp('analise_preliminar')}
+        className="bg-blue-500 text-white px-4 py-2 rounded mt-4"
       >
         Ajuda
       </button>

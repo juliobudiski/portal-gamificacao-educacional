@@ -378,6 +378,7 @@ function ActivityCreationPage({ existingActivity }) {
         title: existingActivity.title || '',
         description: existingActivity.description || '',
         areaKnowledge: existingActivity.areaKnowledge || '',
+        subdomain: existingActivity.subdomain || '',
         isPublic: existingActivity.isPublic == null ? true : existingActivity.isPublic,
         currentScenario: existingActivity.currentScenario || { problems: [], otherProblem: '' },
         desiredScenario: existingActivity.desiredScenario || { objectives: [], otherObjective: '' },
