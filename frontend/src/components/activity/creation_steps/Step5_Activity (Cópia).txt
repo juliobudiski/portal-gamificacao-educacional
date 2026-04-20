@@ -63,7 +63,7 @@ function Step5_GameElements({ activityData, handleInputChange, setActivityData, 
         setClusters({
           recommended: data.recommended || [],
           neutral: data.neutral || [],
-          forbidden: data.not_recommended || []
+          forbidden: data.forbidden || []
         });
 
         // Auto-selecionar recomendados (Opcional, conforme spec [cite: 42])

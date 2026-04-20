@@ -1,373 +1,218 @@
 # backend/app/services/recommendation_engine.py
+import json
+import os
+import re
 import logging
-from pydantic import BaseModel, Field, ValidationError
-from typing import Any
+from pydantic import BaseModel, Field
+from typing import Any, List, Dict
 
 logger = logging.getLogger(__name__)
 
 # ==========================================
-# 1. Schemas de Validação (Pydantic)
+# 1. SCHEMAS DE ENTRADA (Mapeando o React)
 # ==========================================
 class CurrentScenarioInput(BaseModel):
-    problems: list[str] = Field(default_factory=list)
+    problems: List[str] = Field(default_factory=list)
 
 class DesiredScenarioInput(BaseModel):
-    objectives: list[str] = Field(default_factory=list)
+    objectives: List[str] = Field(default_factory=list)
 
 class PlayerProfileInput(BaseModel):
-    selectedProfiles: list[str] = Field(default_factory=list)
+    selectedProfiles: List[str] = Field(default_factory=list)
 
 class LogisticsInput(BaseModel):
-    environment: str = Field(default="")
-    time: str = Field(default="")
+    characteristics: List[str] = Field(default_factory=list)
+    isTeamActivity: bool = Field(default=False)
 
 class GameficaContextInput(BaseModel):
-    title: str = Field(default="")
     greatArea: str = Field(default="")
     areaKnowledge: str = Field(default="")
     currentScenario: CurrentScenarioInput = Field(default_factory=CurrentScenarioInput)
     desiredScenario: DesiredScenarioInput = Field(default_factory=DesiredScenarioInput)
     playerProfile: PlayerProfileInput = Field(default_factory=PlayerProfileInput)
-    logistics: LogisticsInput = Field(default_factory=LogisticsInput)
+    activityPlanning: LogisticsInput = Field(default_factory=LogisticsInput)
 
 # ==========================================
-# 2. Motor de Recomendação
+# 2. MOTOR DE INFERÊNCIA HÍBRIDO (M.U.I.)
 # ==========================================
 class ContextualRecommendationEngine:
-    def __init__(self):
-        # Mapeamento: Nome Interno (Conceito) -> Nome Frontend (Visual)
-        self.element_mapping = {
-            "Ranking": "Sistema de classificação e ranking",
+    def __init__(self, kb_path: str = "knowledge_base.json"):
+        self.kb_path = kb_path
+        self._load_knowledge_base()
+
+        self.frontend_map = {
+            "Nível": "Níveis",
             "Pontos": "Sistema de pontuação",
-            "Cooperação": "Cooperação",
-            "Economia": "Economia (sistema monetário)",
-            "Narrativa": "Narrativas envolventes",
-            "Tempo": "Pressão de tempo",
-            "Puzzle": "Quebra-cabeça",
-            "Customização": "Customização de personagem",
-            "Feedback": "Feedback claro sobre o desempenho",
-            "Raridade": "Raridade (itens exclusivos, objetos raros)",
-            "Níveis": "Níveis",
-            "Conquistas": "Conquistas digitais para metas alcançadas",
-            "Chat": "Chat ou sistema de mensagens",
-            "Fórum": "Fórum de Discussão",
-            "Social": "Interação social com outros jogadores",
-            "Imersão": "Sensação (imersão, experiência sensorial)",
-            "Decisão": "Escolha imposta (decisões forçadas)",
-            "Sorte": "Chance (sorte e probabilidade)",
-            "Status": "Reputação (prestígio, renome, status)",
-            "Storytelling": "Storytelling",
-            "Equipamento": "Customização de equipamento",
-            "Recompensas": "Recompensas atraentes",
-            "Habilidade": "Progressão baseada em habilidade",
-            "Competição": "Competição",
-            "Pressão Social": "Pressão social",
-            "Objetivo": "Objetivo (missão, meta do jogo)",
             "Estatísticas": "Estatísticas (métricas de progresso)",
-            "Renovação": "Renovação (atualizações de conteúdo)",
-            "Novidade": "Novidade (novas funcionalidades)",
-            "Reconhecimento": "Reconhecimento"
-        }
-        
-        self.all_frontend_elements = list(self.element_mapping.values())
-
-        # Matriz Completa de Heurísticas
-        self.heuristics = {
-            # 1. PERFIL DO JOGADOR
-            "competitivo": {
-                self.element_mapping["Ranking"]: 35,
-                self.element_mapping["Competição"]: 35,
-                self.element_mapping["Pontos"]: 20
-            },
-            "predador": { 
-                self.element_mapping["Ranking"]: 40,
-                self.element_mapping["Competição"]: 40,
-                self.element_mapping["Cooperação"]: -30
-            },
-            "cooperativo": {
-                self.element_mapping["Ranking"]: -40,
-                self.element_mapping["Competição"]: -60,
-                self.element_mapping["Cooperação"]: 45,
-                self.element_mapping["Social"]: 30
-            },
-            "socializador": {
-                self.element_mapping["Chat"]: 30,
-                self.element_mapping["Fórum"]: 30,
-                self.element_mapping["Cooperação"]: 25
-            },
-            "explorador": {
-                self.element_mapping["Narrativa"]: 30,
-                self.element_mapping["Imersão"]: 25,
-                self.element_mapping["Raridade"]: 20
-            },
-
-            # 2. EXATAS & ENGENHARIAS (Match com "abstração lógica", "teoria na prática", etc.)
-            "abstração": { 
-                self.element_mapping["Imersão"]: 30, 
-                self.element_mapping["Storytelling"]: 25
-            },
-            "teoria na prática": {
-                self.element_mapping["Puzzle"]: 30,
-                self.element_mapping["Objetivo"]: 20
-            },
-            "erros técnicos": { 
-                self.element_mapping["Feedback"]: 35,
-                self.element_mapping["Sorte"]: 20
-            },
-            "bugs": { 
-                self.element_mapping["Feedback"]: 35,
-                self.element_mapping["Sorte"]: 20
-            },
-            "raciocínio lógico": {
-                self.element_mapping["Puzzle"]: 40,
-                self.element_mapping["Decisão"]: 20
-            },
-            "persistência": {
-                self.element_mapping["Níveis"]: 30, 
-                self.element_mapping["Habilidade"]: 25
-            },
-            "experimentação": { 
-                self.element_mapping["Imersão"]: 25,
-                self.element_mapping["Decisão"]: 20
-            },
-
-            # 3. HUMANAS
-            "leitura": { 
-                self.element_mapping["Narrativa"]: 35, 
-                self.element_mapping["Puzzle"]: 20 
-            },
-            "debates": {
-                self.element_mapping["Fórum"]: 40,
-                self.element_mapping["Social"]: 25
-            },
-            "timidez": { 
-                self.element_mapping["Chat"]: 30, 
-                self.element_mapping["Customização"]: 30, 
-                self.element_mapping["Pressão Social"]: -50 
-            },
-            "crítico": { 
-                self.element_mapping["Decisão"]: 35, 
-                self.element_mapping["Fórum"]: 25
-            },
-            "empatia": {
-                self.element_mapping["Narrativa"]: 40, 
-                self.element_mapping["Storytelling"]: 30
-            },
-            "fatos históricos": {
-                self.element_mapping["Storytelling"]: 35,
-                self.element_mapping["Imersão"]: 25
-            },
-
-            # 4. SAÚDE
-            "memoriza": { 
-                self.element_mapping["Tempo"]: 30, 
-                self.element_mapping["Feedback"]: 30
-            },
-            "clínica": { 
-                self.element_mapping["Imersão"]: 35, 
-                self.element_mapping["Decisão"]: 30
-            },
-            "procedimentos práticos": {
-                 self.element_mapping["Imersão"]: 40, 
-                 self.element_mapping["Sorte"]: 20 
-            },
-            "humanização": { 
-                self.element_mapping["Narrativa"]: 35,
-                self.element_mapping["Social"]: 25
-            },
-            "protocolos": {
-                self.element_mapping["Conquistas"]: 30, 
-                self.element_mapping["Níveis"]: 25
-            },
-            "tato": { 
-                self.element_mapping["Narrativa"]: 30,
-                self.element_mapping["Social"]: 25
-            },
-
-            # 5. SOCIAIS APLICADAS
-            "legislações": { 
-                self.element_mapping["Puzzle"]: 25,
-                self.element_mapping["Níveis"]: 20
-            },
-            "sistêmica": { 
-                self.element_mapping["Economia"]: 45,
-                self.element_mapping["Estatísticas"]: 30
-            },
-            "negociação": {
-                self.element_mapping["Cooperação"]: 35, 
-                self.element_mapping["Social"]: 30
-            },
-            "liderança": {
-                self.element_mapping["Cooperação"]: 40,
-                self.element_mapping["Status"]: 35
-            },
-            "análise de dados": {
-                self.element_mapping["Estatísticas"]: 40,
-                self.element_mapping["Puzzle"]: 20
-            },
-            "ética": { 
-                self.element_mapping["Decisão"]: 40, 
-                self.element_mapping["Status"]: 20
-            },
-
-            # 6. ARTES & LETRAS
-            "bloqueio criativo": {
-                self.element_mapping["Customização"]: 40, 
-                self.element_mapping["Equipamento"]: 30,
-                self.element_mapping["Decisão"]: -20 
-            },
-            "insegurança": { 
-                self.element_mapping["Reconhecimento"]: 35, 
-                self.element_mapping["Cooperação"]: 25
-            },
-            "expressão criativa": {
-                self.element_mapping["Customização"]: 45,
-                self.element_mapping["Storytelling"]: 30
-            },
-            "portfólio": {
-                self.element_mapping["Conquistas"]: 35, 
-                self.element_mapping["Raridade"]: 25
-            },
-            "interpretação": { 
-                self.element_mapping["Narrativa"]: 30,
-                self.element_mapping["Puzzle"]: 20
-            },
-            "repertório": {
-                self.element_mapping["Raridade"]: 25, 
-                self.element_mapping["Imersão"]: 20
-            },
-
-            # 7. GERAL / TRANSVERSAL
-            "colaboração": {
-                self.element_mapping["Cooperação"]: 50,
-                self.element_mapping["Ranking"]: -60, 
-                self.element_mapping["Competição"]: -60
-            },
-            "trabalho em equipe": {
-                self.element_mapping["Cooperação"]: 50,
-                self.element_mapping["Social"]: 30
-            },
-            "motivação": {
-                self.element_mapping["Pontos"]: 25,
-                self.element_mapping["Recompensas"]: 35,
-                self.element_mapping["Níveis"]: 20
-            },
-            "prazos": { 
-                self.element_mapping["Tempo"]: -40, 
-                self.element_mapping["Estatísticas"]: 20
-            },
-            "autonomia": {
-                self.element_mapping["Customização"]: 30,
-                self.element_mapping["Decisão"]: 30
-            },
-            "concentração": { 
-                self.element_mapping["Tempo"]: 20, 
-                self.element_mapping["Narrativa"]: -20 
-            },
-            "aplicabilidade": { 
-                self.element_mapping["Imersão"]: 35, 
-                self.element_mapping["Storytelling"]: 25
-            }
+            "Economia": "Economia (sistema monetário)",
+            "Pressão de tempo": "Pressão de tempo",
+            
+            # --- A MÁGICA DA HERANÇA ACONTECE AQUI ---
+            # A literatura estudou "Competição", o SAD sugere "Ranking"
+            "Competição": "Sistema de classificação e ranking",
+            
+            # A literatura estudou "Cooperação", o SAD sugere "Fórum/Chat"
+            "Cooperação": "Fórum de Discussão", 
+            
+            "Objetivo": "Objetivo (missão, meta do jogo)",
+            "Quebra cabeça": "Quebra-cabeça",
+            "Storytelling": "Storytelling",
+            "Narrativa": "Narrativas envolventes",
+            
+            # A literatura estudou "Progressão", o SAD sugere "Habilidade"
+            "Progressão": "Progressão baseada em habilidade",
+            
+            "Reconhecimento": "Conquistas digitais para metas alcançadas"
         }
 
-    def _apply_psychosocial_safety(self, scores: dict, conflicts: dict, context_text: str):
-        """Soft Block para riscos psicossociais detectados no texto de contexto."""
-        risk_markers = ["baixa autoeficácia", "turma desunida", "ansiedade", "bullying", "exclusão", "insegurança", "timidez"]
-        
-        detected_risks = [risk for risk in risk_markers if risk in context_text]
-        
-        if detected_risks:
-            risk_msg = f"Risco Psicossocial ({', '.join(detected_risks)}). Recomendamos cautela."
-            logger.warning(f"[MDC Safety] {risk_msg}")
-            
-            elements_to_suppress = [
-                self.element_mapping["Ranking"],
-                self.element_mapping["Competição"],
-                self.element_mapping["Pressão Social"],
-                self.element_mapping["Status"]
-            ]
-            
-            for element in elements_to_suppress:
-                if element in scores:
-                    scores[element] -= 50
-                    conflicts[element] = risk_msg
+        self.all_react_elements = [
+            "Níveis", "Sistema de pontuação", "Estatísticas (métricas de progresso)", "Reconhecimento",
+            "Raridade (itens exclusivos, objetos raros)", "Economia (sistema monetário)", "Escolha imposta (decisões forçadas)",
+            "Chance (sorte e probabilidade)", "Pressão de tempo", "Reputação (prestígio, renome, status)",
+            "Pressão social", "Sensação (imersão, experiência sensorial)",
+            "Objetivo (missão, meta do jogo)", "Quebra-cabeça", "Renovação (atualizações de conteúdo)",
+            "Novidade (novas funcionalidades)", "Storytelling", "Customização de personagem",
+            "Customização de equipamento", "Chat ou sistema de mensagens", "Fórum de Discussão",
+            "Interação social com outros jogadores", "Feedback claro sobre o desempenho",
+            "Progressão baseada em habilidade", "Narrativas envolventes", "Sistema de classificação e ranking",
+            "Recompensas atraentes", "Conquistas digitais para metas alcançadas"
+        ]
 
-    def calculate_recommendations(self, context_data: dict[str, Any]) -> dict:
-        """Processamento principal com validação Pydantic."""
+        # --- A MARRETA DO CONTEXTO: Multiplicadores Agressivos ---
+        # Conflitos agora têm mu=0.1 (mata o ganho) e lambda=5.0 (explode o risco)
+        self.profile_mods = {
+            "competitivo": { "Competição": {"mu": 1.5, "lambda": 0.5}, "Pressão de tempo": {"mu": 1.5, "lambda": 0.5}, "Cooperação": {"mu": 0.1, "lambda": 5.0} },
+            "social": { "Cooperação": {"mu": 1.5, "lambda": 0.5}, "Narrativa": {"mu": 1.5, "lambda": 0.5}, "Storytelling": {"mu": 1.5, "lambda": 0.5}, "Competição": {"mu": 0.1, "lambda": 5.0} },
+            "realizador": { "Pontos": {"mu": 1.5, "lambda": 0.5}, "Nível": {"mu": 1.5, "lambda": 0.5}, "Quebra cabeça": {"mu": 1.5, "lambda": 0.5}, "Reconhecimento": {"mu": 1.5, "lambda": 0.5} },
+            "explorador": { "Narrativa": {"mu": 1.5, "lambda": 0.5}, "Storytelling": {"mu": 1.5, "lambda": 0.5}, "Quebra cabeça": {"mu": 1.5, "lambda": 0.5}, "Pressão de tempo": {"mu": 0.1, "lambda": 5.0} }
+        }
+
+        self.objective_mods = {
+            "teorico": { "Narrativa": {"mu": 1.5, "lambda": 0.5}, "Quebra cabeça": {"mu": 1.5, "lambda": 0.5}, "Pressão de tempo": {"mu": 0.1, "lambda": 5.0}, "Economia": {"mu": 0.1, "lambda": 5.0} },
+            "pratico": { "Pontos": {"mu": 1.5, "lambda": 0.5}, "Economia": {"mu": 1.5, "lambda": 0.5}, "Pressão de tempo": {"mu": 1.5, "lambda": 0.5}, "Estatísticas": {"mu": 1.5, "lambda": 0.5}, "Narrativa": {"mu": 0.1, "lambda": 3.0} },
+            "colaborativo": { "Cooperação": {"mu": 1.5, "lambda": 0.5}, "Reconhecimento": {"mu": 1.5, "lambda": 0.5}, "Competição": {"mu": 0.1, "lambda": 5.0} }
+        }
+
+    def _load_knowledge_base(self):
         try:
-            validated_input = GameficaContextInput(**context_data)
-        except ValidationError as e:
-            logger.error(f"[MDC] Payload inválido: {e.errors()}")
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            full_path = os.path.join(base_dir, self.kb_path)
+            with open(full_path, 'r', encoding='utf-8') as f:
+                self.bible = json.load(f)
+        except Exception as e:
+            logger.error(f"Falha ao carregar knowledge_base.json: {e}")
+            self.bible = {}
+
+    def _extract_raw_scores(self, xai_string: str) -> tuple:
+        match = re.search(r'Sb:\s*([\d.]+)\s*\|\s*Pc:\s*([\d.]+)', xai_string)
+        if match: return float(match.group(1)), float(match.group(2))
+        return 0.0, 0.0
+
+    def _classify_objectives(self, frontend_texts: List[str]) -> List[str]:
+        """ NLP Melhorado para capturar as strings exatas do seu React """
+        text_joined = " ".join(frontend_texts).lower()
+        classes = []
+        
+        # Palavras-chave mapeadas diretamente dos seus arquivos JSX
+        if any(w in text_joined for w in ["lógic", "abstra", "teori", "teóri", "leitura", "históric", "memoriz", "legisla", "sistêmic", "crítico", "argumentação"]): 
+            classes.append("teorico")
+            
+        if any(w in text_joined for w in ["prátic", "técnic", "experimen", "testes", "clínica", "dados", "procedimentos", "depuração", "bugs"]): 
+            classes.append("pratico")
+            
+        if any(w in text_joined for w in ["equipe", "debate", "empatia", "negocia", "liderança", "colabora", "papéis", "scrum"]): 
+            classes.append("colaborativo")
+            
+        return classes if classes else ["pratico"] # Fallback se nenhuma palavra bater
+
+    def _get_averaged_modifiers(self, keys: List[str], mod_matrix: dict, element: str) -> tuple:
+        if not keys: return 1.0, 1.0
+        mu_sum, lambda_sum, count = 0.0, 0.0, 0
+        for k in keys:
+            k_lower = k.lower()
+            if k_lower in mod_matrix:
+                mods = mod_matrix[k_lower].get(element, {"mu": 1.0, "lambda": 1.0})
+                mu_sum += mods["mu"]; lambda_sum += mods["lambda"]; count += 1
+        if count == 0: return 1.0, 1.0
+        return (mu_sum / count), (lambda_sum / count)
+
+    def calculate_recommendations(self, context_data: dict) -> dict:
+        try:
+            val_input = GameficaContextInput(**context_data)
+        except Exception as e:
             raise ValueError(f"Payload inválido: {e}")
 
-        scores = {element: 0 for element in self.all_frontend_elements}
-        conflicts = {} 
-        
-        # 1. Normalização do Contexto em Texto Único (Lower Case para Pattern Matching)
-        context_text = " ".join([
-            " ".join(validated_input.playerProfile.selectedProfiles),
-            " ".join(validated_input.desiredScenario.objectives),
-            " ".join(validated_input.currentScenario.problems),
-            validated_input.greatArea,
-            validated_input.areaKnowledge
-        ]).lower()
-        
-        # 2. Heurísticas Base
-        for keyword, impacts in self.heuristics.items():
-            if keyword in context_text:
-                for element, adjustment in impacts.items():
-                    if element in scores:
-                        scores[element] += adjustment
-                        if adjustment <= -30:
-                            conflicts[element] = f"Conflito pedagógico: Tópico '{keyword}'."
+        area_swebok = val_input.areaKnowledge.upper()
+        if area_swebok not in self.bible:
+            area_swebok = "SOFTWARE ENGINEERING PROFESSIONAL PRACTICE"
 
-        # 3. Regras de Segurança
-        self._apply_psychosocial_safety(scores, conflicts, context_text)
+        profiles = val_input.playerProfile.selectedProfiles
+        frontend_texts = val_input.currentScenario.problems + val_input.desiredScenario.objectives
+        objectives = self._classify_objectives(frontend_texts)
 
-        # 4. Regras de Logística
-        environment = validated_input.logistics.environment
-        time_constraint = validated_input.logistics.time
+        resultados_brutos = []
+        elementos_area = self.bible.get(area_swebok, {})
+        processed_react_names = set() # Rastreador do que já foi processado
 
-        if environment == "Presencial sem Tecnologia":
-            tech_blocklist = [
-                self.element_mapping["Economia"], 
-                self.element_mapping["Feedback"], 
-                self.element_mapping["Chat"],
-                self.element_mapping["Conquistas"]
-            ]
-            for item in tech_blocklist:
-                if item in scores:
-                    scores[item] -= 200 
-                    conflicts[item] = "Requer tecnologia (incompatível com ambiente físico)."
+        # PROCESSA A LITERATURA
+        for elemento_json, dados_literatura in elementos_area.items():
+            # Traduz para o nome que o React entende
+            react_name = self.frontend_map.get(elemento_json, elemento_json)
+            processed_react_names.add(react_name)
 
-        if time_constraint == "Curto (1 aula)":
-            rpg = self.element_mapping["Narrativa"]
-            if rpg in scores:
-                scores[rpg] -= 50
-                conflicts[rpg] = "Narrativas complexas exigem longo prazo."
+            sb_raw, pc_raw = self._extract_raw_scores(dados_literatura["xai"])
+            mu_prof, lam_prof = self._get_averaged_modifiers(profiles, self.profile_mods, elemento_json)
+            mu_obj, lam_obj = self._get_averaged_modifiers(objectives, self.objective_mods, elemento_json)
             
-            fast = self.element_mapping["Tempo"]
-            if fast in scores: scores[fast] += 30
+            sb_modificado = sb_raw * mu_prof * mu_obj
+            pc_modificado = pc_raw * lam_prof * lam_obj
+            
+            score_bruto = sb_modificado - pc_modificado
+            status_veto = pc_modificado > sb_modificado
+            if status_veto: score_bruto = -abs(score_bruto)
+                
+            resultados_brutos.append({
+                "elemento": react_name,
+                "score_bruto": score_bruto,
+                "veto": status_veto,
+                "mu_total": mu_prof * mu_obj,
+                "lam_total": lam_prof * lam_obj
+            })
 
-        return self._clusterize_results(scores, conflicts)
-    
-    def _clusterize_results(self, scores: dict, conflicts: dict) -> dict:
+        max_abs = max([abs(r["score_bruto"]) for r in resultados_brutos]) if resultados_brutos else 1.0
+        if max_abs == 0: max_abs = 1.0
+
         response = {"recommended": [], "neutral": [], "not_recommended": []}
 
-        for element, score in scores.items():
-            item_data = {"name": element, "score": score}
+        # MONTA OS CLUSTERS BASEADOS NA LITERATURA
+        for res in resultados_brutos:
+            score_normalizado = (res["score_bruto"] / max_abs) * 50
             
-            if score >= 30: 
-                item_data["pre_selected"] = True
-                item_data["reason"] = "Alta sinergia detectada."
-                response["recommended"].append(item_data)
-            elif score < 0: 
-                item_data["warning_msg"] = conflicts.get(element, "Não recomendado para este cenário.")
+            if res["veto"]: reason = "VETADO: Riscos contextuais superam o potencial pedagógico."
+            elif res["mu_total"] > 1.2: reason = "Alta sinergia com o Perfil/Objetivos da turma."
+            elif res["lam_total"] > 1.2: reason = "Possui atritos de contexto, usar com cautela."
+            else: reason = "Recomendação padrão baseada na literatura científica."
+
+            item_data = {"name": res["elemento"], "score": round(score_normalizado, 2), "reason": reason}
+
+            if res["veto"] or score_normalizado < -10:
                 response["not_recommended"].append(item_data)
-            else: 
+            elif score_normalizado >= 15:
+                item_data["pre_selected"] = score_normalizado >= 35
+                response["recommended"].append(item_data)
+            else:
                 response["neutral"].append(item_data)
-        
-        for k in response:
-            response[k].sort(key=lambda x: x['score'], reverse=True)
+
+        # --- INJETA OS ELEMENTOS FALTANTES (Para completar os 30 do React) ---
+        for react_elem in self.all_react_elements:
+            if react_elem not in processed_react_names:
+                response["neutral"].append({
+                    "name": react_elem,
+                    "score": 0.0,
+                    "reason": "Uso livre (Sem dados restritivos na literatura)."
+                })
+
+        for key in response:
+            response[key] = sorted(response[key], key=lambda x: x["score"], reverse=True)
 
         return response
