@@ -107,7 +107,8 @@ function Step5_GameElements({ activityData, handleInputChange, setActivityData, 
       setConflictModal({
         isOpen: true,
         element: elementName,
-        message: elementObj.warning_msg || "Este elemento conflita com o perfil da turma."
+        // Usa o motivo que o motor enviou, se não tiver, usa a genérica
+        message: elementObj.reason || elementObj.warning_msg || "O Sistema de Apoio à Decisão encontrou conflitos pedagógicos."
       });
       return;
     }

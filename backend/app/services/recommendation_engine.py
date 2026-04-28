@@ -149,6 +149,7 @@ class ContextualRecommendationEngine:
         profiles = val_input.playerProfile.selectedProfiles
         frontend_texts = val_input.currentScenario.problems + val_input.desiredScenario.objectives
         objectives = self._classify_objectives(frontend_texts)
+        logistics = [str(item).lower() for item in val_input.activityPlanning.characteristics]
 
         resultados_brutos = []
         elementos_area = self.bible.get(area_swebok, {})
@@ -169,12 +170,34 @@ class ContextualRecommendationEngine:
             
             score_bruto = sb_modificado - pc_modificado
             status_veto = pc_modificado > sb_modificado
-            if status_veto: score_bruto = -abs(score_bruto)
+            conflito_contextual = (mu_prof * mu_obj <= 0.2) and (lam_prof * lam_obj >= 3.0)
+            if conflito_contextual:
+                status_veto = True
+                
+            veto_logistico = False
+            
+            # Checa se o array logistics contém algum item com a palavra "desplugado"
+            if any("desplugado" in item for item in logistics):
+                # Se for aula no papel/quadro, esses elementos digitais são inúteis:
+                elementos_digitais = [
+                    "Fórum de Discussão", "Chat ou sistema de mensagens", 
+                    "Conquistas digitais para metas alcançadas", 
+                    "Estatísticas (métricas de progresso)"
+                ]
+                if react_name in elementos_digitais:
+                    veto_logistico = True
+                    status_veto = True
+                    score_bruto = -100.0 # Aplica o Hard Block matemático
+
+            if status_veto: score_bruto = -abs(score_bruto) if score_bruto != 0 else -10.0
+                
                 
             resultados_brutos.append({
                 "elemento": react_name,
                 "score_bruto": score_bruto,
                 "veto": status_veto,
+                "veto_logistico": veto_logistico, # Flag para a IA Explicável
+                "conflito_contextual": conflito_contextual,
                 "mu_total": mu_prof * mu_obj,
                 "lam_total": lam_prof * lam_obj
             })
@@ -185,33 +208,71 @@ class ContextualRecommendationEngine:
         response = {"recommended": [], "neutral": [], "not_recommended": []}
 
         # MONTA OS CLUSTERS BASEADOS NA LITERATURA
+        for react_elem in self.all_react_elements:
+            if react_elem not in processed_react_names:
+                resultados_brutos.append({
+                    "elemento": react_elem,
+                    "score_bruto": 0.0,
+                    "veto": False,
+                    "conflito_contextual": False,
+                    "mu_total": 1.0,
+                    "lam_total": 1.0
+                })
+
+        # --- 2. CONFIGURA A ALFÂNDEGA DE LOGÍSTICA ---
+        is_desplugado = any("desplugado" in item for item in logistics)
+        elementos_digitais = [
+            "Fórum de Discussão", 
+            "Chat ou sistema de mensagens", 
+            "Conquistas digitais para metas alcançadas", 
+            "Estatísticas (métricas de progresso)",
+            "Economia (sistema monetário)",
+            "Renovação (atualizações de conteúdo)"
+            # Adicione aqui qualquer outra coisa que você ache impossível fazer sem PC
+        ]
+
+        response = {"recommended": [], "neutral": [], "not_recommended": []}
+        
+        max_abs = max([abs(r["score_bruto"]) for r in resultados_brutos]) if resultados_brutos else 1.0
+        if max_abs == 0: max_abs = 1.0
+
+        # --- 3. MONTA OS CLUSTERS FINAIS ---
         for res in resultados_brutos:
             score_normalizado = (res["score_bruto"] / max_abs) * 50
             
-            if res["veto"]: reason = "VETADO: Riscos contextuais superam o potencial pedagógico."
-            elif res["mu_total"] > 1.2: reason = "Alta sinergia com o Perfil/Objetivos da turma."
-            elif res["lam_total"] > 1.2: reason = "Possui atritos de contexto, usar com cautela."
-            else: reason = "Recomendação padrão baseada na literatura científica."
+            # REGRA MESTRA: Veto Logístico atinge qualquer elemento que precise de tecnologia
+            if is_desplugado and (res["elemento"] in elementos_digitais):
+                score_normalizado = -50.0 # Empurra direto pro fundo
+                reason = "VETADO: Requer tecnologia (Incompatível com infraestrutura desplugada)."
+                response["not_recommended"].append({"name": res["elemento"], "score": round(score_normalizado, 2), "reason": reason})
+                continue # PULA todo o resto das regras abaixo!
+
+            # Se a logística está OK, julga a matemática pedagógica
+            if res.get("conflito_contextual", False): 
+                reason = "VETADO: Conflito grave com os objetivos e perfil selecionados."
+            elif res["veto"]: 
+                reason = "VETADO: Riscos contextuais superam o potencial pedagógico."
+            elif res["mu_total"] > 1.2: 
+                reason = "Alta sinergia com o Perfil/Objetivos da turma."
+            elif res["lam_total"] > 1.2: 
+                reason = "Possui atritos de contexto, usar com cautela."
+            elif res["score_bruto"] == 0.0:
+                reason = "Uso livre (Sem dados restritivos na literatura)."
+            else: 
+                reason = "Recomendação padrão baseada na literatura."
 
             item_data = {"name": res["elemento"], "score": round(score_normalizado, 2), "reason": reason}
 
-            if res["veto"] or score_normalizado < -10:
+            # Ranqueamento nas Pastas
+            if res["veto"] or score_normalizado <= -5:
                 response["not_recommended"].append(item_data)
-            elif score_normalizado >= 15:
-                item_data["pre_selected"] = score_normalizado >= 35
+            elif score_normalizado >= 25:
+                item_data["pre_selected"] = score_normalizado >= 40
                 response["recommended"].append(item_data)
             else:
                 response["neutral"].append(item_data)
 
-        # --- INJETA OS ELEMENTOS FALTANTES (Para completar os 30 do React) ---
-        for react_elem in self.all_react_elements:
-            if react_elem not in processed_react_names:
-                response["neutral"].append({
-                    "name": react_elem,
-                    "score": 0.0,
-                    "reason": "Uso livre (Sem dados restritivos na literatura)."
-                })
-
+        # Ordena do maior para o menor
         for key in response:
             response[key] = sorted(response[key], key=lambda x: x["score"], reverse=True)
 

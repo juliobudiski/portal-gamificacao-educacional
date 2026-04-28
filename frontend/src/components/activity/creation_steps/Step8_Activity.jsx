@@ -1,33 +1,21 @@
-// frontend/src/components/steps/Step8_RulesAndSharing.jsx
-// Verificado 09/12/2025 - OK
-
-import React from 'react';
+// frontend/src/components/activity/creation_steps/Step8_RulesAndSharing.jsx
+import React, { useState } from 'react';
 import {
-  FaGavel,
-  FaUserShield,
-  FaMobileAlt,
-  FaUniversity,
-  FaUsers,
-  FaBook,
-  FaGraduationCap,
-  FaComments,
-  FaSyncAlt,
-  FaUserTie,
-  FaGlobeAmericas, // Novo: Para representar Público
-  FaLock,          // Novo: Para representar Privado
+  FaGavel, FaUserShield, FaMobileAlt, FaUniversity, FaUsers, FaBook,
+  FaGraduationCap, FaComments, FaSyncAlt, FaUserTie, FaGlobeAmericas, FaLock,
+  FaPrint // NOVO ÍCONE IMPORTADO
 } from 'react-icons/fa';
 import { useHelpModal } from "../../../context/HelpModalContext";
 
-/**
- * Componente para a Etapa 8 do formulário de criação de atividades.
- * Focado na definição de regras e na opção de compartilhamento da atividade.
- * @param {object} props - As propriedades passadas do componente pai.
- * @param {object} props.activityData - O objeto de estado que contém todos os dados do formulário.
- * @param {function} props.handleInputChange - A função para manipular mudanças em inputs, textareas e checkboxes.
- * @param {function} props.setActivityData - A função para definir o estado da atividade, ideal para manipular arrays.
- */
+// Importe o componente que criamos para a folha A4
+import PrintableActivity from '../../PrintableActivity';
+
 function Step8_RulesAndSharing({ activityData, handleInputChange, setActivityData }) {
-  // Array de objetos para as regras gerais, facilitando a renderização dos cards.
+  const { openHelp } = useHelpModal();
+
+  // Estado para controlar se estamos vendo o Step 8 normal ou a Folha de Impressão
+  const [showPrintView, setShowPrintView] = useState(false);
+
   const generalRules = [
     { text: "Respeite as regras do jogo e as decisões do professor.", icon: <FaGavel /> },
     { text: "Seja respeitoso e colaborativo com outros jogadores.", icon: <FaUsers /> },
@@ -40,14 +28,8 @@ function Step8_RulesAndSharing({ activityData, handleInputChange, setActivityDat
     { text: "Mantenha-se atualizado com as atualizações nas regras.", icon: <FaSyncAlt /> },
     { text: "Busque sempre a supervisão do professor quando necessário.", icon: <FaUserTie /> },
   ];
-  const { openHelp } = useHelpModal();
-  /**
-   * Manipula a seleção de regras a partir dos cards.
-   * Adiciona ou remove a regra do array no estado pai.
-   * @param {string} ruleText - O texto da regra que foi clicada.
-   */
+
   const handleRuleSelection = (ruleText) => {
-    // Utiliza setActivityData para uma atualização de estado aninhado mais segura e explícita.
     setActivityData(prevData => {
       const currentRules = prevData.gamificationRules.generalRules;
       const newRules = currentRules.includes(ruleText)
@@ -63,6 +45,21 @@ function Step8_RulesAndSharing({ activityData, handleInputChange, setActivityDat
       };
     });
   };
+
+  // Se o botão de impressão foi clicado, esconde o Step 8 e mostra a Folha A4
+  if (showPrintView) {
+    return (
+      <PrintableActivity
+        activityData={activityData}
+        onBack={() => setShowPrintView(false)}
+      />
+    );
+  }
+
+  // Verifica se a atividade foi marcada como desplugada no Step 3
+  const isDesplugada = activityData.activityPlanning?.characteristics?.some(
+    char => char.toLowerCase().includes('desplugado')
+  );
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -125,6 +122,28 @@ function Step8_RulesAndSharing({ activityData, handleInputChange, setActivityDat
           ></textarea>
         </div>
 
+        {/* --- NOVA SEÇÃO: IMPRESSÃO DESPLUGADA --- */}
+        <div className="pt-4 pb-2 border-t border-border-color dark:border-gray-700">
+          <div className="flex flex-col md:flex-row items-center justify-between bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-200 dark:border-blue-800">
+            <div className="mb-4 md:mb-0">
+              <h4 className="text-lg font-bold text-blue-800 dark:text-blue-300">Roteiro Desplugado</h4>
+              <p className="text-sm text-blue-600 dark:text-blue-400">
+                Gere um documento para impressão com todo o conteúdo e perguntas da trilha para aplicar em sala de aula.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowPrintView(true)}
+              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold shadow transition-all
+                ${isDesplugada
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300'
+                }`}
+            >
+              <FaPrint /> Imprimir Caderno de Aula
+            </button>
+          </div>
+        </div>
+
         {/* SEÇÃO: Toggle de Compartilhamento Moderno */}
         <div className="pt-2">
           <label
@@ -132,25 +151,23 @@ function Step8_RulesAndSharing({ activityData, handleInputChange, setActivityDat
             className={`
               relative flex cursor-pointer items-center justify-between rounded-xl border p-6 transition-all duration-300
               ${activityData.isPublic
-                ? 'border-[#69e8cb] bg-[#69e8cb]/10 shadow-[0_0_15px_rgba(105,232,203,0.15)]' // Estado Ativo (Teal + Glow)
-                : 'border-gray-600 bg-secondary-bg hover:border-gray-500 dark:bg-[#2c3135]' // Estado Inativo
+                ? 'border-[#69e8cb] bg-[#69e8cb]/10 shadow-[0_0_15px_rgba(105,232,203,0.15)]'
+                : 'border-gray-600 bg-secondary-bg hover:border-gray-500 dark:bg-[#2c3135]'
               }
             `}
           >
             <div id="tour-final-privacy" className="flex items-center gap-4 pr-4">
-              {/* Ícone Dinâmico: Muda conforme o estado */}
               <div
                 className={`flex h-12 w-12 items-center justify-center rounded-full text-2xl transition-colors duration-300
                   ${activityData.isPublic
-                    ? 'bg-[#69e8cb] text-[#2c3135]' // Fundo Teal, ícone escuro
-                    : 'bg-gray-700 text-gray-400'   // Fundo cinza, ícone cinza
+                    ? 'bg-[#69e8cb] text-[#2c3135]'
+                    : 'bg-gray-700 text-gray-400'
                   }
                 `}
               >
                 {activityData.isPublic ? <FaGlobeAmericas /> : <FaLock />}
               </div>
 
-              {/* Textos */}
               <div className="flex flex-col">
                 <span className={`text-lg font-bold transition-colors duration-300 ${activityData.isPublic ? 'text-[#69e8cb]' : 'text-primary-text'}`}>
                   {activityData.isPublic ? 'Atividade Pública' : 'Atividade Privada'}
@@ -163,7 +180,6 @@ function Step8_RulesAndSharing({ activityData, handleInputChange, setActivityDat
               </div>
             </div>
 
-            {/* O Switch Visual (Toggle) */}
             <div className="relative">
               <input
                 id="isPublic"
@@ -171,18 +187,17 @@ function Step8_RulesAndSharing({ activityData, handleInputChange, setActivityDat
                 type="checkbox"
                 checked={activityData.isPublic}
                 onChange={handleInputChange}
-                className="peer sr-only" // Oculta o checkbox nativo visualmente, mas mantém acessível
+                className="peer sr-only"
               />
-              {/* Trilho do Switch */}
               <div className="h-8 w-14 rounded-full bg-gray-700 transition-colors duration-300 peer-focus:ring-4 peer-focus:ring-[#69e8cb]/40 peer-checked:bg-[#69e8cb]"></div>
-              {/* Bolinha do Switch */}
               <div className="absolute left-1 top-1 h-6 w-6 rounded-full bg-white transition-all duration-300 peer-checked:translate-x-6 peer-checked:bg-[#2c3135]"></div>
             </div>
           </label>
         </div>
       </div>
+
       <button
-        onClick={() => openHelp('regras_gamificacao')} // Chama pelo ID
+        onClick={() => openHelp('regras_gamificacao')}
         className="bg-blue-500 text-white px-4 py-2 rounded"
       >
         Ajuda

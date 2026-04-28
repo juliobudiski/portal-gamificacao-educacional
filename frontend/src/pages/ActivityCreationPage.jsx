@@ -39,17 +39,38 @@ import {
  * Utilizado para sincronizar a seleção do usuário com a estrutura do gamification design.
  */
 const hubElementCardMap = {
+  // --- 1. ELEMENTOS DE SORTE E ACASO ---
   "Chance (sorte e probabilidade)": ["roulette", "slot_machine"],
-  "Competição": ["ranking"],
+
+  // --- 2. ELEMENTOS DE COMPETIÇÃO E STATUS ---
   "Sistema de classificação e ranking": ["ranking"],
+  "Conquistas digitais para metas alcançadas": ["badges"], // Medalhas
+  "Reputação (prestígio, renome, status)": ["badges", "ranking"],
+
+  // --- 3. ELEMENTOS SOCIAIS ---
   "Chat ou sistema de mensagens": ["chat"],
-  "Conquistas digitais para metas alcançadas": ["badges"],
-  "Economia (sistema monetário)": ["store"],
-  "Objetivo (missão, meta do jogo)": ["mission"],
-  "Recompensas atraentes": ["final_reward"],
   "Fórum de Discussão": ["forum"],
-  "Customização de personagem": ["avatar_customization"],
-  "Customização de equipamento": ["avatar_customization"]
+  "Interação social com outros jogadores": ["forum", "chat"],
+
+  // --- 4. ELEMENTOS DE ECONOMIA E RECOMPENSA ---
+  "Economia (sistema monetário)": ["store"], // Loja
+  "Recompensas atraentes": ["final_reward"],
+  "Raridade (itens exclusivos, objetos raros)": ["store", "final_reward"],
+
+  // --- 5. ELEMENTOS DE CUSTOMIZAÇÃO ---
+  "Customização de personagem": ["avatar_customization"], // Meu Estilo
+  "Customização de equipamento": ["avatar_customization"],
+
+  // --- 6. ELEMENTOS DE NARRATIVA ---
+  "Narrativas envolventes": ["narrative"], // Nó de Narrativa
+  "Storytelling": ["narrative"],
+
+  // --- 7. ELEMENTOS DE DESAFIO (Resolvidos via Quiz) ---
+  // Nota: O portal não tem um plugin "Puzzle", mas o professor cria Puzzles usando o Quiz.
+  "Quebra-cabeça": ["quiz"],
+  "Pressão de tempo": ["quiz"], // O quiz pode ter limite de tempo
+  "Feedback claro sobre o desempenho": ["quiz"],
+  "Objetivo (missão, meta do jogo)": ["mission"]
 };
 
 /**

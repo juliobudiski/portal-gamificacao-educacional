@@ -26,13 +26,13 @@ import { useHelpModal } from "../../../context/HelpModalContext";
 function Step3_ActivityPlanning({ activityData, handleInputChange, setActivityData }) {
   // Array de objetos para as características da atividade, facilitando a renderização dos cards.
   const activityCharacteristics = [
-    { text: "Presencial", icon: <FaChalkboardTeacher /> },
-    { text: "Online", icon: <FaLaptop /> },
-    { text: "Requer equipamentos específicos", icon: <FaTools /> },
+    { text: "Presencial em Laboratório (Com PC/Internet)", icon: <FaLaptop /> },
+    { text: "Presencial Desplugado (Sala Clássica sem Telas)", icon: <FaChalkboardTeacher /> },
+    { text: "Online / Ensino a Distância", icon: <FaCloud /> },
     { text: "Formativa (prática ou revisão)", icon: <FaClipboardCheck /> },
     { text: "Somativa (avaliação)", icon: <FaFileSignature /> },
-    { text: "Foco em projetos de software", icon: <FaCodeBranch /> },
-    { text: "Uso de plataformas de aprendizado", icon: <FaCloud /> },
+    { text: "Foco em projetos e desenvolvimento", icon: <FaCodeBranch /> },
+    { text: "Uso de plataformas de aprendizado", icon: <FaTools /> },
     { text: "Níveis de dificuldade progressivos", icon: <FaTrophy /> },
   ];
   const { openHelp } = useHelpModal();

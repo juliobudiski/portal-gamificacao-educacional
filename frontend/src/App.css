@@ -40,3 +40,24 @@
 .animate-fadeIn {
   animation: fadeIn 0.2s ease-out forwards;
 }
+
+/* Configurações para quando a página for impressa (Salvar como PDF) */
+@media print {
+
+  /* Esconde tudo que tiver a classe 'no-print' (botões, menus laterais, etc) */
+  .no-print {
+    display: none !important;
+  }
+
+  /* Garante que o fundo seja branco e a letra preta para leitura */
+  body {
+    background-color: white !important;
+    color: black !important;
+  }
+
+  /* Quebra de página: evita que um quiz seja cortado no meio da folha */
+  .print-section {
+    page-break-inside: avoid;
+    margin-bottom: 20px;
+  }
+}
