@@ -24,29 +24,24 @@ function Step4_PlayerProfile({ activityData, setActivityData, openHelpModal }) {
   const playerProfiles = [
     {
       name: "Competitivo",
-      description: "Motivado por desafios, rankings e por ser o melhor.",
+      description: "Motivado por desafios, rankings e por ser melhor que os demais.",
       icon: <FaTrophy />
     },
     {
-      name: "Cooperativo",
-      description: "Gosta de trabalhar em equipe para alcançar objetivos comuns.",
-      icon: <FaUsers />
+      name: "Social",
+      description: "Valoriza a colaboração, o trabalho em equipe e a conexão com outros.",
+      icon: <FaUsers /> // Antigo "Cooperativo/Social" fundidos
     },
     {
-      name: "Imersivo",
-      description: "Busca se aprofundar na história e no universo da atividade.",
-      icon: <FaBookOpen />
+      name: "Explorador",
+      description: "Busca se aprofundar na narrativa, descobrir o mundo e aprender o contexto.",
+      icon: <FaBookOpen /> // Antigo "Imersivo"
     },
     {
       name: "Realizador",
-      description: "Focado em completar tarefas, coletar itens e alcançar metas.",
+      description: "Focado em completar tarefas, coletar pontos e alcançar metas.",
       icon: <FaAward />
-    },
-    {
-      name: "Social",
-      description: "Valoriza a interação, a comunicação e a conexão com outros.",
-      icon: <FaComments />
-    },
+    }
   ];
   const { openHelp } = useHelpModal();
 
