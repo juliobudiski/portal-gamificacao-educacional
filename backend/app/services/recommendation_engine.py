@@ -47,21 +47,16 @@ class ContextualRecommendationEngine:
             "Economia": "Economia (sistema monetário)",
             "Pressão de tempo": "Pressão de tempo",
             
-            # --- A MÁGICA DA HERANÇA ACONTECE AQUI ---
+            # --- HERANÇA ACONTECE AQUI ---
             # A literatura estudou "Competição", o SAD sugere "Ranking"
             "Competição": "Sistema de classificação e ranking",
-            
             # A literatura estudou "Cooperação", o SAD sugere "Fórum/Chat"
             "Cooperação": "Fórum de Discussão", 
-            
             "Objetivo": "Objetivo (missão, meta do jogo)",
             "Quebra cabeça": "Quebra-cabeça",
             "Storytelling": "Storytelling",
             "Narrativa": "Narrativas envolventes",
-            
-            # A literatura estudou "Progressão", o SAD sugere "Habilidade"
             "Progressão": "Progressão baseada em habilidade",
-            
             "Reconhecimento": "Conquistas digitais para metas alcançadas"
         }
 
@@ -78,8 +73,8 @@ class ContextualRecommendationEngine:
             "Recompensas atraentes", "Conquistas digitais para metas alcançadas"
         ]
 
-        # --- A MARRETA DO CONTEXTO: Multiplicadores Agressivos ---
-        # Conflitos agora têm mu=0.1 (mata o ganho) e lambda=5.0 (explode o risco)
+        # --- Multiplicadores  ---
+        # Conflitos agora têm mu=0.1 (mata o ganho) e lambda=5.0 (sobe o risco)
         self.profile_mods = {
             "competitivo": { "Competição": {"mu": 1.5, "lambda": 0.5}, "Pressão de tempo": {"mu": 1.5, "lambda": 0.5}, "Cooperação": {"mu": 0.1, "lambda": 5.0} },
             "social": { "Cooperação": {"mu": 1.5, "lambda": 0.5}, "Narrativa": {"mu": 1.5, "lambda": 0.5}, "Storytelling": {"mu": 1.5, "lambda": 0.5}, "Competição": {"mu": 0.1, "lambda": 5.0} },
@@ -113,7 +108,7 @@ class ContextualRecommendationEngine:
         text_joined = " ".join(frontend_texts).lower()
         classes = []
         
-        # Palavras-chave mapeadas diretamente dos seus arquivos JSX
+        # Palavras-chave mapeadas diretamente do arquivos JSX
         if any(w in text_joined for w in ["lógic", "abstra", "teori", "teóri", "leitura", "históric", "memoriz", "legisla", "sistêmic", "crítico", "argumentação"]): 
             classes.append("teorico")
             
@@ -219,7 +214,7 @@ class ContextualRecommendationEngine:
                     "lam_total": 1.0
                 })
 
-        # --- 2. CONFIGURA A ALFÂNDEGA DE LOGÍSTICA ---
+        # --- 2. CONFIGURA A LOGÍSTICA ---
         is_desplugado = any("desplugado" in item for item in logistics)
         elementos_digitais = [
             "Fórum de Discussão", 
@@ -240,7 +235,7 @@ class ContextualRecommendationEngine:
         for res in resultados_brutos:
             score_normalizado = (res["score_bruto"] / max_abs) * 50
             
-            # REGRA MESTRA: Veto Logístico atinge qualquer elemento que precise de tecnologia
+            # REGRA: Veto Logístico atinge qualquer elemento que precise de tecnologia
             if is_desplugado and (res["elemento"] in elementos_digitais):
                 score_normalizado = -50.0 # Empurra direto pro fundo
                 reason = "VETADO: Requer tecnologia (Incompatível com infraestrutura desplugada)."
@@ -249,7 +244,7 @@ class ContextualRecommendationEngine:
 
             # Se a logística está OK, julga a matemática pedagógica
             if res.get("conflito_contextual", False): 
-                reason = "VETADO: Conflito grave com os objetivos e perfil selecionados."
+                reason = "VETADO: Conflito com os objetivos e perfil selecionados."
             elif res["veto"]: 
                 reason = "VETADO: Riscos contextuais superam o potencial pedagógico."
             elif res["mu_total"] > 1.2: 
@@ -263,7 +258,7 @@ class ContextualRecommendationEngine:
 
             item_data = {"name": res["elemento"], "score": round(score_normalizado, 2), "reason": reason}
 
-            # Ranqueamento nas Pastas
+            # Ranqueamento
             if res["veto"] or score_normalizado <= -5:
                 response["not_recommended"].append(item_data)
             elif score_normalizado >= 25:

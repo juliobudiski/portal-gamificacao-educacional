@@ -4,9 +4,9 @@ from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_socketio import emit, join_room
 from .. import db, socketio
-from ..models import User, Activity, Conversation, ChatMessage
+from ..models import User, Activity, Conversation, ChatMessage, MessageReport
 from ..utils.text_sanitizer import clean_text, check_profanity
-
+from flask_cors import cross_origin
 chat_bp = Blueprint('chat', __name__)
 
 # --- RATE LIMITER EM MEMÓRIA (Simples) ---
@@ -114,3 +114,46 @@ def handle_send_message(data):
     except Exception as e:
         print(f"Erro no chat: {e}")
         emit('error_message', {'msg': 'Erro interno ao processar mensagem.'}, to=request.sid)
+        
+        
+@chat_bp.route('/messages/<int:msg_id>/report', methods=['POST'])
+@jwt_required()
+@cross_origin()
+def report_message(msg_id):
+    user_id = get_jwt_identity()
+    
+    message = ChatMessage.query.get(msg_id)
+    if not message:
+        return jsonify({"error": "Mensagem não encontrada."}), 404
+        
+    # Opcional: Impedir que o cara denuncie a própria mensagem
+    if int(message.sender_id) == int(user_id):
+        return jsonify({"error": "Você não pode denunciar sua própria mensagem."}), 400
+
+    # Verifica se já denunciou
+    existing_report = MessageReport.query.filter_by(message_id=msg_id, user_id=user_id).first()
+    if existing_report:
+        return jsonify({"error": "Você já denunciou esta mensagem."}), 400
+
+    try:
+        # Cria a denúncia
+        new_report = MessageReport(message_id=msg_id, user_id=user_id)
+        db.session.add(new_report)
+        
+        # Incrementa o contador
+        message.report_count += 1
+        
+        # LÓGICA DE CENSURA (Se chegar a 5 denúncias)
+        if message.report_count >= 5 and not message.is_censored:
+            message.is_censored = True
+            
+            # Avisa o frontend ao vivo para esconder a mensagem de quem está com a tela aberta
+            room = f'activity_{message.conversation.activity_id}'
+            socketio.emit('message_censored', {'msg_id': message.id}, room=room)
+            
+        db.session.commit()
+        return jsonify({"success": "Denúncia registrada com sucesso."}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": "Erro ao processar denúncia."}), 500

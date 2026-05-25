@@ -631,6 +631,8 @@ class Conversation(db.Model):
                                    backref=db.backref('conversations', lazy=True))
     messages = db.relationship('ChatMessage', backref='conversation', lazy=True, cascade="all, delete-orphan")
 
+# ... (outros modelos) ...
+
 class ChatMessage(db.Model):
     """Representa uma única mensagem enviada em uma conversa de chat."""
     __tablename__ = 'chat_message'
@@ -641,6 +643,10 @@ class ChatMessage(db.Model):
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     
+    # --- NOVOS CAMPOS PARA DENÚNCIA ---
+    report_count = db.Column(db.Integer, default=0, nullable=False)
+    is_censored = db.Column(db.Boolean, default=False, nullable=False)
+    
     sender = db.relationship('User', backref='sent_chat_messages', lazy='joined')
 
     def to_dict(self):
@@ -649,10 +655,24 @@ class ChatMessage(db.Model):
             'conversation_id': self.conversation_id,
             'sender_id': self.sender_id,
             'sender_name': self.sender.name if self.sender else None,
-            'content': self.content,
-            'created_at': self.created_at.isoformat()
+            # SEGURANÇA: Se estiver censurada, o backend NUNCA envia o texto original
+            'content': self.content if not self.is_censored else "🚫 Mensagem ocultada devido a denúncias.",
+            'created_at': self.created_at.isoformat(),
+            'is_censored': self.is_censored
         }
 
+# --- NOVO MODELO DE DENÚNCIA ---
+class MessageReport(db.Model):
+    """Registra qual usuário denunciou qual mensagem (evita denúncia dupla)."""
+    __tablename__ = 'message_report'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    message_id = db.Column(db.Integer, db.ForeignKey('chat_message.id', ondelete='CASCADE'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    # Garante que um usuário só pode denunciar a mesma mensagem uma vez
+    __table_args__ = (db.UniqueConstraint('message_id', 'user_id', name='_msg_user_report_uc'),)
 
 class ActivityRating(db.Model):
     """Armazena a avaliação (nota de 1 a 5) que um usuário deu para uma atividade."""

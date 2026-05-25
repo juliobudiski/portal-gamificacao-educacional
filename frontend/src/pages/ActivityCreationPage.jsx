@@ -5,7 +5,7 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import useAnalytics from '../hooks/useAnalytics';
 import { useActivityCreation } from '../context/ActivityCreationContext';
-// 1. Importação dos novos componentes de etapa filhos
+
 import Step1_InitialDetails from '../components/activity/creation_steps/Step1_Activity';
 import Step2_DesiredScenario from '../components/activity/creation_steps/Step2_Activity';
 import Step3_ActivityPlanning from '../components/activity/creation_steps/Step3_Activity';
@@ -21,67 +21,38 @@ import { useTutorial } from '../context/TutorialContext';
 import { useToast } from '../context/ToastContext';
 import ActivityCreationStepper from '../components/activity/ActivityCreationStepper';
 import { FaCheckCircle, FaTimesCircle, FaSync } from 'react-icons/fa';
-// Nota: O GameBoardEditor é usado dentro do Step5, mas o mantemos importado aqui
-// caso seja necessário em outro local ou para referência.
-//import GameBoardEditor from '../../components/activity/GameBoardEditor';
-// Importe TODOS os passos aqui (centralizado)
+
 import {
-  ACTIVITY_SELECTION_STEPS, // Tour Inicial
-  WIZARD_SCENARIO_STEPS,    // Passo 1
-  WIZARD_DYNAMICS_STEPS,    // Passo 3 
-  WIZARD_PROFILES_STEPS,    // Passo 4
-  WIZARD_ELEMENTS_STEPS,    // Passo 5 
-  WIZARD_END_STEPS          // Passo 8
+  ACTIVITY_SELECTION_STEPS,
+  WIZARD_SCENARIO_STEPS,
+  WIZARD_DYNAMICS_STEPS,
+  WIZARD_PROFILES_STEPS,
+  WIZARD_ELEMENTS_STEPS,
+  WIZARD_END_STEPS
 } from '../data/tutorialSteps';
 
-/**
- * Mapeamento entre nomes de cartas de elementos e tipos de elementos do Hub.
- * Utilizado para sincronizar a seleção do usuário com a estrutura do gamification design.
- */
 const hubElementCardMap = {
-  // --- 1. ELEMENTOS DE SORTE E ACASO ---
   "Chance (sorte e probabilidade)": ["roulette", "slot_machine"],
-
-  // --- 2. ELEMENTOS DE COMPETIÇÃO E STATUS ---
   "Sistema de classificação e ranking": ["ranking"],
-  "Conquistas digitais para metas alcançadas": ["badges"], // Medalhas
+  "Conquistas digitais para metas alcançadas": ["badges"],
   "Reputação (prestígio, renome, status)": ["badges", "ranking"],
-
-  // --- 3. ELEMENTOS SOCIAIS ---
   "Chat ou sistema de mensagens": ["chat"],
   "Fórum de Discussão": ["forum"],
   "Interação social com outros jogadores": ["forum", "chat"],
-
-  // --- 4. ELEMENTOS DE ECONOMIA E RECOMPENSA ---
-  "Economia (sistema monetário)": ["store"], // Loja
+  "Economia (sistema monetário)": ["store"],
   "Recompensas atraentes": ["final_reward"],
   "Raridade (itens exclusivos, objetos raros)": ["store", "final_reward"],
-
-  // --- 5. ELEMENTOS DE CUSTOMIZAÇÃO ---
-  "Customização de personagem": ["avatar_customization"], // Meu Estilo
+  "Customização de personagem": ["avatar_customization"],
   "Customização de equipamento": ["avatar_customization"],
-
-  // --- 6. ELEMENTOS DE NARRATIVA ---
-  "Narrativas envolventes": ["narrative"], // Nó de Narrativa
+  "Narrativas envolventes": ["narrative"],
   "Storytelling": ["narrative"],
-
-  // --- 7. ELEMENTOS DE DESAFIO (Resolvidos via Quiz) ---
-  // Nota: O portal não tem um plugin "Puzzle", mas o professor cria Puzzles usando o Quiz.
   "Quebra-cabeça": ["quiz"],
-  "Pressão de tempo": ["quiz"], // O quiz pode ter limite de tempo
+  "Pressão de tempo": ["quiz"],
   "Feedback claro sobre o desempenho": ["quiz"],
   "Objetivo (missão, meta do jogo)": ["mission"]
 };
 
-/**
- * @component ActivityCreationPage
- * @desc Componente principal para criação e edição de atividades. Gerencia o estado do formulário (wizard),
- * navegação entre etapas, seleção de templates e persistência de dados.
- * @param {Object} props - Propriedades do componente.
- * @param {Object} [props.existingActivity] - Objeto contendo dados de uma atividade existente para edição.
- */
 function ActivityCreationPage({ existingActivity }) {
-  // --- TODA A LÓGICA DE ESTADO, HOOKS E HANDLERS É MANTIDA AQUI ---
   const navigate = useNavigate();
   const { startTour, stopTour } = useTutorial();
   const totalSteps = 8;
@@ -96,6 +67,8 @@ function ActivityCreationPage({ existingActivity }) {
   const [loadingTemplates, setLoadingTemplates] = useState(true);
   const [templateError, setTemplateError] = useState(null);
 
+  // --- NOVO ESTADO: Controle de Cliques Duplos (Debounce/Cooldown) ---
+  const [isNavigating, setIsNavigating] = useState(false);
 
   const {
     activityData,
@@ -106,8 +79,7 @@ function ActivityCreationPage({ existingActivity }) {
     setShowInitialSelection,
     startNewActivity,
     resetCreation,
-    // --- NOVOS CAMPOS ---
-    autoSaveStatus, // 'idle', 'saving', 'saved', 'error'
+    autoSaveStatus,
     lastSavedAt,
     loadDraft
   } = useActivityCreation();
@@ -120,142 +92,81 @@ function ActivityCreationPage({ existingActivity }) {
   const [helpContent, setHelpContent] = useState({ title: '', text: '' });
   const [isSaving, setIsSaving] = useState(false);
   const [maxReachedStep, setMaxReachedStep] = useState(1);
-  // Atualiza o passo máximo alcançado sempre que o currentStep avança
+
   useEffect(() => {
     if (isEditMode) {
       setMaxReachedStep(8);
     } else {
-      // Se for criação do zero, atualiza apenas se avançou para um novo passo
       if (currentStep > maxReachedStep) {
         setMaxReachedStep(currentStep);
       }
     }
   }, [currentStep, isEditMode, maxReachedStep]);
 
-  // Efeito especial: Se selecionou um template, libera navegação total
   useEffect(() => {
-    // Se o formulário começou e temos dados preenchidos (ex: template), podemos liberar
-    // Uma forma simples é verificar se já temos um Title preenchido que não seja vazio
     if (formStartedRef.current && activityData.title && !isEditMode) {
-      // Opcional: Liberar tudo se for template, ou manter progressivo. 
-      // Para UX de template, geralmente liberar tudo é melhor:
       setMaxReachedStep(8);
     }
   }, [formStartedRef.current, activityData.title, isEditMode]);
 
-
-  // Rola para o topo sempre que a etapa mudar, com um leve atraso para garantir a renderização
   useEffect(() => {
     const timer = setTimeout(() => {
       window.scrollTo({ top: 111, left: 0, behavior: 'smooth' });
-    }, 100); // 100ms é imperceptível para o olho, mas suficiente para o React terminar o render
-
-    return () => clearTimeout(timer); // Limpa o timer se o componente desmontar rápido
+    }, 100);
+    return () => clearTimeout(timer);
   }, [currentStep]);
 
   useEffect(() => {
-
     const startTime = stepStartTimeRef.current;
     const previousStep = previousStepRef.current;
-
-    // Calcula a duração na etapa anterior
     const durationInSeconds = Math.round((Date.now() - startTime) / 1000);
 
-    // Evita logar na primeira renderização (duração de 0s)
     if (durationInSeconds > 0 && previousStep !== currentStep) {
-      if (import.meta.env.VITE_DEBUG_MODE) {
-        console.log(`// LOG: [ActivityCreationPage] Duração da etapa ${previousStep}: ${durationInSeconds}s`);
-      }
-      console.log(`Logando duração da Etapa ${previousStep}: ${durationInSeconds}s`);
       logEvent("step_view_duration", {
         step: previousStep,
         duration_seconds: durationInSeconds
       });
-
     }
-
-    // Reseta o timer para a nova etapa
     stepStartTimeRef.current = Date.now();
     previousStepRef.current = currentStep;
-  }, [currentStep, logEvent, startTour]); // O efeito roda sempre que a etapa muda
+  }, [currentStep, logEvent, startTour]);
 
   useEffect(() => {
-
-    // A função de retorno (cleanup) é executada quando o componente é desmontado
     return () => {
-
-      // Só loga abandono se o formulário não foi concluído e não está no processo de submissão
       if (formStartedRef.current && !isSubmittingRef.current) {
-        if (import.meta.env.VITE_DEBUG_MODE) {
-          console.log(`// LOG: [ActivityCreationPage] Abandono do formulário detectado na etapa ${previousStepRef.current}`);
-        }
-        console.log(`Usuário abandonou o formulário INICIADO na etapa ${previousStepRef.current}`);
         logEvent("form_abandoned", {
           last_step: previousStepRef.current
         });
       }
     };
-
   }, [logEvent]);
-
-
 
   const location = useLocation();
   const startTourRef = useRef(startTour);
   useEffect(() => { startTourRef.current = startTour; }, [startTour]);
 
-  // --- LÓGICA CENTRAL DO TUTORIAL (O MAESTRO) ---
   useEffect(() => {
-    // 1. Captura a intenção de força (Sessão ou State)
     const sessionForce = sessionStorage.getItem('TUTORIAL_MODE') === 'true';
     const stateForce = location.state?.forceTour === true;
     const shouldForce = stateForce || sessionForce;
 
-    // --- O PORTEIRO ---
-    // Se o usuário NÃO clicou no botão de tour (não tem força),
-    // nós não iniciamos NADA automaticamente.
-    if (!shouldForce) {
-      return;
-    }
-
-    // Se passou do porteiro, avisa no log
-    if (import.meta.env.VITE_DEBUG_MODE) {
-      console.log(`// LOG: [ActivityCreationPage] Maestro do Tutorial ativado. Step atual: ${currentStep}`);
-    }
-    console.log(`🔍 MAESTRO: Modo Tutorial Ativo! (Step: ${currentStep})`);
+    if (!shouldForce) return;
 
     const timer = setTimeout(() => {
       const startTourFn = startTourRef.current;
 
-      // CASO 1: Tela de Seleção Inicial
       if (showInitialSelection) {
         if (!isEditMode && !showTemplateList) {
-          console.log(`🚀 MAESTRO: Disparando 'teacher_creation_v1'.`);
           startTourFn(ACTIVITY_SELECTION_STEPS, 'teacher_creation_v1', true);
         }
-      }
-      // CASO 2: Modo Wizard (Formulário)
-      else {
+      } else {
         switch (currentStep) {
-          case 1:
-            startTourFn(WIZARD_SCENARIO_STEPS, 'creation_step_1_scenario', true);
-            break;
-          case 3:
-            // Certifique-se que no seu form o passo da Dinâmica é realmente o 3
-            // Se for o 2, mude aqui para 'case 2'.
-            startTourFn(WIZARD_DYNAMICS_STEPS, 'creation_step_3_dynamics', true);
-            break;
-          case 4:
-            startTourFn(WIZARD_PROFILES_STEPS, 'creation_step_4_profiles', true);
-            break;
-          case 5:
-            startTourFn(WIZARD_ELEMENTS_STEPS, 'creation_step_5_elements', true);
-            break;
-          case 8:
-            startTourFn(WIZARD_END_STEPS, 'creation_step_8_end', true);
-            break;
-          default:
-            break;
+          case 1: startTourFn(WIZARD_SCENARIO_STEPS, 'creation_step_1_scenario', true); break;
+          case 3: startTourFn(WIZARD_DYNAMICS_STEPS, 'creation_step_3_dynamics', true); break;
+          case 4: startTourFn(WIZARD_PROFILES_STEPS, 'creation_step_4_profiles', true); break;
+          case 5: startTourFn(WIZARD_ELEMENTS_STEPS, 'creation_step_5_elements', true); break;
+          case 8: startTourFn(WIZARD_END_STEPS, 'creation_step_8_end', true); break;
+          default: break;
         }
       }
     }, 600);
@@ -263,40 +174,22 @@ function ActivityCreationPage({ existingActivity }) {
     return () => clearTimeout(timer);
   }, [currentStep, showInitialSelection, isEditMode, location.state, showTemplateList]);
 
-
   useEffect(() => {
-    console.log("ActivityCreationPage: Verificando autenticação do usuário...", user);
-    // Se não houver usuário, token ou se o papel não for 'professor', redireciona para o login.
-    // Este é um controle de segurança para garantir que apenas usuários autorizados acessem a página.
     if (!user || !user.token || user.role !== 'professor') {
-      console.error("ActivityCreationPage: Usuário não autenticado ou não é professor. Redirecionando para /login.");
       navigate('/login');
     }
   }, [user, navigate]);
 
   useEffect(() => {
     const fetchActivityDataForBoard = async () => {
-
       if (activityId && user?.token) {
-        if (import.meta.env.VITE_DEBUG_MODE) {
-          console.log(`// LOG: [ActivityCreationPage] Buscando dados atualizados para Activity ID: ${activityId}`);
-        }
-        console.log(`[ActivityCreationPage] useEffect detectou um activityId (${activityId}). BUSCANDO DADOS ATUALIZADOS da atividade.`);
         try {
           const response = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${activityId}`, {
             headers: { 'Authorization': `Bearer ${user.token}` }
           });
           const data = await response.json();
-          if (import.meta.env.VITE_DEBUG_MODE) {
-            console.log("// LOG: [ActivityCreationPage] Dados recebidos da API.", { keys: Object.keys(data) });
-          }
-
-          console.log("%cLOG 1: DADOS BRUTOS RECEBIDOS DA API", "color: blue; font-weight: bold;", data);
-          console.log("--> O objeto acima tem a chave 'gamification_design' (com underline)?", data.hasOwnProperty('gamification_design'));
 
           if (response.ok) {
-            console.log('[ActivityCreationPage] DADOS FRESCOS RECEBIDOS DO BACKEND:', data);
-            // Aqui é onde o estado deveria ser atualizado com os novos dados
             setActivityData(prev => ({
               ...prev,
               id: data.id,
@@ -304,8 +197,6 @@ function ActivityCreationPage({ existingActivity }) {
               description: data.description || prev.description,
               areaKnowledge: data.area_knowledge || data.areaKnowledge || prev.areaKnowledge,
               isPublic: data.is_public ?? prev.isPublic,
-
-              // Objetos complexos
               currentScenario: data.current_scenario || data.currentScenario || prev.currentScenario,
               desiredScenario: data.desired_scenario || data.desiredScenario || prev.desiredScenario,
               activityPlanning: data.activity_planning || data.activityPlanning || prev.activityPlanning,
@@ -314,64 +205,36 @@ function ActivityCreationPage({ existingActivity }) {
               rewardsOffered: data.rewards_offered || data.rewardsOffered || prev.rewardsOffered,
               rewardedActions: data.rewarded_actions || data.rewardedActions || prev.rewardedActions,
               gamificationRules: data.gamification_rules || data.gamificationRules || prev.gamificationRules,
-
-              // CRÍTICO: Gamification Design (O Tabuleiro)
               gamificationDesign: data.gamification_design || data.gamificationDesign || prev.gamificationDesign,
             }));
-
-            // 2. CORREÇÃO DE UX: Pular a tela de seleção de template
-            console.log("Forçando saída da tela de seleção e indo para Etapa 1");
             setShowInitialSelection(false);
-
-            // 3. Forçar ir para o Step 1 (Cenário)
             setCurrentStep(1);
-          } else {
-            console.error('[ActivityCreationPage] Erro ao buscar dados frescos:', data.message);
           }
         } catch (error) {
-          if (import.meta.env.VITE_DEBUG_MODE) {
-            console.error("// LOG: [ActivityCreationPage] Erro ao buscar dados da atividade:", error);
-            if (error.stack) console.error(error.stack);
-          }
-          console.error('[ActivityCreationPage] Erro de rede ao buscar dados frescos:', error);
+          console.error('[ActivityCreationPage] Erro de rede:', error);
         }
-      } else {
-        console.log('[ActivityCreationPage] useEffect de recarregamento executado, mas sem activityId ou token para agir.');
       }
     };
-
     fetchActivityDataForBoard();
   }, [activityId, user?.token, setActivityData, setShowInitialSelection, setCurrentStep]);
 
-  /**
-   * Navegação direta pelo Stepper
-   */
   const handleStepJump = (stepId) => {
-    // Validação extra de segurança
-    if (isSubmittingRef.current) return;
+    // --- PROTEÇÃO DE NAVEGAÇÃO ---
+    if (isSubmittingRef.current || isNavigating) return;
+    setIsNavigating(true);
 
-    // Log de Analytics
     logEvent("stepper_navigation", {
       from_step: currentStep,
       to_step: stepId
     });
 
     setCurrentStep(stepId);
+    setTimeout(() => setIsNavigating(false), 500); // Libera após meio segundo
   };
 
-  /**
-   * @function handleAutoSaveStructure
-   * @desc Salva automaticamente a estrutura de gamificação (trilha) quando alterada.
-   * @param {Object} newGamificationDesign - O novo design de gamificação a ser salvo.
-   */
   const handleAutoSaveStructure = useCallback(async (newGamificationDesign) => {
     const activityIdToSave = activityId || existingActivity?.id;
     if (!activityIdToSave || !user?.token) return;
-
-    if (import.meta.env.VITE_DEBUG_MODE) {
-      console.log("// LOG: [ActivityCreationPage] Auto-save da estrutura iniciado.");
-    }
-    console.log("%c[Auto-Save] Salvando estrutura da trilha...", "color: #007acc;");
 
     try {
       await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${activityIdToSave}/structure`, {
@@ -383,18 +246,12 @@ function ActivityCreationPage({ existingActivity }) {
         body: JSON.stringify({ gamificationDesign: newGamificationDesign }),
       });
     } catch (error) {
-      if (import.meta.env.VITE_DEBUG_MODE) {
-        console.error("// LOG: [ActivityCreationPage] Falha no auto-save:", error);
-      }
       console.error("[Auto-Save] Falha ao salvar a estrutura:", error);
     }
   }, [activityId, existingActivity, user]);
 
   useEffect(() => {
     if (isEditMode && existingActivity) {
-      if (import.meta.env.VITE_DEBUG_MODE) {
-        console.log("// LOG: [ActivityCreationPage] Inicializando modo de edição com dados existentes.");
-      }
       setActivityData({
         title: existingActivity.title || '',
         description: existingActivity.description || '',
@@ -406,22 +263,15 @@ function ActivityCreationPage({ existingActivity }) {
         activityPlanning: existingActivity.activityPlanning || { characteristics: [], participantsQuantity: '', expectedDuration: '', location: '', otherInfo: '' },
         playerProfile: existingActivity.playerProfile || { selectedProfiles: [] },
         gameElements: existingActivity.gameElements || { selectedElements: [], otherElement: '' },
-        // Esta linha garante que o objeto sempre exista.
         gamificationDesign: existingActivity.gamificationDesign || { theme: 'vila_da_aventura', progression_path: [], hub_elements: [] },
         rewardsOffered: existingActivity.rewardsOffered || { selectedRewards: [], otherReward: '' },
         rewardedActions: existingActivity.rewardedActions || { selectedActions: [], otherAction: '' },
         gamificationRules: existingActivity.gamificationRules || { generalRules: [], specificRules: '' },
       });
-      setShowInitialSelection(false); // Garante que o formulário seja exibido diretamente
+      setShowInitialSelection(false);
       setCurrentStep(1);
     }
-  }, [
-    isEditMode,
-    existingActivity,
-    setActivityData,        // <-- Adicionada
-    setShowInitialSelection,  // <-- Adicionada
-    setCurrentStep          // <-- Adicionada
-  ]);
+  }, [isEditMode, existingActivity, setActivityData, setShowInitialSelection, setCurrentStep]);
 
   useEffect(() => {
     const fetchTemplates = async () => {
@@ -429,11 +279,7 @@ function ActivityCreationPage({ existingActivity }) {
         setLoadingTemplates(false);
         return;
       }
-
       try {
-        if (import.meta.env.VITE_DEBUG_MODE) {
-          console.log("// LOG: [ActivityCreationPage] Buscando templates disponíveis.");
-        }
         setLoadingTemplates(true);
         setTemplateError(null);
         const response = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/templates`, {
@@ -443,78 +289,50 @@ function ActivityCreationPage({ existingActivity }) {
             'Authorization': `Bearer ${user.token}`
           },
         });
-
         if (response.ok) {
           const data = await response.json();
-          if (import.meta.env.VITE_DEBUG_MODE) {
-            console.log(`// LOG: [ActivityCreationPage] ${data.length} templates carregados.`);
-          }
-
           setTemplates(data);
-          console.log("Templates carregados com sucesso:", data);
         } else {
           const errorData = await response.json();
           setTemplateError(errorData.message || 'Erro ao carregar templates.');
-          console.error("Erro ao carregar templates:", errorData);
         }
       } catch (error) {
-        if (import.meta.env.VITE_DEBUG_MODE) {
-          console.error("// LOG: [ActivityCreationPage] Exceção ao buscar templates:", error);
-        }
         setTemplateError('Erro de conexão ao carregar templates.');
-        console.error("Erro de rede ao carregar templates:", error);
       } finally {
         setLoadingTemplates(false);
       }
     };
-
     fetchTemplates();
   }, [user]);
 
-  // useEffect para sincronizar os elementos do hub baseados nas seleções da Etapa 5
   useEffect(() => {
-    // TODO: Esta lógica de sincronização poderia ser extraída para um hook customizado 'useHubSync'.
-    if (import.meta.env.VITE_DEBUG_MODE) {
-      console.log("// LOG: [ActivityCreationPage] Sincronizando elementos do Hub com seleções da Etapa 5.");
-    }
-    // Pega os nomes dos cards selecionados (ex: "Economia (sistema monetário)")
     const selectedCards = activityData.gameElements?.selectedElements || [];
-    // Pega os elementos do hub que JÁ existem na atividade
     const currentHubElements = activityData.gamificationDesign?.hub_elements || [];
 
-    // Mapeia os nomes dos cards para os tipos de hub (ex: "store")
     const targetHubTypes = new Set();
     selectedCards.forEach(cardName => {
-      const types = hubElementCardMap[cardName]; // hubElementCardMap está na linha 24
+      const types = hubElementCardMap[cardName];
       if (types) {
         types.forEach(type => targetHubTypes.add(type));
       }
     });
 
-    // --- LÓGICA CORRIGIDA (ADITIVA, NÃO DESTRUTIVA) ---
-
-    // 1. Copia os elementos que já existem
     const newHubElements = [...currentHubElements];
     let changed = false;
 
-    // 2. Itera nos tipos de hub que *deveriam* existir
     targetHubTypes.forEach(type => {
-      // Verifica se ele já está na lista
       const exists = currentHubElements.some(el => el.type === type);
-
-      // 3. Se não existir, ADICIONA
       if (!exists) {
         newHubElements.push({
           id: `hub_${type}`,
           type: type,
-          enabled: true, // Habilitado por padrão
+          enabled: true,
           config: {},
         });
-        changed = true; // Marca que a lista mudou
+        changed = true;
       }
     });
 
-    // 4. Só atualiza o estado se um novo elemento foi realmente adicionado
     if (changed) {
       setActivityData(prev => ({
         ...prev,
@@ -526,174 +344,223 @@ function ActivityCreationPage({ existingActivity }) {
     }
   }, [activityData.gameElements?.selectedElements, setActivityData]);
 
-
-  /**
-   * @function handleSelectTemplate
-   * @desc Seleciona um template e preenche o formulário com seus dados.
-   * @param {Object} templateData - Os dados do template selecionado.
-   */
   const handleSelectTemplate = (templateData) => {
     stopTour();
-    if (import.meta.env.VITE_DEBUG_MODE) {
-      console.log("// LOG: [ActivityCreationPage] Template selecionado. Iniciando preenchimento.");
-    }
-    console.log("handleSelectTemplate: Selecionando template e preenchendo dados...", templateData);
     setTimeout(() => {
       formStartedRef.current = true;
       startNewActivity(templateData);
     }, 100);
   };
 
-  /**
-   * @function handleStartFromScratch
-   * @desc Inicia o formulário de criação de atividade vazio.
-   */
   const handleStartFromScratch = () => {
     stopTour();
-    if (import.meta.env.VITE_DEBUG_MODE) {
-      console.log("// LOG: [ActivityCreationPage] Iniciando nova atividade do zero.");
-    }
-    console.log("handleStartFromScratch: Iniciando atividade do zero.");
     setTimeout(() => {
       formStartedRef.current = true;
       startNewActivity();
     }, 100);
   };
 
-  /**
-   * @function handleShowTemplates
-   * @desc Exibe a lista de templates disponíveis para seleção.
-   */
   const handleShowTemplates = () => {
     stopTour();
-    if (import.meta.env.VITE_DEBUG_MODE) {
-      console.log("// LOG: [ActivityCreationPage] Exibindo lista de templates.");
-    }
-    console.log("handleShowTemplates: Exibindo a lista de templates.");
     setShowInitialSelection(true);
     setShowTemplateList(true);
   };
 
-
-  /**
-   * @function handleBackToInitialSelection
-   * @desc Volta para a tela inicial de seleção (Iniciar do Zero / Escolher Template).
-   */
   const handleBackToInitialSelection = () => {
     stopTour();
-    if (import.meta.env.VITE_DEBUG_MODE) {
-      console.log("// LOG: [ActivityCreationPage] Retornando à seleção inicial.");
-    }
-    console.log("handleBackToInitialSelection: Voltando para a seleção inicial.");
     setShowInitialSelection(true);
     setShowTemplateList(false);
   };
 
+  const [editingStep, setEditingStep] = useState(null);
 
-  const [editingStep, setEditingStep] = useState(null); // Guarda o passo sendo editado {id, type, content}
-
-  // 2. ATUALIZAR A FUNÇÃO DE ABRIR EDITOR
-  /**
-   * @function handleOpenContentEditor
-   * @desc Abre o modal de edição de conteúdo para um passo específico da trilha.
-   * @param {Object} step - O objeto do passo a ser editado.
-   */
   const handleOpenContentEditor = (step) => {
-    if (import.meta.env.VITE_DEBUG_MODE) {
-      console.log(`// LOG: [ActivityCreationPage] Abrindo editor de conteúdo para o passo: ${step.id} (${step.type})`);
-    }
-    // Em vez de navegar, abrimos o modal localmente com o conteúdo atual do estado
     const currentContent = activityData.gamificationDesign?.progression_path?.find(p => p.id === step.id)?.content || {};
-
-    setEditingStep({
-      ...step,
-      content: currentContent
-    });
+    setEditingStep({ ...step, content: currentContent });
   };
 
-  // 3. FUNÇÃO PARA SALVAR O CONTEÚDO NO ESTADO (SEM API)
-  /**
-   * @function handleSaveContentLocally
-   * @desc Salva o conteúdo editado no estado local da atividade, sem persistir na API imediatamente.
-   * @param {Object} newContent - O novo conteúdo a ser salvo no passo.
-   */
   const handleSaveContentLocally = (newContent) => {
     if (!editingStep) return;
-
-    if (import.meta.env.VITE_DEBUG_MODE) {
-      console.log("// LOG: [ActivityCreationPage] Salvando conteúdo localmente.", { stepId: editingStep.id });
-    }
     setActivityData(prev => {
       const newPath = prev.gamificationDesign.progression_path.map(step => {
         if (step.id === editingStep.id) {
-          return { ...step, content: newContent }; // Injeta o conteúdo no passo
+          return { ...step, content: newContent };
         }
         return step;
       });
-
       return {
         ...prev,
-        gamificationDesign: {
-          ...prev.gamificationDesign,
-          progression_path: newPath
-        }
+        gamificationDesign: { ...prev.gamificationDesign, progression_path: newPath }
       };
     });
-
-    setEditingStep(null); // Fecha o modal
+    setEditingStep(null);
   };
-
 
   /**
    * handleNext: Avança para a próxima etapa ou submete o formulário.
-   * Se não for a última etapa, incrementa `currentStep`.
-   * Se for a última etapa, envia os dados para o backend via API.
+   * AGORA COM VALIDAÇÃO E COOLDOWN ANTI-CLIQUE DUPLO!
    */
   const handleNext = async () => {
-    // --- TRAVA DE SEGURANÇA 1: Se já estiver enviando, PARE IMEDIATAMENTE ---
-    if (isSubmittingRef.current) return;
+    // 1. Prevenção de cliques duplos/Spam (Cooldown)
+    if (isSubmittingRef.current || isNavigating) return;
 
-    if (import.meta.env.VITE_DEBUG_MODE) {
-      console.log(`// LOG: [ActivityCreationPage] handleNext acionado. Etapa atual: ${currentStep}`);
-    }
-    console.log(`%c[handleNext] Botão clicado na Etapa ${currentStep}.`, "background: #FFD700; color: black;");
+    // Trava imediatamente a navegação
+    setIsNavigating(true);
 
+    // --- 2. VALIDAÇÕES POR ETAPA (Bloqueia o avanço se vazio) ---
+
+    // Etapa 1: Título, Área e Desafios (Problemas)
     if (currentStep === 1) {
-      if (!activityData.title || !activityData.areaKnowledge) {
-        showToast('Por favor, preencha o Título e selecione a Área de Conhecimento antes de avançar.');
-        return; // <--- ISSO IMPEDE DE AVANÇAR
+      if (!activityData.title?.trim() || !activityData.areaKnowledge) {
+        showToast('Por favor, preencha o Título e a Área de Conhecimento.', 'warning');
+        setTimeout(() => setIsNavigating(false), 300); // Destrava o botão rapidamente
+        return;
+      }
+      if (!activityData.currentScenario?.problems || activityData.currentScenario.problems.length === 0) {
+        showToast('Selecione pelo menos um desafio que seus alunos enfrentam.', 'warning');
+        setTimeout(() => setIsNavigating(false), 300);
+        return;
       }
     }
-    // Validação da Etapa 3: Dinâmica de Participação
+
+    // Etapa 2: Objetivos/Cenário Desejado
+    if (currentStep === 2) {
+      if (!activityData.desiredScenario?.objectives || activityData.desiredScenario.objectives.length === 0) {
+        showToast('Selecione pelo menos uma meta ou objetivo.', 'warning');
+        setTimeout(() => setIsNavigating(false), 300);
+        return;
+      }
+    }
+
+    // Etapa 3: Dinâmica e Ambiente (ATUALIZADA)
     if (currentStep === 3) {
       if (typeof activityData.activityPlanning?.isTeamActivity !== 'boolean') {
-        showToast('Por favor, selecione a Dinâmica de Participação (Individual ou em Equipe) antes de prosseguir.');
-        return; // Impede o avanço
+        showToast('Selecione a Dinâmica de Participação (Individual ou Equipe).', 'warning');
+        setTimeout(() => setIsNavigating(false), 300);
+        return;
+      }
+      // Verifica se escolheu Pelo Menos 1 ambiente excludente (Presencial Lab, Desplugado ou Online)
+      const hasEnvironment = activityData.activityPlanning?.characteristics?.some(c =>
+        c.includes("Laboratório") || c.includes("Desplugado") || c.includes("Online")
+      );
+      if (!hasEnvironment) {
+        showToast('Selecione obrigatóriamente o Ambiente de Aplicação.', 'warning');
+        setTimeout(() => setIsNavigating(false), 300);
+        return;
       }
     }
 
+    // Etapa 4: Perfis
+    if (currentStep === 4) {
+      if (!activityData.playerProfile?.selectedProfiles || activityData.playerProfile.selectedProfiles.length === 0) {
+        showToast('Selecione pelo menos um perfil de jogador.', 'warning');
+        setTimeout(() => setIsNavigating(false), 300);
+        return;
+      }
+    }
+
+    // Etapa 5: Elementos de Jogos
+    if (currentStep === 5) {
+      if (!activityData.gameElements?.selectedElements || activityData.gameElements.selectedElements.length === 0) {
+        showToast('Selecione pelo menos um Elemento de Jogo para sua atividade.', 'warning');
+        setTimeout(() => setIsNavigating(false), 300);
+        return;
+      }
+
+      // TRAVA: Verifica se o tabuleiro de progressão tem pelo menos 1 passo
+      const path = activityData.gamificationDesign?.progression_path || [];
+      if (path.length === 0) {
+        showToast('O Editor do Tabuleiro não pode ficar vazio. Adicione pelo menos um passo (Conteúdo, Quiz ou Narrativa) à trilha.', 'warning');
+        setTimeout(() => setIsNavigating(false), 300);
+        return;
+      }
+    }
+
+    // Etapa 6: Recompensas (NOVO)
+    if (currentStep === 6) {
+      const hasPredefined = activityData.rewardsOffered?.selectedRewards?.length > 0;
+      const hasCustom = activityData.rewardsOffered?.otherReward?.trim().length > 0;
+      if (!hasPredefined && !hasCustom) {
+        showToast('Selecione pelo menos uma Recompensa para engajar seus alunos.', 'warning');
+        setTimeout(() => setIsNavigating(false), 300);
+        return;
+      }
+    }
+
+    // Etapa 7: Ações Recompensadas (NOVO)
+    if (currentStep === 7) {
+      const hasPredefined = activityData.rewardedActions?.selectedActions?.length > 0;
+      const hasCustom = activityData.rewardedActions?.otherAction?.trim().length > 0;
+      if (!hasPredefined && !hasCustom) {
+        showToast('Defina pelo menos uma Ação que os alunos devem fazer para ganhar as recompensas.', 'warning');
+        setTimeout(() => setIsNavigating(false), 300);
+        return;
+      }
+    }
+
+    // Etapa 8: Regras (NOVO)
+    if (currentStep === 8) {
+      const hasPredefined = activityData.gamificationRules?.generalRules?.length > 0;
+      const hasCustom = activityData.gamificationRules?.specificRules?.trim().length > 0;
+      if (!hasPredefined && !hasCustom) {
+        showToast('Estabeleça ao menos uma Regra para manter a atividade justa e organizada.', 'warning');
+        setTimeout(() => setIsNavigating(false), 300);
+        return;
+      }
+    }
+
+    // --- FIM DAS VALIDAÇÕES ---
+
+    // 3. Lógica de Avanço (se passou pelas validações)
     if (currentStep < totalSteps) {
       setCurrentStep(prevStep => prevStep + 1);
+      // Destrava a navegação após meio segundo para evitar spam
+      setTimeout(() => setIsNavigating(false), 500);
 
     } else {
+      if (!activityData.title?.trim() || !activityData.areaKnowledge) {
+        showToast('O Título e a Área são obrigatórios. Volte à Etapa 1.', 'error');
+        setIsNavigating(false); return;
+      }
+      if (!activityData.currentScenario?.problems?.length) {
+        showToast('Selecione pelo menos um desafio enfrentado pelos alunos. Volte à Etapa 1.', 'error');
+        setIsNavigating(false); return;
+      }
+      if (!activityData.desiredScenario?.objectives?.length) {
+        showToast('Selecione pelo menos uma meta ou objetivo. Volte à Etapa 2.', 'error');
+        setIsNavigating(false); return;
+      }
+      if (typeof activityData.activityPlanning?.isTeamActivity !== 'boolean') {
+        showToast('Selecione a Dinâmica Individual ou Equipe. Volte à Etapa 3.', 'error');
+        setIsNavigating(false); return;
+      }
+      const hasEnv = activityData.activityPlanning?.characteristics?.some(c => c.includes("Laboratório") || c.includes("Desplugado") || c.includes("Online"));
+      if (!hasEnv) {
+        showToast('Selecione o Ambiente de Aplicação. Volte à Etapa 3.', 'error');
+        setIsNavigating(false); return;
+      }
+      if (!activityData.playerProfile?.selectedProfiles?.length) {
+        showToast('Selecione pelo menos um perfil de jogador. Volte à Etapa 4.', 'error');
+        setIsNavigating(false); return;
+      }
+      if (!activityData.gameElements?.selectedElements?.length) {
+        showToast('Selecione pelo menos um elemento de jogo. Volte à Etapa 5.', 'error');
+        setIsNavigating(false); return;
+      }
+      if ((activityData.gamificationDesign?.progression_path || []).length === 0) {
+        showToast('O Editor do Tabuleiro não pode ficar vazio. Adicione um passo. Volte à Etapa 5.', 'error');
+        setIsNavigating(false); return;
+      }
+
+      // Se passou pela Validação Global, Inicia o Salvamento
       sessionStorage.removeItem('TUTORIAL_MODE');
       stopTour();
-      // --- TRAVA DE SEGURANÇA 2: Ativa o bloqueio ---
       isSubmittingRef.current = true;
-      setIsSaving(true); // Atualiza a UI para mostrar "Salvando..." e desabilitar botão
+      setIsSaving(true);
 
-      if (import.meta.env.VITE_DEBUG_MODE) {
-        console.log("// LOG: [ActivityCreationPage] Submetendo formulário final.");
-      }
-      console.log("%c[handleNext] INICIANDO SALVAMENTO...", "background: #28a745; color: white;");
-
-      // Log de duração da última etapa
       const finalStepDuration = Math.round((Date.now() - stepStartTimeRef.current) / 1000);
       if (finalStepDuration > 0) {
-        logEvent("step_view_duration", {
-          step: currentStep,
-          duration_seconds: finalStepDuration
-        });
+        logEvent("step_view_duration", { step: currentStep, duration_seconds: finalStepDuration });
       }
 
       const url = isEditMode
@@ -709,96 +576,71 @@ function ActivityCreationPage({ existingActivity }) {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${user.token}`
           },
-          body: JSON.stringify({
-            ...activityData,
-            isDraft: false
-          }),
+          body: JSON.stringify({ ...activityData, isDraft: false }),
         });
 
         const result = await response.json();
 
         if (response.ok) {
-          if (import.meta.env.VITE_DEBUG_MODE) {
-            console.log("// LOG: [ActivityCreationPage] Atividade salva com sucesso.");
-          }
-          showToast(isEditMode ? 'Atividade atualizada com sucesso!' : 'Atividade criada com sucesso!');
+          showToast(isEditMode ? 'Atividade atualizada com sucesso!' : 'Atividade criada com sucesso!', 'success');
           navigate('/professor/banco-atividades');
-          // Não precisamos destravar o ref aqui porque vamos sair da página
         } else {
-          if (import.meta.env.VITE_DEBUG_MODE) {
-            console.error("// LOG: [ActivityCreationPage] Erro na resposta da API ao salvar.", result);
-          }
           stopTour();
-          showToast('Erro: ' + (result.message || 'Erro desconhecido do servidor.'));
-          // Se deu erro, destravamos para o usuário tentar de novo
+          showToast('Erro: ' + (result.message || 'Erro desconhecido do servidor.'), 'error');
           isSubmittingRef.current = false;
           setIsSaving(false);
+          setIsNavigating(false);
         }
       } catch (error) {
-        if (import.meta.env.VITE_DEBUG_MODE) {
-          console.error("// LOG: [ActivityCreationPage] Exceção de rede ao salvar atividade:", error);
-        }
-        console.error(error);
         stopTour();
-        showToast('Ocorreu um erro de rede. Verifique sua conexão.');
-        // Se deu erro de rede, destravamos
+        showToast('Ocorreu um erro de rede. Verifique sua conexão.', 'error');
         isSubmittingRef.current = false;
         setIsSaving(false);
+        setIsNavigating(false);
       }
     }
   };
 
   /**
    * handlePrevious: Retorna para a etapa anterior.
-   * Decrementa `currentStep` se não estiver na primeira etapa.
+   * AGORA COM COOLDOWN PARA EVITAR SPAM
    */
   const handlePrevious = () => {
-    if (import.meta.env.VITE_DEBUG_MODE) {
-      console.log(`// LOG: [ActivityCreationPage] handlePrevious acionado. Voltando da etapa ${currentStep}.`);
-    }
-    console.log(`handlePrevious: Retornando da etapa ${currentStep}.`);
+    if (isNavigating) return;
+    setIsNavigating(true);
+
     if (currentStep > 1) {
       logEvent("previous_button_click", {
         from_step: currentStep,
         to_step: currentStep - 1
       });
       setCurrentStep(prevStep => prevStep - 1);
-
     }
+
+    setTimeout(() => setIsNavigating(false), 500); // Destrava após meio segundo
   };
 
-  /**
-   * handleInputChange: Atualiza o estado `activityData` com base na entrada do usuário.
-   * Lida com diferentes tipos de inputs (texto, textarea, checkbox).
-   * O nome do input usa uma notação de ponto (ex: 'section.field') para atualizar o estado aninhado.
-   * @param {React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>} e - O evento do input.
-   */
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    if (import.meta.env.VITE_DEBUG_MODE) {
-      console.log(`// LOG: [ActivityCreationPage] Input alterado: ${name}`);
-    }
-    console.log(`handleInputChange: Input alterado -> name='${name}', type='${type}', value='${value}', checked=${checked}`);
-
     const nameParts = name.split('.');
 
     setActivityData(prevData => {
       let newData;
-      if (nameParts.length === 1) { // Campo no nível raiz (ex: 'title', 'isPublic')
+      if (nameParts.length === 1) {
         const fieldName = nameParts[0];
         newData = {
           ...prevData,
           [fieldName]: type === 'checkbox' ? checked : value,
         };
-      } else { // Campo aninhado (ex: 'currentScenario.problems')
+      } else {
         const [section, field] = nameParts;
         const sectionData = prevData[section];
 
         if (type === 'checkbox') {
           const currentValues = sectionData[field] || [];
           const newValues = checked
-            ? [...currentValues, value] // Adiciona o valor ao array se o checkbox for marcado
-            : currentValues.filter(item => item !== value); // Remove o valor se desmarcado
+            ? [...currentValues, value]
+            : currentValues.filter(item => item !== value);
           newData = {
             ...prevData,
             [section]: { ...sectionData, [field]: newValues },
@@ -810,88 +652,42 @@ function ActivityCreationPage({ existingActivity }) {
           };
         }
       }
-      console.log("handleInputChange: Novo estado de activityData:", newData);
       return newData;
     });
   };
 
-  /**
-   * openHelpModal: Abre o modal de ajuda e define seu conteúdo.
-   * @param {string} title - O título do modal.
-   * @param {string} text - O texto de ajuda a ser exibido.
-   */
   const openHelpModal = (title, text) => {
-    if (import.meta.env.VITE_DEBUG_MODE) {
-      console.log(`// LOG: [ActivityCreationPage] Abrindo ajuda: ${title}`);
-    }
-    console.log(`openHelpModal: Abrindo modal de ajuda com o título: "${title}"`);
     logEvent("help_button_click", { step: currentStep, help_title: title });
     setHelpContent({ title, text });
     setShowHelpModal(true);
   };
 
-  /**
-   * closeHelpModal: Fecha o modal de ajuda.
-   */
   const closeHelpModal = () => {
-    if (import.meta.env.VITE_DEBUG_MODE) {
-      console.log("// LOG: [ActivityCreationPage] Fechando modal de ajuda.");
-    }
-    console.log("closeHelpModal: Fechando modal de ajuda.");
     setShowHelpModal(false);
     setHelpContent({ title: '', text: '' });
   };
 
-  /**
-   * @function renderStep
-   * @desc Renderiza o componente filho apropriado para a etapa atual.
-   * @returns {JSX.Element|null} O componente da etapa atual ou null.
-   */
   const renderStep = () => {
-    if (import.meta.env.VITE_DEBUG_MODE) {
-      console.log(`// LOG: [ActivityCreationPage] Renderizando etapa ${currentStep}`);
-    }
     if (!user || !user.token || user.role !== 'professor') {
       return null;
     }
+    const commonStepProps = { activityData, handleInputChange, setActivityData };
 
-    // Props comuns a serem passadas para a maioria dos componentes de etapa
-    const commonStepProps = {
-      activityData,
-      handleInputChange,
-      setActivityData,
-    };
-
-    // 2. O switch case agora apenas renderiza o componente correto com as props
     switch (currentStep) {
-      case 1:
-        return <Step1_InitialDetails {...commonStepProps} openHelpModal={openHelpModal} />;
-      case 2:
-        return <Step2_DesiredScenario {...commonStepProps} openHelpModal={openHelpModal} />;
-      case 3:
-        return <Step3_ActivityPlanning {...commonStepProps} />;
-      case 4:
-        return <Step4_PlayerProfile {...commonStepProps} openHelpModal={openHelpModal} />;
-      case 5:
-        return <Step5_GameElements {...commonStepProps} onEditContent={handleOpenContentEditor} onStructureChange={handleAutoSaveStructure} />;
-      case 6:
-        return <Step6_RewardsOffered {...commonStepProps} />;
-      case 7:
-        return <Step7_RewardedActions {...commonStepProps} />;
-      case 8:
-        return <Step8_RulesAndSharing {...commonStepProps} />;
-      default:
-        return null;
+      case 1: return <Step1_InitialDetails {...commonStepProps} openHelpModal={openHelpModal} />;
+      case 2: return <Step2_DesiredScenario {...commonStepProps} openHelpModal={openHelpModal} />;
+      case 3: return <Step3_ActivityPlanning {...commonStepProps} />;
+      case 4: return <Step4_PlayerProfile {...commonStepProps} openHelpModal={openHelpModal} />;
+      case 5: return <Step5_GameElements {...commonStepProps} onEditContent={handleOpenContentEditor} onStructureChange={handleAutoSaveStructure} />;
+      case 6: return <Step6_RewardsOffered {...commonStepProps} />;
+      case 7: return <Step7_RewardedActions {...commonStepProps} />;
+      case 8: return <Step8_RulesAndSharing {...commonStepProps} />;
+      default: return null;
     }
   };
 
-  console.log("%cLOG 3: ESTADO 'activityData' ATUAL ANTES DE RENDERIZAR", "color: purple; font-weight: bold;", activityData);
-
-
-  // --- O JSX ESTRUTURAL DA PÁGINA É MANTIDO ---
   return (
     <div className="min-h-screen bg-primary-bg dark:bg-primary-bg">
-
       <div className="container mx-auto px-4 py-8">
         {/* Cabeçalho */}
         <div className="text-center mb-8">
@@ -901,64 +697,31 @@ function ActivityCreationPage({ existingActivity }) {
           <p className="mt-2 text-secondary-text dark:text-secondary-text">
             Siga as etapas para criar uma experiência de aprendizado envolvente.
           </p>
-          {/* --- INDICADOR DE AUTOSAVE (Refatorado e Robusto) --- */}
+
+          {/* INDICADOR DE AUTOSAVE */}
           {!showInitialSelection && autoSaveStatus !== 'idle' && (
             (() => {
-              // 1. Definimos a configuração baseada no status ATUAL para garantir consistência
-              let statusConfig = {
-                borderColor: 'border-gray-300',
-                icon: null,
-                text: ''
-              };
-
+              let statusConfig = { borderColor: 'border-gray-300', icon: null, text: '' };
               switch (autoSaveStatus) {
                 case 'saving':
-                  statusConfig = {
-                    borderColor: 'border-accent-yellow',
-                    icon: <FaSync className="animate-spin text-accent-yellow" />,
-                    text: 'Salvando alterações...'
-                  };
+                  statusConfig = { borderColor: 'border-accent-yellow', icon: <FaSync className="animate-spin text-accent-yellow" />, text: 'Salvando alterações...' };
                   break;
                 case 'saved':
                   statusConfig = {
-                    borderColor: 'border-green-500',
-                    icon: <FaCheckCircle className="text-green-500" />,
-                    // Fallback: Se não tiver hora, mostra "agora" para não quebrar o layout
-                    text: lastSavedAt
-                      ? `Salvo às ${lastSavedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-                      : 'Alterações salvas'
+                    borderColor: 'border-green-500', icon: <FaCheckCircle className="text-green-500" />,
+                    text: lastSavedAt ? `Salvo às ${lastSavedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'Alterações salvas'
                   };
                   break;
                 case 'error':
-                  statusConfig = {
-                    borderColor: 'border-red-500',
-                    icon: <FaTimesCircle className="text-red-500" />,
-                    text: 'Erro ao salvar alterações'
-                  };
+                  statusConfig = { borderColor: 'border-red-500', icon: <FaTimesCircle className="text-red-500" />, text: 'Erro ao salvar alterações' };
                   break;
-                default:
-                  return null; // Se não for nenhum dos 3, não renderiza nada (evita caixa vazia)
+                default: return null;
               }
-
               return (
                 <div className="fixed bottom-5 right-5 z-[60] animate-slide-in-right">
-                  <div className={`
-                    bg-secondary-bg border-l-4 px-6 py-4 rounded shadow-2xl 
-                    flex items-center gap-4 min-w-[300px] max-w-md border border-[#3e4a52]
-                    transition-all duration-300
-                    ${statusConfig.borderColor}
-                  `}>
-                    {/* ÍCONE */}
-                    <div className="text-xl">
-                      {statusConfig.icon}
-                    </div>
-
-                    {/* TEXTO */}
-                    <div className="flex-1">
-                      <p className="font-medium text-sm md:text-base text-primary-text">
-                        {statusConfig.text}
-                      </p>
-                    </div>
+                  <div className={`bg-secondary-bg border-l-4 px-6 py-4 rounded shadow-2xl flex items-center gap-4 min-w-[300px] max-w-md border border-[#3e4a52] transition-all duration-300 ${statusConfig.borderColor}`}>
+                    <div className="text-xl">{statusConfig.icon}</div>
+                    <div className="flex-1"><p className="font-medium text-sm md:text-base text-primary-text">{statusConfig.text}</p></div>
                   </div>
                 </div>
               );
@@ -967,7 +730,7 @@ function ActivityCreationPage({ existingActivity }) {
         </div>
 
         {(showInitialSelection && !isEditMode) ? (
-          // O JSX para a seleção inicial (Iniciar do Zero / Templates) é mantido
+          // Seleção Inicial
           <div className="bg-secondary-bg dark:bg-primary-bg p-8 rounded-lg shadow-md">
             <h3 className="text-2xl font-bold text-center mb-8 bg-gradient-to-r from-accent-purple to-accent-teal bg-clip-text text-transparent">
               Como você gostaria de começar?
@@ -975,112 +738,70 @@ function ActivityCreationPage({ existingActivity }) {
 
             {!showTemplateList ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Opção: Iniciar do Zero */}
-                {/* Alterado para bg-secondary-bg para contraste e borda variável */}
                 <div id="tour-start-scratch" className="relative bg-secondary-bg rounded-2xl shadow-xl overflow-hidden border border-[var(--border-color)] hover:border-accent-yellow/50 transition-all duration-300 group">
                   <div className="absolute inset-0 bg-gradient-to-r from-accent-teal/5 to-accent-purple/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <div className="relative z-10 p-6 flex flex-col items-center text-center h-full">
                     <div className="mb-4 bg-gradient-to-r from-accent-yellow to-accent-teal p-1 rounded-full">
-                      {/* Fundo do ícone ajustado para primary-bg */}
                       <div className="bg-primary-bg rounded-full p-3">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-accent-yellow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>
                       </div>
                     </div>
-                    {/* Título com cor principal para destaque */}
-                    <h4 className="text-xl font-semibold text-primary-text mb-2">
-                      Iniciar do Zero
-                    </h4>
-                    <p className="text-secondary-text mb-6 flex-grow">
-                      Comece com um formulário completamente vazio e personalize cada detalhe.
-                    </p>
-                    <button
-                      onClick={handleStartFromScratch}
-                      // Texto do botão adaptável ao tema para contraste no gradiente
-                      className="w-full py-3 px-6 bg-gradient-to-r from-accent-yellow to-accent-teal text-white dark:text-primary-bg font-bold rounded-xl shadow-lg hover:shadow-xl hover:brightness-110 transform hover:-translate-y-0.5 transition-all duration-300 ease-out"
-                    >
+                    <h4 className="text-xl font-semibold text-primary-text mb-2">Iniciar do Zero</h4>
+                    <p className="text-secondary-text mb-6 flex-grow">Comece com um formulário completamente vazio e personalize cada detalhe.</p>
+                    <button onClick={handleStartFromScratch} className="w-full py-3 px-6 bg-gradient-to-r from-accent-yellow to-accent-teal text-white dark:text-primary-bg font-bold rounded-xl shadow-lg hover:shadow-xl hover:brightness-110 transform hover:-translate-y-0.5 transition-all duration-300 ease-out">
                       Atividade em Branco
                     </button>
                   </div>
                 </div>
 
-                {/* Opção: Escolher um Template */}
-                {/* Mudei para bg-secondary-bg para contraste e usei a variável de borda */}
                 <div className="relative bg-secondary-bg rounded-2xl shadow-xl overflow-hidden border border-[var(--border-color)] hover:border-accent-purple/50 transition-all duration-300 group">
                   <div className="absolute inset-0 bg-gradient-to-r from-accent-purple/5 to-accent-yellow/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <div className="relative z-10 p-6 flex flex-col items-center text-center h-full">
                     <div className="mb-4 bg-gradient-to-r from-accent-purple to-accent-teal p-1 rounded-full">
-                      {/* O fundo do ícone agora é primary-bg para contrastar com o card secondary */}
                       <div className="bg-primary-bg rounded-full p-3">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-accent-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
                         </svg>
                       </div>
                     </div>
-                    {/* Título com cor principal */}
-                    <h4 className="text-xl font-semibold text-primary-text mb-2">
-                      Escolher um Template
-                    </h4>
-                    <p className="text-secondary-text mb-6 flex-grow">
-                      Use um de nossos templates predefinidos para agilizar a criação.
-                    </p>
-                    <button id="tour-choose-scratch"
-                      onClick={handleShowTemplates}
-                      // Texto adaptável: branco no tema claro (fundo escuro), escuro no tema escuro (fundo claro)
-                      className="w-full py-3 px-6 bg-gradient-to-r from-accent-purple to-accent-teal text-white dark:text-primary-bg font-bold rounded-xl shadow-lg hover:shadow-xl hover:brightness-110 transform hover:-translate-y-0.5 transition-all duration-300 ease-out"
-                    >
+                    <h4 className="text-xl font-semibold text-primary-text mb-2">Escolher um Template</h4>
+                    <p className="text-secondary-text mb-6 flex-grow">Use um de nossos templates predefinidos para agilizar a criação.</p>
+                    <button id="tour-choose-scratch" onClick={handleShowTemplates} className="w-full py-3 px-6 bg-gradient-to-r from-accent-purple to-accent-teal text-white dark:text-primary-bg font-bold rounded-xl shadow-lg hover:shadow-xl hover:brightness-110 transform hover:-translate-y-0.5 transition-all duration-300 ease-out">
                       Ver Templates
                     </button>
                   </div>
                 </div>
               </div>
             ) : (
-              // Lista de templates
               <div className="mt-6">
                 <h4 className="text-xl font-bold text-center mb-6 bg-gradient-to-r from-accent-purple to-accent-yellow bg-clip-text text-transparent">
                   Templates Predefinidos
                 </h4>
-
                 {loadingTemplates ? (
                   <div className="text-center py-10">
                     <div className="inline-block animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-accent-teal"></div>
                     <p className="mt-4 text-secondary-text">Carregando templates...</p>
                   </div>
                 ) : templateError ? (
-                  // Erro com cores semânticas
-                  <div className="bg-danger-bg border border-danger/20 text-danger p-4 rounded-xl text-center">
-                    <p>Erro: {templateError}</p>
-                  </div>
+                  <div className="bg-danger-bg border border-danger/20 text-danger p-4 rounded-xl text-center"><p>Erro: {templateError}</p></div>
                 ) : templates.length === 0 ? (
-                  // Info com cores semânticas
-                  <div className="bg-info-bg border border-info/20 text-info p-4 rounded-xl text-center">
-                    <p>Nenhum template disponível no momento.</p>
-                  </div>
+                  <div className="bg-info-bg border border-info/20 text-info p-4 rounded-xl text-center"><p>Nenhum template disponível no momento.</p></div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {templates.map(template => (
-                      <div
-                        key={template.id}
-                        // Card secondary-bg com borda variável
-                        className="relative bg-secondary-bg rounded-2xl shadow-xl p-6 border border-[var(--border-color)] hover:border-accent-teal/50 transition-all duration-300 group overflow-hidden"
-                      >
+                      <div key={template.id} className="relative bg-secondary-bg rounded-2xl shadow-xl p-6 border border-[var(--border-color)] hover:border-accent-teal/50 transition-all duration-300 group overflow-hidden">
                         <div className="absolute inset-0 bg-gradient-to-r from-accent-purple/5 to-accent-yellow/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         <div className="relative z-10 flex flex-col h-full">
                           <div className="flex justify-center mb-4">
                             <div className="bg-gradient-to-r from-accent-purple to-accent-yellow p-1 rounded-full">
-                              <div className="bg-primary-bg rounded-full p-2">
-                                <span className="text-2xl">{template.icon}</span>
-                              </div>
+                              <div className="bg-primary-bg rounded-full p-2"><span className="text-2xl">{template.icon}</span></div>
                             </div>
                           </div>
                           <h5 className="text-lg font-semibold text-primary-text text-center mb-2">{template.name}</h5>
                           <p className="text-secondary-text text-sm mb-4 flex-grow text-center">{template.description}</p>
-                          <button
-                            onClick={() => handleSelectTemplate(template.data)}
-                            // Texto adaptável
-                            className="mt-auto py-2 px-4 bg-gradient-to-r from-accent-purple to-accent-teal text-white dark:text-primary-bg font-medium rounded-xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300"
-                          >
+                          <button onClick={() => handleSelectTemplate(template.data)} className="mt-auto py-2 px-4 bg-gradient-to-r from-accent-purple to-accent-teal text-white dark:text-primary-bg font-medium rounded-xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300">
                             Usar Template
                           </button>
                         </div>
@@ -1088,16 +809,10 @@ function ActivityCreationPage({ existingActivity }) {
                     ))}
                   </div>
                 )}
-
                 <div className="mt-8 text-center">
-                  <button
-                    onClick={handleBackToInitialSelection}
-                    className="py-2 px-4 border border-accent-teal/30 rounded-xl shadow-sm text-sm font-medium text-primary-text bg-secondary-bg hover:bg-primary-bg focus:outline-none focus:ring-2 focus:ring-accent-teal transition duration-300"
-                  >
+                  <button onClick={handleBackToInitialSelection} className="py-2 px-4 border border-accent-teal/30 rounded-xl shadow-sm text-sm font-medium text-primary-text bg-secondary-bg hover:bg-primary-bg transition duration-300">
                     <span className="flex items-center justify-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                      </svg>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
                       Voltar para Seleção Inicial
                     </span>
                   </button>
@@ -1112,12 +827,11 @@ function ActivityCreationPage({ existingActivity }) {
               currentStep={currentStep}
               maxReachedStep={maxReachedStep}
               onStepClick={handleStepJump}
-              isEditMode={isEditMode || (maxReachedStep === 8)} // Se já chegou ao fim ou é edit, trata como modo livre
+              isEditMode={isEditMode || (maxReachedStep === 8)}
             />
 
             {/* Contêiner do Formulário */}
             <div id="tour-form-container" className="bg-secondary-bg dark:bg-primary-bg p-8 rounded-lg shadow-md">
-              {/* 3. A função renderStep agora insere o componente filho aqui */}
               {renderStep()}
 
               {/* Botões de Navegação */}
@@ -1125,27 +839,31 @@ function ActivityCreationPage({ existingActivity }) {
                 {currentStep > 1 ? (
                   <button
                     onClick={handlePrevious}
-                    className="py-2 px-4 border border-border-color rounded-md shadow-sm text-sm font-medium text-secondary-text bg-secondary-bg hover:bg-hover-bg-color dark:bg-border-color dark:text-secondary-text dark:hover:bg-hover-bg-color"
+                    disabled={isNavigating} // Trava visualmente
+                    className={`py-2 px-4 border border-border-color rounded-md shadow-sm text-sm font-medium text-secondary-text transition-colors
+                      ${isNavigating ? 'bg-gray-300 cursor-not-allowed opacity-50' : 'bg-secondary-bg hover:bg-hover-bg-color'}
+                    `}
                   >
                     Anterior
                   </button>
                 ) : (
-                  <div></div> // Espaçador para manter o botão "Próximo" à direita
+                  <div></div>
                 )}
-                <button id={currentStep === totalSteps ? "tour-final-save" : "tour-next-button"}
+                <button
+                  id={currentStep === totalSteps ? "tour-final-save" : "tour-next-button"}
                   onClick={handleNext}
-                  disabled={isSaving}
-                  className={`py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-text 
-                  ${isSaving ? 'bg-gray-500 cursor-not-allowed' : 'bg-teal-600 hover:bg-teal-700'}`} // <--- Mude a classe condicionalmente
+                  disabled={isSaving || isNavigating} // Bloqueia cliques duplos!
+                  className={`py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-text transition-colors
+                  ${(isSaving || isNavigating) ? 'bg-gray-500 cursor-wait opacity-70' : 'bg-teal-600 hover:bg-teal-700'}`}
                 >
-                  {currentStep === totalSteps ? 'Concluir e Salvar' : 'Próximo'}
+                  {isSaving ? 'Salvando...' : (currentStep === totalSteps ? 'Concluir e Salvar' : 'Próximo')}
                 </button>
               </div>
             </div>
           </>
         )}
 
-        {/* Modal de Ajuda (Estrutura mantida) */}
+        {/* Modal de Ajuda */}
         {showHelpModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
             <div className="bg-secondary-bg dark:bg-primary-bg rounded-lg shadow-xl max-w-lg w-full p-6">
@@ -1154,18 +872,15 @@ function ActivityCreationPage({ existingActivity }) {
                 <p className="text-sm text-secondary-text dark:text-secondary-text">{helpContent.text}</p>
               </div>
               <div className="mt-4">
-                <button
-                  type="button"
-                  className="inline-flex justify-center rounded-md border border-transparent bg-teal-100 px-4 py-2 text-sm font-medium text-teal-900 hover:bg-teal-200"
-                  onClick={closeHelpModal}
-                >
+                <button type="button" className="inline-flex justify-center rounded-md border border-transparent bg-teal-100 px-4 py-2 text-sm font-medium text-teal-900 hover:bg-teal-200" onClick={closeHelpModal}>
                   Entendi
                 </button>
               </div>
             </div>
           </div>
         )}
-        {/* MODAL DE EDIÇÃO DE QUIZ */}
+
+        {/* MODAIS DE CONTEÚDO */}
         {editingStep?.type === 'quiz' && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
             <div className="bg-white dark:bg-primary-bg p-6 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -1173,13 +888,12 @@ function ActivityCreationPage({ existingActivity }) {
                 initialData={editingStep.content?.questions || []}
                 onSave={(questions) => handleSaveContentLocally({ type: 'quiz', questions })}
                 onCancel={() => setEditingStep(null)}
-                isOfflineMode={true} // Flag importante para o componente saber que não deve chamar API
+                isOfflineMode={true}
               />
             </div>
           </div>
         )}
 
-        {/* MODAL DE EDIÇÃO DE NARRATIVA */}
         {editingStep?.type === 'narrative' && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
             <div className="bg-white dark:bg-primary-bg p-6 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -1192,21 +906,13 @@ function ActivityCreationPage({ existingActivity }) {
             </div>
           </div>
         )}
+
         {editingStep?.type === 'content' && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
             <div className="bg-white dark:bg-primary-bg p-6 rounded-xl w-full max-w-5xl max-h-[90vh] overflow-y-auto relative">
-
-              {/* Botão de Fechar Rápido (Opcional, mas bom para UX) */}
-              <button
-                onClick={() => setEditingStep(null)}
-                className="absolute top-4 right-4 text-gray-500 hover:text-red-500 font-bold text-xl z-10"
-              >
-
-              </button>
-
+              <button onClick={() => setEditingStep(null)} className="absolute top-4 right-4 text-gray-500 hover:text-red-500 font-bold text-xl z-10"></button>
               <LearningContentEditor
                 initialData={editingStep.content}
-                // Ao salvar, chamamos a função local que atualiza o estado da criação
                 onSave={(data) => handleSaveContentLocally({ type: 'content', ...data })}
                 isOfflineMode={true}
               />

@@ -1,6 +1,6 @@
 # backend/app/__init__.py
 
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, jsonify
 from flask_cors import CORS
 from .extensions import socketio, scheduler, db, migrate
 
@@ -131,6 +131,33 @@ def create_app():
     def serve_medal_image(filename):
         directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'medals')
         return send_from_directory(directory, filename)
+    
+    # --- ROTA PARA DADOS PÚBLICOS DA PÁGINA SOBRE NÓS ---
+    @app.route('/api/public/stats', methods=['GET'])
+    def get_public_stats():
+        # Importação local aqui dentro para evitar "Circular Import" (Erro de importação)
+        from .models import User, Activity, Class 
+        
+        try:
+            total_users = User.query.count()
+            total_professors = User.query.filter_by(role='professor').count()
+            total_students = User.query.filter_by(role='aluno').count()
+            total_activities = Activity.query.count()
+            total_classes = Class.query.count()
+
+            return jsonify({
+                "users": total_users,
+                "professors": total_professors,
+                "students": total_students,
+                "activities": total_activities,
+                "classes": total_classes
+            }), 200
+        except Exception as e:
+            app.logger.error(f"Erro ao buscar stats publicas: {str(e)}")
+            return jsonify({"error": str(e)}), 500
+
+    # Certifique-se de colar ANTES do "return app" no final da função create_app()
+    return app
     
     # --- NOVO COMANDO PARA O SEEDING DAS MEDALHAS ---
     # --- COMANDO PARA O SEEDING DAS MEDALHAS (VERSÃO COMPLETA) ---

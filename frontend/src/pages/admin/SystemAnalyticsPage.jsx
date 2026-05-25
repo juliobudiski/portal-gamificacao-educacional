@@ -22,21 +22,35 @@ const KPI_Card = ({ title, value, icon, color }) => (
     </div>
 );
 
-const HorizontalBarChart = ({ data, dataKey, nameKey, title, icon }) => (
-    <div className="bg-primary-bg/50 p-6 rounded-xl">
-        <h2 className="text-xl font-bold text-primary-text mb-4 flex items-center"><span className="mr-2">{icon}</span>{title}</h2>
-        <div style={{ width: '100%', height: 400 }}>
-            <ResponsiveContainer>
-                <BarChart layout="vertical" data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                    <XAxis type="number" stroke="#9ca3af" />
-                    <YAxis type="category" dataKey={nameKey} stroke="#9ca3af" width={150} fontSize={12} />
-                    <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #4b5563' }} cursor={{ fill: 'rgba(107, 114, 128, 0.1)' }} />
-                    <Bar dataKey={dataKey} fill="#8884d8" name="Seleções" radius={[0, 4, 4, 0]} />
-                </BarChart>
-            </ResponsiveContainer>
+const HorizontalBarChart = ({ data, dataKey, nameKey, title, icon, barFill = "#8884d8" }) => {
+    // SE NÃO TIVER DADOS, MOSTRA UMA CAIXA VAZIA BONITA
+    if (!data || data.length === 0) {
+        return (
+            <div className="bg-primary-bg/50 p-6 rounded-xl">
+                <h2 className="text-xl font-bold text-primary-text mb-4 flex items-center"><span className="mr-2">{icon}</span>{title}</h2>
+                <div className="flex items-center justify-center h-[300px] border-2 border-dashed border-border-color rounded-lg text-secondary-text bg-secondary-bg/20">
+                    <p className="font-medium text-lg opacity-60">Nenhum dado registrado ainda.</p>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="bg-primary-bg/50 p-6 rounded-xl">
+            <h2 className="text-xl font-bold text-primary-text mb-4 flex items-center"><span className="mr-2">{icon}</span>{title}</h2>
+            <div style={{ width: '100%', height: 400 }}>
+                <ResponsiveContainer>
+                    <BarChart layout="vertical" data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                        <XAxis type="number" stroke="#9ca3af" allowDecimals={false} />
+                        <YAxis type="category" dataKey={nameKey} stroke="#9ca3af" width={170} fontSize={12} />
+                        <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #4b5563' }} cursor={{ fill: 'rgba(107, 114, 128, 0.1)' }} />
+                        <Bar dataKey={dataKey} fill={barFill} name="Ocorrências" radius={[0, 4, 4, 0]} />
+                    </BarChart>
+                </ResponsiveContainer>
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 const ProfilePieChart = ({ data }) => {
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF'];
@@ -194,19 +208,17 @@ function SystemAnalyticsPage() {
                             <KPI_Card title="Falhas de Login (24h)" value={kpis?.failed_logins_24h ?? '...'} icon={<AlertTriangle size={24} />} color="bg-yellow-500/30" />
                             <KPI_Card title="Atividades Criadas (7d)" value={kpis?.activities_created_7d ?? '...'} icon={<FilePlus size={24} />} color="bg-purple-500/30" />
                         </div>
-                        <div className="bg-primary-bg/50 p-6 rounded-xl">
-                            <h2 className="text-xl font-bold mb-4">Top 10 Eventos Mais Frequentes</h2>
-                            <div style={{ width: '100%', height: 300 }}>
-                                <ResponsiveContainer>
-                                    <BarChart data={eventDistribution}>
-                                        <XAxis dataKey="action" stroke="#9ca3af" fontSize={12} />
-                                        <YAxis stroke="#9ca3af" />
-                                        <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #4b5563' }} />
-                                        <Bar dataKey="count" fill="#38bdf8" name="Contagem" radius={[4, 4, 0, 0]} />
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </div>
+
+                        {/* --- GRÁFICO HORIZONTAL (BEM MAIS LEGÍVEL) --- */}
+                        <HorizontalBarChart
+                            data={eventDistribution}
+                            dataKey="count"
+                            nameKey="action"
+                            title="Top 10 Eventos Mais Frequentes"
+                            icon={<Activity />}
+                            barFill="#38bdf8"
+                        />
+
                         <div className="bg-primary-bg/50 p-6 rounded-xl text-center border-2 border-dashed border-border-color">
                             <h2 className="text-xl font-bold text-primary-text mb-4">Explorador de Logs</h2>
                             <p className="text-secondary-text mb-4 max-w-lg mx-auto">Para uma análise profunda, busca e filtragem de todos os eventos do sistema, acesse a página dedicada.</p>
@@ -263,10 +275,14 @@ function SystemAnalyticsPage() {
             case 'engagement':
                 return loadingEngagement ? <p className="text-center">Carregando dados de engajamento...</p> : (
                     studentEngagementData && <div className="space-y-6 animate-fade-in">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <KPI_Card title="Total de Moedas Ganhas" value={studentEngagementData.economy_kpis.coins_earned} icon={<Coins size={24} />} color="bg-green-500/30" />
-                            <KPI_Card title="Total de Moedas Gastas" value={studentEngagementData.economy_kpis.coins_spent} icon={<DollarSign size={24} />} color="bg-red-500/30" />
+                        {/* --- KPIs DE ECONOMIA (Corrigido para 3 Blocos) --- */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <KPI_Card title="Total Histórico (Ganhas)" value={studentEngagementData.economy_kpis.coins_earned} icon={<Coins size={24} />} color="bg-green-500/30" />
+                            <KPI_Card title="Total Queimado (Gasto)" value={studentEngagementData.economy_kpis.coins_spent} icon={<DollarSign size={24} />} color="bg-red-500/30" />
+                            <KPI_Card title="Em Circulação (Saldos)" value={studentEngagementData.economy_kpis.coins_balance} icon={<TrendingUp size={24} />} color="bg-yellow-500/30" />
                         </div>
+
+                        {/* Gráficos originais permanecem iguais */}
                         <HorizontalBarChart data={studentEngagementData.game_element_usage} dataKey="count" nameKey="name" title="Mecânicas de Jogo Mais Usadas" icon={<Gamepad2 />} barFill="#f97316" />
                         <HorizontalBarChart data={studentEngagementData.top_store_items} dataKey="count" nameKey="name" title="Itens Mais Populares da Loja" icon={<ShoppingCart />} barFill="#10b981" />
                         <CustomPieChart data={studentEngagementData.progress_status} title="Status de Progresso das Atividades" icon={<ChevronsRight />} dataKey="count" nameKey="status" />

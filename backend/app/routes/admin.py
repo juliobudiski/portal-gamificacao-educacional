@@ -1,8 +1,10 @@
 # backend/app/routes/admin.py
 from flask_cors import cross_origin 
-from flask import Blueprint, jsonify, current_app, request
+from flask import Blueprint, jsonify, current_app, request, Response
+import csv
+from io import StringIO
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from ..models import db, User, Activity, EventLog, Purchase, ActivityProgress, ContactMessage
+from ..models import db, User, Activity, EventLog, Purchase, ActivityProgress, ContactMessage, StudentResponse, RouletteWin, SlotWin, ForumTopic, ForumPost
 from sqlalchemy import func, case, cast, Numeric
 from datetime import datetime, timedelta
 from collections import Counter
@@ -173,11 +175,17 @@ def get_activity_feed():
 def get_event_distribution():
     if not check_admin(): return jsonify({"message": "Acesso negado."}), 403
     
+    # Removemos os eventos de navegação barulhentos para focar no que importa
+    noisy_events = ['view_start', 'view_duration', 'step_view_duration', 'stepper_navigation']
+    
     distribution = db.session.query(
         EventLog.action,
         func.count(EventLog.id).label('count')
+    ).filter(
+        ~EventLog.action.in_(noisy_events) # Filtra o barulho
     ).group_by(EventLog.action).order_by(func.count(EventLog.id).desc()).limit(10).all()
     
+    # Limpa o texto (Ex: 'activity_created' vira 'Activity Created')
     chart_data = [{"action": row.action.replace('_', ' ').title(), "count": row.count} for row in distribution]
     return jsonify(chart_data)
 
@@ -464,30 +472,23 @@ def get_student_engagement_data():
     if not check_admin():
         return jsonify({"message": "Acesso negado."}), 403
 
-    # 1. Gráfico: Elementos de Jogo Mais Utilizados
-    element_usage_results = db.session.query(
-        EventLog.action,
-        func.count(EventLog.id)
-    ).filter(
-        
-        EventLog.action.in_([
-            'quiz_complete', 
-            'roulette_spin_attempt', 
-            'slot_machine_attempt',
-            'narrative_completed',
-            'purchase_item'
-        ])
-    ).group_by(EventLog.action).all()
+    # 1. Gráfico: Elementos de Jogo Mais Utilizados (BUSCANDO DA FONTE DE VERDADE)
+    quiz_count = db.session.query(func.count(StudentResponse.id)).scalar() or 0
+    roulette_count = db.session.query(func.count(RouletteWin.id)).scalar() or 0
+    slot_count = db.session.query(func.count(SlotWin.id)).scalar() or 0
+    purchase_count = db.session.query(func.count(Purchase.id)).scalar() or 0
+    forum_topics = db.session.query(func.count(ForumTopic.id)).scalar() or 0
+    forum_posts = db.session.query(func.count(ForumPost.id)).scalar() or 0
     
-    # Mapeamento expandido para nomes amigáveis
-    element_usage_map = {
-        'quiz_complete': 'Quizzes Finalizados',
-        'roulette_spin_attempt': 'Roleta (Tentativas)',
-        'slot_machine_attempt': 'Caça-níquel (Tentativas)',
-        'narrative_completed': 'Narrativas Concluídas',
-        'purchase_item': 'Compras na Loja'
-    }
-    game_element_usage = [{'name': element_usage_map.get(row[0], row[0]), 'count': row[1]} for row in element_usage_results]
+    game_element_usage = [
+        {'name': 'Quizzes (Respostas)', 'count': quiz_count},
+        {'name': 'Fórum (Interações)', 'count': forum_topics + forum_posts},
+        {'name': 'Roleta (Vitórias)', 'count': roulette_count},
+        {'name': 'Caça-Níquel (Vitórias)', 'count': slot_count},
+        {'name': 'Loja (Compras)', 'count': purchase_count},
+    ]
+    # Filtra as que estão zeradas para o gráfico não ficar feio
+    #game_element_usage = [g for g in game_element_usage if g['count'] > 0]
 
     # 2. Gráfico: Itens Mais Comprados na Loja
     top_store_items_results = db.session.query(
@@ -496,7 +497,7 @@ def get_student_engagement_data():
     ).group_by(Purchase.item_name).order_by(func.count(Purchase.id).desc()).limit(10).all()
     top_store_items = [{'name': row[0], 'count': row[1]} for row in top_store_items_results]
 
-    # 3. Gráfico: Atividades com Maior Engajamento (soma de durações)
+    # 3. Gráfico: Atividades com Maior Engajamento (Duração)
     most_engaging_activities_results = db.session.query(
         Activity.title,
         func.sum(cast(EventLog.details['duration_seconds'].astext, Numeric))
@@ -507,19 +508,32 @@ def get_student_engagement_data():
     
     most_engaging_activities = [{'title': row[0], 'total_seconds': float(row[1] or 0)} for row in most_engaging_activities_results]
 
-    # 4. KPIs: Saúde da Economia Interna
-    coins_earned = db.session.query(func.sum(ActivityProgress.coins)).scalar() or 0
+    # 4. KPIs: Saúde da Economia Interna (CORRIGIDO)
+    coins_balance = db.session.query(func.sum(ActivityProgress.coins)).scalar() or 0
     coins_spent = db.session.query(func.sum(Purchase.price_paid)).scalar() or 0
-    economy_kpis = {'coins_earned': coins_earned, 'coins_spent': coins_spent}
+    
+    # As moedas GERAIS = O que sobrou na carteira dos alunos + O que eles já gastaram
+    total_coins_earned = int(coins_balance) + int(coins_spent)
+    
+    economy_kpis = {
+        'coins_earned': total_coins_earned, 
+        'coins_spent': int(coins_spent),
+        'coins_balance': int(coins_balance)
+    }
 
     # 5. Gráfico: Funil de Progresso do Aluno
     progress_status_results = db.session.query(
         ActivityProgress.status,
         func.count(ActivityProgress.id)
     ).group_by(ActivityProgress.status).all()
-    progress_status = [{'status': row[0], 'count': row[1]} for row in progress_status_results]
     
-    # Consolida tudo em um único objeto de resposta
+    status_map = {
+        'in_progress': 'Em Andamento',
+        'completed': 'Concluído',
+        'not_started': 'Não Iniciado'
+    }
+    progress_status = [{'status': status_map.get(row[0], row[0]), 'count': row[1]} for row in progress_status_results]
+    
     return jsonify({
         "game_element_usage": game_element_usage,
         "top_store_items": top_store_items,
@@ -611,3 +625,69 @@ def mark_contact_message_read(msg_id):
     db.session.commit()
     
     return jsonify({"success": True, "message": "Mensagem marcada como lida"})
+
+@admin_bp.route('/analytics/logs/export', methods=['GET'])
+@jwt_required()
+def export_logs_csv():
+    if not check_admin(): return jsonify({"message": "Acesso negado."}), 403
+
+    # Pega os mesmos filtros da tela
+    search_user = request.args.get('user', None, type=str)
+    filter_action = request.args.get('action', None, type=str)
+    start_date_str = request.args.get('startDate', None)
+    end_date_str = request.args.get('endDate', None)
+    
+    query = db.session.query(
+        EventLog, User.name, User.email, User.role
+    ).join(User, User.id == EventLog.user_id)
+
+    if search_user: query = query.filter(User.name.ilike(f'%{search_user}%'))
+    if filter_action: query = query.filter(EventLog.action == filter_action)
+    
+    if start_date_str:
+        try:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
+            query = query.filter(EventLog.created_at >= start_date)
+        except ValueError: pass
+            
+    if end_date_str:
+        try:
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d') + timedelta(days=1)
+            query = query.filter(EventLog.created_at < end_date)
+        except ValueError: pass
+    
+    query = query.order_by(EventLog.created_at.desc())
+    logs = query.all()
+
+    # Gera o CSV em memória
+    def generate():
+        data = StringIO()
+        writer = csv.writer(data, delimiter=';') # Ponto e vírgula evita bugar no Excel BR
+        
+        # Cabeçalho do CSV
+        writer.writerow(['ID_Log', 'Data_Hora', 'Usuario', 'Email', 'Role', 'Secao', 'Acao', 'Detalhes_JSON', 'IP'])
+        yield data.getvalue()
+        data.seek(0)
+        data.truncate(0)
+
+        # Linhas de dados
+        for log, user_name, user_email, user_role in logs:
+            writer.writerow([
+                log.id,
+                log.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                user_name,
+                user_email,
+                user_role,
+                log.section,
+                log.action,
+                log.details, # O JSON vai inteiro como string numa coluna
+                log.ip_address
+            ])
+            yield data.getvalue()
+            data.seek(0)
+            data.truncate(0)
+
+    # Retorna o arquivo como um Download
+    response = Response(generate(), mimetype='text/csv')
+    response.headers.set("Content-Disposition", "attachment", filename="gamefica_logs_export.csv")
+    return response

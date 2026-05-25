@@ -1,3 +1,4 @@
+// frontend/src/components/activity/ForumTab.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { FaArrowLeft, FaTimes, FaComments, FaPlus, FaTrophy, FaPaperPlane, FaThumbtack, FaHeart, FaRegHeart, FaSpinner, FaExclamationCircle } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
@@ -8,66 +9,55 @@ const formatDate = (isoString) => {
     if (!isoString) return '';
     const date = new Date(isoString);
     return date.toLocaleString('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
     });
 };
-// Item da lista de CATEGORIAS
+
 const CategoryListItem = ({ category, onSelect }) => (
-    // --- CORREÇÃO: Fundo e hover cientes do tema ---
-    <button onClick={() => onSelect(category)} className="w-full text-left p-4 bg-secondary-bg rounded-lg hover:bg-hover-bg-color transition-colors border border-border-color">
-        <h3 className="font-bold text-primary-text text-lg">{category.title}</h3>
-        <p className="text-sm text-secondary-text">{category.description}</p>
-        {/* --- CORREÇÃO: Cor de texto ciente do tema --- */}
-        <p className="text-xs text-accent-teal mt-2">{category.topic_count} tópicos</p>
+    <button onClick={() => onSelect(category)} className="w-full text-left p-5 bg-secondary-bg rounded-xl hover:bg-hover-bg-color transition-colors border border-border-color shadow-sm group">
+        <h3 className="font-bold text-primary-text text-xl group-hover:text-accent-teal transition-colors">{category.title}</h3>
+        <p className="text-sm text-secondary-text mt-1">{category.description}</p>
+        <p className="text-xs font-bold text-accent-teal mt-3 bg-accent-teal/10 w-fit px-2 py-1 rounded-md">{category.topic_count} tópicos</p>
     </button>
 );
 
-// Item da lista de TÓPICOS (perguntas)
 const TopicListItem = ({ topic, onSelect }) => (
-    // --- CORREÇÃO: Fundo e hover cientes do tema ---
-    <button onClick={() => onSelect(topic.id)} className="w-full text-left p-4 bg-secondary-bg rounded-lg hover:bg-hover-bg-color transition-colors flex justify-between items-center border border-border-color">
+    <button onClick={() => onSelect(topic.id)} className="w-full text-left p-4 bg-secondary-bg rounded-xl hover:bg-hover-bg-color transition-colors flex justify-between items-center border border-border-color shadow-sm">
         <div className="flex items-center gap-3">
-            {/* --- CORREÇÃO: Cor de ícone ciente do tema --- */}
-            {topic.is_pinned && <FaThumbtack className="text-accent-teal flex-shrink-0" title="Tópico Fixo" />}
+            {topic.is_pinned && <FaThumbtack className="text-accent-teal flex-shrink-0 text-xl" title="Tópico Fixo" />}
             <div>
-                <h3 className="font-bold text-primary-text">{topic.title}</h3>
-                <p className="text-sm text-secondary-text">por {topic.author_name} - {topic.post_count} respostas</p>
+                <h3 className="font-bold text-primary-text text-lg">{topic.title}</h3>
+                <p className="text-sm text-secondary-text mt-1">por {topic.author_name} • {topic.post_count} respostas</p>
             </div>
         </div>
-        {/* --- CORREÇÃO: Cor de ícone ciente do tema --- */}
-        {topic.best_answer_id && <FaTrophy className="text-accent-yellow text-xl flex-shrink-0" title="Resolvido" />}
+        {topic.best_answer_id && <FaTrophy className="text-accent-yellow text-2xl flex-shrink-0" title="Resolvido" />}
     </button>
 );
 
-// Item de um POST (resposta)
 const PostItem = ({ post, isTopicAuthor, onMarkBest, isBestAnswer, onToggleLike }) => (
-    // --- CORREÇÃO: Fundos e bordas cientes do tema ---
-    <div className={`p-4 rounded-lg border ${isBestAnswer ? 'bg-accent-yellow/10 border-accent-yellow' : 'bg-primary-bg border-border-color'}`}>
+    <div className={`p-5 rounded-xl border shadow-sm ${isBestAnswer ? 'bg-accent-yellow/10 border-accent-yellow' : 'bg-secondary-bg border-border-color'}`}>
         <div className="flex justify-between items-start">
-            {/* --- CORREÇÃO: Cor de texto ciente do tema --- */}
-            <p className="font-bold text-accent-teal">{post.author_name}</p>
-            <p className="text-xs text-secondary-text">{formatDate(post.created_at)}</p>
-            {isTopicAuthor && !isBestAnswer && (
-                <button onClick={() => onMarkBest(post.id)} className="text-xs flex items-center gap-1 text-accent-yellow hover:text-accent-yellow/80">
-                    <FaTrophy /> Marcar como Melhor
-                </button>
-            )}
+            <p className="font-bold text-accent-teal text-lg">{post.author_name}</p>
+            <div className="flex items-center gap-3">
+                <span className="text-xs text-secondary-text bg-primary-bg px-2 py-1 rounded">{formatDate(post.created_at)}</span>
+                {isTopicAuthor && !isBestAnswer && (
+                    <button onClick={() => onMarkBest(post.id)} className="text-xs font-bold flex items-center gap-1 text-accent-yellow hover:bg-accent-yellow/20 px-2 py-1 rounded transition-colors">
+                        <FaTrophy /> Marcar Solução
+                    </button>
+                )}
+            </div>
         </div>
-        <p className="text-secondary-text mt-2 whitespace-pre-wrap">{post.body}</p>
-        <div className="flex justify-between items-center mt-3">
-            {isBestAnswer
-                // --- CORREÇÃO: Cor de texto ciente do tema ---
-                ? <div className="text-xs font-bold text-accent-yellow flex items-center gap-2"><FaTrophy /> MELHOR RESPOSTA</div>
-                : <div></div> // Espaçador
-            }
+        <p className="text-primary-text mt-3 whitespace-pre-wrap leading-relaxed">{post.body}</p>
+
+        <div className="flex justify-between items-center mt-4 pt-3 border-t border-border-color/50">
+            {isBestAnswer ? (
+                <div className="text-sm font-bold text-accent-yellow flex items-center gap-2 bg-accent-yellow/20 px-3 py-1 rounded-full"><FaTrophy /> SOLUÇÃO DO TÓPICO</div>
+            ) : <div></div>}
+
             <div className="flex items-center gap-2 text-secondary-text">
-                <span className="text-sm">{post.likes_count}</span>
-                {/* --- CORREÇÃO: Cor de ícone ciente do tema --- */}
-                <button onClick={() => onToggleLike(post.id, post.current_user_has_liked)} className="text-lg hover:text-danger transition-colors">
+                <span className="text-sm font-bold">{post.likes_count}</span>
+                <button onClick={() => onToggleLike(post.id, post.current_user_has_liked)} className="text-xl hover:text-danger transition-colors transform hover:scale-110">
                     {post.current_user_has_liked ? <FaHeart className="text-danger" /> : <FaRegHeart />}
                 </button>
             </div>
@@ -75,10 +65,6 @@ const PostItem = ({ post, isTopicAuthor, onMarkBest, isBestAnswer, onToggleLike 
     </div>
 );
 
-const MAX_TITLE = 150;
-const MAX_BODY = 5000;
-
-// Formulário para criar um novo TÓPICO
 const CreateTopicForm = ({ onSubmit, onCancel, isSubmitting }) => {
     const { user } = useAuth();
     const [title, setTitle] = useState('');
@@ -87,60 +73,53 @@ const CreateTopicForm = ({ onSubmit, onCancel, isSubmitting }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (title.trim() && body.trim()) {
-            onSubmit(title, body, isPinned);
-        }
+        if (title.trim() && body.trim()) onSubmit(title, body, isPinned);
     };
 
     return (
-        <form onSubmit={handleSubmit} className="flex flex-col h-full">
-            {/* TÍTULO */}
+        <form onSubmit={handleSubmit} className="flex flex-col h-full bg-secondary-bg p-6 rounded-2xl border border-border-color shadow-lg">
+            <h3 className="text-2xl font-bold text-accent-teal mb-6">Criar Novo Tópico</h3>
+
             <div className="mb-4">
-                <div className="flex justify-between text-xs mb-1 text-secondary-text">
-                    <span>Título</span>
-                    <span>{title.length}/{MAX_TITLE}</span>
+                <div className="flex justify-between text-xs mb-1 text-secondary-text font-bold uppercase">
+                    <span>Título da Pergunta</span>
+                    <span>{title.length}/150</span>
                 </div>
                 <input
-                    type="text"
-                    value={title}
-                    maxLength={MAX_TITLE} // Bloqueio HTML
-                    onChange={e => setTitle(e.target.value)}
-                    placeholder="Título da pergunta..."
-                    className="w-full bg-secondary-bg p-2 rounded border border-border-color text-primary-text focus:border-accent-teal outline-none"
+                    type="text" value={title} maxLength={150} onChange={e => setTitle(e.target.value)}
+                    placeholder="Resuma sua dúvida ou sugestão de forma clara..."
+                    className="w-full bg-primary-bg p-3 rounded-lg border border-border-color text-primary-text focus:border-accent-teal focus:ring-1 focus:ring-accent-teal outline-none transition-all"
                     required
                 />
             </div>
 
-            {/* CORPO */}
             <div className="flex-grow flex flex-col mb-4">
-                <div className="flex justify-between text-xs mb-1 text-secondary-text">
+                <div className="flex justify-between text-xs mb-1 text-secondary-text font-bold uppercase">
                     <span>Detalhes</span>
-                    <span>{body.length}/{MAX_BODY}</span>
+                    <span>{body.length}/5000</span>
                 </div>
                 <textarea
-                    value={body}
-                    maxLength={MAX_BODY} // Bloqueio HTML
-                    onChange={e => setBody(e.target.value)}
-                    placeholder="Descreva a sua pergunta em detalhe..."
-                    className="w-full flex-grow bg-secondary-bg p-2 rounded resize-none border border-border-color text-primary-text focus:border-accent-teal outline-none"
+                    value={body} maxLength={5000} onChange={e => setBody(e.target.value)}
+                    placeholder="Descreva todos os detalhes. Se for um problema técnico, explique o que você já tentou fazer..."
+                    className="w-full flex-grow min-h-[150px] bg-primary-bg p-3 rounded-lg resize-none border border-border-color text-primary-text focus:border-accent-teal focus:ring-1 focus:ring-accent-teal outline-none transition-all"
                     required
                 />
             </div>
+
             {user.role === 'professor' && (
-                <div className="flex items-center mb-4">
-                    <input type="checkbox" id="isPinned" checked={isPinned} onChange={e => setIsPinned(e.target.checked)} className="h-4 w-4 rounded" />
-                    <label htmlFor="isPinned" className="ml-2 text-secondary-text">Fixar este tópico no topo do fórum</label>
+                <div className="flex items-center mb-6 bg-primary-bg p-3 rounded-lg border border-border-color w-fit">
+                    <input type="checkbox" id="isPinned" checked={isPinned} onChange={e => setIsPinned(e.target.checked)} className="h-5 w-5 rounded accent-accent-teal cursor-pointer" />
+                    <label htmlFor="isPinned" className="ml-3 font-bold text-secondary-text cursor-pointer">Fixar no topo do canal (Aviso Global)</label>
                 </div>
             )}
-            <div className="flex justify-end gap-4">
-                {/* --- CORREÇÃO: Botões cientes do tema --- */}
-                <button type="button" onClick={onCancel} className="py-2 px-4 bg-secondary-bg border border-border-color rounded hover:bg-hover-bg-color">Cancelar</button>
-                <button type="submit" disabled={isSubmitting} className="py-2 px-4 bg-accent-teal text-gray-900 rounded disabled:opacity-50">{isSubmitting ? 'Publicando...' : 'Publicar Tópico'}</button>
+
+            <div className="flex justify-end gap-4 mt-auto pt-4 border-t border-border-color">
+                <button type="button" onClick={onCancel} className="py-2 px-6 bg-primary-bg text-secondary-text font-bold border border-border-color rounded-lg hover:bg-hover-bg-color transition-colors">Cancelar</button>
+                <button type="submit" disabled={isSubmitting || !title.trim() || !body.trim()} className="py-2 px-8 bg-accent-teal text-gray-900 font-bold rounded-lg disabled:opacity-50 hover:bg-teal-400 transition-colors shadow-md">{isSubmitting ? 'Publicando...' : 'Publicar Tópico'}</button>
             </div>
         </form>
     );
 };
-
 
 const ForumTab = ({ onReturn }) => {
     const { user } = useAuth();
@@ -157,6 +136,7 @@ const ForumTab = ({ onReturn }) => {
     const [error, setError] = useState('');
     const [newPostBody, setNewPostBody] = useState('');
     const [formError, setFormError] = useState('');
+
     const fetchCategories = useCallback(async () => {
         setIsLoading(true);
         setError('');
@@ -165,11 +145,7 @@ const ForumTab = ({ onReturn }) => {
             if (!response.ok) throw new Error("Não foi possível carregar os canais do fórum.");
             const data = await response.json();
             setCategories(data);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setIsLoading(false);
-        }
+        } catch (err) { setError(err.message); } finally { setIsLoading(false); }
     }, [activityId, user.token]);
 
     const fetchTopics = useCallback(async (categoryId) => {
@@ -197,10 +173,7 @@ const ForumTab = ({ onReturn }) => {
 
     const handleToggleLike = async (postId) => {
         try {
-            await fetch(`${import.meta.env.VITE_API_URL}/api/forum/posts/${postId}/like`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${user.token}` },
-            });
+            await fetch(`${import.meta.env.VITE_API_URL}/api/forum/posts/${postId}/like`, { method: 'POST', headers: { 'Authorization': `Bearer ${user.token}` } });
             setSelectedTopic(prevTopic => ({
                 ...prevTopic,
                 posts: prevTopic.posts.map(p => {
@@ -212,10 +185,9 @@ const ForumTab = ({ onReturn }) => {
                     return p;
                 })
             }));
-        } catch (err) {
-            setError("Não foi possível registrar o like. Tente novamente.");
-        }
+        } catch (err) { setError("Falha de rede ao curtir."); }
     };
+
     const handleCreateTopic = async (title, body, isPinned) => {
         setIsSubmitting(true);
         setFormError('');
@@ -228,36 +200,16 @@ const ForumTab = ({ onReturn }) => {
 
             if (!response.ok) {
                 const errorData = await response.json();
-
-                // --- MUDANÇA: TOLERÂNCIA ZERO ---
-                // Se houver um motivo (reason) vindo da IA ou bloqueio de tamanho
                 if (errorData.reason) {
-                    // 1. Alerta agressivo (trava a tela)
                     alert(`🚫 BLOQUEADO: ${errorData.detail}\n\nO conteúdo foi descartado.`);
-
-                    // 2. Limpa o que ele digitou (Punição)
-                    // Como vamos desmontar o componente ao mudar a view, isso é opcional, 
-                    // mas garante que se ele voltar, estará vazio.
-                    setTitle('');
-                    setBody('');
-
-                    // 3. Chuta ele de volta para a lista (Sai da tela de criação)
                     setView('topics');
-
-                    return; // Para a execução aqui
+                    return;
                 }
-
                 throw new Error(errorData.message || "Erro ao criar tópico");
             }
-
             await fetchTopics(selectedCategory.id);
             setView('topics');
-        } catch (err) {
-            // Erros de rede ou outros continuam aparecendo no formulário
-            setFormError(err.message);
-        } finally {
-            setIsSubmitting(false);
-        }
+        } catch (err) { setFormError(err.message); } finally { setIsSubmitting(false); }
     };
 
     const handleCreatePost = async () => {
@@ -273,27 +225,17 @@ const ForumTab = ({ onReturn }) => {
 
             if (!response.ok) {
                 const errorData = await response.json();
-
-                // --- MUDANÇA: TOLERÂNCIA ZERO ---
                 if (errorData.reason) {
                     alert(`🚫 RESPOSTA BLOQUEADA: ${errorData.reason}\n\nSeu texto foi descartado.`);
-
-                    // 1. Limpa o campo de texto imediatamente
                     setNewPostBody('');
-
                     return;
                 }
-
                 throw new Error(errorData.message || "Erro ao publicar resposta");
             }
 
             setNewPostBody('');
             await fetchTopicDetails(selectedTopic.id);
-        } catch (err) {
-            setFormError(err.message);
-        } finally {
-            setIsSubmitting(false);
-        }
+        } catch (err) { setFormError(err.message); } finally { setIsSubmitting(false); }
     };
 
     const handleMarkBest = async (postId) => {
@@ -312,55 +254,53 @@ const ForumTab = ({ onReturn }) => {
         if (isLoading) {
             return (
                 <div className="flex flex-col items-center justify-center h-full text-center">
-                    <FaSpinner className="animate-spin text-4xl text-yellow-400 mb-4" />
-                    <p>Carregando Fórum...</p>
+                    <FaSpinner className="animate-spin text-5xl text-accent-teal mb-4" />
+                    <p className="text-lg font-bold text-secondary-text">Sincronizando Fórum...</p>
                 </div>
             );
         }
         if (error) {
             return (
-                <div className="text-red-400 text-center p-8">
+                <div className="bg-danger-bg border border-danger text-danger text-center p-8 rounded-xl max-w-md mx-auto mt-10">
                     <FaExclamationCircle className="text-5xl mx-auto mb-4" />
-                    <p className="font-semibold">Falha ao carregar o fórum</p>
-                    <p className="text-sm">{error}</p>
+                    <p className="font-bold text-lg">Falha ao carregar o fórum</p>
+                    <p className="text-sm mt-2">{error}</p>
                 </div>
             );
         }
+
         switch (view) {
             case 'create_topic':
-                // O Form já tem flex-col e h-full internamente, então ele se adapta bem
-                return <CreateTopicForm
-                    onSubmit={handleCreateTopic}
-                    onCancel={() => setView('topics')}
-                    isSubmitting={isSubmitting}
-                    formError={formError}
-                />;
+                return <CreateTopicForm onSubmit={handleCreateTopic} onCancel={() => setView('topics')} isSubmitting={isSubmitting} />;
 
             case 'topic_detail':
                 return (
-                    // Layout Flex Vertical: Cabeçalho Fixo -> Conteúdo Scrollável -> Input Fixo
                     <div className="flex flex-col h-full overflow-hidden">
-                        {/* 1. CABEÇALHO (Fixo) */}
-                        <div className="flex-shrink-0 mb-4">
-                            <button onClick={() => setView('topics')} className="mb-2 flex items-center gap-2 text-accent-yellow hover:text-accent-yellow/80 transition-colors">
+                        {/* CABEÇALHO TÓPICO */}
+                        <div className="flex-shrink-0 mb-6">
+                            <button onClick={() => setView('topics')} className="mb-4 flex items-center gap-2 text-secondary-text hover:text-primary-text font-bold transition-colors bg-primary-bg px-4 py-2 rounded-full w-fit border border-border-color shadow-sm">
                                 <FaArrowLeft /> Voltar para os tópicos
                             </button>
-                            <div className="bg-secondary-bg p-4 rounded-lg border border-border-color shadow-sm">
-                                <h2 className="text-xl md:text-2xl font-bold text-primary-text leading-tight">{selectedTopic.title}</h2>
-                                <p className="text-sm text-secondary-text mt-1">por <span className="text-accent-teal">{selectedTopic.author_name}</span></p>
-                                <div className="text-primary-text mt-3 whitespace-pre-wrap text-sm md:text-base bg-primary-bg/50 p-3 rounded border border-border-color/50">
+                            <div className="bg-secondary-bg p-6 rounded-2xl border border-border-color shadow-md">
+                                <h2 className="text-2xl md:text-3xl font-bold text-primary-text leading-tight mb-2">{selectedTopic.title}</h2>
+                                <p className="text-sm font-bold text-accent-teal uppercase tracking-wide">Autor: {selectedTopic.author_name}</p>
+                                <div className="mt-4 text-primary-text whitespace-pre-wrap text-base md:text-lg bg-primary-bg/50 p-5 rounded-xl border border-border-color/50 leading-relaxed">
                                     {selectedTopic.body}
                                 </div>
                             </div>
-                            <h3 className="font-bold mt-4 mb-2 text-primary-text flex items-center gap-2">
-                                <FaComments /> Respostas ({selectedTopic.posts.length})
+                            <h3 className="text-xl font-bold mt-6 mb-2 text-primary-text flex items-center gap-2">
+                                <FaComments className="text-accent-yellow" /> Respostas da Comunidade ({selectedTopic.posts.length})
                             </h3>
                         </div>
 
-                        {/* 2. LISTA DE RESPOSTAS (Scrollável) */}
+                        {/* LISTA DE RESPOSTAS */}
                         <div className="flex-grow overflow-y-auto space-y-4 pr-2 min-h-0 custom-scrollbar pb-4">
                             {selectedTopic.posts.length === 0 ? (
-                                <p className="text-center text-secondary-text py-8 italic">Seja o primeiro a responder!</p>
+                                <div className="bg-secondary-bg/50 border border-dashed border-border-color rounded-xl p-10 text-center text-secondary-text">
+                                    <FaComments className="text-4xl mx-auto mb-3 opacity-50" />
+                                    <p className="font-bold text-lg">Nenhuma resposta ainda.</p>
+                                    <p className="text-sm mt-1">Seja o primeiro a ajudar ou compartilhar sua opinião!</p>
+                                </div>
                             ) : (
                                 selectedTopic.posts.map(post => (
                                     <PostItem key={post.id} post={post}
@@ -373,38 +313,29 @@ const ForumTab = ({ onReturn }) => {
                             )}
                         </div>
 
-                        {/* 3. INPUT DE RESPOSTA (Fixo no fundo) */}
-                        <div className="mt-4 flex-shrink-0 pt-2 border-t border-border-color/30">
-                            {/* Alerta de Erro Local */}
+                        {/* INPUT DE RESPOSTA */}
+                        <div className="mt-4 flex-shrink-0 pt-4 border-t border-border-color">
                             {formError && (
-                                <div className="mb-2 p-2 bg-red-900/50 border border-red-500 rounded text-red-200 text-sm flex items-center justify-between animate-pulse">
-                                    <div className="flex items-center gap-2">
-                                        <FaExclamationCircle />
-                                        <span>{formError}</span>
-                                    </div>
-                                    <button onClick={() => setFormError('')}><FaTimes /></button>
+                                <div className="mb-3 p-3 bg-danger-bg border border-danger rounded-xl text-danger text-sm font-bold flex items-center gap-2 animate-pulse">
+                                    <FaExclamationCircle /> <span>{formError}</span>
                                 </div>
                             )}
-
-                            <div className="text-right text-xs text-secondary-text px-1 mb-1">
-                                {newPostBody.length}/5000
-                            </div>
-                            <div className="flex flex-col shadow-lg">
+                            <div className="flex flex-col shadow-xl rounded-xl overflow-hidden border border-border-color focus-within:border-accent-teal transition-colors">
                                 <textarea
-                                    value={newPostBody}
-                                    onChange={e => setNewPostBody(e.target.value)}
-                                    maxLength={5000}
-                                    placeholder="Escreva a sua resposta..."
-                                    className={`w-full bg-secondary-bg p-3 rounded-t-lg focus:outline-none resize-none h-24 border-t border-x text-primary-text transition-colors ${formError ? 'border-red-500' : 'border-border-color focus:border-accent-teal'}`}
+                                    value={newPostBody} onChange={e => setNewPostBody(e.target.value)} maxLength={5000}
+                                    placeholder="Escreva a sua resposta para ajudar a comunidade..."
+                                    className="w-full bg-secondary-bg p-4 focus:outline-none resize-none h-28 text-primary-text"
                                 />
-                                <button
-                                    onClick={handleCreatePost}
-                                    disabled={isSubmitting || !newPostBody.trim()}
-                                    className="w-full bg-accent-teal p-3 rounded-b-lg disabled:opacity-50 font-bold flex items-center justify-center gap-2 text-gray-900 hover:bg-teal-400 transition-all hover:shadow-md"
-                                >
-                                    {isSubmitting ? <FaSpinner className="animate-spin" /> : <FaPaperPlane />}
-                                    {isSubmitting ? 'Enviando...' : 'Publicar Resposta'}
-                                </button>
+                                <div className="bg-primary-bg flex justify-between items-center p-2 px-4 border-t border-border-color">
+                                    <span className="text-xs font-bold text-secondary-text">{newPostBody.length}/5000</span>
+                                    <button
+                                        onClick={handleCreatePost} disabled={isSubmitting || !newPostBody.trim()}
+                                        className="bg-accent-teal text-gray-900 py-2 px-6 rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-teal-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {isSubmitting ? <FaSpinner className="animate-spin" /> : <FaPaperPlane />}
+                                        {isSubmitting ? 'Enviando...' : 'Publicar'}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -413,30 +344,29 @@ const ForumTab = ({ onReturn }) => {
             case 'topics':
                 return (
                     <div className="flex flex-col h-full overflow-hidden">
-                        {/* Header Fixo */}
-                        <div className="flex-shrink-0 mb-4">
-                            <button onClick={() => setView('categories')} className="mb-4 flex items-center gap-2 text-accent-yellow hover:text-accent-yellow/80 transition-colors">
+                        <div className="flex-shrink-0 mb-6">
+                            <button onClick={() => setView('categories')} className="mb-4 flex items-center gap-2 text-secondary-text hover:text-primary-text font-bold transition-colors bg-secondary-bg px-4 py-2 rounded-full w-fit border border-border-color shadow-sm">
                                 <FaArrowLeft /> Voltar para os canais
                             </button>
-                            <div className="flex justify-between items-center bg-secondary-bg p-4 rounded-lg border border-border-color">
+                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-secondary-bg p-6 rounded-2xl border border-border-color shadow-md gap-4">
                                 <div>
-                                    <h2 className="text-xl md:text-2xl font-bold text-primary-text">{selectedCategory?.title}</h2>
-                                    <p className="text-xs text-secondary-text hidden md:block">Visualize e crie discussões neste canal.</p>
+                                    <h2 className="text-2xl md:text-3xl font-bold text-accent-teal mb-1">{selectedCategory?.title}</h2>
+                                    <p className="text-sm text-secondary-text">{selectedCategory?.description}</p>
                                 </div>
-                                <button onClick={() => setView('create_topic')} className="bg-accent-teal text-gray-900 py-2 px-4 rounded-lg flex items-center gap-2 font-bold hover:bg-teal-400 transition-all shadow-md transform hover:scale-105">
-                                    <FaPlus /> <span className="hidden md:inline">Criar Tópico</span>
+                                <button onClick={() => setView('create_topic')} className="bg-accent-teal text-gray-900 py-3 px-6 rounded-xl flex items-center gap-2 font-bold hover:bg-teal-400 transition-all shadow-lg transform hover:-translate-y-1 w-full md:w-auto justify-center">
+                                    <FaPlus /> <span>Novo Tópico</span>
                                 </button>
                             </div>
                         </div>
 
-                        {/* Lista Scrollável */}
                         <div className="flex-grow overflow-y-auto space-y-3 pr-2 custom-scrollbar pb-2">
                             {topics.length > 0 ? (
                                 topics.map(topic => <TopicListItem key={topic.id} topic={topic} onSelect={fetchTopicDetails} />)
                             ) : (
-                                <div className="flex flex-col items-center justify-center h-40 text-secondary-text opacity-70 border-2 border-dashed border-border-color rounded-lg">
-                                    <FaComments className="text-4xl mb-2" />
-                                    <p>Nenhum tópico criado neste canal ainda.</p>
+                                <div className="flex flex-col items-center justify-center h-48 text-secondary-text opacity-70 border-2 border-dashed border-border-color rounded-2xl bg-secondary-bg/30">
+                                    <FaComments className="text-5xl mb-3 text-accent-teal" />
+                                    <p className="text-lg font-bold text-primary-text">Nenhum tópico criado neste canal.</p>
+                                    <p className="text-sm mt-1">Clique no botão acima para iniciar a primeira discussão!</p>
                                 </div>
                             )}
                         </div>
@@ -446,13 +376,13 @@ const ForumTab = ({ onReturn }) => {
             default: // categories
                 return (
                     <div className="flex flex-col h-full overflow-hidden">
-                        <div className="flex-shrink-0 mb-4">
-                            <h2 className="text-2xl font-bold text-accent-teal flex items-center gap-2">
-                                <FaComments /> Canais do Fórum
+                        <div className="flex-shrink-0 mb-8 text-center md:text-left">
+                            <h2 className="text-3xl font-bold text-accent-teal flex items-center justify-center md:justify-start gap-3 mb-2">
+                                <FaComments className="text-accent-yellow" /> Canais de Discussão
                             </h2>
-                            <p className="text-secondary-text text-sm">Selecione um canal para ver as discussões.</p>
+                            <p className="text-secondary-text text-base">Selecione um canal para ver os tópicos ou criar novas discussões.</p>
                         </div>
-                        <div className="flex-grow overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+                        <div className="flex-grow overflow-y-auto space-y-4 pr-2 custom-scrollbar">
                             {categories.map(category => (
                                 <CategoryListItem key={category.id} category={category} onSelect={(category) => {
                                     setSelectedCategory(category);
@@ -467,32 +397,24 @@ const ForumTab = ({ onReturn }) => {
     };
 
     return (
-        // MUDANÇA CRÍTICA:
-        // 1. 'absolute inset-0': Cola o fórum nos 4 cantos do container pai (substituindo visualmente o tabuleiro).
-        // 2. 'z-10': Garante que fique por cima do SVG/Mapas.
-        // 3. 'h-full w-full': Ocupa todo o espaço disponível.
-        // 4. 'bg-primary-bg': Garante fundo sólido.
-        <div className="absolute inset-0 z-10 flex flex-col h-full w-full bg-primary-bg/95 backdrop-blur-sm text-primary-text rounded-xl overflow-hidden">
+        // PADRONIZAÇÃO DO CONTAINER PARA FICAR IGUAL AO STORE_TAB E CHAT_TAB
+        <div className="w-full max-w-5xl mx-auto p-4 relative pt-16 text-primary-text flex flex-col h-full min-h-[80vh]">
 
-            {/* Header / Botão Voltar */}
-            <div className='flex-shrink-0 p-4 border-b border-border-color bg-secondary-bg/50 flex items-center shadow-sm'>
+            {/* BOTÃO VOLTAR GLOBAL (Top Left) */}
+            <div className='flex-shrink-0'>
                 <button
                     onClick={onReturn}
-                    className="flex items-center gap-2 py-2 px-4 
-                    bg-secondary-bg text-secondary-text text-sm font-bold
-                    border border-border-color rounded-full shadow-sm 
-                    hover:bg-primary-bg hover:text-accent-yellow hover:border-accent-yellow transition-all"
+                    className="absolute top-4 left-4 z-20 flex items-center gap-2 py-2 px-4 
+                           bg-secondary-bg text-secondary-text font-bold
+                           border border-border-color rounded-full shadow-lg 
+                           hover:bg-primary-bg hover:text-accent-yellow transition-all"
                 >
-                    <FaArrowLeft /> Voltar ao Jogo
+                    <FaArrowLeft /> Voltar ao Tabuleiro
                 </button>
-                {/* Título opcional no header para contexto */}
-                <h2 className="ml-4 text-lg font-bold text-primary-text hidden md:block">
-                    Fórum da Turma
-                </h2>
             </div>
 
-            {/* Conteúdo Principal (Scrollável) */}
-            <div className="flex-grow relative overflow-hidden flex flex-col p-4 md:p-6">
+            {/* CONTAINER PRINCIPAL DO FÓRUM */}
+            <div className="flex-grow relative overflow-hidden flex flex-col bg-primary-bg rounded-2xl border border-border-color shadow-2xl p-4 md:p-8 mt-4">
                 {renderContent()}
             </div>
         </div>

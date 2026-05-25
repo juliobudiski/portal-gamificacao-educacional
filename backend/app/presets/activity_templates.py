@@ -7,9 +7,7 @@ PREDEFINED_TEMPLATES = [
         "description": "Revisão rápida sobre conceitos fundamentais de software.",
         "icon": "🧠",
         
-        # --- DADOS DA ATIVIDADE (Mapeados estritamente com as constantes válidas) ---
         "data": {
-            # --- PRESET PARA A IA
             "ai_preset": {
                 "teachingFocus": "Diferença entre Requisitos Funcionais e Não Funcionais",
                 "targetAudience": "Iniciante",
@@ -23,43 +21,37 @@ PREDEFINED_TEMPLATES = [
             },
             "title": "Fundamentos de Requisitos",
             "description": "Avalie seu conhecimento sobre especificações de software com este quiz interativo.",
-            "areaKnowledge": "Engenharia de Software",
+            "areaKnowledge": "Computação e Engenharia de Software",
+            "subdomain": "Fundamentos e Programação Introdutória",
             
             "currentScenario": {
                 "problems": [
-                    "Dificuldades na compreensão de conceitos complexos de programação.",
-                    "Dificuldades em aplicar as teorias aprendidas na prática.",
-                    "Dificuldades em aprender novas ferramentas e tecnologias rapidamente.",
-                    "Falta de motivação e interesse no assunto.",
-                    "Dificuldades em lidar com ferramentas de desenvolvimento complexas."
+                    "Barreira da Abstração",
+                    "Falta de motivação e interesse na teoria."
                 ],
                 "otherProblem": ""
             },
             "desiredScenario": {
                 "objectives": [
-                    "Aumentar a retenção de conhecimentos e habilidades",
-                    "Promover a participação ativa dos alunos nas atividades",
-                    "Incentivar a aplicação prática dos conhecimentos teóricos",
-                    "Desenvolver habilidades cognitivas, sociais e de aprendizagem",
-                    "Criar um ambiente de aprendizagem motivador e envolvente"
+                    "Aumento de Motivação e Engajamento Inicial",
+                    "Desenvolvimento do Pensamento Computacional e Raciocínio Lógico"
                 ],
                 "otherObjective": ""
             },
             "activityPlanning": {
+                "isTeamActivity": False,
                 "characteristics": [
-                    "Online", 
-                    "Individual", 
+                    "Online / Ensino a Distância", 
                     "Formativa (prática ou revisão)",
                     "Uso de plataformas de aprendizado"
                 ],
                 "participantsQuantity": "Turma toda",
                 "expectedDuration": "30 minutos",
                 "location": "Online",
-                "otherInfo": "Pode ser usado como atividade pré-aula ou pós-aula."
+                "otherInfo": "Pode ser usado como atividade pré-aula."
             },
             "playerProfile": { 
-                # Mapeado de 'Explorador' (inválido) para 'Imersivo' e 'Realizador'
-                "selectedProfiles": ["Imersivo", "Realizador"] 
+                "selectedProfiles": ["Explorador", "Realizador"] 
             },
             "gameElements": {
                 "selectedElements": [
@@ -69,9 +61,7 @@ PREDEFINED_TEMPLATES = [
                     "Sistema de classificação e ranking", 
                     "Narrativas envolventes"
                 ],
-                "otherElement": "",
-                "narrativeTitle": "Desafio do Conhecimento",
-                "narrativeContent": "Embarque em uma jornada para provar seu domínio sobre os requisitos de software, ajudando a startup DevFast a sair do caos."
+                "otherElement": ""
             },
             "rewardsOffered": {
                 "selectedRewards": [
@@ -92,15 +82,15 @@ PREDEFINED_TEMPLATES = [
                     "Respeite as regras do jogo e as decisões do professor.", 
                     "Busque sempre aprender e se esforçar para alcançar seus objetivos."
                 ],
-                "specificRules": "Cada questão tem um tempo limite de 30 segundos. Respostas corretas concedem pontos, incorretas não."
+                "specificRules": "Cada questão tem um tempo limite de 30 segundos."
             },
             "gamificationDesign": {
                 "theme": "escritorio_startup",
                 "progression_path": [
                     {"id": "step_1", "type": "narrative", "isMandatory": True, "content": {}},
-                    {"id": "step_2", "type": "content", "isMandatory": True, "content": {}},
-                    {"id": "step_3", "type": "quiz", "isMandatory": True, "content": {}}
-                ]
+                    {"id": "step_2", "type": "quiz", "isMandatory": True, "content": {}}
+                ],
+                "hub_elements": []
             }
         }
     },
@@ -110,9 +100,7 @@ PREDEFINED_TEMPLATES = [
         "description": "Simulação de crise onde o aluno precisa identificar erros sob pressão.",
         "icon": "🐛",
         
-        # --- DADOS DA ATIVIDADE ---
         "data": {
-            # --- PRESET PARA A IA ---
             "ai_preset": {
                 "teachingFocus": "Técnicas de Debugging e Leitura de Logs",
                 "targetAudience": "Junior",
@@ -126,34 +114,29 @@ PREDEFINED_TEMPLATES = [
             },
             "title": "Operação Debug: Protocolo Omega",
             "description": "Identifique e corrija falhas críticas no sistema de defesa da cidade.",
-            "areaKnowledge": "Ciência da Computação",
+            "areaKnowledge": "Computação e Engenharia de Software",
+            "subdomain": "Testes e Qualidade de Software",
             
             "currentScenario": {
                 "problems": [
-                    "Dificuldades em aplicar as teorias aprendidas na prática.",
-                    "Dificuldades em lidar com ferramentas de desenvolvimento complexas.",
-                    "Dificuldades em trabalhar em equipe e colaborar com colegas.",
-                    "Dificuldades em lidar com a pressão e o estresse da grade de estudos intensa.",
-                    "Dificuldades em gerenciar o tempo e priorizar tarefas."
+                    "Bloqueio Psicológico e Viés do Desenvolvedor",
+                    "Dificuldade de comunicação e trabalho em equipe."
                 ],
                 "otherProblem": ""
             },
             "desiredScenario": {
                 "objectives": [
-                    "Incentivar a aplicação prática dos conhecimentos teóricos",
-                    "Melhorar a colaboração e o trabalho em equipe",
-                    "Desenvolver habilidades cognitivas, sociais e de aprendizagem",
-                    "Aumentar a motivação e a concentração dos alunos",
-                    "Estimular a criatividade e a inovação"
+                    "Internalizar a Cultura de 'Qualidade em Primeiro Lugar' (Shift-Left)",
+                    "Melhorar a cooperação e trabalho em equipe"
                 ],
                 "otherObjective": ""
             },
             "activityPlanning": {
+                "isTeamActivity": True,
                 "characteristics": [
-                    "Presencial", 
-                    "Em grupos", 
+                    "Presencial em Laboratório (Com PC/Internet)", 
                     "Somativa (avaliação)", 
-                    "Foco em projetos de software"
+                    "Foco em projetos e desenvolvimento"
                 ],
                 "participantsQuantity": "Grupos de 3-4 alunos",
                 "expectedDuration": "4 horas",
@@ -161,8 +144,7 @@ PREDEFINED_TEMPLATES = [
                 "otherInfo": "Requer IDE configurada e acesso aos logs do servidor simulado."
             },
             "playerProfile": { 
-                # Mapeado de 'Competidor/Predador' para opções válidas
-                "selectedProfiles": ["Competitivo", "Realizador"] 
+                "selectedProfiles": ["Competitivo", "Social"] 
             },
             "gameElements": { 
                 "selectedElements": [
@@ -172,23 +154,19 @@ PREDEFINED_TEMPLATES = [
                     "Cooperação", 
                     "Narrativas envolventes"
                 ], 
-                "otherElement": "",
-                "narrativeTitle": "Protocolo Omega",
-                "narrativeContent": "A CyberCity está caindo. Como parte da unidade de elite, você deve analisar o código fonte corrompido e restaurar o sistema antes que o vírus se espalhe."
+                "otherElement": ""
             },
             "rewardsOffered": {
                 "selectedRewards": [
                     "Vantagens para jogos e desafios.", 
-                    "Certificados digitais de conclusão.", 
-                    "Destaque na apresentação de trabalhos."
+                    "Certificados digitais de conclusão."
                 ],
                 "otherReward": ""
             },
             "rewardedActions": {
                 "selectedActions": [
                     "Colaboração efetiva em projetos de grupo.", 
-                    "Demonstrar pensamento crítico em desafios.", 
-                    "Conclusão de tarefas antes do prazo."
+                    "Demonstrar pensamento crítico em desafios."
                 ],
                 "otherAction": ""
             },
@@ -197,29 +175,25 @@ PREDEFINED_TEMPLATES = [
                     "Seja respeitoso e colaborativo com outros jogadores.", 
                     "Comunique-se com outros jogadores de forma clara e objetiva."
                 ],
-                "specificRules": "Cada bug crítico corrigido vale 100 pontos. Bugs menores valem 50. O tempo é limitado."
+                "specificRules": "Cada bug crítico corrigido vale 100 pontos. O tempo é limitado."
             },
             "gamificationDesign": {
                 "theme": "cyberpunk_neon",
                 "progression_path": [
                     {"id": "step_intro", "type": "narrative", "isMandatory": True, "content": {}},
-                    {"id": "step_concept", "type": "content", "isMandatory": True, "content": {}},
-                    {"id": "step_challenge_1", "type": "quiz", "isMandatory": True, "content": {}},
-                    {"id": "step_boss", "type": "quiz", "isMandatory": True, "content": {}}
-                ]
+                    {"id": "step_challenge", "type": "quiz", "isMandatory": True, "content": {}}
+                ],
+                "hub_elements": []
             }
         }
     },
     {
         "id": "estudo-padroes-projeto",
         "name": "Arquitetura de Software (Avançado)",
-        "description": "Aplicação de Design Patterns (Strategy, Observer) em cenários complexos.",
+        "description": "Aplicação de Design Patterns em cenários complexos.",
         "icon": "📐",
         
-        # --- DADOS DA ATIVIDADE ---
         "data": {
-            
-            # --- PRESET PARA A IA ---
             "ai_preset": {
                 "teachingFocus": "Design Patterns GoF (Strategy e Factory)",
                 "targetAudience": "Senior",
@@ -231,46 +205,39 @@ PREDEFINED_TEMPLATES = [
                     {"role": "Dev Lead", "type": "Aluno"}
                 ]
             },
-            
             "title": "O Enigma do Monolito",
             "description": "Refatore o sistema legado aplicando padrões de projeto adequados.",
-            "areaKnowledge": "Engenharia de Software",
+            "areaKnowledge": "Computação e Engenharia de Software",
+            "subdomain": "Engenharia de Software e Projetos",
             
             "currentScenario": {
                 "problems": [
-                    "Dificuldades na compreensão de conceitos complexos de programação.",
-                    "Dificuldades em aplicar as teorias aprendidas na prática.",
-                    "Dificuldades em trabalhar com prazos apertados em projetos acadêmicos.",
-                    "Dificuldades em lidar com ferramentas de desenvolvimento complexas.",
-                    "Dificuldades em gerenciar a ansiedade e a sobrecarga de trabalho."
+                    "Natureza Subjetiva da Qualidade do Design",
+                    "Síndrome do 'Problema de Brinquedo'"
                 ],
                 "otherProblem": ""
             },
             "desiredScenario": {
                 "objectives": [
-                    "Incentivar a aplicação prática dos conhecimentos teóricos",
-                    "Estimular a criatividade e a inovação",
-                    "Aumentar a retenção de conhecimentos e habilidades",
-                    "Desenvolver habilidades cognitivas, sociais e de aprendizagem",
-                    "Criar um ambiente de aprendizagem motivador e envolvente"
+                    "Pensamento Sistêmico e Arquitetural",
+                    "Proficiência na Modelagem de Soluções"
                 ],
                 "otherObjective": ""
             },
             "activityPlanning": {
+                "isTeamActivity": False,
                 "characteristics": [
-                    "Individual", 
-                    "Online", 
+                    "Online / Ensino a Distância", 
                     "Somativa (avaliação)", 
-                    "Foco em projetos de software"
+                    "Foco em projetos e desenvolvimento"
                 ],
                 "participantsQuantity": "Individual",
                 "expectedDuration": "2 horas",
-                "location": "Online ou Presencial",
-                "otherInfo": "Foco em qualidade de código e justificativa das escolhas arquiteturais."
+                "location": "Online",
+                "otherInfo": "Foco em qualidade de código e justificativa arquitetural."
             },
             "playerProfile": { 
-                # Mapeado de 'Pensador' (inválido) para 'Imersivo' e 'Realizador'
-                "selectedProfiles": ["Imersivo", "Realizador"] 
+                "selectedProfiles": ["Explorador", "Realizador"] 
             },
             "gameElements": {
                 "selectedElements": [
@@ -279,9 +246,7 @@ PREDEFINED_TEMPLATES = [
                     "Narrativas envolventes", 
                     "Quebra-cabeça"
                 ],
-                "otherElement": "",
-                "narrativeTitle": "O Legado do Monolito",
-                "narrativeContent": "Você encontrou os diários do antigo Arquiteto. Eles descrevem uma estrutura elegante escondida sob camadas de código legado. Sua missão é revelá-la."
+                "otherElement": ""
             },
             "rewardsOffered": {
                 "selectedRewards": [
@@ -302,15 +267,15 @@ PREDEFINED_TEMPLATES = [
                     "Busque sempre a supervisão do professor quando necessário.",
                     "Entenda as regras e como elas se aplicam a cada atividade."
                 ],
-                "specificRules": "A solução será avaliada pela elegância, redução de acoplamento e corretude do padrão aplicado."
+                "specificRules": "A solução será avaliada pela redução de acoplamento."
             },
             "gamificationDesign": {
                 "theme": "mapa_antigo",
                 "progression_path": [
                     {"id": "step_1", "type": "narrative", "isMandatory": True, "content": {}},
-                    {"id": "step_2", "type": "content", "isMandatory": True, "content": {}},
-                    {"id": "step_3", "type": "quiz", "isMandatory": True, "content": {}}
-                ]
+                    {"id": "step_2", "type": "quiz", "isMandatory": True, "content": {}}
+                ],
+                "hub_elements": []
             }
         }
     }

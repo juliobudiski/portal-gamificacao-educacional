@@ -1,28 +1,23 @@
 // frontend/src/pages/admin/LogExplorerPage.jsx
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { AuthContext } from '../../context/AuthContext';
-import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, Download } from 'lucide-react';
 import { useDebounce } from 'use-debounce';
 
-/**
- * Componente LogExplorerPage
- * Página dedicada para buscar, filtrar e visualizar todos os logs de eventos do sistema.
- * Contém paginação para lidar com grandes volumes de dados de forma eficiente.
- */
 function LogExplorerPage() {
     const { user } = useContext(AuthContext);
     const [logs, setLogs] = useState([]);
     const [pagination, setPagination] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isExporting, setIsExporting] = useState(false);
 
     // Estados para filtros
     const [currentPage, setCurrentPage] = useState(1);
     const [userSearch, setUserSearch] = useState('');
-    const [debouncedUserSearch] = useDebounce(userSearch, 500); // Adiciona um delay para não sobrecarregar a API
+    const [debouncedUserSearch] = useDebounce(userSearch, 500);
     const [actionFilter, setActionFilter] = useState('');
 
-    // Busca os dados de logs com base nos filtros e paginação
     const fetchLogs = useCallback(async () => {
         setLoading(true);
         setError(null);
@@ -61,17 +56,51 @@ function LogExplorerPage() {
         }
     }, [user, currentPage, debouncedUserSearch, actionFilter]);
 
-    // Efeito para buscar os dados quando a página carrega ou os filtros mudam
     useEffect(() => {
         fetchLogs();
     }, [fetchLogs]);
 
-    // Efeito para resetar a página para 1 quando um novo filtro é aplicado
     useEffect(() => {
         setCurrentPage(1);
     }, [debouncedUserSearch, actionFilter]);
 
-    // Lista de ações para o filtro (pode ser gerada dinamicamente no futuro)
+    // --- NOVA FUNÇÃO: EXPORTAR CSV ---
+    const handleExportCSV = async () => {
+        if (isExporting) return;
+        setIsExporting(true);
+
+        const apiPrefix = `${import.meta.env.VITE_API_URL}/api/admin/analytics`;
+        const exportParams = new URLSearchParams({
+            ...(debouncedUserSearch && { user: debouncedUserSearch }),
+            ...(actionFilter && { action: actionFilter }),
+        });
+        const exportUrl = `${apiPrefix}/logs/export?${exportParams.toString()}`;
+
+        try {
+            const response = await fetch(exportUrl, {
+                headers: { 'Authorization': `Bearer ${user.token}` }
+            });
+
+            if (!response.ok) throw new Error('Falha ao exportar CSV.');
+
+            // Lógica do navegador para baixar o arquivo "invisível" que o backend mandou
+            const blob = await response.blob();
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = `logs_pesquisa_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(downloadUrl);
+
+        } catch (e) {
+            alert('Erro ao exportar: ' + e.message);
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
     const availableActions = [
         'location_access_granted',
         'activity_created', 'activity_edited', 'activity_deleted',
@@ -81,9 +110,20 @@ function LogExplorerPage() {
 
     return (
         <div className="animate-fade-in space-y-8 text-primary-text">
-            <h1 className="text-3xl font-bold">Explorador de Logs do Sistema</h1>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <h1 className="text-3xl font-bold">Explorador de Logs</h1>
 
-            {/* Seção de Tabela de Logs */}
+                {/* BOTÃO EXPORTAR */}
+                <button
+                    onClick={handleExportCSV}
+                    disabled={isExporting}
+                    className="flex items-center gap-2 px-6 py-3 bg-accent-teal hover:bg-teal-400 text-gray-900 font-bold rounded-lg shadow-md transition-all disabled:opacity-50"
+                >
+                    <Download size={20} />
+                    {isExporting ? 'Baixando...' : 'Exportar Dados (CSV)'}
+                </button>
+            </div>
+
             <div className="bg-primary-bg/50 p-6 rounded-xl">
                 {/* Filtros da Tabela */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -102,7 +142,7 @@ function LogExplorerPage() {
                         onChange={(e) => setActionFilter(e.target.value)}
                         className="w-full bg-primary-bg/50 border border-border-color rounded-lg px-4 py-2 focus:ring-2 focus:ring-accent-teal outline-none"
                     >
-                        <option value="">Filtrar por Ação...</option>
+                        <option value="">Filtrar por Ação (Ver Tudo)...</option>
                         {availableActions.map(action => (
                             <option key={action} value={action}>{action.replace(/_/g, ' ').charAt(0).toUpperCase() + action.slice(1).replace(/_/g, ' ')}</option>
                         ))}
