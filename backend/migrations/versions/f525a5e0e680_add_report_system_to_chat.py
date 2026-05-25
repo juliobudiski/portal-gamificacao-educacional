@@ -29,8 +29,8 @@ def upgrade():
     sa.UniqueConstraint('message_id', 'user_id', name='_msg_user_report_uc')
     )
     with op.batch_alter_table('chat_message', schema=None) as batch_op:
-        batch_op.add_column(sa.Column('report_count', sa.Integer(), nullable=False))
-        batch_op.add_column(sa.Column('is_censored', sa.Boolean(), nullable=False))
+        batch_op.add_column(sa.Column('report_count', sa.Integer(), server_default='0', nullable=False))
+        batch_op.add_column(sa.Column('is_censored', sa.Boolean(), server_default='f', nullable=False))
 
     # ### end Alembic commands ###
 

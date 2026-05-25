@@ -644,8 +644,8 @@ class ChatMessage(db.Model):
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     
     # --- NOVOS CAMPOS PARA DENÚNCIA ---
-    report_count = db.Column(db.Integer, default=0, nullable=False)
-    is_censored = db.Column(db.Boolean, default=False, nullable=False)
+    report_count = db.Column(db.Integer, default=0, nullable=False, server_default='0')
+    is_censored = db.Column(db.Boolean, default=False, nullable=False, server_default='f')
     
     sender = db.relationship('User', backref='sent_chat_messages', lazy='joined')
 
