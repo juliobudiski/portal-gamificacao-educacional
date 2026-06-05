@@ -107,11 +107,14 @@ class ContextualRecommendationEngine:
 
     def _get_context_modifiers(self, keys: List[str], mod_matrix: dict, element: str) -> tuple:
         """
-        Substitui a média por uma lógica de Segurança.
-        Retorna: mu, lambda, chaves_positivas, chaves_negativas
+        Motor Intra-dimensional: Extrai os moduladores do dicionário e aplica 
+        uma lógica matemática baseada em dominância de risco.
         """
-        if not keys: return 1.0, 1.0, [], []
+        if not keys: 
+            return 1.0, 1.0, [], []
         
+        mus = []
+        lambdas = []
         has_positive = []
         has_negative = []
         
@@ -119,15 +122,35 @@ class ContextualRecommendationEngine:
             k_lower = k.lower()
             if k_lower in mod_matrix:
                 mods = mod_matrix[k_lower].get(element, {"mu": 1.0, "lambda": 1.0})
+                
+                # Adiciona os valores reais matemáticos à lista
+                mus.append(mods["mu"])
+                lambdas.append(mods["lambda"])
+                
+                # Rastreabilidade para a Explicabilidade
                 if mods["mu"] < 1.0: has_negative.append(k)
                 if mods["mu"] > 1.0: has_positive.append(k)
         
-        if has_negative: 
-            return 0.1, 5.0, has_positive, has_negative # Veto por segurança impera
-        if has_positive: 
-            return 1.5, 0.5, has_positive, has_negative # Bônus concedido
+        # Se a mecânica não está mapeada para essas chaves, retorna Neutralidade
+        if not mus:
+            return 1.0, 1.0, [], []
             
-        return 1.0, 1.0, [], [] # Neutro
+        # PRECEDÊNCIA DE RISCO INTRA-DIMENSIONAL (O Verdadeiro Min-Max)
+        # Se existe algum vetor de conflito (0.1), ele esmaga os neutros e bônus.
+        if has_negative:
+            final_mu = min(mus)      # Forçará matematicamente para 0.1
+            final_lambda = max(lambdas) # Forçará matematicamente para 5.0
+        
+        # Se não há conflito, mas há bônus (1.5), assumimos o bônus máximo.
+        elif has_positive:
+            final_mu = max(mus)      # Captura o 1.5 e ignora os neutros (1.0)
+            final_lambda = min(lambdas) # Captura o 0.5
+            
+        # Se só existem elementos neutros (1.0)
+        else:
+            final_mu, final_lambda = 1.0, 1.0
+            
+        return final_mu, final_lambda, has_positive, has_negative
 
     def calculate_recommendations(self, context_data: dict) -> dict:
         try:
@@ -177,24 +200,18 @@ class ContextualRecommendationEngine:
             sb_modificado = sb_puro * mu_total
             pc_modificado = pc_puro * tau_ativo * phi_ativo * lam_total
             
-            # Controle Inteligente do Limiar Basal (Evita que o ruído basal engula mecânicas de nicho seguras)
-            # Se o risco é puramente basal (0.1) e não sofreu agravamento contextual (lam_total <= 1.0, phi_ativo == 1.0),
-            # nós não deixamos esse ruído teórico diminuir a nota. Ele fica dormente.
+            # Controle Inteligente do Limiar Basal
             if pc_puro == 0.1 and lam_total <= 1.0 and phi_ativo == 1.0:
                 score_bruto = sb_modificado
             else:
                 score_bruto = sb_modificado - pc_modificado
 
             # 5. Avaliação de Veto (Regras Severas)
-            # O veto algébrico só aciona se o risco superar a sinergia E for um risco real ou amplificado (>0.1)
             veto_algebrico = (pc_modificado > sb_modificado) and (pc_modificado > 0.1)
             hard_block = (mu_total <= 0.1) and (lam_total >= 5.0)
             status_veto = veto_algebrico or hard_block
 
-            # Constantes de Penalidade para Ordenação da Interface (Big-M Method)
-            PENALIDADE_LOGISTICA = -100.0
-            PENALIDADE_RESIDUAL = -10.0
-
+            # Avaliação Logística (Mundo Físico)
             veto_logistico = False
             if any("desplugado" in item for item in logistics):
                 elementos_digitais = [
@@ -205,11 +222,6 @@ class ContextualRecommendationEngine:
                 if react_name in elementos_digitais:
                     veto_logistico = True
                     status_veto = True
-                    score_bruto = PENALIDADE_LOGISTICA 
-
-            if status_veto: 
-                # Garante que o score seja negativo para cair na restrição visual do Front-end
-                score_bruto = -abs(score_bruto) if score_bruto != 0 else PENALIDADE_RESIDUAL
                 
             resultados_brutos.append({
                 "elemento": react_name,
@@ -228,6 +240,12 @@ class ContextualRecommendationEngine:
         # Ele deve olhar apenas para mecânicas que NÃO foram vetadas e têm pontuação positiva.
         scores_positivos = [r["score_bruto"] for r in resultados_brutos if not r["veto"] and r["score_bruto"] > 0]
         max_abs = max(scores_positivos) if scores_positivos else 1.0
+
+        # TRAVA DE RELEVÂNCIA (Anti-inflação Estatística)
+        # Se a melhor mecânica tem um score pífio (ex: 0.05), o sistema crava o teto em 1.0
+        # Isso impede que uma mediocridade matemática seja multiplicada para nota máxima.
+        if max_abs < 0.2:
+            max_abs = 1.0
 
 
         for react_elem in self.all_react_elements:
@@ -248,12 +266,12 @@ class ContextualRecommendationEngine:
         for res in resultados_brutos:
             score_normalizado = (res["score_bruto"] / max_abs) * 50
             
-            PISO_NORMALIZADO_UI = -50.0
+            # A trava visual do Alerta Logístico (Apoiada no texto da tese)
             if res.get("veto_logistico", False):
-                score_normalizado = PISO_NORMALIZADO_UI 
+                score_normalizado = -50.0 
                 reason = "VETADO: Requer tecnologia (Incompatível com sala de aula física)."
                 response["not_recommended"].append({"name": res["elemento"], "score": round(score_normalizado, 2), "reason": reason})
-                continue 
+                continue
 
             # GERADOR DINÂMICO DE EXPLICABILIDADE (XDSS)
             if res.get("conflito_contextual", False): 
