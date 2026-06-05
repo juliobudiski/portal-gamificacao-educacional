@@ -1,10 +1,9 @@
 # backend/app/services/recommendation_engine.py
 import json
 import os
-import re
 import logging
 from pydantic import BaseModel, Field
-from typing import Any, List, Dict
+from typing import List
 
 logger = logging.getLogger(__name__)
 
@@ -46,11 +45,7 @@ class ContextualRecommendationEngine:
             "Estatísticas": "Estatísticas (métricas de progresso)",
             "Economia": "Economia (sistema monetário)",
             "Pressão de tempo": "Pressão de tempo",
-            
-            # --- HERANÇA ACONTECE AQUI ---
-            # A literatura estudou "Competição", o SAD sugere "Ranking"
             "Competição": "Sistema de classificação e ranking",
-            # A literatura estudou "Cooperação", o SAD sugere "Fórum/Chat"
             "Cooperação": "Fórum de Discussão", 
             "Objetivo": "Objetivo (missão, meta do jogo)",
             "Quebra cabeça": "Quebra-cabeça",
@@ -73,8 +68,7 @@ class ContextualRecommendationEngine:
             "Recompensas atraentes", "Conquistas digitais para metas alcançadas"
         ]
 
-        # --- Multiplicadores  ---
-        # Conflitos agora têm mu=0.1 (mata o ganho) e lambda=5.0 (sobe o risco)
+        # Configurações de Conflito Severo baseadas na Calibração Matemática
         self.profile_mods = {
             "competitivo": { "Competição": {"mu": 1.5, "lambda": 0.5}, "Pressão de tempo": {"mu": 1.5, "lambda": 0.5}, "Cooperação": {"mu": 0.1, "lambda": 5.0} },
             "social": { "Cooperação": {"mu": 1.5, "lambda": 0.5}, "Narrativa": {"mu": 1.5, "lambda": 0.5}, "Storytelling": {"mu": 1.5, "lambda": 0.5}, "Competição": {"mu": 0.1, "lambda": 5.0} },
@@ -84,7 +78,7 @@ class ContextualRecommendationEngine:
 
         self.objective_mods = {
             "teorico": { "Narrativa": {"mu": 1.5, "lambda": 0.5}, "Quebra cabeça": {"mu": 1.5, "lambda": 0.5}, "Pressão de tempo": {"mu": 0.1, "lambda": 5.0}, "Economia": {"mu": 0.1, "lambda": 5.0} },
-            "pratico": { "Pontos": {"mu": 1.5, "lambda": 0.5}, "Economia": {"mu": 1.5, "lambda": 0.5}, "Pressão de tempo": {"mu": 1.5, "lambda": 0.5}, "Estatísticas": {"mu": 1.5, "lambda": 0.5}, "Narrativa": {"mu": 0.1, "lambda": 3.0} },
+            "pratico": { "Pontos": {"mu": 1.5, "lambda": 0.5}, "Economia": {"mu": 1.5, "lambda": 0.5}, "Pressão de tempo": {"mu": 1.5, "lambda": 0.5}, "Estatísticas": {"mu": 1.5, "lambda": 0.5}, "Narrativa": {"mu": 0.1, "lambda": 5.0} },
             "colaborativo": { "Cooperação": {"mu": 1.5, "lambda": 0.5}, "Reconhecimento": {"mu": 1.5, "lambda": 0.5}, "Competição": {"mu": 0.1, "lambda": 5.0} }
         }
 
@@ -98,38 +92,38 @@ class ContextualRecommendationEngine:
             logger.error(f"Falha ao carregar knowledge_base.json: {e}")
             self.bible = {}
 
-    def _extract_raw_scores(self, xai_string: str) -> tuple:
-        match = re.search(r'Sb:\s*([\d.]+)\s*\|\s*Pc:\s*([\d.]+)', xai_string)
-        if match: return float(match.group(1)), float(match.group(2))
-        return 0.0, 0.0
-
     def _classify_objectives(self, frontend_texts: List[str]) -> List[str]:
-        """ NLP Melhorado para capturar as strings exatas do seu React """
         text_joined = " ".join(frontend_texts).lower()
         classes = []
         
-        # Palavras-chave mapeadas diretamente do arquivos JSX
         if any(w in text_joined for w in ["lógic", "abstra", "teori", "teóri", "leitura", "históric", "memoriz", "legisla", "sistêmic", "crítico", "argumentação"]): 
             classes.append("teorico")
-            
         if any(w in text_joined for w in ["prátic", "técnic", "experimen", "testes", "clínica", "dados", "procedimentos", "depuração", "bugs"]): 
             classes.append("pratico")
-            
         if any(w in text_joined for w in ["equipe", "debate", "empatia", "negocia", "liderança", "colabora", "papéis", "scrum"]): 
             classes.append("colaborativo")
             
-        return classes if classes else ["pratico"] # Fallback se nenhuma palavra bater
+        return classes if classes else ["pratico"]
 
-    def _get_averaged_modifiers(self, keys: List[str], mod_matrix: dict, element: str) -> tuple:
+    def _get_context_modifiers(self, keys: List[str], mod_matrix: dict, element: str) -> tuple:
+        """
+        Substitui a média por uma lógica de Segurança Psicológica.
+        Se qualquer elemento do array gerar conflito (0.1), o conflito prevalece.
+        """
         if not keys: return 1.0, 1.0
-        mu_sum, lambda_sum, count = 0.0, 0.0, 0
+        has_positive = False
+        has_negative = False
+        
         for k in keys:
             k_lower = k.lower()
             if k_lower in mod_matrix:
                 mods = mod_matrix[k_lower].get(element, {"mu": 1.0, "lambda": 1.0})
-                mu_sum += mods["mu"]; lambda_sum += mods["lambda"]; count += 1
-        if count == 0: return 1.0, 1.0
-        return (mu_sum / count), (lambda_sum / count)
+                if mods["mu"] < 1.0: has_negative = True
+                if mods["mu"] > 1.0: has_positive = True
+        
+        if has_negative: return 0.1, 5.0 # Veto por segurança impera
+        if has_positive: return 1.5, 0.5 # Bônus concedido
+        return 1.0, 1.0 # Neutro
 
     def calculate_recommendations(self, context_data: dict) -> dict:
         try:
@@ -148,61 +142,77 @@ class ContextualRecommendationEngine:
 
         resultados_brutos = []
         elementos_area = self.bible.get(area_swebok, {})
-        processed_react_names = set() # Rastreador do que já foi processado
+        processed_react_names = set()
 
-        # PROCESSA A LITERATURA
         for elemento_json, dados_literatura in elementos_area.items():
-            # Traduz para o nome que o React entende
             react_name = self.frontend_map.get(elemento_json, elemento_json)
             processed_react_names.add(react_name)
 
-            sb_raw, pc_raw = self._extract_raw_scores(dados_literatura["xai"])
-            mu_prof, lam_prof = self._get_averaged_modifiers(profiles, self.profile_mods, elemento_json)
-            mu_obj, lam_obj = self._get_averaged_modifiers(objectives, self.objective_mods, elemento_json)
+            # 1. Extração de Dados Puros e Metadados do JSON purificado
+            sb_puro = dados_literatura.get("sb_puro", 0.0)
+            pc_puro = dados_literatura.get("pc_puro", 0.0)
+            meta = dados_literatura.get("metadata", {})
+
+            # 2. Moduladores de Contexto (Perfil da Turma vs Objetivo Pedagógico)
+            mu_prof, lam_prof = self._get_context_modifiers(profiles, self.profile_mods, elemento_json)
+            mu_obj, lam_obj = self._get_context_modifiers(objectives, self.objective_mods, elemento_json)
             
-            sb_modificado = sb_raw * mu_prof * mu_obj
-            pc_modificado = pc_raw * lam_prof * lam_obj
+            # Lógica Min-Max (Gargalo de Segurança)
+            mu_total = min(mu_prof, mu_obj)
+            lam_total = max(lam_prof, lam_obj)
+
+            # 3. Moduladores Epistêmicos (Calibração Matemática)
+            phi_ativo = 2.0 if (meta.get("area_theoretical") and meta.get("mechanic_cognitive_stress")) else 1.0
+            
+            tau_ativo = 1.0
+            if meta.get("mechanic_structural"): tau_ativo = 0.1
+            elif meta.get("mechanic_competitive"): tau_ativo = 1.0
+            
+
+            # 4. Fronteira de Decisão Algébrica
+            sb_modificado = sb_puro * mu_total
+            pc_modificado = pc_puro * tau_ativo * phi_ativo * lam_total
             
             score_bruto = sb_modificado - pc_modificado
-            status_veto = pc_modificado > sb_modificado
-            conflito_contextual = (mu_prof * mu_obj <= 0.2) and (lam_prof * lam_obj >= 3.0)
-            if conflito_contextual:
-                status_veto = True
-                
-            veto_logistico = False
             
-            # Checa se o array logistics contém algum item com a palavra "desplugado"
+            # 5. Avaliação de Veto (Regras Severas)
+            veto_algebrico = pc_modificado > sb_modificado
+            hard_block = (mu_total <= 0.1) and (lam_total >= 5.0)
+            status_veto = veto_algebrico or hard_block
+
+            # Constantes de Penalidade para Ordenação da Interface (Big-M Method)
+            PENALIDADE_LOGISTICA = -100.0
+            PENALIDADE_RESIDUAL = -10.0
+
+            veto_logistico = False
             if any("desplugado" in item for item in logistics):
-                # Se for aula no papel/quadro, esses elementos digitais são inúteis:
                 elementos_digitais = [
                     "Fórum de Discussão", "Chat ou sistema de mensagens", 
                     "Conquistas digitais para metas alcançadas", 
-                    "Estatísticas (métricas de progresso)"
+                    "Estatísticas (métricas de progresso)", "Economia (sistema monetário)"
                 ]
                 if react_name in elementos_digitais:
                     veto_logistico = True
                     status_veto = True
-                    score_bruto = -100.0 # Aplica o Hard Block matemático
+                    score_bruto = PENALIDADE_LOGISTICA 
 
-            if status_veto: score_bruto = -abs(score_bruto) if score_bruto != 0 else -10.0
-                
+            if status_veto: 
+                # Garante que o score seja negativo para cair na restrição visual do Front-end
+                score_bruto = -abs(score_bruto) if score_bruto != 0 else PENALIDADE_RESIDUAL
                 
             resultados_brutos.append({
                 "elemento": react_name,
                 "score_bruto": score_bruto,
                 "veto": status_veto,
-                "veto_logistico": veto_logistico, # Flag para a IA Explicável
-                "conflito_contextual": conflito_contextual,
-                "mu_total": mu_prof * mu_obj,
-                "lam_total": lam_prof * lam_obj
+                "veto_logistico": veto_logistico,
+                "conflito_contextual": hard_block,
+                "mu_total": mu_total,
+                "lam_total": lam_total
             })
 
         max_abs = max([abs(r["score_bruto"]) for r in resultados_brutos]) if resultados_brutos else 1.0
         if max_abs == 0: max_abs = 1.0
 
-        response = {"recommended": [], "neutral": [], "not_recommended": []}
-
-        # MONTA OS CLUSTERS BASEADOS NA LITERATURA
         for react_elem in self.all_react_elements:
             if react_elem not in processed_react_names:
                 resultados_brutos.append({
@@ -214,51 +224,34 @@ class ContextualRecommendationEngine:
                     "lam_total": 1.0
                 })
 
-        # --- 2. CONFIGURA A LOGÍSTICA ---
-        is_desplugado = any("desplugado" in item for item in logistics)
-        elementos_digitais = [
-            "Fórum de Discussão", 
-            "Chat ou sistema de mensagens", 
-            "Conquistas digitais para metas alcançadas", 
-            "Estatísticas (métricas de progresso)",
-            "Economia (sistema monetário)",
-            "Renovação (atualizações de conteúdo)"
-            # Adicione aqui qualquer outra coisa que você ache impossível fazer sem PC
-        ]
-
         response = {"recommended": [], "neutral": [], "not_recommended": []}
         
-        max_abs = max([abs(r["score_bruto"]) for r in resultados_brutos]) if resultados_brutos else 1.0
-        if max_abs == 0: max_abs = 1.0
-
-        # --- 3. MONTA OS CLUSTERS FINAIS ---
+        # --- MONTA OS CLUSTERS FINAIS ---
         for res in resultados_brutos:
             score_normalizado = (res["score_bruto"] / max_abs) * 50
             
-            # REGRA: Veto Logístico atinge qualquer elemento que precise de tecnologia
-            if is_desplugado and (res["elemento"] in elementos_digitais):
-                score_normalizado = -50.0 # Empurra direto pro fundo
-                reason = "VETADO: Requer tecnologia (Incompatível com infraestrutura desplugada)."
+            PISO_NORMALIZADO_UI = -50.0
+            if res.get("veto_logistico", False):
+                score_normalizado = PISO_NORMALIZADO_UI 
+                reason = "VETADO: Requer tecnologia (Incompatível com sala de aula física)."
                 response["not_recommended"].append({"name": res["elemento"], "score": round(score_normalizado, 2), "reason": reason})
-                continue # PULA todo o resto das regras abaixo!
+                continue 
 
-            # Se a logística está OK, julga a matemática pedagógica
             if res.get("conflito_contextual", False): 
-                reason = "VETADO: Conflito com os objetivos e perfil selecionados."
+                reason = "VETADO: Choque Severo entre o Perfil da Turma e o Objetivo."
             elif res["veto"]: 
-                reason = "VETADO: Riscos contextuais superam o potencial pedagógico."
+                reason = "VETADO: Risco Matemático superou a Sinergia."
             elif res["mu_total"] > 1.2: 
-                reason = "Alta sinergia com o Perfil/Objetivos da turma."
+                reason = "Alta afinidade com o contexto (Sinergia Impulsionada)."
             elif res["lam_total"] > 1.2: 
-                reason = "Possui atritos de contexto, usar com cautela."
+                reason = "Possui atritos leves, monitorar aplicação."
             elif res["score_bruto"] == 0.0:
-                reason = "Uso livre (Sem dados restritivos na literatura)."
+                reason = "Uso neutro (Base de conhecimento ausente)."
             else: 
-                reason = "Recomendação padrão baseada na literatura."
+                reason = "Recomendação padrão da literatura."
 
             item_data = {"name": res["elemento"], "score": round(score_normalizado, 2), "reason": reason}
 
-            # Ranqueamento
             if res["veto"] or score_normalizado <= -5:
                 response["not_recommended"].append(item_data)
             elif score_normalizado >= 25:
@@ -267,7 +260,6 @@ class ContextualRecommendationEngine:
             else:
                 response["neutral"].append(item_data)
 
-        # Ordena do maior para o menor
         for key in response:
             response[key] = sorted(response[key], key=lambda x: x["score"], reverse=True)
 
