@@ -1,883 +1,1454 @@
 {
     "SOFTWARE CONFIGURATION MANAGEMENT": {
         "Competição": {
-            "score": 11.66,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1705.9 | Pc: 0.0"
+            "sb_puro": 1.3449,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Cooperação": {
-            "score": 8.66,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1267.5 | Pc: 0.0"
+            "sb_puro": 1.2135,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Economia": {
-            "score": 0.64,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 93.2 | Pc: 0.0"
+            "sb_puro": 0.7257,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Estatísticas": {
-            "score": 3.22,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 471.3 | Pc: 0.0"
+            "sb_puro": 1.1113,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Narrativa": {
-            "score": 2.87,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 420.3 | Pc: 0.0"
+            "sb_puro": 0.9403,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Nível": {
-            "score": 7.41,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1084.8 | Pc: 0.0"
+            "sb_puro": 1.2066,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Objetivo": {
-            "score": 3.04,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 444.8 | Pc: 0.0"
+            "sb_puro": 0.9254,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Pontos": {
-            "score": 7.55,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1104.7 | Pc: 0.0"
+            "sb_puro": 0.9608,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Pressão de tempo": {
-            "score": 1.3,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 190.0 | Pc: 0.0"
+            "sb_puro": 0.744,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Progressão": {
-            "score": 3.63,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 530.6 | Pc: 0.0"
+            "sb_puro": 0.9846,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Quebra cabeça": {
-            "score": 4.73,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 691.5 | Pc: 0.0"
+            "sb_puro": 1.1328,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Reconhecimento": {
-            "score": 7.05,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1031.2 | Pc: 0.0"
+            "sb_puro": 0.9855,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Storytelling": {
-            "score": 2.87,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 420.3 | Pc: 0.0"
+            "sb_puro": 0.9071,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         }
     },
     "SOFTWARE CONSTRUCTION": {
         "Competição": {
-            "score": 15.77,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 2308.0 | Pc: 0.0"
+            "sb_puro": 1.4645,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Cooperação": {
-            "score": 12.03,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1760.4 | Pc: 0.0"
+            "sb_puro": 1.3377,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Economia": {
-            "score": 1.01,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 147.8 | Pc: 0.0"
+            "sb_puro": 0.8527,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Estatísticas": {
-            "score": 4.66,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 681.6 | Pc: 0.0"
+            "sb_puro": 1.2501,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Narrativa": {
-            "score": 4.1,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 599.3 | Pc: 0.0"
+            "sb_puro": 1.0638,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Nível": {
-            "score": 9.99,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1461.4 | Pc: 0.0"
+            "sb_puro": 1.3163,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Objetivo": {
-            "score": 4.31,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 630.7 | Pc: 0.0"
+            "sb_puro": 1.0424,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Pontos": {
-            "score": 10.04,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1469.3 | Pc: 0.0"
+            "sb_puro": 1.0818,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Pressão de tempo": {
-            "score": 1.88,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 275.4 | Pc: 0.0"
+            "sb_puro": 0.8573,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Progressão": {
-            "score": 5.2,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 761.2 | Pc: 0.0"
+            "sb_puro": 1.1137,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Quebra cabeça": {
-            "score": 6.68,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 977.5 | Pc: 0.0"
+            "sb_puro": 1.271,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Reconhecimento": {
-            "score": 9.52,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1393.1 | Pc: 0.0"
+            "sb_puro": 1.1118,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Storytelling": {
-            "score": 4.1,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 599.3 | Pc: 0.0"
+            "sb_puro": 1.0254,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         }
     },
     "SOFTWARE DESIGN": {
         "Competição": {
-            "score": 15.77,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 2308.0 | Pc: 0.0"
+            "sb_puro": 1.4645,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Cooperação": {
-            "score": 12.03,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1760.4 | Pc: 0.0"
+            "sb_puro": 1.3377,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Economia": {
-            "score": 1.01,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 147.8 | Pc: 0.0"
+            "sb_puro": 0.8527,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Estatísticas": {
-            "score": 4.66,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 681.6 | Pc: 0.0"
+            "sb_puro": 1.2501,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Narrativa": {
-            "score": 4.1,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 599.3 | Pc: 0.0"
+            "sb_puro": 1.0638,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Nível": {
-            "score": 9.99,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1461.4 | Pc: 0.0"
+            "sb_puro": 1.3163,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Objetivo": {
-            "score": 4.31,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 630.7 | Pc: 0.0"
+            "sb_puro": 1.0424,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Pontos": {
-            "score": 10.04,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1469.3 | Pc: 0.0"
+            "sb_puro": 1.0818,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Pressão de tempo": {
-            "score": 1.88,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 275.4 | Pc: 0.0"
+            "sb_puro": 0.8573,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Progressão": {
-            "score": 5.2,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 761.2 | Pc: 0.0"
+            "sb_puro": 1.1137,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Quebra cabeça": {
-            "score": 6.68,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 977.5 | Pc: 0.0"
+            "sb_puro": 1.271,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Reconhecimento": {
-            "score": 9.52,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1393.1 | Pc: 0.0"
+            "sb_puro": 1.1118,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Storytelling": {
-            "score": 4.1,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 599.3 | Pc: 0.0"
+            "sb_puro": 1.0254,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         }
     },
     "SOFTWARE ENGINEERING MANAGEMENT": {
         "Competição": {
-            "score": 1.22,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 178.7 | Pc: 0.0"
+            "sb_puro": 0.6538,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Cooperação": {
-            "score": 1.0,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 145.7 | Pc: 0.0"
+            "sb_puro": 0.5689,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Economia": {
-            "score": 0.09,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 13.4 | Pc: 0.0"
+            "sb_puro": 0.2793,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Estatísticas": {
-            "score": 0.4,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 58.5 | Pc: 0.0"
+            "sb_puro": 0.5358,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Narrativa": {
-            "score": 0.33,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 48.6 | Pc: 0.0"
+            "sb_puro": 0.3863,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Nível": {
-            "score": 0.73,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 107.1 | Pc: 0.0"
+            "sb_puro": 0.52,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Objetivo": {
-            "score": 0.35,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 50.5 | Pc: 0.0"
+            "sb_puro": 0.3621,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Pontos": {
-            "score": 0.7,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 102.7 | Pc: 0.0"
+            "sb_puro": 0.3922,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Pressão de tempo": {
-            "score": 0.15,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 21.3 | Pc: 0.0"
+            "sb_puro": 0.2616,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Progressão": {
-            "score": 0.44,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 64.5 | Pc: 0.0"
+            "sb_puro": 0.4267,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Quebra cabeça": {
-            "score": 0.55,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 81.1 | Pc: 0.0"
+            "sb_puro": 0.5493,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Reconhecimento": {
-            "score": 0.7,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 102.7 | Pc: 0.0"
+            "sb_puro": 0.4203,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Storytelling": {
-            "score": 0.33,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 48.6 | Pc: 0.0"
+            "sb_puro": 0.355,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         }
     },
     "SOFTWARE ENGINEERING MODELS AND METHODS": {
         "Competição": {
-            "score": 26.21,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 3925.6 | Pc: 90.0"
+            "sb_puro": 1.6524,
+            "pc_puro": 0.7899,
+            "metadata": {
+                "area_theoretical": true,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Cooperação": {
-            "score": 19.96,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 2994.7 | Pc: 75.0"
+            "sb_puro": 1.5287,
+            "pc_puro": 0.9553,
+            "metadata": {
+                "area_theoretical": true,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Economia": {
-            "score": 1.52,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 252.2 | Pc: 30.0"
+            "sb_puro": 1.0219,
+            "pc_puro": 0.5195,
+            "metadata": {
+                "area_theoretical": true,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Estatísticas": {
-            "score": 7.65,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1154.9 | Pc: 36.0"
+            "sb_puro": 1.4269,
+            "pc_puro": 0.5542,
+            "metadata": {
+                "area_theoretical": true,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Narrativa": {
-            "score": 6.86,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1026.9 | Pc: 22.5"
+            "sb_puro": 1.2458,
+            "pc_puro": 0.6999,
+            "metadata": {
+                "area_theoretical": true,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Nível": {
-            "score": 16.74,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 2508.7 | Pc: 60.0"
+            "sb_puro": 1.5046,
+            "pc_puro": 0.6999,
+            "metadata": {
+                "area_theoretical": true,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Objetivo": {
-            "score": 6.97,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1079.4 | Pc: 60.0"
+            "sb_puro": 1.2258,
+            "pc_puro": 0.6999,
+            "metadata": {
+                "area_theoretical": true,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Pontos": {
-            "score": 17.08,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 2529.7 | Pc: 30.0"
+            "sb_puro": 1.2617,
+            "pc_puro": 0.3854,
+            "metadata": {
+                "area_theoretical": true,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Pressão de tempo": {
-            "score": 3.0,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 475.7 | Pc: 36.0"
+            "sb_puro": 1.032,
+            "pc_puro": 0.5542,
+            "metadata": {
+                "area_theoretical": true,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Progressão": {
-            "score": 8.43,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1293.3 | Pc: 60.0"
+            "sb_puro": 1.295,
+            "pc_puro": 0.6999,
+            "metadata": {
+                "area_theoretical": true,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Quebra cabeça": {
-            "score": 11.26,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1650.2 | Pc: 3.0"
+            "sb_puro": 1.4465,
+            "pc_puro": 0.3854,
+            "metadata": {
+                "area_theoretical": true,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Reconhecimento": {
-            "score": 16.07,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 2381.4 | Pc: 30.0"
+            "sb_puro": 1.2898,
+            "pc_puro": 0.3854,
+            "metadata": {
+                "area_theoretical": true,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Storytelling": {
-            "score": 6.86,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1026.9 | Pc: 22.5"
+            "sb_puro": 1.2085,
+            "pc_puro": 0.6999,
+            "metadata": {
+                "area_theoretical": true,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         }
     },
     "SOFTWARE ENGINEERING PROCESS": {
         "Competição": {
-            "score": 11.66,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1705.9 | Pc: 0.0"
+            "sb_puro": 1.3449,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Cooperação": {
-            "score": 8.66,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1267.5 | Pc: 0.0"
+            "sb_puro": 1.2135,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Economia": {
-            "score": 0.64,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 93.2 | Pc: 0.0"
+            "sb_puro": 0.7257,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Estatísticas": {
-            "score": 3.22,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 471.3 | Pc: 0.0"
+            "sb_puro": 1.1113,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Narrativa": {
-            "score": 2.87,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 420.3 | Pc: 0.0"
+            "sb_puro": 0.9403,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Nível": {
-            "score": 7.41,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1084.8 | Pc: 0.0"
+            "sb_puro": 1.2066,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Objetivo": {
-            "score": 3.04,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 444.8 | Pc: 0.0"
+            "sb_puro": 0.9254,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Pontos": {
-            "score": 7.55,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1104.7 | Pc: 0.0"
+            "sb_puro": 0.9608,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Pressão de tempo": {
-            "score": 1.3,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 190.0 | Pc: 0.0"
+            "sb_puro": 0.744,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Progressão": {
-            "score": 3.63,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 530.6 | Pc: 0.0"
+            "sb_puro": 0.9846,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Quebra cabeça": {
-            "score": 4.73,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 691.5 | Pc: 0.0"
+            "sb_puro": 1.1328,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Reconhecimento": {
-            "score": 7.05,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1031.2 | Pc: 0.0"
+            "sb_puro": 0.9855,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Storytelling": {
-            "score": 2.87,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 420.3 | Pc: 0.0"
+            "sb_puro": 0.9071,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         }
     },
     "SOFTWARE ENGINEERING PROFESSIONAL PRACTICE": {
         "Competição": {
-            "score": 50.0,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 7585.6 | Pc: 270.0"
+            "sb_puro": 1.8939,
+            "pc_puro": 1.0542,
+            "metadata": {
+                "area_theoretical": true,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Cooperação": {
-            "score": 37.72,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 5744.1 | Pc: 225.0"
+            "sb_puro": 1.7668,
+            "pc_puro": 1.2316,
+            "metadata": {
+                "area_theoretical": true,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Economia": {
-            "score": 2.65,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 478.0 | Pc: 90.0"
+            "sb_puro": 1.2388,
+            "pc_puro": 0.7494,
+            "metadata": {
+                "area_theoretical": true,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Estatísticas": {
-            "score": 14.34,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 2206.0 | Pc: 108.0"
+            "sb_puro": 1.6546,
+            "pc_puro": 0.7899,
+            "metadata": {
+                "area_theoretical": true,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Narrativa": {
-            "score": 13.06,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1978.7 | Pc: 67.5"
+            "sb_puro": 1.476,
+            "pc_puro": 0.9553,
+            "metadata": {
+                "area_theoretical": true,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Nível": {
-            "score": 32.17,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 4886.4 | Pc: 180.0"
+            "sb_puro": 1.748,
+            "pc_puro": 0.9553,
+            "metadata": {
+                "area_theoretical": true,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Objetivo": {
-            "score": 13.0,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 2082.6 | Pc: 180.0"
+            "sb_puro": 1.4584,
+            "pc_puro": 0.9553,
+            "metadata": {
+                "area_theoretical": true,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Pontos": {
-            "score": 33.24,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 4953.9 | Pc: 90.0"
+            "sb_puro": 1.4933,
+            "pc_puro": 0.5863,
+            "metadata": {
+                "area_theoretical": true,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Pressão de tempo": {
-            "score": 5.57,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 923.3 | Pc: 108.0"
+            "sb_puro": 1.2564,
+            "pc_puro": 0.7899,
+            "metadata": {
+                "area_theoretical": true,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Progressão": {
-            "score": 15.69,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 2474.9 | Pc: 180.0"
+            "sb_puro": 1.5242,
+            "pc_puro": 0.9553,
+            "metadata": {
+                "area_theoretical": true,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Quebra cabeça": {
-            "score": 21.56,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 3163.2 | Pc: 9.0"
+            "sb_puro": 1.6747,
+            "pc_puro": 0.5863,
+            "metadata": {
+                "area_theoretical": true,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Reconhecimento": {
-            "score": 31.06,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 4634.0 | Pc: 90.0"
+            "sb_puro": 1.5196,
+            "pc_puro": 0.5863,
+            "metadata": {
+                "area_theoretical": true,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Storytelling": {
-            "score": 13.06,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1978.7 | Pc: 67.5"
+            "sb_puro": 1.4398,
+            "pc_puro": 0.9553,
+            "metadata": {
+                "area_theoretical": true,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         }
     },
     "SOFTWARE MAINTENANCE": {
         "Competição": {
-            "score": 13.7,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 2004.6 | Pc: 0.0"
+            "sb_puro": 1.4088,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Cooperação": {
-            "score": 10.33,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1511.9 | Pc: 0.0"
+            "sb_puro": 1.28,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Economia": {
-            "score": 0.82,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 120.1 | Pc: 0.0"
+            "sb_puro": 0.7938,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Estatísticas": {
-            "score": 3.93,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 575.3 | Pc: 0.0"
+            "sb_puro": 1.1862,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Narrativa": {
-            "score": 3.48,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 508.9 | Pc: 0.0"
+            "sb_puro": 1.0064,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Nível": {
-            "score": 8.69,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1271.6 | Pc: 0.0"
+            "sb_puro": 1.2649,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Objetivo": {
-            "score": 3.67,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 536.8 | Pc: 0.0"
+            "sb_puro": 0.9878,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Pontos": {
-            "score": 8.79,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1285.7 | Pc: 0.0"
+            "sb_puro": 1.0255,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Pressão de tempo": {
-            "score": 1.59,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 232.2 | Pc: 0.0"
+            "sb_puro": 0.8044,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Progressão": {
-            "score": 4.41,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 644.7 | Pc: 0.0"
+            "sb_puro": 1.0539,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Quebra cabeça": {
-            "score": 5.69,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 833.2 | Pc: 0.0"
+            "sb_puro": 1.2074,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Reconhecimento": {
-            "score": 8.27,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1210.7 | Pc: 0.0"
+            "sb_puro": 1.0532,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Storytelling": {
-            "score": 3.48,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 508.9 | Pc: 0.0"
+            "sb_puro": 0.9703,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         }
     },
     "SOFTWARE QUALITY": {
         "Competição": {
-            "score": 11.66,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1705.9 | Pc: 0.0"
+            "sb_puro": 1.3449,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Cooperação": {
-            "score": 8.66,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1267.5 | Pc: 0.0"
+            "sb_puro": 1.2135,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Economia": {
-            "score": 0.64,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 93.2 | Pc: 0.0"
+            "sb_puro": 0.7257,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Estatísticas": {
-            "score": 3.22,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 471.3 | Pc: 0.0"
+            "sb_puro": 1.1113,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Narrativa": {
-            "score": 2.87,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 420.3 | Pc: 0.0"
+            "sb_puro": 0.9403,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Nível": {
-            "score": 7.41,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1084.8 | Pc: 0.0"
+            "sb_puro": 1.2066,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Objetivo": {
-            "score": 3.04,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 444.8 | Pc: 0.0"
+            "sb_puro": 0.9254,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Pontos": {
-            "score": 7.55,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1104.7 | Pc: 0.0"
+            "sb_puro": 0.9608,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Pressão de tempo": {
-            "score": 1.3,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 190.0 | Pc: 0.0"
+            "sb_puro": 0.744,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Progressão": {
-            "score": 3.63,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 530.6 | Pc: 0.0"
+            "sb_puro": 0.9846,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Quebra cabeça": {
-            "score": 4.73,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 691.5 | Pc: 0.0"
+            "sb_puro": 1.1328,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Reconhecimento": {
-            "score": 7.05,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1031.2 | Pc: 0.0"
+            "sb_puro": 0.9855,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Storytelling": {
-            "score": 2.87,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 420.3 | Pc: 0.0"
+            "sb_puro": 0.9071,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         }
     },
     "SOFTWARE REQUIREMENTS": {
         "Competição": {
-            "score": 1.22,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 178.7 | Pc: 0.0"
+            "sb_puro": 0.6538,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Cooperação": {
-            "score": 1.0,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 145.7 | Pc: 0.0"
+            "sb_puro": 0.5689,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Economia": {
-            "score": 0.09,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 13.4 | Pc: 0.0"
+            "sb_puro": 0.2793,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Estatísticas": {
-            "score": 0.4,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 58.5 | Pc: 0.0"
+            "sb_puro": 0.5358,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Narrativa": {
-            "score": 0.33,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 48.6 | Pc: 0.0"
+            "sb_puro": 0.3863,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Nível": {
-            "score": 0.73,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 107.1 | Pc: 0.0"
+            "sb_puro": 0.52,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Objetivo": {
-            "score": 0.35,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 50.5 | Pc: 0.0"
+            "sb_puro": 0.3621,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Pontos": {
-            "score": 0.7,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 102.7 | Pc: 0.0"
+            "sb_puro": 0.3922,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Pressão de tempo": {
-            "score": 0.15,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 21.3 | Pc: 0.0"
+            "sb_puro": 0.2616,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Progressão": {
-            "score": 0.44,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 64.5 | Pc: 0.0"
+            "sb_puro": 0.4267,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Quebra cabeça": {
-            "score": 0.55,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 81.1 | Pc: 0.0"
+            "sb_puro": 0.5493,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Reconhecimento": {
-            "score": 0.7,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 102.7 | Pc: 0.0"
+            "sb_puro": 0.4203,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Storytelling": {
-            "score": 0.33,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 48.6 | Pc: 0.0"
+            "sb_puro": 0.355,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         }
     },
     "SOFTWARE TESTING": {
         "Competição": {
-            "score": 26.83,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 3925.5 | Pc: 0.0"
+            "sb_puro": 1.644,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Cooperação": {
-            "score": 20.05,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 2933.5 | Pc: 0.0"
+            "sb_puro": 1.514,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Economia": {
-            "score": 1.55,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 226.9 | Pc: 0.0"
+            "sb_puro": 0.9942,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Estatísticas": {
-            "score": 7.55,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1105.0 | Pc: 0.0"
+            "sb_puro": 1.4009,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Narrativa": {
-            "score": 6.77,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 990.7 | Pc: 0.0"
+            "sb_puro": 1.2272,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Nível": {
-            "score": 17.22,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 2520.0 | Pc: 0.0"
+            "sb_puro": 1.5022,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Objetivo": {
-            "score": 7.15,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1045.6 | Pc: 0.0"
+            "sb_puro": 1.2118,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Pontos": {
-            "score": 17.56,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 2569.1 | Pc: 0.0"
+            "sb_puro": 1.2474,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Pressão de tempo": {
-            "score": 3.11,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 455.2 | Pc: 0.0"
+            "sb_puro": 1.0156,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": true
+            }
         },
         "Progressão": {
-            "score": 8.49,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1241.7 | Pc: 0.0"
+            "sb_puro": 1.2732,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Quebra cabeça": {
-            "score": 10.97,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 1605.1 | Pc: 0.0"
+            "sb_puro": 1.4218,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": true,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Reconhecimento": {
-            "score": 16.35,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 2391.7 | Pc: 0.0"
+            "sb_puro": 1.2719,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": true,
+                "mechanic_cognitive_stress": false
+            }
         },
         "Storytelling": {
-            "score": 6.77,
-            "veto": false,
-            "zona": "NORMAL",
-            "xai": "Sb: 990.7 | Pc: 0.0"
+            "sb_puro": 1.1929,
+            "pc_puro": 0.1,
+            "metadata": {
+                "area_theoretical": false,
+                "mechanic_structural": false,
+                "mechanic_competitive": false,
+                "mechanic_cognitive_stress": false
+            }
         }
     }
 }
-

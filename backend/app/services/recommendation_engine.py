@@ -107,23 +107,27 @@ class ContextualRecommendationEngine:
 
     def _get_context_modifiers(self, keys: List[str], mod_matrix: dict, element: str) -> tuple:
         """
-        Substitui a média por uma lógica de Segurança Psicológica.
-        Se qualquer elemento do array gerar conflito (0.1), o conflito prevalece.
+        Substitui a média por uma lógica de Segurança.
+        Retorna: mu, lambda, chaves_positivas, chaves_negativas
         """
-        if not keys: return 1.0, 1.0
-        has_positive = False
-        has_negative = False
+        if not keys: return 1.0, 1.0, [], []
+        
+        has_positive = []
+        has_negative = []
         
         for k in keys:
             k_lower = k.lower()
             if k_lower in mod_matrix:
                 mods = mod_matrix[k_lower].get(element, {"mu": 1.0, "lambda": 1.0})
-                if mods["mu"] < 1.0: has_negative = True
-                if mods["mu"] > 1.0: has_positive = True
+                if mods["mu"] < 1.0: has_negative.append(k)
+                if mods["mu"] > 1.0: has_positive.append(k)
         
-        if has_negative: return 0.1, 5.0 # Veto por segurança impera
-        if has_positive: return 1.5, 0.5 # Bônus concedido
-        return 1.0, 1.0 # Neutro
+        if has_negative: 
+            return 0.1, 5.0, has_positive, has_negative # Veto por segurança impera
+        if has_positive: 
+            return 1.5, 0.5, has_positive, has_negative # Bônus concedido
+            
+        return 1.0, 1.0, [], [] # Neutro
 
     def calculate_recommendations(self, context_data: dict) -> dict:
         try:
@@ -154,8 +158,8 @@ class ContextualRecommendationEngine:
             meta = dados_literatura.get("metadata", {})
 
             # 2. Moduladores de Contexto (Perfil da Turma vs Objetivo Pedagógico)
-            mu_prof, lam_prof = self._get_context_modifiers(profiles, self.profile_mods, elemento_json)
-            mu_obj, lam_obj = self._get_context_modifiers(objectives, self.objective_mods, elemento_json)
+            mu_prof, lam_prof, pos_prof, neg_prof = self._get_context_modifiers(profiles, self.profile_mods, elemento_json)
+            mu_obj, lam_obj, pos_obj, neg_obj = self._get_context_modifiers(objectives, self.objective_mods, elemento_json)
             
             # Lógica Min-Max (Gargalo de Segurança)
             mu_total = min(mu_prof, mu_obj)
@@ -173,10 +177,17 @@ class ContextualRecommendationEngine:
             sb_modificado = sb_puro * mu_total
             pc_modificado = pc_puro * tau_ativo * phi_ativo * lam_total
             
-            score_bruto = sb_modificado - pc_modificado
-            
+            # Controle Inteligente do Limiar Basal (Evita que o ruído basal engula mecânicas de nicho seguras)
+            # Se o risco é puramente basal (0.1) e não sofreu agravamento contextual (lam_total <= 1.0, phi_ativo == 1.0),
+            # nós não deixamos esse ruído teórico diminuir a nota. Ele fica dormente.
+            if pc_puro == 0.1 and lam_total <= 1.0 and phi_ativo == 1.0:
+                score_bruto = sb_modificado
+            else:
+                score_bruto = sb_modificado - pc_modificado
+
             # 5. Avaliação de Veto (Regras Severas)
-            veto_algebrico = pc_modificado > sb_modificado
+            # O veto algébrico só aciona se o risco superar a sinergia E for um risco real ou amplificado (>0.1)
+            veto_algebrico = (pc_modificado > sb_modificado) and (pc_modificado > 0.1)
             hard_block = (mu_total <= 0.1) and (lam_total >= 5.0)
             status_veto = veto_algebrico or hard_block
 
@@ -207,11 +218,17 @@ class ContextualRecommendationEngine:
                 "veto_logistico": veto_logistico,
                 "conflito_contextual": hard_block,
                 "mu_total": mu_total,
-                "lam_total": lam_total
+                "lam_total": lam_total,
+                "pos_prof": pos_prof, "neg_prof": neg_prof,
+                "pos_obj": pos_obj, "neg_obj": neg_obj
             })
 
-        max_abs = max([abs(r["score_bruto"]) for r in resultados_brutos]) if resultados_brutos else 1.0
-        if max_abs == 0: max_abs = 1.0
+        # TETO ALGÉBRICO (Normalização Relativa - Seção 6.2 do Manuscrito)
+        # O max_abs não pode considerar as penalidades (-100), senão ele esmaga a proporção matemática.
+        # Ele deve olhar apenas para mecânicas que NÃO foram vetadas e têm pontuação positiva.
+        scores_positivos = [r["score_bruto"] for r in resultados_brutos if not r["veto"] and r["score_bruto"] > 0]
+        max_abs = max(scores_positivos) if scores_positivos else 1.0
+
 
         for react_elem in self.all_react_elements:
             if react_elem not in processed_react_names:
@@ -221,7 +238,8 @@ class ContextualRecommendationEngine:
                     "veto": False,
                     "conflito_contextual": False,
                     "mu_total": 1.0,
-                    "lam_total": 1.0
+                    "lam_total": 1.0,
+                    "pos_prof": [], "neg_prof": [], "pos_obj": [], "neg_obj": []
                 })
 
         response = {"recommended": [], "neutral": [], "not_recommended": []}
@@ -237,22 +255,53 @@ class ContextualRecommendationEngine:
                 response["not_recommended"].append({"name": res["elemento"], "score": round(score_normalizado, 2), "reason": reason})
                 continue 
 
+            # GERADOR DINÂMICO DE EXPLICABILIDADE (XDSS)
             if res.get("conflito_contextual", False): 
-                reason = "VETADO: Choque Severo entre o Perfil da Turma e o Objetivo."
+                # Rastreador de Conflitos
+                culpados = []
+                if res["neg_prof"]: culpados.append(f"Perfil {res['neg_prof'][0].capitalize()}")
+                if res["neg_obj"]: culpados.append(f"Objetivo {res['neg_obj'][0].capitalize()}")
+                
+                if culpados:
+                    reason = f"VETADO: Choque Severo gerado pelo {(' e '.join(culpados))}."
+                else:
+                    reason = "VETADO: Incompatibilidade comportamental estrita."
+                    
             elif res["veto"]: 
-                reason = "VETADO: Risco Matemático superou a Sinergia."
+                reason = "VETADO: O Risco Matemático da literatura superou a Sinergia teórica."
+                
+            elif score_normalizado < 0:
+                reason = "Afastado: O risco estrutural ou contextual engoliu os benefícios esperados."
+                
             elif res["mu_total"] > 1.2: 
-                reason = "Alta afinidade com o contexto (Sinergia Impulsionada)."
+                # Rastreador de Afinidades (Bônus)
+                impulsionadores = []
+                if res["pos_prof"]: impulsionadores.append(f"Perfil {res['pos_prof'][0].capitalize()}")
+                if res["pos_obj"]: impulsionadores.append(f"Objetivo {res['pos_obj'][0].capitalize()}")
+                
+                if impulsionadores:
+                    reason = f"Alta Afinidade: Potencializado pelo {(' e '.join(impulsionadores))}."
+                else:
+                    reason = "Alta afinidade orgânica com o contexto da turma."
+                    
             elif res["lam_total"] > 1.2: 
-                reason = "Possui atritos leves, monitorar aplicação."
+                reason = "Atenção: Possui atritos comportamentais leves. Monitore o engajamento durante a aplicação."
+            
             elif res["score_bruto"] == 0.0:
-                reason = "Uso neutro (Base de conhecimento ausente)."
+                reason = "Uso Livre: Mecânica sem atritos teóricos, mas sem dados empíricos mapeados na disciplina."
+            
             else: 
-                reason = "Recomendação padrão da literatura."
+                # Se não tem bônus de perfil, mas a nota é alta, é porque a disciplina em si (SWEBOK) se beneficia muito disso.
+                if score_normalizado >= 25:
+                    reason = "Alta eficácia histórica na disciplina. Estratégia sólida, segura e versátil para a turma."
+                # Se não tem bônus de perfil e a nota é mediana, é um item de suporte.
+                else:
+                    reason = "Eficácia moderada na disciplina. Opção viável e segura, mas de impacto secundário."
 
             item_data = {"name": res["elemento"], "score": round(score_normalizado, 2), "reason": reason}
 
-            if res["veto"] or score_normalizado <= -5:
+            # Lógica Estrita baseada no Manuscrito: 
+            if res["veto"] or score_normalizado < 0:
                 response["not_recommended"].append(item_data)
             elif score_normalizado >= 25:
                 item_data["pre_selected"] = score_normalizado >= 40
@@ -262,5 +311,43 @@ class ContextualRecommendationEngine:
 
         for key in response:
             response[key] = sorted(response[key], key=lambda x: x["score"], reverse=True)
+
+# ==========================================
+        # SONDA DE DEBUG PARA O TERMINAL PYTHON
+        # ==========================================
+        print("\n" + "="*50)
+        print("🔍 DIAGNÓSTICO DO MOTOR DE RECOMENDAÇÃO (MUI)")
+        print("="*50)
+        print(f"Área SWEBOK processada: {area_swebok}")
+        print(f"Perfis recebidos: {profiles}")
+        print(f"Objetivos detectados: {objectives}")
+        print(f"Teto Algébrico (Max Abs): {max_abs}")
+        print("-" * 50)
+        
+        recomendados_count = 0
+        neutros_count = 0
+        vetos_count = 0
+
+        for r in resultados_brutos:
+            # Pula os que foram zerados por falta de literatura para não poluir o log
+            if r["score_bruto"] == 0.0 and r["mu_total"] == 1.0:
+                neutros_count += 1
+                continue
+                
+            status_txt = "🔴 VETADO" if r["veto"] else "🟢 APROVADO"
+            if r["veto_logistico"]: status_txt = "⚫ VETO LOGÍSTICO"
+            elif r["score_bruto"] > 0:
+                recomendados_count += 1
+            else:
+                neutros_count += 1
+                
+            print(f"[{status_txt}] Mecânica: {r['elemento']}")
+            print(f"    Sinergia(mu): {r['mu_total']} | Risco(lam): {r['lam_total']}")
+            print(f"    Score Bruto: {r['score_bruto']:.4f}")
+            print(f"    Culpados do Choque: {r['neg_prof']} / {r['neg_obj']}")
+            print("-" * 50)
+            
+        print(f"Resumo da Interface -> Recomendados: {len(response['recommended'])} | Neutros: {len(response['neutral'])} | Lixeira: {len(response['not_recommended'])}")
+        print("="*50 + "\n")
 
         return response
