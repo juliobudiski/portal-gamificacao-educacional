@@ -211,12 +211,7 @@ class ContextualRecommendationEngine:
             hard_block = (mu_total <= 0.1) and (lam_total >= 5.0)
             status_veto = veto_algebrico or hard_block
 
-            # >>> NOVO BLOCO AQUI (Após o cálculo do Veto) <<<
-            # Aplicação Prática da Cláusula de Validação de Ameaça (Defesa do Texto)
-            # Se o risco superou a sinergia, mas é apenas o ruído basal (não gerou Veto),
-            # zeramos o score para impedir que fique negativo e vá para o lixo injustamente.
-            if score_bruto < 0 and not veto_algebrico and not hard_block:
-                score_bruto = 0.0
+            
 
             # Avaliação Logística (Mundo Físico)
             veto_logistico = False
@@ -280,7 +275,7 @@ class ContextualRecommendationEngine:
                 response["not_recommended"].append({"name": res["elemento"], "score": round(score_normalizado, 2), "reason": reason})
                 continue
 
-            # GERADOR DINÂMICO DE EXPLICABILIDADE (XDSS)
+            
             if res.get("conflito_contextual", False): 
                 # Rastreador de Conflitos
                 culpados = []
@@ -326,7 +321,8 @@ class ContextualRecommendationEngine:
             item_data = {"name": res["elemento"], "score": round(score_normalizado, 2), "reason": reason}
 
             # Lógica Estrita baseada no Manuscrito: 
-            if res["veto"]:
+            # Lógica Estrita baseada no Manuscrito (Seção 6.2): 
+            if res["veto"] or res.get("veto_logistico", False) or score_normalizado < 0:
                 response["not_recommended"].append(item_data)
             elif score_normalizado >= 25:
                 item_data["pre_selected"] = score_normalizado >= 40
