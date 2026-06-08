@@ -2,7 +2,8 @@
 import json
 import os
 import logging
-from pydantic import BaseModel, Field
+import re
+from pydantic import BaseModel, Field, field_validator
 from typing import List
 
 logger = logging.getLogger(__name__)
@@ -21,7 +22,19 @@ class PlayerProfileInput(BaseModel):
 
 class LogisticsInput(BaseModel):
     characteristics: List[str] = Field(default_factory=list)
+    # [NOTA ARQUITETURAL]: 'isTeamActivity' atua como metadado de Pass-through.
+    # Ela não modula os cálculos da fronteira de decisão heurística (S_mod e P_mod),
+    # mas transita pelo payload para persistência de estado e formatação 
+    # do plano de aula no Front-end (React) e Banco de Dados.
     isTeamActivity: bool = Field(default=False)
+
+    # Validando e normalizando os dados de logística no momento da entrada (O verdadeiro Data Contract)
+    @field_validator('characteristics', mode='before')
+    def normalize_characteristics(cls, v):
+        if not v:
+            return []
+        # Converte tudo para minúsculo na raiz, prevenindo qualquer falha de casing do Frontend
+        return [str(item).strip().lower() for item in v]
 
 class GameficaContextInput(BaseModel):
     greatArea: str = Field(default="")
@@ -32,7 +45,7 @@ class GameficaContextInput(BaseModel):
     activityPlanning: LogisticsInput = Field(default_factory=LogisticsInput)
 
 # ==========================================
-# 2. MOTOR DE INFERÊNCIA HÍBRIDO (M.U.I.)
+# 2. MOTOR DE PRECIFICAÇÃO HEURÍSTICA (M.U.I. - Heuristic Scoring Engine)
 # ==========================================
 class ContextualRecommendationEngine:
     def __init__(self, kb_path: str = "knowledge_base.json"):
@@ -96,19 +109,25 @@ class ContextualRecommendationEngine:
         text_joined = " ".join(frontend_texts).lower()
         classes = []
         
-        if any(w in text_joined for w in ["lógic", "abstra", "teori", "teóri", "leitura", "históric", "memoriz", "legisla", "sistêmic", "crítico", "argumentação"]): 
+        # O uso de \b (Word Boundary) garante que a palavra DEVE COMEÇAR com esses caracteres.
+        # Exemplo: \blógic encontra "lógica" e "lógico", mas NÃO encontra "biológica" ou "tecnológica".
+        teorico_pattern = re.compile(r'\b(lógic|abstra|teori|teóri|leitura|históric|memoriz|legisla|sistêmic|crítico|argumentação)')
+        pratico_pattern = re.compile(r'\b(prátic|técnic|experimen|testes|clínica|dados|procedimentos|depuração|bugs)')
+        colab_pattern = re.compile(r'\b(equipe|debate|empatia|negocia|liderança|colabora|papéis|scrum)')
+
+        if teorico_pattern.search(text_joined): 
             classes.append("teorico")
-        if any(w in text_joined for w in ["prátic", "técnic", "experimen", "testes", "clínica", "dados", "procedimentos", "depuração", "bugs"]): 
+        if pratico_pattern.search(text_joined): 
             classes.append("pratico")
-        if any(w in text_joined for w in ["equipe", "debate", "empatia", "negocia", "liderança", "colabora", "papéis", "scrum"]): 
+        if colab_pattern.search(text_joined): 
             classes.append("colaborativo")
             
         return classes if classes else ["pratico"]
 
     def _get_context_modifiers(self, keys: List[str], mod_matrix: dict, element: str) -> tuple:
         """
-        Motor Intra-dimensional: Extrai os moduladores do dicionário e aplica 
-        uma lógica matemática baseada em dominância de risco.
+        Processador de Regras de Domínio: Extrai os moduladores escalares do dicionário 
+        e aplica a regra estrutural de dominância de risco (Min-Max).
         """
         if not keys: 
             return 1.0, 1.0, [], []
@@ -135,8 +154,10 @@ class ContextualRecommendationEngine:
         if not mus:
             return 1.0, 1.0, [], []
             
-        # PRECEDÊNCIA DE RISCO INTRA-DIMENSIONAL (O Verdadeiro Min-Max)
-        # Se existe algum vetor de conflito (0.1), ele esmaga os neutros e bônus.
+        # AGREGAÇÃO PESSIMISTA (Min/Max Aritmético)
+        # A resolução de múltiplos estados prioriza a segurança: utiliza-se a 
+        # seleção primária primitiva (min/max) para garantir que qualquer 
+        # escalar de conflito (0.1 / 5.0) tenha precedência absoluta sobre bônus.
         if has_negative:
             final_mu = min(mus)      # Forçará matematicamente para 0.1
             final_lambda = max(lambdas) # Forçará matematicamente para 5.0
@@ -165,7 +186,7 @@ class ContextualRecommendationEngine:
         profiles = val_input.playerProfile.selectedProfiles
         frontend_texts = val_input.currentScenario.problems + val_input.desiredScenario.objectives
         objectives = self._classify_objectives(frontend_texts)
-        logistics = [str(item).lower() for item in val_input.activityPlanning.characteristics]
+        logistics = val_input.activityPlanning.characteristics
 
         resultados_brutos = []
         elementos_area = self.bible.get(area_swebok, {})
@@ -188,28 +209,42 @@ class ContextualRecommendationEngine:
             mu_total = min(mu_prof, mu_obj)
             lam_total = max(lam_prof, lam_obj)
 
-            # 3. Moduladores Epistêmicos (Calibração Matemática)
-            phi_ativo = 2.0 if (meta.get("area_theoretical") and meta.get("mechanic_cognitive_stress")) else 1.0
+            # 3.1 Modulador Ontológico (Tau): Proteção Sistêmica
+            # A hipótese nula assume que narrativas, imersão e estrutura são inofensivas (0.1)
+            tau_ativo = 0.1 
             
-            tau_ativo = 1.0
-            if meta.get("mechanic_structural"): tau_ativo = 0.1
-            elif meta.get("mechanic_competitive"): tau_ativo = 1.0
+            # Apenas mecânicas de pressão social/comparação perdem a proteção (1.0)
+            if meta.get("mechanic_competitive"): 
+                tau_ativo = 1.0
             
+            # 3.2 Modulador de Carga Cognitiva (Phi): Limite de Sweller
+            # Hipótese nula: A mecânica não gera sobrecarga cognitiva paralela (1.0)
+            phi_ativo = 1.0
+            
+            # Validação Simultânea: Se a Área é Teórica Densa AND a Mecânica gera Estresse Agudo
+            if meta.get("area_theoretical") and meta.get("mechanic_cognitive_stress"):
+                phi_ativo = 2.0  # Dobra o risco conforme Calibração da Tese
 
             # 4. Fronteira de Decisão Algébrica
             sb_modificado = sb_puro * mu_total
             pc_modificado = pc_puro * tau_ativo * phi_ativo * lam_total
             
-            # Controle Inteligente do Limiar Basal
-            if pc_puro == 0.1 and lam_total <= 1.0 and phi_ativo == 1.0:
-                score_bruto = sb_modificado
-            else:
-                score_bruto = sb_modificado - pc_modificado
+            # Função Indicadora de Ameaça Orgânica (Substitui o if/else por álgebra)
+            # Retorna 1 (True) se houver risco comprovado, ou 0 (False) se for apenas ruído.
+            ameaca_organica = (pc_puro > 0.1) or (lam_total > 1.0) or (phi_ativo > 1.0)
+            
+            # Fronteira de Decisão Algébrica com Supressão Matemática de Ruído
+            score_bruto = sb_modificado - (pc_modificado * int(ameaca_organica))
 
-            # 5. Avaliação de Veto (Regras Severas)
+            # 5. Avaliação de Veto (Arquitetura Híbrida de Segurança)
+            # Validação Algébrica Tradicional (Ameaça supera o Benefício)
             veto_algebrico = (pc_modificado > sb_modificado) and (pc_modificado > 0.1)
-            hard_block = (mu_total <= 0.1) and (lam_total >= 5.0)
-            status_veto = veto_algebrico or hard_block
+
+            # Gatilho de Veto Heurístico Absoluto (Override booleano para contornar blindagem de Tau)
+            veto_heuristico_absoluto = (mu_total <= 0.1) and (lam_total >= 5.0)
+
+            # A mecânica é vetada se falhar na álgebra OU se o contexto disparar a regra estrita
+            status_veto = veto_algebrico or veto_heuristico_absoluto
 
             
 
@@ -230,7 +265,7 @@ class ContextualRecommendationEngine:
                 "score_bruto": score_bruto,
                 "veto": status_veto,
                 "veto_logistico": veto_logistico,
-                "conflito_contextual": hard_block,
+                "conflito_contextual": veto_heuristico_absoluto,
                 "mu_total": mu_total,
                 "lam_total": lam_total,
                 "pos_prof": pos_prof, "neg_prof": neg_prof,
@@ -250,16 +285,53 @@ class ContextualRecommendationEngine:
             max_abs = 1.0
 
 
+        # ------------------------------------------------------------------
+        # CORREÇÃO: AVALIAÇÃO DE CONTEXTO PARA MECÂNICAS SEM LASTRO (FALLBACK)
+        # ------------------------------------------------------------------
+        # Dicionário reverso para que as regras heurísticas entendam o React
+        react_to_internal = {v: k for k, v in self.frontend_map.items()}
+
         for react_elem in self.all_react_elements:
             if react_elem not in processed_react_names:
+                # 1. Recupera o nome interno para cruzar com as matrizes (ex: "Competição")
+                internal_name = react_to_internal.get(react_elem, react_elem)
+                
+                # 2. Avalia Moduladores de Contexto (O CORAÇÃO DA CORREÇÃO)
+                mu_prof, lam_prof, pos_prof, neg_prof = self._get_context_modifiers(profiles, self.profile_mods, internal_name)
+                mu_obj, lam_obj, pos_obj, neg_obj = self._get_context_modifiers(objectives, self.objective_mods, internal_name)
+                
+                # Lógica Min-Max (Gargalo de Segurança Estrito)
+                mu_total = min(mu_prof, mu_obj)
+                lam_total = max(lam_prof, lam_obj)
+                
+                # 3. Gatilho de Veto Heurístico Absoluto 
+                # (Mesmo sem risco da literatura, se houver choque comportamental severo, VETA)
+                veto_heuristico_absoluto = (mu_total <= 0.1) and (lam_total >= 5.0)
+                status_veto = veto_heuristico_absoluto
+                
+                # 4. Avaliação Logística (Mundo Físico)
+                veto_logistico = False
+                if any("desplugado" in item for item in logistics):
+                    elementos_digitais = [
+                        "Fórum de Discussão", "Chat ou sistema de mensagens", 
+                        "Conquistas digitais para metas alcançadas", 
+                        "Estatísticas (métricas de progresso)", "Economia (sistema monetário)"
+                    ]
+                    if react_elem in elementos_digitais:
+                        veto_logistico = True
+                        status_veto = True
+
+                # 5. Anexa aos resultados com os parâmetros reais (e não injetados falsamente)
                 resultados_brutos.append({
                     "elemento": react_elem,
-                    "score_bruto": 0.0,
-                    "veto": False,
-                    "conflito_contextual": False,
-                    "mu_total": 1.0,
-                    "lam_total": 1.0,
-                    "pos_prof": [], "neg_prof": [], "pos_obj": [], "neg_obj": []
+                    "score_bruto": 0.0, # Permanece 0.0 porque não há lastro no SWEBOK
+                    "veto": status_veto,
+                    "veto_logistico": veto_logistico, 
+                    "conflito_contextual": veto_heuristico_absoluto,
+                    "mu_total": mu_total,
+                    "lam_total": lam_total,
+                    "pos_prof": pos_prof, "neg_prof": neg_prof,
+                    "pos_obj": pos_obj, "neg_obj": neg_obj
                 })
 
         response = {"recommended": [], "neutral": [], "not_recommended": []}
@@ -277,10 +349,14 @@ class ContextualRecommendationEngine:
 
             
             if res.get("conflito_contextual", False): 
-                # Rastreador de Conflitos
+                # Rastreador de Conflitos: Varre TODOS os elementos do vetor
                 culpados = []
-                if res["neg_prof"]: culpados.append(f"Perfil {res['neg_prof'][0].capitalize()}")
-                if res["neg_obj"]: culpados.append(f"Objetivo {res['neg_obj'][0].capitalize()}")
+                if res["neg_prof"]: 
+                    nomes_perfis = " e ".join([p.capitalize() for p in res["neg_prof"]])
+                    culpados.append(f"Perfil {nomes_perfis}")
+                if res["neg_obj"]: 
+                    nomes_objs = " e ".join([o.capitalize() for o in res["neg_obj"]])
+                    culpados.append(f"Objetivo {nomes_objs}")
                 
                 if culpados:
                     reason = f"VETADO: Choque Severo gerado pelo {(' e '.join(culpados))}."
@@ -293,19 +369,25 @@ class ContextualRecommendationEngine:
             elif score_normalizado < 0:
                 reason = "Afastado: O risco estrutural ou contextual engoliu os benefícios esperados."
                 
-            elif res["mu_total"] > 1.2: 
-                # Rastreador de Afinidades (Bônus)
+            # Checagem de Estado Discreto (State Matching)
+            elif res["mu_total"] == 1.5: 
+                # Rastreador de Afinidades: Varre TODOS os elementos do vetor
                 impulsionadores = []
-                if res["pos_prof"]: impulsionadores.append(f"Perfil {res['pos_prof'][0].capitalize()}")
-                if res["pos_obj"]: impulsionadores.append(f"Objetivo {res['pos_obj'][0].capitalize()}")
+                if res["pos_prof"]: 
+                    nomes_perfis = " e ".join([p.capitalize() for p in res["pos_prof"]])
+                    impulsionadores.append(f"Perfil {nomes_perfis}")
+                if res["pos_obj"]: 
+                    nomes_objs = " e ".join([o.capitalize() for o in res["pos_obj"]])
+                    impulsionadores.append(f"Objetivo {nomes_objs}")
                 
                 if impulsionadores:
                     reason = f"Alta Afinidade: Potencializado pelo {(' e '.join(impulsionadores))}."
                 else:
                     reason = "Alta afinidade orgânica com o contexto da turma."
                     
-            elif res["lam_total"] > 1.2: 
-                reason = "Atenção: Possui atritos comportamentais leves. Monitore o engajamento durante a aplicação."
+            # Se sobreviveu aos vetos, mas o risco é maior que a Neutralidade (1.0)
+            elif res["lam_total"] > 1.0: 
+                reason = "Atenção: Possui atritos comportamentais. Monitore o engajamento durante a aplicação."
             
             elif res["score_bruto"] == 0.0:
                 reason = "Uso Livre: Mecânica sem atritos teóricos, mas sem dados empíricos mapeados na disciplina."
