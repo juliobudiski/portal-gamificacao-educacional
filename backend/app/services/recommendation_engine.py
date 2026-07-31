@@ -62,7 +62,6 @@ class ContextualRecommendationEngine:
             "Cooperação": "Fórum de Discussão", 
             "Objetivo": "Objetivo (missão, meta do jogo)",
             "Quebra cabeça": "Quebra-cabeça",
-            "Storytelling": "Storytelling",
             "Narrativa": "Narrativas envolventes",
             "Progressão": "Progressão baseada em habilidade",
             "Reconhecimento": "Conquistas digitais para metas alcançadas"
@@ -74,7 +73,7 @@ class ContextualRecommendationEngine:
             "Chance (sorte e probabilidade)", "Pressão de tempo", "Reputação (prestígio, renome, status)",
             "Pressão social", "Sensação (imersão, experiência sensorial)",
             "Objetivo (missão, meta do jogo)", "Quebra-cabeça", "Renovação (atualizações de conteúdo)",
-            "Novidade (novas funcionalidades)", "Storytelling", "Customização de personagem",
+            "Novidade (novas funcionalidades)", "Customização de personagem",
             "Customização de equipamento", "Chat ou sistema de mensagens", "Fórum de Discussão",
             "Interação social com outros jogadores", "Feedback claro sobre o desempenho",
             "Progressão baseada em habilidade", "Narrativas envolventes", "Sistema de classificação e ranking",

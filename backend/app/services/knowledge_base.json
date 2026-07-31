@@ -7,7 +7,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": false
             }
         },
         "Cooperação": {
@@ -17,7 +18,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Economia": {
@@ -27,7 +29,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": false
             }
         },
         "Estatísticas": {
@@ -37,17 +40,19 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Narrativa": {
-            "sb_puro": 0.1382,
+            "sb_puro": 0.2353,
             "pc_puro": 0.1,
             "metadata": {
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Nível": {
@@ -57,7 +62,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Objetivo": {
@@ -67,7 +73,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Pontos": {
@@ -77,7 +84,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Pressão de tempo": {
@@ -87,7 +95,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": false
             }
         },
         "Progressão": {
@@ -97,7 +106,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Quebra cabeça": {
@@ -107,7 +117,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Reconhecimento": {
@@ -117,17 +128,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": false
-            }
-        },
-        "Storytelling": {
-            "sb_puro": 0.1285,
-            "pc_puro": 0.1,
-            "metadata": {
-                "area_theoretical": false,
-                "mechanic_structural": false,
-                "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         }
     },
@@ -139,7 +141,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": false
             }
         },
         "Cooperação": {
@@ -149,7 +152,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Economia": {
@@ -159,7 +163,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": false
             }
         },
         "Estatísticas": {
@@ -169,17 +174,19 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Narrativa": {
-            "sb_puro": 0.1744,
+            "sb_puro": 0.2887,
             "pc_puro": 0.1,
             "metadata": {
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Nível": {
@@ -189,7 +196,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Objetivo": {
@@ -199,7 +207,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Pontos": {
@@ -209,7 +218,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Pressão de tempo": {
@@ -219,7 +229,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": false
             }
         },
         "Progressão": {
@@ -229,7 +240,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Quebra cabeça": {
@@ -239,7 +251,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Reconhecimento": {
@@ -249,17 +262,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": false
-            }
-        },
-        "Storytelling": {
-            "sb_puro": 0.1613,
-            "pc_puro": 0.1,
-            "metadata": {
-                "area_theoretical": false,
-                "mechanic_structural": false,
-                "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         }
     },
@@ -271,7 +275,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": false
             }
         },
         "Cooperação": {
@@ -281,7 +286,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Economia": {
@@ -291,7 +297,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": false
             }
         },
         "Estatísticas": {
@@ -301,17 +308,19 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Narrativa": {
-            "sb_puro": 0.1744,
+            "sb_puro": 0.2887,
             "pc_puro": 0.1,
             "metadata": {
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Nível": {
@@ -321,7 +330,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Objetivo": {
@@ -331,7 +341,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Pontos": {
@@ -341,7 +352,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Pressão de tempo": {
@@ -351,7 +363,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": false
             }
         },
         "Progressão": {
@@ -361,7 +374,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Quebra cabeça": {
@@ -371,7 +385,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Reconhecimento": {
@@ -381,17 +396,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": false
-            }
-        },
-        "Storytelling": {
-            "sb_puro": 0.1613,
-            "pc_puro": 0.1,
-            "metadata": {
-                "area_theoretical": false,
-                "mechanic_structural": false,
-                "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         }
     },
@@ -403,7 +409,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": false
             }
         },
         "Cooperação": {
@@ -413,7 +420,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Economia": {
@@ -423,7 +431,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": false
             }
         },
         "Estatísticas": {
@@ -433,17 +442,19 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Narrativa": {
-            "sb_puro": 0.0252,
+            "sb_puro": 0.0463,
             "pc_puro": 0.1,
             "metadata": {
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Nível": {
@@ -453,7 +464,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Objetivo": {
@@ -463,7 +475,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Pontos": {
@@ -473,7 +486,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Pressão de tempo": {
@@ -483,7 +497,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": false
             }
         },
         "Progressão": {
@@ -493,7 +508,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Quebra cabeça": {
@@ -503,7 +519,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Reconhecimento": {
@@ -513,17 +530,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": false
-            }
-        },
-        "Storytelling": {
-            "sb_puro": 0.0223,
-            "pc_puro": 0.1,
-            "metadata": {
-                "area_theoretical": false,
-                "mechanic_structural": false,
-                "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         }
     },
@@ -535,7 +543,8 @@
                 "area_theoretical": true,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": true
             }
         },
         "Cooperação": {
@@ -545,7 +554,8 @@
                 "area_theoretical": true,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": true
             }
         },
         "Economia": {
@@ -555,7 +565,8 @@
                 "area_theoretical": true,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": true
             }
         },
         "Estatísticas": {
@@ -565,17 +576,19 @@
                 "area_theoretical": true,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": true
             }
         },
         "Narrativa": {
-            "sb_puro": 0.2775,
-            "pc_puro": 0.2558,
+            "sb_puro": 0.4348,
+            "pc_puro": 0.4157,
             "metadata": {
                 "area_theoretical": true,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": true
             }
         },
         "Nível": {
@@ -585,7 +598,8 @@
                 "area_theoretical": true,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": true
             }
         },
         "Objetivo": {
@@ -595,7 +609,8 @@
                 "area_theoretical": true,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": true
             }
         },
         "Pontos": {
@@ -605,7 +620,8 @@
                 "area_theoretical": true,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": true
             }
         },
         "Pressão de tempo": {
@@ -615,7 +631,8 @@
                 "area_theoretical": true,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": true
             }
         },
         "Progressão": {
@@ -625,7 +642,8 @@
                 "area_theoretical": true,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": true
             }
         },
         "Quebra cabeça": {
@@ -635,7 +653,8 @@
                 "area_theoretical": true,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": true
             }
         },
         "Reconhecimento": {
@@ -645,17 +664,8 @@
                 "area_theoretical": true,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": false
-            }
-        },
-        "Storytelling": {
-            "sb_puro": 0.2617,
-            "pc_puro": 0.2558,
-            "metadata": {
-                "area_theoretical": true,
-                "mechanic_structural": false,
-                "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": true
             }
         }
     },
@@ -667,7 +677,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": false
             }
         },
         "Cooperação": {
@@ -677,7 +688,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Economia": {
@@ -687,7 +699,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": false
             }
         },
         "Estatísticas": {
@@ -697,17 +710,19 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Narrativa": {
-            "sb_puro": 0.1382,
+            "sb_puro": 0.2353,
             "pc_puro": 0.1,
             "metadata": {
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Nível": {
@@ -717,7 +732,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Objetivo": {
@@ -727,7 +743,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Pontos": {
@@ -737,7 +754,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Pressão de tempo": {
@@ -747,7 +765,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": false
             }
         },
         "Progressão": {
@@ -757,7 +776,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Quebra cabeça": {
@@ -767,7 +787,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Reconhecimento": {
@@ -777,17 +798,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": false
-            }
-        },
-        "Storytelling": {
-            "sb_puro": 0.1285,
-            "pc_puro": 0.1,
-            "metadata": {
-                "area_theoretical": false,
-                "mechanic_structural": false,
-                "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         }
     },
@@ -799,7 +811,8 @@
                 "area_theoretical": true,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": true
             }
         },
         "Cooperação": {
@@ -809,7 +822,8 @@
                 "area_theoretical": true,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": true
             }
         },
         "Economia": {
@@ -819,7 +833,8 @@
                 "area_theoretical": true,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": true
             }
         },
         "Estatísticas": {
@@ -829,17 +844,19 @@
                 "area_theoretical": true,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": true
             }
         },
         "Narrativa": {
-            "sb_puro": 0.4166,
-            "pc_puro": 0.4157,
+            "sb_puro": 0.6134,
+            "pc_puro": 0.6242,
             "metadata": {
                 "area_theoretical": true,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": true
             }
         },
         "Nível": {
@@ -849,7 +866,8 @@
                 "area_theoretical": true,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": true
             }
         },
         "Objetivo": {
@@ -859,7 +877,8 @@
                 "area_theoretical": true,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": true
             }
         },
         "Pontos": {
@@ -869,7 +888,8 @@
                 "area_theoretical": true,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": true
             }
         },
         "Pressão de tempo": {
@@ -879,7 +899,8 @@
                 "area_theoretical": true,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": true
             }
         },
         "Progressão": {
@@ -889,7 +910,8 @@
                 "area_theoretical": true,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": true
             }
         },
         "Quebra cabeça": {
@@ -899,7 +921,8 @@
                 "area_theoretical": true,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": true
             }
         },
         "Reconhecimento": {
@@ -909,17 +932,8 @@
                 "area_theoretical": true,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": false
-            }
-        },
-        "Storytelling": {
-            "sb_puro": 0.3972,
-            "pc_puro": 0.4157,
-            "metadata": {
-                "area_theoretical": true,
-                "mechanic_structural": false,
-                "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": true
             }
         }
     },
@@ -931,7 +945,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": false
             }
         },
         "Cooperação": {
@@ -941,7 +956,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Economia": {
@@ -951,7 +967,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": false
             }
         },
         "Estatísticas": {
@@ -961,17 +978,19 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Narrativa": {
-            "sb_puro": 0.1567,
+            "sb_puro": 0.2628,
             "pc_puro": 0.1,
             "metadata": {
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Nível": {
@@ -981,7 +1000,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Objetivo": {
@@ -991,7 +1011,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Pontos": {
@@ -1001,7 +1022,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Pressão de tempo": {
@@ -1011,7 +1033,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": false
             }
         },
         "Progressão": {
@@ -1021,7 +1044,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Quebra cabeça": {
@@ -1031,7 +1055,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Reconhecimento": {
@@ -1041,17 +1066,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": false
-            }
-        },
-        "Storytelling": {
-            "sb_puro": 0.1452,
-            "pc_puro": 0.1,
-            "metadata": {
-                "area_theoretical": false,
-                "mechanic_structural": false,
-                "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         }
     },
@@ -1063,7 +1079,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": false
             }
         },
         "Cooperação": {
@@ -1073,7 +1090,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Economia": {
@@ -1083,7 +1101,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": false
             }
         },
         "Estatísticas": {
@@ -1093,17 +1112,19 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Narrativa": {
-            "sb_puro": 0.1382,
+            "sb_puro": 0.2353,
             "pc_puro": 0.1,
             "metadata": {
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Nível": {
@@ -1113,7 +1134,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Objetivo": {
@@ -1123,7 +1145,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Pontos": {
@@ -1133,7 +1156,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Pressão de tempo": {
@@ -1143,7 +1167,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": false
             }
         },
         "Progressão": {
@@ -1153,7 +1178,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Quebra cabeça": {
@@ -1163,7 +1189,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Reconhecimento": {
@@ -1173,17 +1200,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": false
-            }
-        },
-        "Storytelling": {
-            "sb_puro": 0.1285,
-            "pc_puro": 0.1,
-            "metadata": {
-                "area_theoretical": false,
-                "mechanic_structural": false,
-                "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         }
     },
@@ -1195,7 +1213,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": false
             }
         },
         "Cooperação": {
@@ -1205,7 +1224,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Economia": {
@@ -1215,7 +1235,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": false
             }
         },
         "Estatísticas": {
@@ -1225,17 +1246,19 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Narrativa": {
-            "sb_puro": 0.0252,
+            "sb_puro": 0.0463,
             "pc_puro": 0.1,
             "metadata": {
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Nível": {
@@ -1245,7 +1268,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Objetivo": {
@@ -1255,7 +1279,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Pontos": {
@@ -1265,7 +1290,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Pressão de tempo": {
@@ -1275,7 +1301,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": false
             }
         },
         "Progressão": {
@@ -1285,7 +1312,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Quebra cabeça": {
@@ -1295,7 +1323,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Reconhecimento": {
@@ -1305,17 +1334,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": false
-            }
-        },
-        "Storytelling": {
-            "sb_puro": 0.0223,
-            "pc_puro": 0.1,
-            "metadata": {
-                "area_theoretical": false,
-                "mechanic_structural": false,
-                "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         }
     },
@@ -1327,7 +1347,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": false
             }
         },
         "Cooperação": {
@@ -1337,7 +1358,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Economia": {
@@ -1347,7 +1369,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": false
             }
         },
         "Estatísticas": {
@@ -1357,17 +1380,19 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Narrativa": {
-            "sb_puro": 0.2696,
+            "sb_puro": 0.4249,
             "pc_puro": 0.1,
             "metadata": {
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Nível": {
@@ -1377,7 +1402,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Objetivo": {
@@ -1387,7 +1413,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Pontos": {
@@ -1397,7 +1424,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Pressão de tempo": {
@@ -1407,7 +1435,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": true
+                "mechanic_cognitive_stress": true,
+                "has_empirical_risk": false
             }
         },
         "Progressão": {
@@ -1417,7 +1446,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Quebra cabeça": {
@@ -1427,7 +1457,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": true,
                 "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         },
         "Reconhecimento": {
@@ -1437,17 +1468,8 @@
                 "area_theoretical": false,
                 "mechanic_structural": false,
                 "mechanic_competitive": true,
-                "mechanic_cognitive_stress": false
-            }
-        },
-        "Storytelling": {
-            "sb_puro": 0.2552,
-            "pc_puro": 0.1,
-            "metadata": {
-                "area_theoretical": false,
-                "mechanic_structural": false,
-                "mechanic_competitive": false,
-                "mechanic_cognitive_stress": false
+                "mechanic_cognitive_stress": false,
+                "has_empirical_risk": false
             }
         }
     }
