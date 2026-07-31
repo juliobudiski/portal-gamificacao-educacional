@@ -62,37 +62,35 @@ class ContextualRecommendationEngine:
             "Cooperação": "Fórum de Discussão", 
             "Objetivo": "Objetivo (missão, meta do jogo)",
             "Quebra cabeça": "Quebra-cabeça",
-            "Narrativa": "Narrativas envolventes",
+            "Narrativa": "Narrativas",
             "Progressão": "Progressão baseada em habilidade",
             "Reconhecimento": "Conquistas digitais para metas alcançadas"
         }
 
         self.all_react_elements = [
             "Níveis", "Sistema de pontuação", "Estatísticas (métricas de progresso)", "Reconhecimento",
-            "Raridade (itens exclusivos, objetos raros)", "Economia (sistema monetário)", "Escolha imposta (decisões forçadas)",
+            "Raridade (itens exclusivos, objetos raros)", "Economia (sistema monetário)",
             "Chance (sorte e probabilidade)", "Pressão de tempo", "Reputação (prestígio, renome, status)",
-            "Pressão social", "Sensação (imersão, experiência sensorial)",
-            "Objetivo (missão, meta do jogo)", "Quebra-cabeça", "Renovação (atualizações de conteúdo)",
-            "Novidade (novas funcionalidades)", "Customização de personagem",
-            "Customização de equipamento", "Chat ou sistema de mensagens", "Fórum de Discussão",
-            "Interação social com outros jogadores", "Feedback claro sobre o desempenho",
-            "Progressão baseada em habilidade", "Narrativas envolventes", "Sistema de classificação e ranking",
+            "Pressão social", "Objetivo (missão, meta do jogo)", "Quebra-cabeça", 
+            "Renovação (atualizações de conteúdo)", "Novidade (novas funcionalidades)", 
+            "Customização de personagem", "Customização de equipamento", "Chat ou sistema de mensagens", 
+            "Fórum de Discussão", "Interação social com outros jogadores", "Feedback claro sobre o desempenho",
+            "Progressão baseada em habilidade", "Narrativa", "Sistema de classificação e ranking",
             "Recompensas atraentes", "Conquistas digitais para metas alcançadas"
         ]
 
         # Configurações de Conflito Severo baseadas na Calibração Matemática
         self.profile_mods = {
             "competitivo": { "Competição": {"mu": 1.5, "lambda": 0.5}, "Pressão de tempo": {"mu": 1.5, "lambda": 0.5}, "Cooperação": {"mu": 0.1, "lambda": 5.0} },
-            "social": { "Cooperação": {"mu": 1.5, "lambda": 0.5}, "Narrativa": {"mu": 1.5, "lambda": 0.5}, "Storytelling": {"mu": 1.5, "lambda": 0.5}, "Competição": {"mu": 0.1, "lambda": 5.0} },
+            "social": { "Cooperação": {"mu": 1.5, "lambda": 0.5}, "Narrativa": {"mu": 1.5, "lambda": 0.5}, "Competição": {"mu": 0.1, "lambda": 5.0} }, 
             "realizador": { "Pontos": {"mu": 1.5, "lambda": 0.5}, "Nível": {"mu": 1.5, "lambda": 0.5}, "Quebra cabeça": {"mu": 1.5, "lambda": 0.5}, "Reconhecimento": {"mu": 1.5, "lambda": 0.5} },
-            "explorador": { "Narrativa": {"mu": 1.5, "lambda": 0.5}, "Storytelling": {"mu": 1.5, "lambda": 0.5}, "Quebra cabeça": {"mu": 1.5, "lambda": 0.5}, "Pressão de tempo": {"mu": 0.1, "lambda": 5.0} }
+            "explorador": { "Narrativa": {"mu": 1.5, "lambda": 0.5}, "Quebra cabeça": {"mu": 1.5, "lambda": 0.5}, "Pressão de tempo": {"mu": 0.1, "lambda": 5.0} }
         }
 
         self.objective_mods = {
             "teorico": { "Narrativa": {"mu": 1.5, "lambda": 0.5}, "Quebra cabeça": {"mu": 1.5, "lambda": 0.5}, "Pressão de tempo": {"mu": 0.1, "lambda": 5.0}, "Economia": {"mu": 0.1, "lambda": 5.0} },
-            "pratico": { "Pontos": {"mu": 1.5, "lambda": 0.5}, "Economia": {"mu": 1.5, "lambda": 0.5}, "Pressão de tempo": {"mu": 1.5, "lambda": 0.5}, "Estatísticas": {"mu": 1.5, "lambda": 0.5}, "Narrativa": {"mu": 0.1, "lambda": 5.0} },
+            "pratico": { "Pontos": {"mu": 1.5, "lambda": 0.5}, "Economia": {"mu": 1.5, "lambda": 0.5}, "Pressão de tempo": {"mu": 1.5, "lambda": 0.5}, "Estatísticas": {"mu": 1.5, "lambda": 0.5}, "Narrativa": {"mu": 0.1, "lambda": 5.0} }, 
             "colaborativo": { "Cooperação": {"mu": 1.5, "lambda": 0.5}, "Reconhecimento": {"mu": 1.5, "lambda": 0.5}, "Competição": {"mu": 0.1, "lambda": 5.0} }
-        }
 
     def _load_knowledge_base(self):
         try:
