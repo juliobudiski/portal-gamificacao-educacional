@@ -1,10 +1,11 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const ContactPage = () => {
     const { user } = useContext(AuthContext); // Pegar dados se logado
     const navigate = useNavigate();
+    const location = useLocation();
 
     const [formData, setFormData] = useState({
         name: '',
@@ -15,16 +16,20 @@ const ContactPage = () => {
     const [loading, setLoading] = useState(false);
     const [feedback, setFeedback] = useState({ type: '', msg: '' });
 
-    // Preenche automático se user existir
+    // Preenche automático se user existir e busca parâmetros da URL
     useEffect(() => {
-        if (user) {
-            setFormData(prev => ({
-                ...prev,
-                name: user.name || '',
-                email: user.email || ''
-            }));
-        }
-    }, [user]);
+        const params = new URLSearchParams(location.search);
+        const subjectParam = params.get('subject');
+        const bodyParam = params.get('body');
+
+        setFormData(prev => ({
+            ...prev,
+            name: user?.name || prev.name,
+            email: user?.email || prev.email,
+            subject: subjectParam || prev.subject,
+            message: bodyParam || prev.message
+        }));
+    }, [user, location.search]);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });

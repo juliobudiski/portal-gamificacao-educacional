@@ -35,10 +35,10 @@ function AdminPage() {
 
   // Renderização principal do layout do admin
   return (
-    <div className="min-h-screen w-full bg-gray-900 flex relative overflow-hidden">
-      {/* Luzes Holográficas de Fundo globais para o Admin */}
-      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-accent-purple/30 rounded-full blur-[120px] pointer-events-none"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-accent-teal/20 rounded-full blur-[120px] pointer-events-none"></div>
+    <div className="min-h-screen w-full bg-primary-bg text-primary-text flex relative overflow-hidden transition-colors duration-300">
+      {/* Luzes Holográficas de Fundo globais para o Admin (Ajustadas para modo claro/escuro) */}
+      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-accent-purple/20 dark:bg-accent-purple/30 rounded-full blur-[120px] pointer-events-none"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-accent-teal/10 dark:bg-accent-teal/20 rounded-full blur-[120px] pointer-events-none"></div>
 
       {/* Barra de Navegação Lateral Fixa */}
       <Sidebar />

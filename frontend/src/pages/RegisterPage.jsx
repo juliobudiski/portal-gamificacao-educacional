@@ -429,14 +429,12 @@ Professora Orientadora: Prof.ª Dr.ª Aline Maria Malachini Miotto Amaral - ammm
                     </div>
                   </div>
                   <div className="text-right">
-                    <a
-                      href="mailto:juliobudiskiherculani@gmail.com?subject=Solicita%C3%A7%C3%A3o%20de%20C%C3%B3digo%20Institucional%20-%20Professor&body=Ol%C3%A1%2C%0A%0AGostaria%20de%20solicitar%20o%20c%C3%B3digo%20de%20acesso%20institucional%20para%20criar%20minha%20conta%20como%20professor%20no%20Portal%20GamificaEdu.%0A%0A%2A%2ADados%20do%20Professor%3A%2A%2A%0ANome%20Completo%3A%20%0AInstitui%C3%A7%C3%A3o%20de%20Ensino%3A%20%0ADisciplina%20Ministrada%3A%20%0A%0AAguardo%20retorno.%20Obrigado%21"
+                    <Link
+                      to={`/contact?subject=${encodeURIComponent("Solicitação de Código Institucional - Professor")}&body=${encodeURIComponent("Olá,\n\nGostaria de solicitar o código de acesso institucional para criar minha conta como professor no Portal GamificaEdu.\n\n**Dados do Professor:**\nNome Completo: \nInstituição de Ensino: \nDisciplina Ministrada: \n\nAguardo retorno. Obrigado!")}`}
                       className="text-xs font-semibold text-accent-yellow hover:text-yellow-600 hover:underline transition-colors"
-                      target="_blank"
-                      rel="noopener noreferrer"
                     >
                       Não tem o código? Solicite aqui.
-                    </a>
+                    </Link>
                   </div>
                 </div>
               )}
