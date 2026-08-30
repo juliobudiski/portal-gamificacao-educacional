@@ -1,4 +1,11 @@
-# backend/app/routes/activities.py
+"""
+Módulo de Rotas de Atividades (Activities)
+Responsável pelo CRUD completo de atividades, desde a criação (incluindo rascunhos e autosave),
+distribuição para turmas, duplicação (cópias), exclusão em massa, até a submissão
+de respostas pelos alunos e cálculo de pontuação (gamificação).
+As regras complexas estão delegadas ao 'activity_service'.
+"""
+
 from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import jwt_required, current_user, get_jwt_identity
 from flask_cors import cross_origin
@@ -14,19 +21,24 @@ logger = logging.getLogger(__name__)
 from app.services.recommendation_engine import ContextualRecommendationEngine
 from ..presets.activity_templates import PREDEFINED_TEMPLATES
 
-# --- ROTA PARA SUBMETER RESPOSTAS DO QUIZ (COM CORREÇÃO DE TIPO) ---
+# --- ROTA PARA SUBMETER RESPOSTAS DO QUIZ ---
 @activity_bp.route('/<int:activity_id>/submit_answer', methods=['POST'])
 @jwt_required()
 @cross_origin()
 def submit_answer(activity_id):
     """
-    Processa a submissão de uma resposta de quiz por um aluno.
+    Processa a submissão de uma resposta de quiz (ou interação pontuada) por um aluno.
     
-    @desc Verifica a resposta, calcula pontos, atualiza o progresso e checa medalhas.
-    @param {int} activity_id - ID da atividade sendo respondida.
-    @return {JSON} - Resultado da submissão e novos pontos.
+    Lógica Principal:
+    1. Registra a resposta bruta em 'StudentResponse'.
+    2. Soma a pontuação ganha no progresso total (ActivityProgress).
+    3. Aciona o 'MedalService' para avaliar, em tempo real, se a resposta 
+       desbloqueou alguma medalha condicional.
+       
+    - Acesso: Apenas Alunos.
+    - Payload JSON: { "points_earned": int, "is_correct": bool, "question_text": str, "selected_option": str }
+    - Retorno: Nova pontuação total do aluno.
     """
-    # LOG: [submit_answer] Iniciando processamento de resposta.
     logger.info(f"[submit_answer] Iniciando submissão para atividade {activity_id}")
     current_user_id = get_jwt_identity()
     user = User.query.get(current_user_id)
@@ -37,16 +49,16 @@ def submit_answer(activity_id):
     data = request.get_json()
     
     try:
-        # --- CORREÇÃO APLICADA AQUI ---
         # Extraímos todas as variáveis necessárias do 'data' no início do bloco try.
         points_earned = int(data.get('points_earned', 0))
         is_correct = data.get('is_correct', False)
         question_text = data.get('question_text')
-        # --- FIM DA CORREÇÃO ---
 
+        # Verifica o estado atual de progresso do aluno nesta atividade
         progress = ActivityProgress.query.filter_by(student_id=user.id, activity_id=activity_id).first()
         activity = Activity.query.get(activity_id)
 
+        # Se for o primeiro acesso/resposta, inicializa o registro de progresso
         if not progress:
             progress = ActivityProgress(
                 student_id=user.id, activity_id=activity_id,
@@ -55,6 +67,7 @@ def submit_answer(activity_id):
             db.session.add(progress)
             db.session.flush()
 
+        # Cria a auditoria da resposta
         new_response = StudentResponse(
             student_id=user.id,
             activity_id=activity_id,
@@ -67,14 +80,17 @@ def submit_answer(activity_id):
         current_app.logger.info(f"[DEBUG_POINTS] Current progress.total_xp_earned BEFORE update: {progress.total_xp_earned or 0}")
         db.session.add(new_response)
 
+        # Soma os pontos de forma cumulativa
         progress.points_earned = (progress.points_earned or 0) + points_earned
         progress.total_xp_earned = (progress.total_xp_earned or 0) + points_earned
         progress.attempts = (progress.attempts or 0) + 1
         
         current_app.logger.info(f"[DEBUG_POINTS] New progress.total_xp_earned AFTER update: {progress.total_xp_earned}")
-        # O gatilho agora tem acesso às variáveis 'is_correct' and 'question_text'
+        
+        new_medals = []
+        # O gatilho de medalhas atua de forma independente. Se falhar, a resposta ainda será salva.
         try:
-            MedalService.check_and_award_medals(
+            new_medals = MedalService.check_and_award_medals(
                 user_id=current_user_id,
                 activity_id=activity_id,
                 event_type='quiz_answer_submitted',
@@ -85,7 +101,11 @@ def submit_answer(activity_id):
             current_app.logger.error(f"Erro ao verificar medalhas 'on_submit' para user {current_user_id}: {str(e)}")
 
         db.session.commit()
-        return jsonify({"message": "Resposta registrada e progresso atualizado.", "new_total_points": progress.points_earned}), 200
+        return jsonify({
+            "message": "Resposta registrada e progresso atualizado.",
+            "new_total_points": progress.points_earned,
+            "new_medals": new_medals or []
+        }), 200
 
     except Exception as e:
         db.session.rollback()
@@ -100,10 +120,11 @@ def submit_answer(activity_id):
 @cross_origin()
 def log_activity_event(activity_id):
     """
-    Registra eventos genéricos de interação do usuário com a atividade.
+    Registra eventos genéricos de interação do usuário com a atividade 
+    para análise de engajamento (analytics).
     
-    @param {int} activity_id - ID da atividade.
-    @payload {json} - Deve conter 'event_type' (ex: 'narrative_viewed').
+    - Acesso: Autenticado.
+    - Payload JSON: { "event_type": "str" } (ex: 'narrative_viewed', 'completed').
     """
     logger.info(f"[log_activity_event] Registrando evento para atividade {activity_id}")
     current_user_id = get_jwt_identity()
@@ -135,12 +156,10 @@ def log_activity_event(activity_id):
 @jwt_required()
 def create_activity():
     """
-    Cria uma nova atividade.
-    
-    @desc Delega a criação para o serviço activity_service.
-    @return {JSON} - A atividade criada.
+    Cria a entidade básica de uma nova atividade no banco.
+    A lógica pesada de parsing JSON e tratamento de tags fica na camada Service.
+    - Acesso: Professor.
     """
-    # LOG: [create_activity] Recebendo requisição de criação.
     logger.info("[create_activity] Iniciando criação de nova atividade.")
     return activity_service.create_activity(current_user, request.json)
 
@@ -148,9 +167,7 @@ def create_activity():
 @jwt_required()
 def get_activity_route(activity_id):
     """
-    Busca os detalhes de uma atividade específica.
-    
-    @param {int} activity_id - ID da atividade.
+    Recupera os detalhes (configuração completa, quizzes, mapa) de uma atividade específica.
     """
     return activity_service.get_activity(current_user, activity_id)
 
@@ -158,9 +175,8 @@ def get_activity_route(activity_id):
 @jwt_required()
 def get_predefined_templates():
     """
-    Retorna os templates de atividades predefinidos.
-    
-    @desc Apenas professores podem acessar.
+    Retorna os templates pedagógicos predefinidos (armazenados estaticamente 
+    em presets/activity_templates) para facilitar a criação rápida por professores.
     """
     if current_user.role != 'professor':
         return jsonify({"message": "Acesso negado"}), 403
@@ -170,14 +186,9 @@ def get_predefined_templates():
 @jwt_required()
 def search_activities():
     """
-    Busca atividades com base em termos e tags.
-    
-    @param {string} q - Termo de busca (query param).
-    @param {list} tags - Lista de tags (query param).
+    Busca de atividades no acervo público, baseada em termos e filtragem avançada (Tags).
+    - Params URL: `q` (termo textual) e `tags` (lista de temas/disciplinas).
     """
-    # LOG: [search_activities] Processando busca.
-    # TODO: Otimizar busca para grandes volumes de dados (paginação).
-    # Nova funcionalidade: busca com tags
     search_term = request.args.get('q')
     tags = request.args.getlist('tags')
     return activity_service.search_activities(search_term, tags)
@@ -186,12 +197,10 @@ def search_activities():
 @jwt_required()
 def create_revision(activity_id):
     """
-    Cria uma revisão para uma atividade.
-    
-    @param {int} activity_id - ID da atividade.
+    Salva uma nova versão histórica (revisão) da atividade. 
+    Permite rollback se o professor errar na edição.
     """
     logger.info(f"[create_revision] Criando revisão para atividade {activity_id}")
-    # Nova funcionalidade: criar revisão
     return activity_service.create_revision(
         current_user, 
         activity_id, 
@@ -203,11 +212,9 @@ def create_revision(activity_id):
 @jwt_required()
 def assign_activity_to_class(activity_id):
     """
-    Atribui uma atividade a uma turma.
-    
-    @desc Pode atribuir diretamente (se for modelo mestre) ou criar uma cópia.
-    @param {int} activity_id - ID da atividade original.
-    @payload {json} - Espera 'class_id', datas de início/fim.
+    Vincula uma atividade pronta a uma turma específica.
+    O Service gerará as instâncias/progressos para cada aluno da turma.
+    - Acesso: Apenas o professor dono da atividade.
     """
     logger.info(f"[assign_activity_to_class] Iniciando atribuição da atividade {activity_id}")
     current_user_id = get_jwt_identity()
@@ -244,19 +251,15 @@ def assign_activity_to_class(activity_id):
 @activity_bp.route('/my_activities', methods=['GET'])
 @jwt_required()
 def get_my_activities():
-    
     """
-    Rota para buscar as atividades do professor logado, com filtro de busca opcional.
-    
-    @desc Retorna apenas atividades criadas pelo usuário atual.
+    Lista todas as atividades (rascunhos e públicas) cujo autor é o professor atual.
+    Usado para popular o "Meu Acervo".
     """
     if current_user.role != 'professor':
         return jsonify({"message": "Acesso negado"}), 403
     
-    
     search_term = request.args.get('search', None) # Pega o parâmetro 'search' da URL
     activities = activity_service.get_activities_by_professor(current_user.id, search_term)
-    
     
     return jsonify(activities), 200
 
@@ -264,9 +267,8 @@ def get_my_activities():
 @jwt_required()
 def get_public_activities():
     """
-    Rota para buscar todas as atividades públicas de outros professores.
-    
-    @desc Exclui atividades privadas e do próprio usuário.
+    Retorna o Feed de Atividades Compartilhadas por outros professores.
+    Exclui as atividades privadas (Drafts) e exclui as do próprio usuário.
     """
     if current_user.role != 'professor':
         return jsonify({"message": "Acesso negado"}), 403
@@ -279,9 +281,7 @@ def get_public_activities():
 @jwt_required()
 def update_activity_route(activity_id):
     """
-    Rota para atualizar uma atividade existente.
-    
-    @param {int} activity_id - ID da atividade a ser atualizada.
+    Atualiza as configurações básicas e metadados de uma atividade existente.
     """
     if current_user.role != 'professor':
         return jsonify({"message": "Acesso negado"}), 403
@@ -291,11 +291,9 @@ def update_activity_route(activity_id):
 @activity_bp.route('/<int:activity_id>/copy', methods=['POST'])
 @jwt_required()
 def copy_activity_route(activity_id):
-    
     """
-    Rota para copiar uma atividade pública para o acervo do professor.
-    
-    @param {int} activity_id - ID da atividade pública original.
+    Duplica uma atividade pública existente e define o usuário atual como dono da cópia.
+    (Funcionalidade de "Clonar" para aproveitar o acervo global).
     """
     if current_user.role != 'professor':
         return jsonify({"message": "Acesso negado"}), 403
@@ -305,8 +303,9 @@ def copy_activity_route(activity_id):
 @jwt_required()
 def delete_activity(activity_id):
     """
-    Deleta uma atividade e seus dados relacionados.
-    @desc Remove conversas, avaliações e progressos antes de deletar a atividade.
+    Soft-Delete ou Delete Cascata de uma atividade.
+    Como muitas coisas dependem da atividade (fóruns, chats, avaliações, métricas),
+    precisamos limpar essas tabelas relacionadas antes para evitar erros de Integridade Relacional (Foreign Key).
     """
     activity = Activity.query.get(activity_id)
     if not activity:
@@ -335,7 +334,7 @@ def delete_activity(activity_id):
         # 3. Deleta registros de progresso
         ActivityProgress.query.filter_by(activity_id=activity_id).delete()
         
-        # 4. Deleta a atividade
+        # 4. Deleta a atividade principal
         db.session.delete(activity)
 
         db.session.commit()
@@ -351,9 +350,7 @@ def delete_activity(activity_id):
 @cross_origin() 
 def update_activity_quiz(activity_id):
     """
-    Rota para adicionar ou atualizar as perguntas de um quiz de uma atividade.
-    @param {int} activity_id - ID da atividade.
-    @payload {json} - Espera lista de 'questions'.
+    Adiciona ou sobrescreve diretamente a camada de Quizzes (JSONB) de uma atividade.
     """
     current_user_id = get_jwt_identity()
     user = User.query.get(current_user_id)
@@ -381,7 +378,6 @@ def update_activity_quiz(activity_id):
             activity.game_elements = {}
 
         # Cria uma cópia para garantir que o SQLAlchemy detecte a mudança no JSONB
-        # TODO: Verificar se há uma maneira mais eficiente de atualizar JSONB sem cópia completa.
         game_elements_copy = dict(activity.game_elements)
         game_elements_copy['questions'] = questions
         activity.game_elements = game_elements_copy
@@ -399,11 +395,8 @@ def update_activity_quiz(activity_id):
 @jwt_required()
 def bulk_delete_activities_route():
     """
-    Rota para deletar múltiplas atividades de uma vez.
-    Espera um JSON no corpo da requisição com uma chave "activity_ids".
-    
-    @payload {json} - { "activity_ids": [int, int, ...] }
-    Ex: { "activity_ids": [1, 5, 12] }
+    Exclui em lote múltiplas atividades (Usado nas tabelas do Painel Admin/Professor).
+    - Payload JSON: { "activity_ids": [int, int, ...] }
     """
     if current_user.role != 'professor':
         return jsonify({"message": "Acesso negado"}), 403
@@ -415,7 +408,7 @@ def bulk_delete_activities_route():
         return jsonify({"message": "A lista de IDs de atividades ('activity_ids') é obrigatória."}), 400
 
     logger.info(f"[bulk_delete] Solicitada deleção de {len(activity_ids)} atividades.")
-    # Chama a função do serviço para executar a lógica de negócio
+    # A deleção em lote, devido à complexidade das Foreign Keys, é encapsulada no service
     result, status_code = activity_service.bulk_delete_activities(current_user, activity_ids)
     
     return jsonify(result), status_code
@@ -425,8 +418,8 @@ def bulk_delete_activities_route():
 @jwt_required()
 def update_activity_structure_route(activity_id):
     """
-    Rota leve para salvar apenas a estrutura de gamificação (gamificationDesign).
-    @param {int} activity_id - ID da atividade.
+    Atualiza, de forma otimizada, apenas o 'gamificationDesign' da atividade (ex: layout do caminho, nodes do mapa).
+    Impede que requisições longas sobrescrevam textos pesados sem necessidade.
     """
     if current_user.role != 'professor':
         return jsonify({"message": "Acesso negado"}), 403
@@ -439,10 +432,8 @@ def update_activity_structure_route(activity_id):
 @jwt_required()
 def rate_activity(activity_id):
     """
-    Registra ou atualiza a avaliação (nota) de um usuário para uma atividade.
-    
-    @param {int} activity_id - ID da atividade.
-    @payload {json} - { "score": int (1-5) }
+    Permite que o usuário atribua uma nota (rating) a uma atividade após completá-la (1 a 5 estrelas).
+    Se o aluno já tiver avaliado, a avaliação anterior é atualizada (Upsert).
     """
     user_id = get_jwt_identity()
     data = request.get_json()
@@ -452,7 +443,6 @@ def rate_activity(activity_id):
         return jsonify({"message": "Nota inválida. Deve ser entre 1 e 5."}), 400
 
     try:
-        # Verifica se já existe avaliação para atualizar ou criar nova
         existing_rating = ActivityRating.query.filter_by(user_id=user_id, activity_id=activity_id).first()
 
         if existing_rating:
@@ -479,14 +469,19 @@ def rate_activity(activity_id):
 @jwt_required()
 @cross_origin()
 def autosave_route():
-    """Rota silenciosa para salvar progresso automaticamente."""
+    """
+    Salva silenciosamente o progresso da edição de uma atividade enquanto o professor cria,
+    evitando perda de dados se o navegador fechar acidentalmente.
+    """
     print("--- [DEBUG BACKEND] Entrou na função autosave_route ---")
     return activity_service.save_autosave(current_user, request.json)
 
 @activity_bp.route('/drafts', methods=['GET'])
 @jwt_required()
 def get_drafts_route():
-    """Lista rascunhos do professor."""
+    """
+    Retorna apenas as atividades marcadas como 'draft' (Rascunho) criadas pelo professor atual.
+    """
     if current_user.role != 'professor':
         return jsonify({"message": "Acesso negado"}), 403
     drafts = activity_service.get_user_drafts(current_user.id)
@@ -495,21 +490,26 @@ def get_drafts_route():
 @activity_bp.route('/<int:activity_id>/publish', methods=['POST'])
 @jwt_required()
 def publish_route(activity_id):
-    """Converte um rascunho em atividade final."""
+    """
+    Muda o estado da atividade de 'draft' para 'published', tornando-a disponível
+    para ser associada a turmas e visualizada na aba "Meu Acervo".
+    """
     return activity_service.publish_draft(current_user, activity_id, request.json)
 
 
 @activity_bp.route('/recommendations', methods=['POST'])
-@jwt_required() # Correção: Usar jwt_required() padrão do arquivo
-def get_activity_recommendations(): # Removemos current_user dos argumentos
+@jwt_required()
+def get_activity_recommendations(): 
     """
-    Gera recomendações contextuais baseadas no estado atual da atividade.
+    Gera dicas dinâmicas (Intelligence/Recommendation) de como melhorar o rascunho atual.
+    Avalia a estrutura JSON recebida (texto, tamanho de passos, gamificação)
+    e retorna sugestões de design instrucional.
     """
     try:
         current_user_id = get_jwt_identity()
         data = request.get_json()
         
-        # Instancia o motor e calcula
+        # Instancia a regra de negócio central de heurísticas recomendativas
         engine = ContextualRecommendationEngine()
         results = engine.calculate_recommendations(data)
         

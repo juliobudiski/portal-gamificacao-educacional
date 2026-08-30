@@ -57,6 +57,8 @@ class MedalService:
         # Efetua um único commit para todas as medalhas ganhas nesta checagem
         if medals_to_award:
             db.session.commit()
+            
+        return medals_to_award
 
     @staticmethod
     def _check_medal_explorador(user, activity_id, **kwargs):

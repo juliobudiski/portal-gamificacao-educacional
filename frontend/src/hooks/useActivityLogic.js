@@ -538,7 +538,8 @@ export const useActivityLogic = (activityId) => {
     //========================================================================
     return {
         // Estados de controle
-        loading: loading || (activity && !assetsAreLoaded),
+        loading: loading, // Somente carrega API
+        isAssetsLoading: activity && !assetsAreLoaded,
         error,
         currentView,
         showStatsModal,

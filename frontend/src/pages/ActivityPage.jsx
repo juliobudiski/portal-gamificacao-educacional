@@ -35,14 +35,10 @@ const debugLog = (message, ...optionalParams) => {
 // ========================================================================
 // COMPONENTES DE UI MENORES
 // ========================================================================
-const FullPageLoader = ({ progress, estimatedTimeRemaining }) => (
+const FullPageLoader = () => (
   <div className="flex flex-col items-center justify-center min-h-screen bg-primary-bg text-primary-text font-sans">
-    <h2 className="text-2xl mb-4">Carregando Aventura...</h2>
-    <div className="w-3/4 max-w-lg bg-border-color rounded-full h-4 overflow-hidden border-2 border-gray-600">
-      <div className="bg-yellow-400 h-full rounded-full transition-all duration-300 ease-linear" style={{ width: `${progress}%` }} />
-    </div>
-    <p className="mt-4 text-xl font-bold">{progress}%</p>
-    {estimatedTimeRemaining && <p className="mt-2 text-secondary-text">{estimatedTimeRemaining}</p>}
+    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent-teal mb-4"></div>
+    <h2 className="text-xl text-secondary-text">Conectando...</h2>
   </div>
 );
 
@@ -253,13 +249,8 @@ function ActivityPage() {
   debugLog('Estado de carregamento recebido do hook:', { loading, error });
 
   if (loading === true) {
-    debugLog('Renderizando FullPageLoader...', { progress: assetsProgress });
-    return (
-      <FullPageLoader
-        progress={assetsProgress}
-        estimatedTimeRemaining={estimatedTimeRemaining}
-      />
-    );
+    debugLog('Renderizando Loader da API...');
+    return <FullPageLoader />;
   }
 
   if (error) {

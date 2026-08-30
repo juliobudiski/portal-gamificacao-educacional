@@ -17,7 +17,7 @@ function GameBoardViewer({ children }) {
     // 1. Consumimos os estados de carregamento do hook useAssetLoader (via Contexto)
     const {
         activity,
-        loading,
+        isAssetsLoading,
         assetsProgress,
         estimatedTimeRemaining
     } = useActivity();
@@ -26,7 +26,7 @@ function GameBoardViewer({ children }) {
     const ThemeComponent = themeMap[themeName] || VilaDaAventuraTheme;
 
     // 2. Tela de Carregamento Otimizada (Aparece enquanto baixa as imagens)
-    if (loading) {
+    if (isAssetsLoading) {
         return (
             <div className="w-full min-h-[600px] flex flex-col items-center justify-center bg-gray-900/50 backdrop-blur-sm rounded-3xl border border-white/10 shadow-inner">
                 {/* Ícone Spinner */}

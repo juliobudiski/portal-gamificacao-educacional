@@ -1,3 +1,9 @@
+"""
+Módulo de Rotas de Progresso e Gamificação (Progress)
+Responsável pelo rastreamento detalhado da jornada do aluno dentro de uma atividade.
+Gerencia a economia virtual (Moedas/XP), mecânicas de sorte (Roleta/Slots), 
+loja de itens cosméticos (Avatares/Títulos) e geração de Leaderboards (Rankings).
+"""
 # backend/app/routes/progress.py
 from flask import Blueprint, jsonify, request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
@@ -17,6 +23,11 @@ from ..services.progress_service import ProgressService
 @jwt_required()
 @cross_origin()
 def get_activity_progress(activity_id):
+    """
+    Recupera o estado atual completo do progresso de um aluno em uma atividade 
+    (XP, Moedas, Passos Concluídos, Itens Equipados).
+    - Acesso: Aluno matriculado ou Professor dono da atividade.
+    """
     user_id = get_jwt_identity()
     
     try:
@@ -110,6 +121,11 @@ def get_leaderboard(activity_id):
 @jwt_required()
 @cross_origin()
 def get_analytics(activity_id):
+    """
+    Gera as estatísticas de engajamento e performance da turma nesta atividade.
+    Retorna métricas como taxa de conclusão, média de acertos (accuracy) e distribuição de notas.
+    - Acesso: Apenas o Professor dono da atividade.
+    """
     current_user_id = get_jwt_identity()
     user = User.query.get(current_user_id)
 
@@ -644,8 +660,9 @@ def collect_final_reward(activity_id):
     )
     db.session.add(completion_event)
 
+    new_medals = []
     try:
-        MedalService.check_and_award_medals(user_id=user_id, activity_id=activity_id, event_type='activity_completed')
+        new_medals = MedalService.check_and_award_medals(user_id=user_id, activity_id=activity_id, event_type='activity_completed')
     except Exception as e:
         # Usamos um log de erro para não quebrar a funcionalidade principal se o sistema de medalhas falhar
         current_app.logger.error(f"Erro ao verificar medalhas para user {user_id} na atividade {activity_id}: {str(e)}")
@@ -657,7 +674,8 @@ def collect_final_reward(activity_id):
     return jsonify({
         "message": "Atividade concluída e recompensa coletada com sucesso!",
         "updated_progress": updated_progress_data, # Retorna o JSON completo (Micro)
-        "global_xp": user.global_xp # Retorna o XP Global (Macro)
+        "global_xp": user.global_xp, # Retorna o XP Global (Macro)
+        "new_medals": new_medals or []
     }), 200
 
 @progress_bp.route('/<int:activity_id>/avatar', methods=['PUT'])
