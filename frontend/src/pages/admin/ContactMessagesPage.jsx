@@ -11,6 +11,7 @@ const ContactMessagesPage = () => {
     const [error, setError] = useState(null);
     const [copyFeedback, setCopyFeedback] = useState(false);
     const [filter, setFilter] = useState('all'); // 'all', 'unread'
+    const [sendingCode, setSendingCode] = useState(false);
 
     // --- 1. Fetch de Dados (Padrão do Projeto) ---
     useEffect(() => {
@@ -79,6 +80,30 @@ const ContactMessagesPage = () => {
         setTimeout(() => setCopyFeedback(false), 2000);
     };
 
+    const handleSendCode = async () => {
+        if (!selectedMsg || !user?.token) return;
+        if (!window.confirm(`Deseja enviar o código de acesso institucional para ${selectedMsg.email}?`)) return;
+        
+        setSendingCode(true);
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/contact/messages/${selectedMsg.id}/send_code`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${user.token}` }
+            });
+            const data = await response.json();
+            if (response.ok) {
+                alert('Código enviado com sucesso!');
+            } else {
+                alert(data.message || 'Erro ao enviar o código.');
+            }
+        } catch (error) {
+            console.error("Erro ao enviar código:", error);
+            alert("Erro de conexão ao enviar o código.");
+        } finally {
+            setSendingCode(false);
+        }
+    };
+
     // --- 3. Filtragem Local ---
     const filteredMessages = messages.filter(msg => {
         if (filter === 'unread') return !msg.is_read;
@@ -103,7 +128,7 @@ const ContactMessagesPage = () => {
                 </div>
 
                 {/* Filtros */}
-                <div className="flex bg-primary-bg p-1 rounded-lg border border-border-color">
+                <div className="flex bg-black/50 backdrop-blur-md p-1 rounded-lg border border-white/10">
                     <button
                         onClick={() => setFilter('all')}
                         className={`px-4 py-2 text-sm rounded-md transition-all ${filter === 'all' ? 'bg-accent-teal/20 text-accent-teal font-bold shadow-sm' : 'text-secondary-text hover:text-primary-text'}`}
@@ -122,10 +147,10 @@ const ContactMessagesPage = () => {
             {error && <div className="bg-red-900/40 text-red-300 p-4 rounded-lg mb-4 border border-red-700">{error}</div>}
 
             {/* Layout Split: Lista vs Detalhe */}
-            <div className="flex flex-1 overflow-hidden bg-primary-bg rounded-xl shadow-xl border border-border-color">
+            <div className="flex flex-1 overflow-hidden bg-secondary-bg rounded-xl shadow-md border border-border-color">
 
                 {/* COLUNA ESQUERDA: LISTA */}
-                <div className="w-1/3 min-w-[300px] max-w-[400px] border-r border-border-color flex flex-col bg-secondary-bg/30">
+                <div className="w-1/3 min-w-[300px] max-w-[400px] border-r border-border-color flex flex-col bg-secondary-bg">
                     <div className="p-4 border-b border-border-color">
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-secondary-text" size={16} />
@@ -147,8 +172,8 @@ const ContactMessagesPage = () => {
                                 <div
                                     key={msg.id}
                                     onClick={() => handleSelectMessage(msg)}
-                                    className={`p-4 border-b border-border-color cursor-pointer transition-all hover:bg-primary-bg group
-                                        ${selectedMsg?.id === msg.id ? 'bg-primary-bg border-l-4 border-l-accent-teal' : 'border-l-4 border-l-transparent'}
+                                    className={`p-4 border-b border-border-color cursor-pointer transition-all hover:bg-hover-bg-color group
+                                        ${selectedMsg?.id === msg.id ? 'bg-hover-bg-color border-l-4 border-l-accent-teal' : 'border-l-4 border-l-transparent'}
                                     `}
                                 >
                                     <div className="flex justify-between items-start mb-1">
@@ -172,17 +197,17 @@ const ContactMessagesPage = () => {
                 </div>
 
                 {/* COLUNA DIREITA: LEITURA DETALHADA */}
-                <div className="flex-1 bg-primary-bg overflow-y-auto p-0 relative">
+                <div className="flex-1 bg-transparent overflow-y-auto p-0 relative">
                     {selectedMsg ? (
                         <div className="animate-fade-in h-full flex flex-col">
 
                             {/* Header da Mensagem */}
-                            <div className="p-8 border-b border-border-color bg-secondary-bg/10 backdrop-blur-sm sticky top-0 z-10">
+                            <div className="p-8 border-b border-border-color bg-secondary-bg sticky top-0 z-10">
                                 <div className="flex justify-between items-start mb-6">
                                     <h2 className="text-2xl font-bold text-primary-text leading-tight">
                                         {selectedMsg.subject}
                                     </h2>
-                                    <span className="text-xs text-secondary-text bg-secondary-bg px-2 py-1 rounded border border-border-color">
+                                    <span className="text-xs text-secondary-text bg-primary-bg px-2 py-1 rounded border border-border-color">
                                         {new Date(selectedMsg.created_at).toLocaleString()}
                                     </span>
                                 </div>
@@ -220,7 +245,17 @@ const ContactMessagesPage = () => {
                             </div>
 
                             {/* Footer de Ação */}
-                            <div className="p-6 border-t border-border-color bg-secondary-bg/10 flex justify-end gap-3">
+                            <div className="p-6 border-t border-border-color bg-secondary-bg flex justify-end gap-3">
+                                {selectedMsg.subject && selectedMsg.subject.toLowerCase().includes('código') && (
+                                    <button
+                                        onClick={handleSendCode}
+                                        disabled={sendingCode}
+                                        className="flex items-center gap-2 px-4 py-2 bg-accent-yellow hover:bg-yellow-500 text-gray-900 font-bold rounded-lg transition-colors shadow-md disabled:opacity-50"
+                                    >
+                                        <CheckCircle size={18} />
+                                        {sendingCode ? 'Enviando...' : 'Aprovar Professor'}
+                                    </button>
+                                )}
                                 <a
                                     href={`mailto:${selectedMsg.email}?subject=Re: ${selectedMsg.subject}`}
                                     className="flex items-center gap-2 px-4 py-2 bg-accent-teal hover:bg-accent-teal/80 text-primary-text font-semibold rounded-lg transition-colors shadow-md"

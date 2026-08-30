@@ -147,7 +147,19 @@ export const WIZARD_ELEMENTS_STEPS = [
         disableBeacon: true
     },
     {
-        target: '#tour-gameboard-intro', // Colocar no container do editor
+        target: '#tour-next-button',
+        content: 'Após preencher, clique aqui para avançar para o Tabuleiro.',
+        hideFooter: true,
+        spotlightClicks: true,
+        placement: 'top',
+        disableBeacon: true
+    }
+];
+
+// --- TOUR 6: WIZARD - PARTE 4 (Tabuleiro) ---
+export const WIZARD_GAMEBOARD_STEPS = [
+    {
+        target: '#tour-gameboard-intro',
         content: 'Agora vamos para a parte divertida: O Editor de Tabuleiro!',
         disableBeacon: true
     },

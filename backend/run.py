@@ -1,4 +1,7 @@
 # backend/run.py
+import eventlet
+eventlet.monkey_patch()
+
 import os
 from dotenv import load_dotenv # <--- 1. Importa a biblioteca
 

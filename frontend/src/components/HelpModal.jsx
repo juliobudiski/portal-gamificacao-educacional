@@ -53,7 +53,7 @@ const HelpModal = ({ isOpen, contentKey, onClose }) => {
                 <div className="h-1.5 w-full rounded-t-xl bg-gradient-to-r from-accent-purple via-accent-teal to-accent-purple" />
 
                 {/* Cabeçalho */}
-                <div className="flex items-center justify-between px-6 py-5 border-b border-border-color dark:border-gray-700">
+                <div className="flex items-center justify-between px-6 py-5 border-b border-border-color">
                     <div className="flex items-center gap-3">
                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent-purple/10 text-accent-purple">
                             <FaLightbulb />
@@ -85,7 +85,7 @@ const HelpModal = ({ isOpen, contentKey, onClose }) => {
                 </div>
 
                 {/* Rodapé */}
-                <div className="px-6 py-5 bg-primary-bg/50 border-t border-border-color dark:border-gray-700 rounded-b-xl flex justify-end">
+                <div className="px-6 py-5 bg-primary-bg/50 border-t border-border-color rounded-b-xl flex justify-end">
                     <button
                         type="button"
                         onClick={onClose}

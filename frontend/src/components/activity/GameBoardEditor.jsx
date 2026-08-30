@@ -250,7 +250,7 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
                 </div>
 
                 {/* Dropdown de Seleção de Tema */}
-                <div className="flex items-center gap-2 bg-white dark:bg-gray-800 p-2 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                <div className="flex items-center gap-2 bg-secondary-bg p-2 rounded-lg border border-border-color shadow-sm">
                     <span className="text-xs font-bold text-gray-500 uppercase">Tema:</span>
                     <select
                         value={currentThemeId}
@@ -302,7 +302,7 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
                                         className={`relative flex items-center pl-3 pr-4 py-2 text-sm border rounded-lg transition-all shadow-sm group
                                             ${isDisabled
                                                 ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed opacity-60'
-                                                : 'bg-white dark:bg-gray-800 border-blue-200 dark:border-blue-900 hover:bg-blue-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200'
+                                                : 'bg-secondary-bg border-blue-200 dark:border-blue-900 hover:bg-blue-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200'
                                             }
                                         `}
                                         title={isDisabled ? "Adicione uma Narrativa antes de incluir um Quiz." : config.name}
@@ -400,7 +400,7 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
                                 );
                             })}
                             {(!gamificationDesign.progression_path || gamificationDesign.progression_path.length === 0) && (
-                                <div className="text-center py-10 text-gray-400 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
+                                <div className="text-center py-10 text-gray-400 border-2 border-dashed border-border-color rounded-lg">
                                     <p>A trilha está vazia.</p>
                                     <p className="text-xs mt-1">Adicione passos acima para começar.</p>
                                 </div>

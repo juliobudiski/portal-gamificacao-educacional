@@ -7,129 +7,6 @@ from ..models import db, Medal, UserUnlockedMedal, User, ActivityProgress, Stude
 medals_bp = Blueprint('medals', __name__)
 
 # ==============================================================================
-# FUNÇÕES DE VERIFICAÇÃO DE MEDALHAS (GATILHOS)
-# ==============================================================================
-# Cada função aqui é responsável por verificar UMA única medalha.
-# Elas são projetadas para serem claras e fáceis de modificar no futuro.
-# ------------------------------------------------------------------------------
-
-def _check_medal_explorador(user, activity_id, **kwargs):
-    """
-    Verifica a Medalha do Explorador.
-    Critério: Completar todos os passos definidos na trilha da atividade.
-    """
-    progress = ActivityProgress.query.filter_by(student_id=user.id, activity_id=activity_id).first()
-    activity = Activity.query.get(activity_id)
-
-    # Guarda de segurança: se não houver progresso, atividade ou design, não faz nada.
-    if not all([progress, activity, activity.gamification_design, activity.gamification_design.get('progression_path')]):
-        return False
-
-    # Pega o ID de todos os passos definidos na trilha
-    all_step_ids = {step['id'] for step in activity.gamification_design['progression_path']}
-    
-    # Pega o conjunto de passos que o aluno completou
-    completed_steps_set = set(progress.completed_steps or [])
-
-    # Verifica se o conjunto de todos os passos é um subconjunto (ou igual) dos passos completados
-    # .issubset() verifica se todos os elementos de all_step_ids estão em completed_steps_set
-    return all_step_ids.issubset(completed_steps_set)
-
-def _check_medal_inspetor(user, activity_id, **kwargs):
-    """Verifica a Medalha do Inspetor: não ter cometido erros na atividade."""
-    incorrect_response = StudentResponse.query.filter_by(
-        student_id=user.id, activity_id=activity_id, is_correct=False
-    ).first()
-    # Se não houver respostas incorretas, o critério é atingido.
-    return incorrect_response is None
-
-def _check_medal_velocista(user, activity_id, **kwargs):
-    """Verifica a Medalha do Velocista: estar entre os 3 primeiros a concluir a atividade."""
-    # Conta quantos OUTROS utilizadores já completaram esta atividade
-    completion_count = ActivityProgress.query.filter(
-        ActivityProgress.activity_id == activity_id,
-        ActivityProgress.completed_at.isnot(None),
-        ActivityProgress.student_id != user.id  # <-- A CORREÇÃO ESTÁ AQUI
-    ).count()
-    
-    # Se a contagem de OUTROS for 0, 1 ou 2, o utilizador atual está no top 3.
-    return completion_count < 3
-
-def _check_medal_fenix(user, activity_id, **kwargs):
-    """
-    Verifica a Medalha Fênix: superar um erro anterior no mesmo quiz.
-    É acionada quando uma resposta CORRETA é submetida.
-    """
-    # Este gatilho só deve ser avaliado quando o aluno ACERTA uma questão.
-    is_current_answer_correct = kwargs.get('is_correct', False)
-    if not is_current_answer_correct:
-        return False
-
-    question_text = kwargs.get('question_text')
-    if not question_text:
-        return False
-
-    # Procura por uma resposta ANTERIOR e INCORRETA para a MESMA pergunta nesta atividade.
-    previous_incorrect_response = StudentResponse.query.filter(
-        StudentResponse.student_id == user.id,
-        StudentResponse.activity_id == activity_id,
-        StudentResponse.response_data['question'].astext == question_text,
-        StudentResponse.is_correct == False
-    ).first()
-
-    # Se encontrarmos uma resposta incorreta anterior, o critério foi cumprido.
-    return previous_incorrect_response is not None
-
-
-
-# ------------------------------------------------------------------------------
-# FUNÇÃO PRINCIPAL DE CONCESSÃO DE MEDALHAS
-# ------------------------------------------------------------------------------
-
-def check_and_award_medals(user_id, activity_id, event_type, **kwargs):
-    """Função central que é chamada em pontos chave da aplicação."""
-    user = User.query.get(user_id)
-    if not user: return
-
-    # Mapeamento explícito de eventos para gatilhos de medalhas
-    event_triggers = {
-        'activity_completed': [
-            {'name': 'Medalha do Explorador', 'func': _check_medal_explorador},
-            {'name': 'Medalha do Inspetor', 'func': _check_medal_inspetor},
-            {'name': 'Medalha do Velocista', 'func': _check_medal_velocista},
-        ],
-        'quiz_answer_submitted': [
-            {'name': 'Medalha "Fênix"', 'func': _check_medal_fenix}, # Ativar no futuro
-        ],
-        'step_completed': [
-            # {'name': 'Medalha "Peça-Chave"', 'func': _check_medal_peca_chave}, # Ativar no futuro
-        ]
-    }
-
-    triggered_checks = event_triggers.get(event_type, [])
-    if not triggered_checks: return
-
-    unlocked_medal_ids = {m.medal_id for m in UserUnlockedMedal.query.filter_by(user_id=user_id).all()}
-    medals_to_award = []
-
-    for trigger in triggered_checks:
-        medal_name = trigger['name']
-        check_function = trigger['func']
-        medal = Medal.query.filter_by(name=medal_name).first()
-
-        if not medal or medal.id in unlocked_medal_ids:
-            continue
-
-        if check_function(user, activity_id, **kwargs):
-            new_unlock = UserUnlockedMedal(user_id=user.id, medal_id=medal.id, activity_id=activity_id)
-            db.session.add(new_unlock)
-            medals_to_award.append(medal.name)
-            current_app.logger.info(f"Medalha '{medal.name}' concedida ao usuário {user_id} na atividade {activity_id}.")
-
-    if medals_to_award:
-        db.session.commit()
-
-# ==============================================================================
 # ROTAS DA API
 # ==============================================================================
 
@@ -183,6 +60,11 @@ def get_my_unlocked_medals():
 # que verifica se ela deve ser desbloqueada.
 # Isso torna o sistema de gatilhos centralizado e fácil de expandir.
 # ------------------------------------------------------------------------------
+def _check_medal_explorador(*args, **kwargs): pass
+def _check_medal_inspetor(*args, **kwargs): pass
+def _check_medal_velocista(*args, **kwargs): pass
+def _check_medal_fenix(*args, **kwargs): pass
+
 MEDAL_CHECK_FUNCTIONS = {
     # Medalhas de Atividade
     "Medalha do Explorador": _check_medal_explorador,

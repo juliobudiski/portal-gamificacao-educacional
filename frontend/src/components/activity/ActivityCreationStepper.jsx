@@ -7,9 +7,10 @@ const STEPS = [
     { id: 3, label: "Dinâmica", short: "Dinâmica" },
     { id: 4, label: "Perfil", short: "Perfil" },
     { id: 5, label: "Elementos", short: "Elementos" },
-    { id: 6, label: "Recompensas", short: "Premios" },
-    { id: 7, label: "Ações", short: "Ações" },
-    { id: 8, label: "Regras", short: "Fim" },
+    { id: 6, label: "Tabuleiro", short: "Trilha" },
+    { id: 7, label: "Recompensas", short: "Premios" },
+    { id: 8, label: "Ações", short: "Ações" },
+    { id: 9, label: "Regras", short: "Fim" },
 ];
 const ActivityCreationStepper = ({ currentStep, maxReachedStep, onStepClick, isEditMode }) => {
     const scrollRef = useRef(null);
@@ -81,8 +82,8 @@ const ActivityCreationStepper = ({ currentStep, maxReachedStep, onStepClick, isE
                                                 : isCompleted
                                                     ? 'bg-teal-500 border-teal-500 text-white hover:bg-teal-600'
                                                     : isClickable
-                                                        ? 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-500 hover:border-teal-400 dark:hover:border-teal-400'
-                                                        : 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-300 dark:text-gray-600'}
+                                                        ? 'bg-secondary-bg border-border-color text-gray-500 hover:border-teal-400 dark:hover:border-teal-400'
+                                                        : 'bg-secondary-bg border-border-color text-gray-300 dark:text-gray-600'}
                     `}
                                     >
                                         {isCompleted ? (

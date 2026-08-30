@@ -74,49 +74,79 @@ const NarrativeTab = ({ content, onComplete }) => {
   };
 
   return (
-    <div className="bg-primary-bg p-4 sm:p-8 rounded-lg text-primary-text animate-fade-in">
+    <div className="w-full max-w-5xl mx-auto rounded-3xl overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.8)] border border-white/10 flex flex-col bg-black animate-fade-in text-white relative">
+      
+      {/* Cenário Widescreen */}
       <div
-        className="relative w-full h-96 bg-cover bg-center rounded-lg mb-4 border-4 border-border-color shadow-lg"
+        className="relative w-full aspect-video bg-cover bg-center"
         style={{ backgroundImage: `url(${scenario})` }}
       >
-        {characters.map((char, index) => (
-          <img
-            key={index}
-            src={char.image}
-            alt={char.role}
-            className={`absolute bottom-0 h-4/5 object-contain transition-all duration-300 ${currentCharacter?.image === char.image ? 'opacity-100 scale-110' : 'opacity-50 scale-100'}`}
-            style={{ left: `${10 + index * 25}%` }}
-          />
-        ))}
+        {/* Sombra de Vignette para um ar mais cinemático */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-transparent to-black/80"></div>
+
+        {/* Personagens */}
+        {characters.map((char, index) => {
+          const isActive = currentCharacter?.image === char.image;
+          return (
+            <img
+              key={index}
+              src={char.image}
+              alt={char.role}
+              className={`absolute bottom-0 h-[85%] object-contain transition-all duration-700 ease-out drop-shadow-2xl
+                ${isActive ? 'opacity-100 scale-105 z-20 filter-none brightness-110' : 'opacity-40 scale-95 z-10 grayscale-[50%] blur-[1px]'}`}
+              style={{ left: `${15 + index * 30}%`, transformOrigin: 'bottom center' }}
+            />
+          );
+        })}
+
+        {/* Caixa de Diálogo (Glassmorphism sobreposta na parte inferior) */}
+        {currentLine && (
+          <div className="absolute bottom-4 left-4 right-4 sm:bottom-8 sm:left-12 sm:right-12 z-30">
+            <div className="bg-black/60 backdrop-blur-md p-6 sm:p-8 rounded-2xl border-t-2 border-l-2 border-white/20 border-b border-r border-white/5 shadow-2xl relative">
+              {/* Nome do Personagem Flutuante */}
+              <div className="absolute -top-5 left-6 bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-2 rounded-full shadow-lg border border-white/20">
+                <h3 className="text-xl font-bold text-white tracking-wider">{currentLine.characterRole}</h3>
+              </div>
+              
+              <p className="text-xl sm:text-2xl text-gray-100 mt-2 leading-relaxed drop-shadow-md">
+                {currentLine.text}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
-      {currentLine && (
-        <div className="bg-primary-bg/80 backdrop-blur-sm p-4 rounded-lg border border-gray-600 min-h-[120px]">
-          <h3 className="text-xl font-bold text-yellow-400 mb-2">{currentLine.characterRole}</h3>
-          <p className="text-lg text-secondary-text">{currentLine.text}</p>
-        </div>
-      )}
-      <div className="flex justify-between items-center mt-6">
+
+      {/* Controles de Navegação */}
+      <div className="bg-gray-900 border-t border-white/10 p-4 sm:p-6 flex justify-between items-center z-40 relative">
         <button
           onClick={goToPreviousLine}
           disabled={currentLineIndex === 0}
-          className="py-2 px-4 bg-border-color hover:bg-hover-bg-color rounded-lg flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+          className="py-3 px-6 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full flex items-center transition-all disabled:opacity-30 disabled:cursor-not-allowed text-gray-300 font-medium"
         >
-          <FaArrowLeft className="mr-2" /> Anterior
+          <FaArrowLeft className="mr-3" /> Anterior
         </button>
-        <span className="text-secondary-text">{currentLineIndex + 1} / {dialogue.length}</span>
+        
+        <div className="flex items-center gap-2">
+          <div className="flex gap-1">
+             {dialogue.map((_, i) => (
+                <div key={i} className={`h-2 rounded-full transition-all duration-300 ${i === currentLineIndex ? 'w-6 bg-indigo-500' : 'w-2 bg-gray-600'}`}></div>
+             ))}
+          </div>
+        </div>
+
         {currentLineIndex < dialogue.length - 1 ? (
           <button
             onClick={goToNextLine}
-            className="py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center"
+            className="py-3 px-8 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 rounded-full flex items-center shadow-[0_0_15px_rgba(99,102,241,0.5)] transition-all transform hover:-translate-y-1 font-bold text-white"
           >
-            Próximo <FaArrowRight className="ml-2" />
+            Próximo <FaArrowRight className="ml-3" />
           </button>
         ) : (
           <button
             onClick={handleCompleteNarrative}
-            className="py-2 px-4 bg-green-600 hover:bg-green-700 rounded-lg flex items-center font-bold"
+            className="py-3 px-8 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 rounded-full flex items-center shadow-[0_0_15px_rgba(16,185,129,0.5)] transition-all transform hover:-translate-y-1 font-bold text-white"
           >
-            Continuar Jornada! <FaPlay className="ml-2" />
+            Continuar Jornada <FaPlay className="ml-3 text-sm" />
           </button>
         )}
       </div>

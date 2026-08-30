@@ -9,8 +9,8 @@ import RecentActivityFeed from '../../components/admin/RecentActivityFeed';
 function DashboardOverviewPage() {
   const [dashboardData, setDashboardData] = useState(null);
   const [userGrowthData, setUserGrowthData] = useState([]);
-  const [topActivitiesData, setTopActivitiesData] = useState([]);
   const [activityFeed, setActivityFeed] = useState([]);
+  const [activityStatus, setActivityStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { user } = useContext(AuthContext);
@@ -34,12 +34,14 @@ function DashboardOverviewPage() {
           dashboardRes,
           userGrowthRes,
           topActivitiesRes,
-          feedRes
+          feedRes,
+          activityStatusRes
         ] = await Promise.all([
           fetch(`${apiPrefix}/dashboard_data`, { headers }),
           fetch(`${apiPrefix}/stats/user_growth`, { headers }),
           fetch(`${apiPrefix}/stats/top_activities`, { headers }),
-          fetch(`${apiPrefix}/feed`, { headers })
+          fetch(`${apiPrefix}/feed`, { headers }),
+          fetch(`${apiPrefix}/analytics/activity-status`, { headers })
         ]);
 
         // Verificação robusta de erros
@@ -47,12 +49,14 @@ function DashboardOverviewPage() {
         if (!userGrowthRes.ok) throw new Error(`Falha ao buscar dados de crescimento: ${userGrowthRes.statusText}`);
         if (!topActivitiesRes.ok) throw new Error(`Falha ao buscar top atividades: ${topActivitiesRes.statusText}`);
         if (!feedRes.ok) throw new Error(`Falha ao buscar feed: ${feedRes.statusText}`);
+        if (!activityStatusRes.ok) throw new Error(`Falha ao buscar status de atividades: ${activityStatusRes.statusText}`);
 
         // Processa as respostas JSON
         setDashboardData(await dashboardRes.json());
         setUserGrowthData(await userGrowthRes.json());
         setTopActivitiesData(await topActivitiesRes.json());
         setActivityFeed(await feedRes.json());
+        setActivityStatus(await activityStatusRes.json());
 
       } catch (e) {
         console.error("Erro detalhado:", e);
@@ -93,23 +97,32 @@ function DashboardOverviewPage() {
 
       {dashboardData && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-primary-bg/50 p-6 rounded-xl"><Users className="text-accent-teal mb-2" size={24} /> <p className="text-secondary-text">Total de Usuários</p> <p className="text-2xl font-bold text-primary-text">{dashboardData.total_users}</p></div>
-          <div className="bg-primary-bg/50 p-6 rounded-xl"><UserIcon className="text-accent-purple mb-2" size={24} /> <p className="text-secondary-text">Total de Professores</p> <p className="text-2xl font-bold text-primary-text">{dashboardData.total_professors}</p></div>
-          <div className="bg-primary-bg/50 p-6 rounded-xl"><GraduationCap className="text-accent-yellow mb-2" size={24} /> <p className="text-secondary-text">Total de Alunos</p> <p className="text-2xl font-bold text-primary-text">{dashboardData.total_students}</p></div>
-          <div className="bg-primary-bg/50 p-6 rounded-xl"><BookOpen className="text-blue-400 mb-2" size={24} /> <p className="text-secondary-text">Total de Atividades</p> <p className="text-2xl font-bold text-primary-text">{dashboardData.total_activities}</p></div>
+          <div className="bg-secondary-bg border border-border-color p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow"><Users className="text-accent-teal mb-2" size={24} /> <p className="text-secondary-text">Total de Usuários</p> <p className="text-2xl font-bold text-primary-text">{dashboardData.total_users}</p></div>
+          <div className="bg-secondary-bg border border-border-color p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow"><UserIcon className="text-accent-purple mb-2" size={24} /> <p className="text-secondary-text">Total de Professores</p> <p className="text-2xl font-bold text-primary-text">{dashboardData.total_professors}</p></div>
+          <div className="bg-secondary-bg border border-border-color p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow"><GraduationCap className="text-accent-yellow mb-2" size={24} /> <p className="text-secondary-text">Total de Alunos</p> <p className="text-2xl font-bold text-primary-text">{dashboardData.total_students}</p></div>
+          <div className="bg-secondary-bg border border-border-color p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow"><BookOpen className="text-blue-400 mb-2" size={24} /> <p className="text-secondary-text">Total de Atividades</p> <p className="text-2xl font-bold text-primary-text">{dashboardData.total_activities}</p></div>
+        </div>
+      )}
+
+      {activityStatus && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="bg-secondary-bg border border-border-color p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow"><GraduationCap className="text-pink-400 mb-2" size={24} /> <p className="text-secondary-text">Turmas Ativas</p> <p className="text-2xl font-bold text-primary-text">{activityStatus.total_classes}</p></div>
+          <div className="bg-secondary-bg border border-border-color p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow"><Info className="text-gray-400 mb-2" size={24} /> <p className="text-secondary-text">Ativ. Não Iniciadas</p> <p className="text-2xl font-bold text-primary-text">{activityStatus.not_started}</p></div>
+          <div className="bg-secondary-bg border border-border-color p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow"><BookOpen className="text-accent-yellow mb-2" size={24} /> <p className="text-secondary-text">Ativ. em Progresso</p> <p className="text-2xl font-bold text-primary-text">{activityStatus.in_progress}</p></div>
+          <div className="bg-secondary-bg border border-border-color p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow"><Users className="text-green-400 mb-2" size={24} /> <p className="text-secondary-text">Ativ. Concluídas</p> <p className="text-2xl font-bold text-primary-text">{activityStatus.completed}</p></div>
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-primary-bg/50 p-6 rounded-xl">
+        <div className="lg:col-span-2 bg-secondary-bg border border-border-color p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
           <h2 className="text-xl font-bold text-primary-text mb-4">Crescimento de Usuários (Últimos 30 dias)</h2>
           <UserGrowthChart data={userGrowthData} />
         </div>
-        <div className="lg:col-span-1 bg-primary-bg/50 p-6 rounded-xl">
+        <div className="lg:col-span-1 bg-secondary-bg border border-border-color p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
           <h2 className="text-xl font-bold text-primary-text mb-4">Atividade Recente</h2>
           <RecentActivityFeed feedItems={activityFeed} />
         </div>
-        <div className="lg:col-span-3 bg-primary-bg/50 p-6 rounded-xl">
+        <div className="lg:col-span-3 bg-secondary-bg border border-border-color p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
           <h2 className="text-xl font-bold text-primary-text mb-4">Top 5 Atividades Mais Copiadas</h2>
           <TopActivitiesChart data={topActivitiesData} />
         </div>

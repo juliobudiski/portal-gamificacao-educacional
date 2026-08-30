@@ -1,7 +1,7 @@
 # backend/app/tasks.py
 from datetime import datetime, timedelta
 from .extensions import db, scheduler
-from .models import Activity
+from .services.activity_service import delete_expired_drafts as cleanup_drafts
 import logging
 
 logger = logging.getLogger(__name__)
@@ -17,15 +17,7 @@ def register_tasks(app):
         """
         with app.app_context():
             try:
-                expiration_date = datetime.utcnow() - timedelta(days=7)
-                
-                # Deleta rascunhos antigos
-                deleted_count = Activity.query.filter(
-                    Activity.is_draft == True,
-                    Activity.updated_at < expiration_date
-                ).delete()
-                
-                db.session.commit()
+                deleted_count = cleanup_drafts(days_old=7)
                 
                 if deleted_count > 0:
                     logger.info(f"[Auto-Cleanup] {deleted_count} rascunhos expirados foram removidos.")

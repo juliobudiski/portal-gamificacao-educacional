@@ -25,6 +25,7 @@ function RegisterPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [selectedRole, setSelectedRole] = useState('aluno'); // Estado para o tipo de perfil (aluno/professor)
+  const [accessCode, setAccessCode] = useState(''); // Estado para o Código Institucional (Professor)
 
   // --- NOVO: Estados para controlar a visibilidade da senha ---
   const [showPassword, setShowPassword] = useState(false);
@@ -128,7 +129,12 @@ function RegisterPage() {
       return;
     }
 
-    const registrationData = { name, email, password, role: selectedRole };
+    if (selectedRole === 'professor' && !accessCode.trim()) {
+      setError('O Código de Acesso Institucional é obrigatório para cadastro de professores.');
+      return;
+    }
+
+    const registrationData = { name, email, password, role: selectedRole, accessCode };
 
     const result = await performAuthRequest(
       `${import.meta.env.VITE_API_URL}/api/auth/register`,
@@ -395,6 +401,46 @@ Professora Orientadora: Prof.ª Dr.ª Aline Maria Malachini Miotto Amaral - ammm
                   </div>
                 </div>
               </div>
+
+              {/* Campo Código Institucional para Professores */}
+              {selectedRole === 'professor' && (
+                <div className="space-y-2 animate-fade-in">
+                  <label htmlFor="accessCode" className="block text-sm font-bold text-accent-yellow">
+                    Código de Acesso Institucional
+                  </label>
+                  <p className="text-xs text-secondary-text mb-1">
+                    Insira o código fornecido pela coordenação para validar seu perfil de professor.
+                  </p>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      id="accessCode"
+                      name="accessCode"
+                      required
+                      value={accessCode}
+                      onChange={(e) => setAccessCode(e.target.value)}
+                      className="w-full px-4 py-3 bg-accent-yellow/10 border-2 border-accent-yellow/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-yellow text-primary-text placeholder-gray-500 transition-all duration-200"
+                      placeholder="Ex: GAMIFICA_PROF_2026"
+                    />
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                      <svg className="w-5 h-5 text-accent-yellow" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <a
+                      href="mailto:juliobudiskiherculani@gmail.com?subject=Solicita%C3%A7%C3%A3o%20de%20C%C3%B3digo%20Institucional%20-%20Professor&body=Ol%C3%A1%2C%0A%0AGostaria%20de%20solicitar%20o%20c%C3%B3digo%20de%20acesso%20institucional%20para%20criar%20minha%20conta%20como%20professor%20no%20Portal%20GamificaEdu.%0A%0A%2A%2ADados%20do%20Professor%3A%2A%2A%0ANome%20Completo%3A%20%0AInstitui%C3%A7%C3%A3o%20de%20Ensino%3A%20%0ADisciplina%20Ministrada%3A%20%0A%0AAguardo%20retorno.%20Obrigado%21"
+                      className="text-xs font-semibold text-accent-yellow hover:text-yellow-600 hover:underline transition-colors"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Não tem o código? Solicite aqui.
+                    </a>
+                  </div>
+                </div>
+              )}
+
               <button
                 type="submit"
                 disabled={!termsAccepted}

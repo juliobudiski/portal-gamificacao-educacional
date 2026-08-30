@@ -8,128 +8,10 @@ progress_bp = Blueprint('progress', __name__)
 from datetime import datetime, timedelta # Adicione timedelta
 import random # Adicione random
 from sqlalchemy.orm.attributes import flag_modified
-from .medals import check_and_award_medals
+from ..services.medal_service import MedalService
+from ..services.roulette_service import spin_roulette, play_slot
 import json
-def xp_for_next_level(level):
-    """Calcula o XP necessário para o próximo nível com base no nível atual."""
-    # Nível 1 -> 100, Nível 2 -> 150, Nível 3 -> 200, etc.
-    return 100 + (level - 1) * 50
-
-def calculate_level(total_points):
-    """Calcula o nível atual, o XP para o próximo nível e o XP acumulado até o nível atual."""
-    level = 1
-    xp_required_for_current_level = 0
-    xp_needed = xp_for_next_level(level)
-
-    if total_points is None:
-        total_points = 0
-
-    while total_points >= xp_needed:
-        total_points -= xp_needed
-        xp_required_for_current_level += xp_needed
-        level += 1
-        xp_needed = xp_for_next_level(level)
-    
-    return {
-        "level": level,
-        "xpForNextLevel": xp_needed,
-        "xpEarnedForCurrentLevel": total_points,
-        "xpAccumulatedUntilCurrentLevel": xp_required_for_current_level
-    }
-
-def _get_progress_json(user_id, activity_id):
-    """
-    Função auxiliar que busca, calcula e retorna o JSON
-    completo do progresso de um aluno para uma atividade.
-    (Agora retorna um DICIONÁRIO ou levanta uma EXCEÇÃO)
-    """
-    user = User.query.get(user_id)
-    if not user or user.role != 'aluno':
-        # Erro de permissão
-        raise Exception("Acesso negado: Apenas alunos podem ver o progresso.")
-
-    # Busca o progresso e a atividade
-    progress = ActivityProgress.query.filter_by(student_id=user.id, activity_id=activity_id).first()
-    activity = Activity.query.get(activity_id)
-    if not activity:
-        raise Exception("Atividade não encontrada.")
-
-    # Validações de data
-    now = datetime.utcnow()
-    if activity.available_from and now < activity.available_from:
-        raise Exception(f"Esta atividade estará disponível em {activity.available_from.strftime('%d/%m/%Y às %H:%M')}.")
-    
-    if activity.expires_at and now > activity.expires_at:
-        raise Exception("O prazo para esta atividade já encerrou.")
-    
-    # Se o progresso não existir, cria um registro inicial para o aluno
-    if not progress:
-        current_app.logger.info(f"Nenhum progresso encontrado para o usuário {user.id}. Criando novo registro para a turma {activity.class_id}.")
-        progression_path = activity.gamification_design.get('progression_path', [])
-        first_step_id = progression_path[0]['id'] if progression_path else None
-        progress = ActivityProgress(
-            student_id=user.id,
-            activity_id=activity.id,
-            class_id=activity.class_id,
-            status='in_progress'
-        )
-        db.session.add(progress)
-        db.session.commit() # Commita aqui para que 'progress' tenha um ID
-
-    # 1. Calcula o nível do aluno baseado no XP total
-    total_xp = progress.total_xp_earned if progress.total_xp_earned is not None else 0
-    level_info = calculate_level(total_xp) # Retorna um dicionário
-    
-    stats = { "scoreAchieved": progress.points_earned or 0, "totalPossibleScore": 100, "totalQuestions": 0, "averageTime": 0, "achievements": 0 }
-    
-    multiplayer_data = {"teammates": {}, "rivals": {}}
-    team_name = None # Variável para armazenar o nome da casa
-    
-    # Busca posições
-    multiplayer_data = _get_multiplayer_positions(user.id, activity)
-    
-    if activity.is_team_activity:            
-        # Busca o Nome do Time
-        enrollment = Enrollment.query.filter_by(student_id=user.id, class_id=activity.class_id).first()
-        if enrollment and enrollment.team_id:
-            team = Team.query.get(enrollment.team_id)
-            if team:
-                team_name = team.name
-
-    # 2. Calcula as estatísticas (stats) dinamicamente
-    total_possible_points = 0
-    total_questions = 0
-    if activity.game_elements and isinstance(activity.game_elements.get('questions'), list):
-        questions = activity.game_elements['questions']
-        total_questions = len(questions)
-        total_possible_points = sum(int(q.get('points', 0)) for q in questions)
-
-    # Cria o objeto 'stats' manualmente
-    stats = {
-        "scoreAchieved": progress.points_earned or 0,
-        "totalPossibleScore": total_possible_points,
-        "totalQuestions": total_questions,
-        "averageTime": 35,  # Mockado
-        "achievements": 3     # Mockado
-    }
-
-    # 3. Retorna um DICIONÁRIO (não um jsonify)
-    return {
-        "level": level_info["level"],
-        "xp": level_info["xpEarnedForCurrentLevel"],
-        "xpForNextLevel": level_info["xpForNextLevel"],
-        "points_earned": progress.points_earned or 0,
-        "coins": progress.coins or 0,
-        "status": progress.status,
-        "completed_steps": progress.completed_steps or [],
-        "attempts": progress.attempts or 0,
-        "stats": stats,
-        "unlocked_activity_avatars": progress.unlocked_activity_avatars or [],
-        "equipped_activity_avatar_url": progress.equipped_activity_avatar_url,
-        "teammates_positions": multiplayer_data["teammates"], # Envia só a parte de colegas
-        "rivals_positions": multiplayer_data["rivals"],       # Envia só a parte de rivais
-        "team_name": team_name
-    }
+from ..services.progress_service import ProgressService
     
 @progress_bp.route('/<int:activity_id>', methods=['GET'])
 @jwt_required()
@@ -139,7 +21,7 @@ def get_activity_progress(activity_id):
     
     try:
         # 1. Chama a função auxiliar que retorna um DICIONÁRIO
-        progress_data_dict = _get_progress_json(user_id, activity_id)
+        progress_data_dict = ProgressService.get_progress_json(user_id, activity_id)
         
         # 2. Transforma o DICIONÁRIO em JSON
         return jsonify(progress_data_dict), 200
@@ -256,7 +138,7 @@ def get_analytics(activity_id):
         total_answers = correct_answers + wrong_answers
         accuracy = (correct_answers / total_answers * 100) if total_answers > 0 else 0
         chat_messages = 0
-        level_info = calculate_level(progress.points_earned)
+        level_info = ProgressService.calculate_level(progress.points_earned)
 
         # --- CORREÇÃO APLICADA AQUI ---
         # Trocamos a busca de 'event_type' e 'event_data' para usar 'action' e 'activity_id'
@@ -544,118 +426,12 @@ def spin_roulette_for_activity(activity_id):
         progress = ActivityProgress(student_id=user.id, activity_id=activity_id, class_id=activity.class_id)
         db.session.add(progress)
 
-    # --- [MODO TESTE] COOLDOWN DESATIVADO ---
-    # Para voltar ao normal, descomente as linhas abaixo:
-    if not is_retry and progress.last_spin_date:
-        last_spin = progress.last_spin_date.date()
-        today = datetime.utcnow().date()
-        if last_spin == today:
-            return jsonify({"message": "Você já girou a roleta hoje! Volte amanhã."}), 400
+    result = spin_roulette(user, progress, activity_id, is_retry)
+    if "error" in result:
+        return jsonify({"message": result["error"]}), result.get("status", 400)
 
-    # --- LISTA DE PRÊMIOS (XP -> MOEDAS) ---
-    prizes = [
-        {"type": "coins", "value": 50, "label": "50 Moedas"},
-        {"type": "coins", "value": 100, "label": "100 Moedas"},
-        {"type": "coins", "value": 150, "label": "150 Moedas"},
-        {"type": "title", "value": "TITLE_LUCKY", "label": "Título: O Sortudo"},
-        {"type": "avatar", "value": {"url": "/avatars/avatar_special.webp", "name": "Sortudo", "promotable": True}, "label": "Avatar Raro!"},
-    ]
-
-    # --- [HACK DE PROBABILIDADE] ---
-    # Pesos correspondentes à lista acima. Aumente o do Título (índice 3) para testar.
-    # Ex: [10, 10, 10, 50, 10] -> Título tem 5x mais chance que o resto.
-    prize_weights = [20, 20, 20, 10, 10] 
-
-    # Loop para garantir que não caia avatar repetido (mantendo os pesos)
-    prize = None
-    attempts = 0
-    
-    unlocked_avatar_urls = [av['url'] for av in (progress.unlocked_activity_avatars or []) if isinstance(av, dict)]
-
-    while attempts < 20:
-        # random.choices retorna uma lista, pegamos o primeiro [0]
-        selected_prize = random.choices(prizes, weights=prize_weights, k=1)[0]
-        
-        # Se for avatar e já tiver, tenta de novo
-        if selected_prize['type'] == 'avatar':
-            if selected_prize['value']['url'] in unlocked_avatar_urls:
-                # Opcional: Se quiser permitir retry para avatar repetido, pare aqui e deixe a lógica de duplicidade abaixo tratar
-                prize = selected_prize
-                break
-            else:
-                prize = selected_prize
-                break
-        else:
-            prize = selected_prize
-            break
-        attempts += 1
-    
-    # Fallback se o loop falhar
-    if not prize: prize = prizes[0]
-
-    # --- LÓGICA DE DUPLICIDADE (RETRY) ---
-    is_duplicate = False
-    
-    if prize['type'] == 'avatar':
-        if prize['value']['url'] in unlocked_avatar_urls:
-            is_duplicate = True
-
-    elif prize['type'] == 'title':
-        effect_id = prize['value']
-        title_obj = Title.query.filter_by(effect_id=effect_id).first()
-        if not title_obj:
-            # Cria o título se não existir
-            title_obj = Title(effect_id=effect_id, display_text="O Sortudo", description="Concedido pela Roda da Fortuna.")
-            db.session.add(title_obj)
-            db.session.flush()
-            
-        existing_unlock = UserUnlockedTitle.query.filter_by(user_id=user.id, activity_id=activity_id, title_id=title_obj.id).first()
-        if existing_unlock:
-            is_duplicate = True
-
-    if is_duplicate:
-        return jsonify({
-            "message": "Item repetido! Gire novamente.",
-            "prize": {
-                "label": prize['label'],
-                "type": prize['type'],
-                "is_duplicate": True
-            }
-        }), 200
-
-    # --- CONSOLIDAÇÃO DO PRÊMIO ---
-    if prize['type'] == 'coins':
-        # [MUDANÇA] Agora soma Moedas, não XP
-        progress.coins = (progress.coins or 0) + prize['value']
-        # Se quiser somar pontos ganhos também (para ranking), descomente:
-        progress.points_earned = (progress.points_earned or 0) + prize['value']
-        progress.total_xp_earned = (progress.total_xp_earned or 0) + prize['value']
-        
-        
-    elif prize['type'] == 'avatar':
-        if progress.unlocked_activity_avatars is None: progress.unlocked_activity_avatars = []
-        progress.unlocked_activity_avatars.append(prize['value'])
-        flag_modified(progress, "unlocked_activity_avatars")
-
-    elif prize['type'] == 'title':
-        title_obj = Title.query.filter_by(effect_id=prize['value']).first()
-        new_unlock = UserUnlockedTitle(user_id=user.id, activity_id=activity_id, title_id=title_obj.id)
-        db.session.add(new_unlock)
-        progress.equipped_title_id = title_obj.id # Equipa automático para feedback visual
-
-    # Salva data (Em teste, isso não vai bloquear devido ao comentário lá em cima)
-    progress.last_spin_date = datetime.utcnow()
-    
-    new_win = RouletteWin(user_id=user.id, activity_id=activity_id, prize_label=prize['label'])
-    db.session.add(new_win)
-    db.session.commit()
-
-    updated_progress_data = _get_progress_json(user_id, activity_id)
-    return jsonify({
-        "message": f"Você ganhou {prize['label']}!", 
-        "prize": {"label": prize['label'], "type": prize['type'], "is_duplicate": False},
-        "updated_progress": updated_progress_data
-    }), 200
+    result["updated_progress"] = _get_progress_json(user_id, activity_id)
+    return jsonify(result), 200
 
 
 # --- NOVA ROTA PARA BUSCAR OS VENCEDORES ---
@@ -689,111 +465,21 @@ def get_roulette_winners(activity_id):
 
 
 
-# Configuração dos Símbolos (Emojis) e Pesos
-# Quanto menor o peso, mais raro. O multiplicador é aplicado na aposta.
-SLOT_SYMBOLS = {
-    "orange":  {"icon": "🍊", "weight": 40, "multiplier": 2},  # Comum
-    "bell":    {"icon": "🔔", "weight": 30, "multiplier": 5},  # Médio
-    "diamond": {"icon": "💎", "weight": 15, "multiplier": 10}, # Raro
-    "wild":    {"icon": "🐯", "weight": 5,  "multiplier": 50}, # Jackpot (Tigre)
-    "bomb":    {"icon": "💣", "weight": 10, "multiplier": 0},  # Perda (ajuda a diluir)
-}
-
-PAYLINES = [
-    [(0,0), (0,1), (0,2)], # Linha Topo
-    [(1,0), (1,1), (1,2)], # Linha Meio
-    [(2,0), (2,1), (2,2)], # Linha Baixo
-    [(0,0), (1,1), (2,2)], # Diagonal \
-    [(2,0), (1,1), (0,2)], # Diagonal /
-]
-
 @progress_bp.route('/<int:activity_id>/play-slot', methods=['POST'])
 @jwt_required()
 def play_slot_machine(activity_id):
     user_id = get_jwt_identity()
     user = User.query.get(user_id)
     
-    # 1. Validar Custo da Aposta
-    BET_COST = 10
-    current_coins = getattr(user, 'coins', 0) # Ou buscar na tabela de progresso se for por atividade
-    
-    # Se as moedas ficarem no ActivityProgress, ajuste aqui:
     progress = ActivityProgress.query.filter_by(student_id=user.id, activity_id=activity_id).first()
     if not progress: return jsonify({"message": "Progresso não encontrado"}), 404
     
-    current_coins = progress.coins or 0
-    
-    if current_coins < BET_COST:
-        return jsonify({"message": f"Saldo insuficiente. Custo: {BET_COST} moedas."}), 400
+    result = play_slot(user, progress, activity_id)
+    if "error" in result:
+        return jsonify({"message": result["error"]}), result.get("status", 400)
 
-    # 2. Debitar Aposta
-    progress.coins = current_coins - BET_COST
-    
-    # 3. Gerar Matriz 3x3 (O coração do jogo)
-    # Escolhemos 9 símbolos baseados em seus pesos (probabilidade)
-    keys = list(SLOT_SYMBOLS.keys())
-    weights = [SLOT_SYMBOLS[k]['weight'] for k in keys]
-    
-    matrix = []
-    for _ in range(3): # 3 Linhas
-        row = random.choices(keys, weights=weights, k=3)
-        matrix.append(row)
-
-    # 4. Verificar Vitórias (Linhas de Pagamento)
-    total_win = 0
-    winning_lines = [] # Para mostrar no frontend onde ganhou
-    
-    for line_index, coords in enumerate(PAYLINES):
-        # Pega os símbolos dessa linha
-        s1 = matrix[coords[0][0]][coords[0][1]]
-        s2 = matrix[coords[1][0]][coords[1][1]]
-        s3 = matrix[coords[2][0]][coords[2][1]]
-        
-        # Lógica de Vitória: 3 Iguais OU (2 Iguais + 1 Wild)
-        # Simplificação: Vamos exigir 3 iguais (ou Wild conta como coringa)
-        if s1 == s2 == s3 or (s1 == s2 and s3 == 'wild') or (s1 == 'wild' and s2 == s3):
-            # Determina qual é o símbolo vencedor (não pode ser a bomba se ganhar)
-            winner_symbol = s1 if s1 != 'wild' else s2
-            if winner_symbol == 'bomb': continue # Bomba nunca paga
-
-            win_amount = BET_COST * SLOT_SYMBOLS[winner_symbol]['multiplier']
-            total_win += win_amount
-            winning_lines.append({
-                "line_index": line_index, 
-                "symbol": winner_symbol,
-                "amount": win_amount
-            })
-
-    # 5. Creditar Vitória (Se houver)
-    if total_win > 0:
-        # Soma nas MOEDAS
-        progress.coins += total_win
-        
-        # --- CORREÇÃO: Soma no XP (para o Ranking) e Pontos ---
-        progress.total_xp_earned = (progress.total_xp_earned or 0) + total_win
-        progress.points_earned = (progress.points_earned or 0) + total_win
-        # Registra vencedor histórico APENAS para grandes vitórias
-        if total_win >= 50: 
-            # CORREÇÃO AQUI:
-            # 1. Usamos SlotWin em vez de RouletteWin
-            # 2. O campo correto é 'prize_description' (baseado na sua rota get_slot_winners)
-            new_win = SlotWin(
-                user_id=user.id, 
-                activity_id=activity_id, 
-                prize_description=f"{total_win} Moedas"
-            )
-            db.session.add(new_win)
-
-    db.session.commit()
-    
-    # 6. Retorno Rico para o Frontend
-    return jsonify({
-        "matrix": matrix, # [['orange', 'bell', 'orange'], [...]]
-        "total_win": total_win,
-        "winning_lines": winning_lines,
-        "updated_progress": _get_progress_json(user_id, activity_id), # Sua função auxiliar existente
-        "is_jackpot": total_win >= (BET_COST * 20)
-    })
+    result["updated_progress"] = _get_progress_json(user_id, activity_id)
+    return jsonify(result), 200
 
 @progress_bp.route('/<int:activity_id>/slot-winners', methods=['GET'])
 @jwt_required()
@@ -959,7 +645,7 @@ def collect_final_reward(activity_id):
     db.session.add(completion_event)
 
     try:
-        check_and_award_medals(user_id=user_id, activity_id=activity_id, event_type='activity_completed')
+        MedalService.check_and_award_medals(user_id=user_id, activity_id=activity_id, event_type='activity_completed')
     except Exception as e:
         # Usamos um log de erro para não quebrar a funcionalidade principal se o sistema de medalhas falhar
         current_app.logger.error(f"Erro ao verificar medalhas para user {user_id} na atividade {activity_id}: {str(e)}")
@@ -1127,124 +813,3 @@ def equip_cosmetic(activity_id):
     
     db.session.commit()
     return jsonify({"message": f"Cosmético equipado no slot '{slot}' com sucesso!"}), 200
-
-def _get_multiplayer_positions(user_id, activity):
-    """
-    Retorna posições no tabuleiro.
-    - Se for EM EQUIPE: Retorna 'teammates' (meu time) e 'rivals' (outros times).
-    - Se for SOLO: Retorna todos os alunos da turma em 'teammates' (como 'Colegas').
-    """
-    data = { "teammates": {}, "rivals": {} }
-    
-    # Mapeamento da trilha (ID -> Índice)
-    progression_path = activity.gamification_design.get('progression_path', [])
-    step_order = {step['id']: i for i, step in enumerate(progression_path)}
-    step_order['start'] = -1
-    ordered_step_ids = [step['id'] for step in progression_path]
-
-    def get_current_step_id(progress_obj):
-        if not progress_obj or not progress_obj.completed_steps:
-            return 'start'
-        last_completed = progress_obj.completed_steps[-1]
-        if last_completed == ordered_step_ids[-1]:
-             return 'final_reward' if progress_obj.status == 'completed' else last_completed
-        current_index = step_order.get(last_completed, -1) + 1
-        if current_index < len(ordered_step_ids):
-            return ordered_step_ids[current_index]
-        return last_completed
-
-    # --- CENÁRIO 1: ATIVIDADE SOLO (MOSTRAR TODOS COMO COLEGAS) ---
-    if not activity.is_team_activity:
-        # Busca todos os alunos da turma (independente de time)
-        results = (
-            db.session.query(User, ActivityProgress)
-            .join(Enrollment, User.id == Enrollment.student_id)
-            .outerjoin(ActivityProgress, (ActivityProgress.student_id == User.id) & (ActivityProgress.activity_id == activity.id))
-            .filter(Enrollment.class_id == activity.class_id)
-            .filter(User.id != user_id) # Exclui eu mesmo
-            .all()
-        )
-        
-        for user_obj, prog in results:
-            current_step = get_current_step_id(prog)
-            
-            if current_step not in data["teammates"]:
-                data["teammates"][current_step] = []
-            
-            avatar = prog.equipped_activity_avatar_url if prog else None
-            avatar = avatar or user_obj.profile_picture or '/avatars/default_avatar.webp'
-            
-            data["teammates"][current_step].append({
-                "name": user_obj.name,
-                "avatar": avatar
-            })
-            
-        return data
-
-    # --- CENÁRIO 2: ATIVIDADE EM EQUIPE (LÓGICA ORIGINAL) ---
-    
-    # 1. Descobre o time do usuário
-    my_enrollment = Enrollment.query.filter_by(student_id=user_id, class_id=activity.class_id).first()
-    if not my_enrollment or not my_enrollment.team_id:
-        return data # Sem time, sem multiplayer
-
-    my_team_id = my_enrollment.team_id
-    
-    results = (
-        db.session.query(Enrollment, User, ActivityProgress, Team)
-        .join(User, Enrollment.student_id == User.id)
-        .join(Team, Enrollment.team_id == Team.id)
-        .outerjoin(ActivityProgress, (ActivityProgress.student_id == User.id) & (ActivityProgress.activity_id == activity.id))
-        .filter(Enrollment.class_id == activity.class_id)
-        .all()
-    )
-
-    rival_max_indices = {}
-    rival_teams_info = {}
-
-    for enroll, user_obj, prog, team in results:
-        current_step = get_current_step_id(prog)
-        current_index = step_order.get(current_step, -1)
-        if current_step == 'final_reward': current_index = 9999
-        
-        # A. MEU TIME (Detalhado)
-        if team.id == my_team_id:
-            if user_obj.id == user_id: continue 
-
-            if current_step not in data["teammates"]:
-                data["teammates"][current_step] = []
-            
-            avatar = prog.equipped_activity_avatar_url if prog else None
-            avatar = avatar or user_obj.profile_picture or '/avatars/default_avatar.webp'
-            
-            data["teammates"][current_step].append({
-                "name": user_obj.name,
-                "avatar": avatar
-            })
-
-        # B. RIVAIS (Agrupado por Time)
-        else:
-            if team.id not in rival_max_indices:
-                rival_max_indices[team.id] = -99
-                rival_teams_info[team.id] = team
-            
-            if current_index > rival_max_indices[team.id]:
-                rival_max_indices[team.id] = current_index
-
-    # Processa Rivais
-    for r_team_id, max_idx in rival_max_indices.items():
-        if max_idx == -99: step_id = 'start'
-        elif max_idx == 9999: step_id = 'final_reward'
-        elif 0 <= max_idx < len(ordered_step_ids): step_id = ordered_step_ids[max_idx]
-        else: step_id = 'start'
-
-        if step_id not in data["rivals"]:
-            data["rivals"][step_id] = []
-        
-        team_obj = rival_teams_info[r_team_id]
-        data["rivals"][step_id].append({
-            "name": team_obj.name,
-            "avatar": team_obj.avatar_url or '/badges/default_shield.webp'
-        })
-
-    return data

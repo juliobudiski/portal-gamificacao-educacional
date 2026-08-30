@@ -207,7 +207,7 @@ export const helpContent = {
                     <p>Elementos ideais para motivar cada tipo de jogador (Baseado em Hamari & Tuunanen, 2014):</p>
 
                     <div className="grid gap-4 sm:grid-cols-1">
-                        <div className="bg-secondary-bg dark:bg-gray-800/40 p-4 rounded-xl border border-border-color dark:border-gray-700 shadow-sm hover:border-accent-teal transition-colors">
+                        <div className="bg-secondary-bg dark:bg-gray-800/40 p-4 rounded-xl border border-border-color shadow-sm hover:border-accent-teal transition-colors">
                             <strong className="block text-accent-purple text-lg mb-2">Jogador Competitivo:</strong>
                             <ul className="list-disc pl-5 text-sm">
                                 <li>Competição clara e Rankings.</li>
@@ -216,7 +216,7 @@ export const helpContent = {
                             </ul>
                         </div>
 
-                        <div className="bg-secondary-bg dark:bg-gray-800/40 p-4 rounded-xl border border-border-color dark:border-gray-700 shadow-sm hover:border-accent-teal transition-colors">
+                        <div className="bg-secondary-bg dark:bg-gray-800/40 p-4 rounded-xl border border-border-color shadow-sm hover:border-accent-teal transition-colors">
                             <strong className="block text-accent-purple text-lg mb-2">Jogador Cooperativo:</strong>
                             <ul className="list-disc pl-5 text-sm">
                                 <li>Trabalho em equipe e objetivos comuns.</li>
@@ -224,7 +224,7 @@ export const helpContent = {
                             </ul>
                         </div>
 
-                        <div className="bg-secondary-bg dark:bg-gray-800/40 p-4 rounded-xl border border-border-color dark:border-gray-700 shadow-sm hover:border-accent-teal transition-colors">
+                        <div className="bg-secondary-bg dark:bg-gray-800/40 p-4 rounded-xl border border-border-color shadow-sm hover:border-accent-teal transition-colors">
                             <strong className="block text-accent-purple text-lg mb-2">Jogador Imersivo:</strong>
                             <ul className="list-disc pl-5 text-sm">
                                 <li>Narrativas envolventes e mundos detalhados.</li>
@@ -232,7 +232,7 @@ export const helpContent = {
                             </ul>
                         </div>
 
-                        <div className="bg-secondary-bg dark:bg-gray-800/40 p-4 rounded-xl border border-border-color dark:border-gray-700 shadow-sm hover:border-accent-teal transition-colors">
+                        <div className="bg-secondary-bg dark:bg-gray-800/40 p-4 rounded-xl border border-border-color shadow-sm hover:border-accent-teal transition-colors">
                             <strong className="block text-accent-purple text-lg mb-2">Jogador de Realização:</strong>
                             <ul className="list-disc pl-5 text-sm">
                                 <li>Objetivos claros e progressão por habilidade.</li>
@@ -240,7 +240,7 @@ export const helpContent = {
                             </ul>
                         </div>
 
-                        <div className="bg-secondary-bg dark:bg-gray-800/40 p-4 rounded-xl border border-border-color dark:border-gray-700 shadow-sm hover:border-accent-teal transition-colors">
+                        <div className="bg-secondary-bg dark:bg-gray-800/40 p-4 rounded-xl border border-border-color shadow-sm hover:border-accent-teal transition-colors">
                             <strong className="block text-accent-purple text-lg mb-2">Jogador Social:</strong>
                             <ul className="list-disc pl-5 text-sm">
                                 <li>Interação social e mentorias.</li>
@@ -451,4 +451,34 @@ export const helpContent = {
             </>
         ),
     },
+
+    tabuleiro_progressao: {
+        title: "Ajuda - Trilha de Progressão",
+        content: (
+            <>
+                <div className="space-y-4 text-primary-text text-justify">
+                    <div className="mb-6 pb-4 border-b border-gray-100">
+                        <h4 className="font-bold text-lg text-accent-teal mb-2">Construindo a Jornada</h4>
+                        <p className="mb-3">
+                            A trilha de progressão é a espinha dorsal do seu tabuleiro. Ela guia o aluno por meio de narrativas, conteúdos e desafios (quizzes).
+                        </p>
+                        <ul className="list-disc pl-5 space-y-2 text-gray-700 mb-4">
+                            <li>
+                                <strong>Narrativas:</strong> Use para engajar o aluno na história antes de cobrar conhecimento.
+                            </li>
+                            <li>
+                                <strong>Conteúdos:</strong> Disponibilize material de apoio, links ou textos para estudo.
+                            </li>
+                            <li>
+                                <strong>Quizzes:</strong> Teste o conhecimento adquirido. Evite começar a trilha diretamente com um quiz sem introdução.
+                            </li>
+                        </ul>
+                        <div className="mt-4 p-4 rounded-r-xl text-sm border-l-4 bg-accent-teal/10 border-accent-teal text-gray-700 dark:text-gray-200">
+                            <strong className="text-accent-teal font-bold uppercase tracking-wide">Dica da IA:</strong> Você pode usar o Roteirista Virtual para gerar automaticamente a história interligando os passos da trilha!
+                        </div>
+                    </div>
+                </div>
+            </>
+        )
+    }
 };

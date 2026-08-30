@@ -69,10 +69,10 @@ function Step2_DesiredScenario({ activityData, handleInputChange, setActivityDat
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
-        <h2 className="text-2xl font-bold text-primary-text dark:text-primary-text">
+        <h2 className="text-2xl font-bold text-primary-text">
           Cenário Desejado
         </h2>
-        <p className="mt-2 text-secondary-text dark:text-secondary-text">
+        <p className="mt-2 text-secondary-text">
           {activityData.subdomain
             ? <span>Considerando o foco em <span className="text-teal-600 font-semibold">{activityData.subdomain}</span>, quais são suas metas?</span>
             : "Selecione os principais objetivos que você deseja alcançar com esta atividade."
@@ -99,7 +99,7 @@ function Step2_DesiredScenario({ activityData, handleInputChange, setActivityDat
               <div className={`text-4xl ${isSelected ? 'text-teal-500' : 'text-secondary-text group-hover:text-teal-500 dark:text-secondary-text'}`}>
                 {objective.icon}
               </div>
-              <p className={`text-sm font-medium ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-secondary-text dark:text-secondary-text'}`}>
+              <p className={`text-sm font-medium ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-secondary-text'}`}>
                 {objective.text}
               </p>
             </div>
@@ -108,7 +108,7 @@ function Step2_DesiredScenario({ activityData, handleInputChange, setActivityDat
       </div>
 
       <div className="pt-4 border-t dark:border-gray-700">
-        <label htmlFor="desiredScenario.otherObjective" className="block text-sm font-medium text-secondary-text dark:text-secondary-text">
+        <label htmlFor="desiredScenario.otherObjective" className="block text-sm font-medium text-secondary-text">
           Outro objetivo em mente? (Opcional)
         </label>
         <input
@@ -117,7 +117,7 @@ function Step2_DesiredScenario({ activityData, handleInputChange, setActivityDat
           name="desiredScenario.otherObjective"
           value={activityData.desiredScenario.otherObjective || ''}
           onChange={handleInputChange}
-          className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-primary-bg border border-border-color dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+          className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-primary-bg border border-border-color rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
           placeholder="Ex: Preparar alunos para a maratona de programação..."
         />
       </div>

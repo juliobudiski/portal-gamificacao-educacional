@@ -100,59 +100,75 @@ const ChatTab = ({ onReturn }) => {
   };
 
   return (
-    <div className="relative flex flex-col h-full bg-primary-bg p-4 pt-16 text-primary-text rounded-lg" style={{ height: '80vh', maxHeight: '700px' }}>
+    <div className="relative flex flex-col h-full bg-gray-900 p-6 pt-16 text-gray-200 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.8)] border border-white/10 overflow-hidden" style={{ height: '80vh', maxHeight: '700px' }}>
+      {/* Efeitos de luz ao fundo */}
+      <div className="absolute top-1/4 left-0 w-[400px] h-[400px] bg-teal-600/20 rounded-full blur-[100px] pointer-events-none z-0"></div>
+      <div className="absolute bottom-0 right-0 w-[500px] h-[300px] bg-purple-600/20 rounded-full blur-[120px] pointer-events-none z-0"></div>
 
-      <div className='flex-shrink-0'>
-        <button onClick={onReturn} className="absolute top-4 left-4 z-20 flex items-center gap-2 py-2 px-4 bg-secondary-bg text-secondary-text border border-border-color rounded-full shadow-lg hover:bg-primary-bg hover:shadow-xl transition-all">
+      <div className='flex-shrink-0 relative z-20'>
+        <button onClick={onReturn} 
+          className="absolute top-0 left-0 flex items-center gap-2 py-2 px-4 
+                     bg-black/50 text-gray-300 font-bold backdrop-blur-md 
+                     border border-white/10 rounded-full shadow-lg 
+                     hover:bg-white/10 hover:text-white hover:scale-105 transition-all">
           <FaArrowLeft /> Voltar ao Tabuleiro
         </button>
       </div>
-      <h2 className="text-xl font-bold mb-4 flex-shrink-0">Chat da Atividade</h2>
+      
+      <header className="mb-6 relative z-10 flex flex-col items-center">
+        <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-500 drop-shadow-[0_0_10px_rgba(45,212,191,0.5)] flex-shrink-0">Chat Global da Atividade</h2>
+        <p className="text-sm text-gray-400 mt-1">Converse com outros alunos e tire dúvidas.</p>
+      </header>
 
-      <div className="flex-grow overflow-y-auto mb-4 pr-2 space-y-4 custom-scrollbar">
+      <div className="flex-grow overflow-y-auto mb-4 pr-2 space-y-4 custom-scrollbar relative z-10 bg-black/30 backdrop-blur-md p-4 rounded-2xl border border-white/5 shadow-inner">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
-            <FaSpinner className="animate-spin text-3xl text-yellow-400 mb-3" />
-            <p>Carregando histórico...</p>
+            <FaSpinner className="animate-spin text-4xl text-teal-400 mb-4 drop-shadow-[0_0_10px_rgba(45,212,191,0.8)]" />
+            <p className="text-gray-400 font-medium tracking-wide">Carregando histórico holográfico...</p>
           </div>
         ) : error ? (
-          <div className="flex flex-col items-center justify-center h-full text-center text-red-400">
-            <FaExclamationCircle className="text-4xl mb-3" />
-            <p>{error}</p>
+          <div className="flex flex-col items-center justify-center h-full text-center text-red-400 bg-red-900/10 p-6 rounded-xl border border-red-500/20">
+            <FaExclamationCircle className="text-5xl mb-4 text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.6)]" />
+            <p className="font-bold">{error}</p>
           </div>
         ) : (
           <>
+            {messages.length === 0 && (
+                <div className="flex items-center justify-center h-full opacity-50">
+                    <p className="text-gray-400 italic text-center max-w-sm">Nenhuma mensagem ainda. Que tal ser o primeiro a dar um oi?</p>
+                </div>
+            )}
             {messages.map((msg) => {
               const isMine = Number(msg.sender_id) === Number(user.id);
 
               return (
-                <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'} group`}>
+                <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'} group animate-fade-in-up`}>
 
                   {/* Container da bolha e botões de ação */}
-                  <div className="flex items-center gap-2 max-w-xs lg:max-w-md">
+                  <div className="flex items-center gap-2 max-w-[85%] lg:max-w-[70%] relative">
 
                     {/* Botão de Denúncia (só aparece nos dos outros e se não estiver banida) */}
                     {!isMine && !msg.is_censored && (
                       <button
                         onClick={() => handleReportMessage(msg.id)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity p-2 text-gray-500 hover:text-red-500 rounded-full hover:bg-red-500/10"
+                        className="absolute -right-8 opacity-0 group-hover:opacity-100 transition-opacity p-2 text-gray-500 hover:text-red-400 rounded-full hover:bg-red-500/20"
                         title="Denunciar mensagem ofensiva"
                       >
-                        <FaFlag size={12} />
+                        <FaFlag size={14} />
                       </button>
                     )}
 
                     {/* A Bolha da Mensagem */}
-                    <div className={`p-3 rounded-lg shadow-sm border ${msg.is_censored
-                        ? 'bg-gray-800/50 border-red-500/30 text-gray-500 italic' // Estilo de censura
+                    <div className={`p-4 rounded-2xl shadow-md ${msg.is_censored
+                        ? 'bg-gray-800/50 border border-red-500/30 text-gray-500 italic backdrop-blur-sm' // Estilo de censura
                         : isMine
-                          ? 'bg-teal-600 border-teal-500 text-white'
-                          : 'bg-secondary-bg border-border-color text-primary-text'
+                          ? 'bg-gradient-to-br from-teal-600/90 to-cyan-700/90 border border-teal-400/30 text-white rounded-tr-sm shadow-[0_4px_15px_rgba(20,184,166,0.3)]'
+                          : 'bg-gray-800/80 backdrop-blur-md border border-white/10 text-gray-200 rounded-tl-sm shadow-[0_4px_15px_rgba(0,0,0,0.4)]'
                       }`}
                     >
-                      {!isMine && <p className="font-bold text-xs text-teal-400 mb-1">{msg.sender_name}</p>}
-                      <p className="whitespace-pre-wrap">{msg.content}</p>
-                      <p className={`text-right text-[10px] mt-1 opacity-70`}>
+                      {!isMine && !msg.is_censored && <p className="font-extrabold text-[11px] uppercase tracking-wider text-teal-400 mb-1">{msg.sender_name}</p>}
+                      <p className="whitespace-pre-wrap leading-relaxed text-sm md:text-base">{msg.content}</p>
+                      <p className={`text-right text-[10px] mt-2 font-medium ${isMine ? 'text-teal-100/70' : 'text-gray-500'}`}>
                         {new Date(msg.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
@@ -166,29 +182,29 @@ const ChatTab = ({ onReturn }) => {
         )}
       </div>
 
-      <form onSubmit={handleSendMessage} className="flex-shrink-0 flex flex-col gap-2">
-        <div className="flex justify-between text-xs px-1">
-          <span className="text-secondary-text">{newMessage.length}/500</span>
-          {newMessage.length >= 500 && <span className="text-red-400">Limite atingido!</span>}
+      <form onSubmit={handleSendMessage} className="flex-shrink-0 flex flex-col gap-2 relative z-10">
+        <div className="flex justify-between text-[11px] font-bold px-2 uppercase tracking-wider">
+          <span className="text-gray-500">{newMessage.length}/500</span>
+          {newMessage.length >= 500 && <span className="text-red-400 animate-pulse">Limite atingido!</span>}
         </div>
 
-        <div className="flex gap-2 shadow-lg">
+        <div className="flex gap-3 bg-black/40 p-2 rounded-2xl border border-white/10 backdrop-blur-lg shadow-[0_0_20px_rgba(0,0,0,0.5)]">
           <input
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Digite sua mensagem..."
+            placeholder="Transmitir mensagem na rede..."
             maxLength={500}
-            className={`flex-grow p-3 rounded-lg focus:outline-none 
-                bg-secondary-bg border border-border-color
-                text-primary-text transition-colors
-                ${newMessage.length >= 500 ? 'border-red-500 focus:border-red-500' : 'focus:border-accent-teal'}
+            className={`flex-grow p-4 rounded-xl focus:outline-none 
+                bg-gray-900/50 border border-transparent
+                text-white placeholder-gray-500 transition-all
+                ${newMessage.length >= 500 ? 'focus:border-red-500/50 bg-red-900/10' : 'focus:border-teal-500/50 focus:bg-gray-800/80'}
             `}
             disabled={isLoading || !!error}
           />
           <button
             type="submit"
-            className="bg-accent-teal text-gray-900 px-6 py-2 rounded-lg font-bold hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-gradient-to-r from-teal-500 to-cyan-600 text-white px-8 py-3 rounded-xl font-bold uppercase tracking-wider shadow-[0_0_15px_rgba(20,184,166,0.4)] hover:shadow-[0_0_25px_rgba(20,184,166,0.6)] hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none"
             disabled={isLoading || !!error || !newMessage.trim()}
           >
             Enviar

@@ -213,7 +213,7 @@ const FlowchartTheme = ({ children }) => {
     }
 
     if (!gamificationDesign || boardWidth === 0) {
-        return <div ref={boardRef} className="w-full h-full bg-white dark:bg-gray-800" style={{ minHeight: '500px' }} />;
+        return <div ref={boardRef} className="w-full h-full bg-secondary-bg" style={{ minHeight: '500px' }} />;
     }
 
     return (

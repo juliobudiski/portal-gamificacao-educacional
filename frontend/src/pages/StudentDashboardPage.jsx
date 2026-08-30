@@ -9,6 +9,9 @@ import {
 } from 'react-icons/fa';
 import FeedbackModal from '../components/FeedbackModal';
 import { useAuthOperations } from '../hooks/useAuthOperations';
+import { useTutorial } from '../context/TutorialContext';
+import { STUDENT_DASHBOARD_STEPS } from '../data/tutorialSteps';
+import { useLocation } from 'react-router-dom';
 
 /**
  * Cartão que representa uma turma no dashboard
@@ -127,6 +130,21 @@ function StudentDashboardPage() {
   const [error, setError] = useState('');
   const [showFeedback, setShowFeedback] = useState(false);
   const { performAuthRequest } = useAuthOperations();
+  const { startTour } = useTutorial();
+  const location = useLocation();
+
+  useEffect(() => {
+    // Verifica se veio do botão "Ver Tutorial" com ordem de força
+    const shouldForce = location.state?.forceTour === true;
+
+    // Inicia o tutorial se nunca foi visto ou se forçado
+    const timer = setTimeout(() => {
+      startTour(STUDENT_DASHBOARD_STEPS, 'student_dashboard_v1', shouldForce);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [startTour, location.state]);
+
   useEffect(() => {
     const checkFeedback = async () => {
       // Adicione um pequeno delay para não impactar o LCP (Largest Contentful Paint)

@@ -9,7 +9,7 @@ const StatusBadge = ({ status }) => {
     // Usando as variáveis semânticas definidas no tailwind.config.js
     completed: "bg-success-bg text-success border border-success/20",
     in_progress: "bg-yellow-100 text-accent-yellow dark:bg-yellow-900/30 border border-accent-yellow/20",
-    not_started: "bg-primary-bg text-secondary-text border border-secondary-text/20",
+    not_started: "bg-black/50 text-gray-400 border border-white/10",
   };
 
   const labels = {
@@ -50,12 +50,12 @@ const ScoreDistributionChart = ({ students, maxScore }) => {
   const getPct = (val) => total > 0 ? (val / total) * 100 : 0;
 
   return (
-    <div className="bg-secondary-bg p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm mb-6">
-      <h3 className="text-sm font-semibold text-secondary-text mb-3 flex items-center gap-2">
+    <div className="bg-black/40 backdrop-blur-lg border border-white/10 p-6 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] mb-6">
+      <h3 className="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2">
         <TrendingUp size={16} /> Distribuição de Desempenho
         <span className="text-xs font-normal text-gray-500">(Baseado no total de {safeMaxScore} pontos)</span>
       </h3>
-      <div className="flex h-4 w-full rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
+      <div className="flex h-4 w-full rounded-full overflow-hidden bg-black/50 border border-white/5">
         <div style={{ width: `${getPct(distribution.high)}%` }} className="bg-success h-full" title={`Alta Performance: ${distribution.high}`} />
         <div style={{ width: `${getPct(distribution.medium)}%` }} className="bg-accent-yellow h-full" title={`Média Performance: ${distribution.medium}`} />
         <div style={{ width: `${getPct(distribution.low)}%` }} className="bg-red-400 h-full" title={`Baixa Performance: ${distribution.low}`} />
@@ -155,23 +155,27 @@ const StudentPerformancePage = () => {
   }, [selectedClass, selectedActivity, searchTerm, user, logout]);
 
   return (
-    <div className="p-6 min-h-screen bg-primary-bg text-primary-text transition-colors duration-300">
-
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Desempenho da Turma</h1>
-        <p className="text-secondary-text">
-          Acompanhe métricas detalhadas de engajamento e aprendizado.
-        </p>
-      </div>
+    <div className="p-4 sm:p-6 lg:p-8 min-h-screen bg-gray-900 text-white transition-colors duration-300 relative overflow-hidden">
+      {/* Luzes Holográficas de Fundo */}
+      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-accent-purple/30 rounded-full blur-[120px] pointer-events-none"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-accent-teal/20 rounded-full blur-[120px] pointer-events-none"></div>
+      
+      <div className="relative z-10 max-w-7xl mx-auto animate-fade-in">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Desempenho da Turma</h1>
+          <p className="text-gray-400">
+            Acompanhe métricas detalhadas de engajamento e aprendizado.
+          </p>
+        </div>
 
       {/* Filtros */}
-      <div className="bg-secondary-bg p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-6 flex flex-col md:flex-row gap-4 items-end md:items-center justify-between transition-colors duration-300">
-        <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+      <div className="bg-black/40 backdrop-blur-lg border border-white/10 p-6 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] mb-8 flex flex-col md:flex-row gap-6 items-end md:items-center justify-between transition-colors duration-300">
+        <div className="flex flex-col md:flex-row gap-6 w-full md:w-auto">
           <div className="flex flex-col">
-            <label className="text-sm font-medium text-secondary-text mb-1">Turma</label>
+            <label className="text-sm font-medium text-gray-400 mb-2">Turma</label>
             <select
-              className="p-2 border rounded bg-primary-bg text-primary-text border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-accent-teal focus:outline-none"
+              className="px-4 py-2 bg-black/50 border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-accent-teal focus:outline-none transition-all shadow-inner"
               value={selectedClass}
               onChange={(e) => setSelectedClass(e.target.value)}
             >
@@ -180,9 +184,9 @@ const StudentPerformancePage = () => {
             </select>
           </div>
           <div className="flex flex-col">
-            <label className="text-sm font-medium text-secondary-text mb-1">Atividade</label>
+            <label className="text-sm font-medium text-gray-400 mb-2">Atividade</label>
             <select
-              className="p-2 border rounded bg-primary-bg text-primary-text border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-accent-teal focus:outline-none"
+              className="px-4 py-2 bg-black/50 border border-white/10 text-white rounded-lg focus:ring-2 focus:ring-accent-teal focus:outline-none transition-all shadow-inner"
               value={selectedActivity}
               onChange={(e) => setSelectedActivity(e.target.value)}
             >
@@ -191,12 +195,12 @@ const StudentPerformancePage = () => {
             </select>
           </div>
         </div>
-        <div className="relative w-full md:w-64">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-secondary-text" />
+        <div className="relative w-full md:w-80">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
           <input
             type="text"
-            placeholder="Buscar aluno..."
-            className="pl-10 p-2 border rounded w-full bg-primary-bg text-primary-text border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-accent-teal focus:outline-none"
+            placeholder="Buscar aluno por nome..."
+            className="w-full bg-black/50 border border-white/10 rounded-lg pl-10 pr-4 py-2 text-white focus:ring-2 focus:ring-accent-teal outline-none transition-all shadow-inner"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -206,18 +210,18 @@ const StudentPerformancePage = () => {
       {/* DASHBOARD DE MÉTRICAS (Agora com 4 Colunas) */}
       {!loading && performanceData?.stats?.total_students > 0 && (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
 
             {/* 1. Engajamento / Narrativas */}
-            <div className="bg-secondary-bg p-4 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center gap-3 shadow-sm">
-              <div className="p-3 rounded-full bg-info-bg text-info">
-                {selectedActivity ? <BookOpen size={24} /> : <Clock size={24} />}
+            <div className="bg-black/40 backdrop-blur-lg border border-white/10 p-6 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] flex items-center gap-4 hover:border-accent-teal/50 transition-colors">
+              <div className="p-3 rounded-full bg-blue-500/20 text-blue-400">
+                {selectedActivity ? <BookOpen size={28} /> : <Clock size={28} />}
               </div>
               <div>
-                <p className="text-xs text-secondary-text uppercase font-bold">
+                <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">
                   {selectedActivity ? "Narrativas Lidas" : "Total de Alunos"}
                 </p>
-                <p className="text-2xl font-bold text-info">
+                <p className="text-3xl font-bold text-blue-400 mt-1">
                   {selectedActivity
                     ? performanceData.stats.total_narratives_read
                     : performanceData.stats.total_students}
@@ -226,30 +230,30 @@ const StudentPerformancePage = () => {
             </div>
 
             {/* 2. Pontuação Média */}
-            <div className="bg-secondary-bg p-4 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center gap-3 shadow-sm">
-              <div className="p-3 rounded-full bg-primary-bg text-accent-purple">
-                <Award size={24} />
+            <div className="bg-black/40 backdrop-blur-lg border border-white/10 p-6 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] flex items-center gap-4 hover:border-accent-purple/50 transition-colors">
+              <div className="p-3 rounded-full bg-accent-purple/20 text-accent-purple">
+                <Award size={28} />
               </div>
               <div>
-                <p className="text-xs text-secondary-text uppercase font-bold">
+                <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">
                   {selectedActivity ? "Média de Pontos" : "XP Médio"}
                 </p>
-                <p className="text-2xl font-bold text-accent-purple">
+                <p className="text-3xl font-bold text-accent-purple mt-1">
                   {performanceData.stats.average_score ?? 0}
                 </p>
               </div>
             </div>
 
             {/* 3. Precisão / Conclusão */}
-            <div className="bg-secondary-bg p-4 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center gap-3 shadow-sm">
-              <div className="p-3 rounded-full bg-primary-bg text-success">
-                {selectedActivity ? <Target size={24} /> : <CheckCircle size={24} />}
+            <div className="bg-black/40 backdrop-blur-lg border border-white/10 p-6 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] flex items-center gap-4 hover:border-success/50 transition-colors">
+              <div className="p-3 rounded-full bg-success/20 text-success">
+                {selectedActivity ? <Target size={28} /> : <CheckCircle size={28} />}
               </div>
               <div>
-                <p className="text-xs text-secondary-text uppercase font-bold">
+                <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">
                   {selectedActivity ? "Precisão Média" : "Conclusão Geral"}
                 </p>
-                <p className="text-2xl font-bold text-success">
+                <p className="text-3xl font-bold text-success mt-1">
                   {selectedActivity
                     ? `${performanceData.stats.average_accuracy}%`
                     : "N/A"}
@@ -258,14 +262,14 @@ const StudentPerformancePage = () => {
             </div>
 
             {/* 4. Status Conclusão (Contagem) */}
-            <div className="bg-secondary-bg p-4 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center gap-3 shadow-sm">
-              <div className="p-3 rounded-full bg-primary-bg text-accent-yellow">
-                <CheckCircle size={24} />
+            <div className="bg-black/40 backdrop-blur-lg border border-white/10 p-6 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] flex items-center gap-4 hover:border-accent-yellow/50 transition-colors">
+              <div className="p-3 rounded-full bg-accent-yellow/20 text-accent-yellow">
+                <CheckCircle size={28} />
               </div>
               <div>
-                <p className="text-xs text-secondary-text uppercase font-bold">Alunos Concluídos</p>
-                <p className="text-2xl font-bold text-accent-yellow">
-                  {performanceData.stats.completed_count} <span className="text-sm text-secondary-text font-normal">/ {performanceData.stats.total_students}</span>
+                <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">Alunos Concluídos</p>
+                <p className="text-3xl font-bold text-accent-yellow mt-1">
+                  {performanceData.stats.completed_count} <span className="text-lg text-gray-500 font-normal">/ {performanceData.stats.total_students}</span>
                 </p>
               </div>
             </div>
@@ -279,20 +283,20 @@ const StudentPerformancePage = () => {
       )}
 
       {/* TABELA */}
-      <div className="bg-secondary-bg rounded-lg shadow overflow-hidden border border-gray-200 dark:border-gray-700">
+      <div className="bg-black/40 backdrop-blur-lg border border-white/10 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden">
         {loading ? (
-          <div className="p-12 text-center text-secondary-text">Carregando dados...</div>
+          <div className="p-12 text-center text-gray-400">Carregando dados...</div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="bg-primary-bg text-secondary-text uppercase text-xs font-semibold border-b border-gray-200 dark:border-gray-700">
+            <table className="min-w-full text-left">
+              <thead className="bg-black/60 text-gray-300 uppercase text-xs font-bold border-b border-white/10 tracking-wider">
                 <tr>
-                  <th className="p-4">Aluno</th>
+                  <th className="p-4 px-6">Aluno</th>
                   {selectedActivity ? (
                     <>
                       <th className="p-4 text-center">Status</th>
-                      <th className="p-4 text-center bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300" title="Questões respondidas corretamente">Acertos</th>
-                      <th className="p-4 text-center bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300" title="Questões respondidas incorretamente">Erros</th>
+                      <th className="p-4 text-center text-green-400" title="Questões respondidas corretamente">Acertos</th>
+                      <th className="p-4 text-center text-red-400" title="Questões respondidas incorretamente">Erros</th>
                       <th className="p-4 text-center" title="Total de vezes que respondeu (inclui repetições)">Tentativas (Quiz)</th>
                       <th className="p-4 text-center" title="Porcentagem de acerto">Precisão</th>
                       <th className="p-4 text-center" title="Quantas vezes abriu telas de história">Leituras</th>
@@ -301,22 +305,22 @@ const StudentPerformancePage = () => {
                   ) : (
                     <>
                       <th className="p-4 text-center">Nível Global (XP)</th>
-                      <th className="p-4 text-right">Localização</th>
+                      <th className="p-4 text-right px-6">Localização</th>
                     </>
                   )}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="divide-y divide-white/5">
                 {performanceData?.students && performanceData.students.length > 0 ? (
                   performanceData.students.map((student) => (
-                    <tr key={student.id} className="hover:bg-primary-bg transition-colors">
-                      <td className="p-4 flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden text-secondary-text">
+                    <tr key={student.id} className="hover:bg-white/5 transition-colors group">
+                      <td className="p-4 px-6 flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-black/50 border border-white/10 overflow-hidden text-gray-400 flex-shrink-0">
                           {student.avatar ? <img src={student.avatar} alt={student.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center font-bold">{student.name.charAt(0)}</div>}
                         </div>
                         <div>
-                          <p className="font-semibold text-primary-text">{student.name}</p>
-                          <p className="text-xs text-secondary-text">{student.email}</p>
+                          <p className="font-semibold text-white group-hover:text-accent-teal transition-colors">{student.name}</p>
+                          <p className="text-xs text-gray-400">{student.email}</p>
                         </div>
                       </td>
                       {selectedActivity ? (
@@ -324,21 +328,21 @@ const StudentPerformancePage = () => {
                           <td className="p-4 text-center"><StatusBadge status={student.status} /></td>
 
                           {/* ACERTOS */}
-                          <td className="p-4 text-center bg-green-50/50 dark:bg-green-900/10">
+                          <td className="p-4 text-center">
                             <div className="flex items-center justify-center gap-1 text-success font-bold">
                               <CheckCircle size={14} /> {student.correct_count}
                             </div>
                           </td>
 
                           {/* ERROS */}
-                          <td className="p-4 text-center bg-red-50/50 dark:bg-red-900/10">
+                          <td className="p-4 text-center">
                             <div className="flex items-center justify-center gap-1 text-red-500 font-bold">
                               <XCircle size={14} /> {student.wrong_count}
                             </div>
                           </td>
 
                           {/* TENTATIVAS TOTAIS */}
-                          <td className="p-4 text-center text-secondary-text font-mono">
+                          <td className="p-4 text-center text-gray-400 font-mono">
                             {student.total_responses}
                           </td>
 
@@ -348,27 +352,29 @@ const StudentPerformancePage = () => {
                           </td>
 
                           {/* LEITURAS */}
-                          <td className="p-4 text-center text-secondary-text">
+                          <td className="p-4 text-center text-gray-400">
                             <div className="flex items-center justify-center gap-1"><BookOpen size={14} /> {student.narratives_read}</div>
                           </td>
 
-                          <td className="p-4 text-center font-mono text-primary-text font-bold">{student.points_earned}</td>
+                          <td className="p-4 text-center font-mono text-white font-bold">{student.points_earned}</td>
                         </>
                       ) : (
                         <>
                           <td className="p-4 text-center font-mono text-accent-purple font-bold">XP: {student.global_xp}</td>
-                          <td className="p-4 text-right text-sm text-secondary-text">{student.last_location || 'Desconhecido'}</td>
+                          <td className="p-4 px-6 text-right text-sm text-gray-400">{student.last_location || 'Desconhecido'}</td>
                         </>
                       )}
                     </tr>
                   ))
                 ) : (
-                  <tr><td colSpan="8" className="p-8 text-center text-secondary-text">{classes.length === 0 ? "Nenhuma turma." : "Nenhum aluno."}</td></tr>
+                  <tr><td colSpan="8" className="p-8 text-center text-gray-500">{classes.length === 0 ? "Nenhuma turma." : "Nenhum aluno."}</td></tr>
                 )}
               </tbody>
             </table>
           </div>
         )}
+      </div>
+      
       </div>
     </div>
   );

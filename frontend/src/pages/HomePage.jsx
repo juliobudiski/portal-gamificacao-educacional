@@ -28,7 +28,7 @@ function Homepage() {
             </span>
           </h1>
 
-          <p className="text-xl md:text-2xl max-w-full mx-auto text-secondary-text dark:text-secondary-text leading-relaxed">
+          <p className="text-xl md:text-2xl max-w-full mx-auto text-secondary-text leading-relaxed">
             Transforme a educação em uma jornada envolvente e interativa. Crie, compartilhe e participe de atividades gamificadas que <span className="text-[#ffbd30]">inspiram o aprendizado</span> e o <span className="text-[#69e8cb]">engajamento</span>.
           </p>
         </div>
@@ -88,7 +88,7 @@ function Homepage() {
               </div>
               <div>
                 <h4 className="font-bold text-lg mb-2 text-primary-text">Motivação</h4>
-                <p className="text-secondary-text dark:text-secondary-text">Elementos de jogos motivam alunos, aumentando a participação e o interesse.</p>
+                <p className="text-secondary-text">Elementos de jogos motivam alunos, aumentando a participação e o interesse.</p>
               </div>
             </div>
 
@@ -100,7 +100,7 @@ function Homepage() {
               </div>
               <div>
                 <h4 className="font-bold text-lg mb-2 text-primary-text">Colaboração</h4>
-                <p className="text-secondary-text dark:text-secondary-text">Ambientes gamificados incentivam trabalho em equipe e competição saudável.</p>
+                <p className="text-secondary-text">Ambientes gamificados incentivam trabalho em equipe e competição saudável.</p>
               </div>
             </div>
 
@@ -112,7 +112,7 @@ function Homepage() {
               </div>
               <div>
                 <h4 className="font-bold text-lg mb-2 text-primary-text">Feedback Imediato</h4>
-                <p className="text-secondary-text dark:text-secondary-text">Sistemas de pontos e conquistas fornecem feedback contínuo sobre o progresso.</p>
+                <p className="text-secondary-text">Sistemas de pontos e conquistas fornecem feedback contínuo sobre o progresso.</p>
               </div>
             </div>
 
@@ -124,7 +124,7 @@ function Homepage() {
               </div>
               <div>
                 <h4 className="font-bold text-lg mb-2 text-primary-text">Retenção</h4>
-                <p className="text-secondary-text dark:text-secondary-text">Conceitos aprendidos através de jogos têm maior taxa de retenção a longo prazo.</p>
+                <p className="text-secondary-text">Conceitos aprendidos através de jogos têm maior taxa de retenção a longo prazo.</p>
               </div>
             </div>
           </div>
@@ -143,7 +143,7 @@ function Homepage() {
         </div>
       </div>
 
-      <div className="mt-16 text-center text-secondary-text dark:text-secondary-text text-sm">
+      <div className="mt-16 text-center text-secondary-text text-sm">
         <p>Transformando a educação através da gamificação • Para professores e alunos</p>
       </div>
     </div>

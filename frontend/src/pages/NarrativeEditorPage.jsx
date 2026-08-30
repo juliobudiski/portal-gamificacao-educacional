@@ -181,53 +181,61 @@ function NarrativeEditorPage({ initialData, onSave, onCancel, isOfflineMode = fa
         return (
             <>
                 {/* Seção de Cenário */}
-                {/* Mudei bg-primary-bg para bg-secondary-bg para destacar do fundo da página */}
-                <div className="bg-secondary-bg p-6 rounded-2xl shadow-xl mb-8 border border-[var(--border-color)]">
-                    <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-primary-text">
-                        <FaImage className="text-accent-teal" /> Selecionar Cenário
+                <div className="bg-black/40 backdrop-blur-lg p-8 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] mb-8 border border-white/10">
+                    <h3 className="text-2xl font-bold mb-6 flex items-center gap-3 text-white">
+                        <div className="bg-teal-500/20 p-2 rounded-lg">
+                             <FaImage className="text-teal-400" />
+                        </div>
+                        Selecionar Cenário Holográfico
                     </h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                         {SCENARIOS.map(url => (
                             <div key={url} onClick={() => handleSelectScenario(url)}
-                                className={`rounded-lg overflow-hidden border-4 cursor-pointer transition-all duration-300 shadow-sm
+                                className={`rounded-2xl overflow-hidden border-4 cursor-pointer transition-all duration-300 shadow-lg relative group
                             ${narrativeConfig.scenario === url
-                                        ? 'border-accent-yellow scale-105 shadow-md'
-                                        : 'border-transparent hover:border-accent-yellow/50'}`}>
-                                <img src={url} alt={`Cenário ${url}`} className="w-full h-32 object-cover" />
+                                        ? 'border-yellow-400 scale-105 shadow-[0_0_25px_rgba(250,204,21,0.5)]'
+                                        : 'border-white/10 hover:border-yellow-400/50'}`}>
+                                <img src={url} alt={`Cenário ${url}`} className="w-full h-32 md:h-40 object-cover group-hover:scale-110 transition-transform duration-700" />
+                                {narrativeConfig.scenario === url && (
+                                    <div className="absolute inset-0 bg-yellow-400/20 mix-blend-overlay"></div>
+                                )}
                             </div>
                         ))}
                     </div>
                 </div>
 
                 {/* Seção de Personagens */}
-                <div className="bg-secondary-bg p-6 rounded-2xl shadow-xl mb-8 border border-[var(--border-color)]">
-                    <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-primary-text">
-                        <FaUserCircle className="text-accent-teal" /> Selecionar e Nomear Personagens
+                <div className="bg-black/40 backdrop-blur-lg p-8 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] mb-8 border border-white/10">
+                    <h3 className="text-2xl font-bold mb-6 flex items-center gap-3 text-white">
+                        <div className="bg-purple-500/20 p-2 rounded-lg">
+                            <FaUserCircle className="text-purple-400" />
+                        </div>
+                        Recrutar Personagens
                     </h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
                         {CHARACTERS.map(url => (
                             <div key={url} onClick={() => handleToggleCharacter(url)}
-                                className={`rounded-full border-4 cursor-pointer transition-all duration-300 
+                                className={`rounded-full border-4 cursor-pointer transition-all duration-300 flex justify-center p-2 relative group
                             ${narrativeConfig.characters.some(c => c.image === url)
-                                        ? 'border-success scale-105'
-                                        : 'border-transparent hover:border-success/50'}`}>
-                                {/* Fundo do avatar ajustado para usar a variável de borda ou secondary-bg */}
-                                <img src={url} alt={`Personagem ${url}`} className="w-32 h-32 object-contain rounded-full bg-[var(--border-color)]" />
+                                        ? 'border-green-400 scale-105 shadow-[0_0_25px_rgba(74,222,128,0.5)] bg-green-400/10'
+                                        : 'border-white/10 hover:border-green-400/50 bg-black/50'}`}>
+                                <img src={url} alt={`Personagem ${url}`} className="w-28 h-28 md:w-36 md:h-36 object-contain rounded-full drop-shadow-2xl group-hover:scale-110 transition-transform duration-500" />
                             </div>
                         ))}
                     </div>
                     {narrativeConfig.characters.length > 0 && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-[var(--border-color)] pt-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-white/10 pt-8">
                             {narrativeConfig.characters.map((char, index) => (
-                                <div key={index} className="flex items-center gap-3">
-                                    <img src={char.image} alt="" className="w-16 h-16 rounded-full bg-[var(--border-color)]" />
+                                <div key={index} className="flex items-center gap-4 bg-gray-900/50 p-4 rounded-2xl border border-white/5">
+                                    <div className="bg-black/50 rounded-full border border-white/10 p-1">
+                                        <img src={char.image} alt="" className="w-16 h-16 rounded-full object-cover" />
+                                    </div>
                                     <input
                                         type="text"
                                         value={char.role}
                                         onChange={(e) => handleRoleChange(index, e.target.value)}
                                         placeholder="Nome do Papel (ex: Instrutor)"
-                                        // CORRIGIDO: Input agora usa as variáveis de tema, não cores fixas escuras
-                                        className="w-full p-2 bg-primary-bg text-primary-text rounded-xl border border-[var(--border-color)] focus:border-accent-teal outline-none placeholder-secondary-text transition-colors"
+                                        className="w-full p-3 bg-black/40 text-white font-bold rounded-xl border border-white/10 focus:border-green-400/50 outline-none placeholder-gray-500 transition-colors shadow-inner"
                                     />
                                 </div>
                             ))}
@@ -236,21 +244,24 @@ function NarrativeEditorPage({ initialData, onSave, onCancel, isOfflineMode = fa
                 </div>
 
                 {/* Seção de Diálogo */}
-                <div className="bg-secondary-bg p-6 rounded-2xl shadow-xl mb-8 border border-[var(--border-color)]">
-                    <h3 className="text-xl font-bold mb-4 text-primary-text">Criar Diálogo</h3>
+                <div className="bg-black/40 backdrop-blur-lg p-8 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] mb-8 border border-white/10">
+                    <h3 className="text-2xl font-bold mb-6 text-white flex items-center gap-3">
+                        <div className="bg-blue-500/20 p-2 rounded-lg">
+                            <FaBookOpen className="text-blue-400" />
+                        </div>
+                        Roteiro de Diálogos
+                    </h3>
                     <div className="space-y-4">
                         {narrativeConfig.dialogue.map((line, index) => (
-                            // Fundo da linha de diálogo
-                            <div key={index} className="flex items-center gap-3 p-3 bg-primary-bg/50 rounded-lg border border-[var(--border-color)]">
+                            <div key={index} className="flex flex-col md:flex-row items-center gap-3 p-4 bg-gray-900/60 rounded-2xl border border-white/5 shadow-sm group hover:border-blue-500/30 transition-colors">
                                 <select
                                     value={line.characterRole}
                                     onChange={(e) => handleDialogueChange(index, 'characterRole', e.target.value)}
-                                    // CORRIGIDO: Select adaptável
-                                    className="p-2 bg-secondary-bg text-primary-text rounded-xl border border-[var(--border-color)] focus:border-accent-teal outline-none w-1/4"
+                                    className="p-3 bg-black/60 text-white font-bold rounded-xl border border-white/10 focus:border-blue-400/50 outline-none w-full md:w-1/4 shadow-inner appearance-none"
                                 >
-                                    <option value="">Selecione...</option>
+                                    <option value="" className="bg-gray-900">Personagem...</option>
                                     {narrativeConfig.characters.map(c =>
-                                        <option key={c.role} value={c.role}>{c.role}</option>
+                                        <option key={c.role} value={c.role} className="bg-gray-900">{c.role}</option>
                                     )}
                                 </select>
                                 <input
@@ -258,12 +269,10 @@ function NarrativeEditorPage({ initialData, onSave, onCancel, isOfflineMode = fa
                                     value={line.text}
                                     onChange={(e) => handleDialogueChange(index, 'text', e.target.value)}
                                     placeholder="Escreva a fala do personagem aqui..."
-                                    // CORRIGIDO: Input adaptável
-                                    className="w-full p-2 bg-secondary-bg text-primary-text rounded-xl border border-[var(--border-color)] focus:border-accent-teal outline-none placeholder-secondary-text"
+                                    className="w-full p-3 bg-black/40 text-gray-200 rounded-xl border border-white/10 focus:border-blue-400/50 outline-none placeholder-gray-600 shadow-inner"
                                 />
-                                {/* Botão de Excluir usando cores semânticas de perigo */}
                                 <button onClick={() => handleRemoveDialogueLine(index)}
-                                    className="p-2 text-danger hover:bg-danger-bg rounded-full transition-colors"
+                                    className="p-3 text-red-400 hover:bg-red-500/20 hover:text-red-300 rounded-xl border border-white/5 hover:border-red-500/30 transition-all opacity-70 group-hover:opacity-100"
                                     title="Remover fala">
                                     <FaTrash />
                                 </button>
@@ -271,28 +280,28 @@ function NarrativeEditorPage({ initialData, onSave, onCancel, isOfflineMode = fa
                         ))}
                     </div>
                     <button onClick={handleAddDialogueLine}
-                        className="mt-4 flex items-center gap-2 py-2 px-4 bg-info hover:bg-info/80 text-white rounded-lg transition-colors">
-                        <FaPlus /> Adicionar Fala
+                        className="mt-6 flex items-center gap-2 py-3 px-6 bg-gray-800 hover:bg-blue-600/20 hover:text-blue-400 text-gray-300 rounded-xl border border-white/5 hover:border-blue-500/30 transition-all uppercase tracking-wider text-sm font-bold shadow-md">
+                        <FaPlus /> Inserir Nova Fala
                     </button>
                 </div>
 
                 {/* Salvar */}
-                <div className="mt-8 pt-4 border-t border-[var(--border-color)]">
+                <div className="mt-8 pt-8 border-t border-white/10 flex flex-col items-center">
                     <button onClick={handleSaveChanges} disabled={loading}
-                        // Botão principal usando accent-teal
-                        className="bg-accent-teal hover:brightness-110 text-white dark:text-primary-bg font-bold text-lg py-3 px-6 rounded-xl flex items-center shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                        <FaSave className="mr-2" /> {loading ? 'Salvando...' : 'Salvar Narrativa'}
+                        className="bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-400 hover:to-cyan-500 text-white font-extrabold text-lg py-4 px-12 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(20,184,166,0.5)] hover:shadow-[0_0_40px_rgba(20,184,166,0.7)] transition-all duration-300 hover:scale-105 active:scale-95 uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto group">
+                        <FaSave className="mr-3 transform group-hover:scale-125 transition-transform" /> 
+                        {loading ? 'Processando...' : 'Publicar Narrativa'}
                     </button>
 
-                    {/* Mensagens de Feedback usando classes semânticas */}
+                    {/* Mensagens de Feedback */}
                     {message && (
-                        <div className="mt-4 p-3 bg-success-bg text-success border border-success/20 rounded-xl flex items-center">
-                            <span className="font-bold mr-2">✓</span> {message}
+                        <div className="mt-6 p-4 bg-green-900/30 text-green-400 border border-green-500/50 rounded-xl flex items-center font-bold shadow-[0_0_15px_rgba(34,197,94,0.2)]">
+                            <span className="text-xl mr-3">✓</span> {message}
                         </div>
                     )}
                     {error && (
-                        <div className="mt-4 p-3 bg-danger-bg text-danger border border-danger/20 rounded-xl flex items-center">
-                            <span className="font-bold mr-2">!</span> {error}
+                        <div className="mt-6 p-4 bg-red-900/30 text-red-400 border border-red-500/50 rounded-xl flex items-center font-bold shadow-[0_0_15px_rgba(239,68,68,0.2)]">
+                            <span className="text-xl mr-3">!</span> {error}
                         </div>
                     )}
                 </div>
@@ -301,15 +310,18 @@ function NarrativeEditorPage({ initialData, onSave, onCancel, isOfflineMode = fa
     };
 
     return (
-        <div className="min-h-screen bg-primary-bg text-primary-text p-4 md:p-8 transition-colors duration-300">
-            <div className="max-w-full mx-auto">
-                <div className="flex items-center gap-3 mb-8">
-                    {/* Ícone do cabeçalho usando accent-yellow */}
-                    <div className="bg-accent-yellow p-3 rounded-xl shadow-lg">
-                        <FaBookOpen className="text-xl text-white dark:text-primary-bg" />
+        <div className="min-h-screen bg-gray-900 text-gray-200 p-4 md:p-8 transition-colors duration-300 relative overflow-hidden">
+            {/* Luzes holográficas ao fundo */}
+            <div className="fixed top-1/4 -left-20 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
+            <div className="fixed bottom-0 -right-20 w-[600px] h-[400px] bg-teal-600/10 rounded-full blur-[150px] pointer-events-none z-0"></div>
+
+            <div className="max-w-4xl mx-auto relative z-10">
+                <div className="flex items-center gap-3 mb-8 bg-black/30 p-6 rounded-3xl border border-white/5 shadow-xl backdrop-blur-md">
+                    <div className="bg-gradient-to-br from-blue-400 to-indigo-500 p-4 rounded-2xl shadow-[0_0_20px_rgba(59,130,246,0.4)]">
+                        <FaBookOpen className="text-2xl text-gray-900" />
                     </div>
                     <div>
-                        <h1 className="text-2xl md:text-3xl font-bold">Editor de Narrativa</h1>
+                        <h1 className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400 drop-shadow-md">Editor de Narrativa</h1>
                     </div>
                 </div>
 

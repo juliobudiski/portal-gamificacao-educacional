@@ -127,32 +127,37 @@ const RouletteTab = ({ onReturn, onSpin }) => {
 
 
   return (
-    <div className="w-full relative pt-16 flex flex-col lg:flex-row items-center lg:items-start justify-center gap-8 p-4">
+    <div className="w-full max-w-6xl mx-auto relative pt-16 flex flex-col lg:flex-row items-center lg:items-start justify-center gap-12 p-8 bg-gray-900 rounded-3xl shadow-[0_0_60px_rgba(0,0,0,0.8)] border border-white/10 min-h-[70vh] mt-8 mb-8 overflow-hidden">
+      {/* Luz de fundo estilo Neon */}
+      <div className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-yellow-500/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
+      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[100px] pointer-events-none z-0"></div>
+
       <style>{style}</style>
 
       <button
         onClick={onReturn}
-        className="absolute top-4 left-4 z-20 flex items-center gap-2 py-2 px-4 
-                    bg-secondary-bg text-secondary-text 
-                    border border-border-color rounded-full shadow-lg 
-                    hover:bg-primary-bg hover:shadow-xl transition-all"
+        className="absolute top-6 left-6 z-20 flex items-center gap-2 py-2.5 px-5 
+                    bg-black/50 text-gray-300 font-bold backdrop-blur-md
+                    border border-white/10 rounded-full shadow-lg 
+                    hover:bg-white/10 hover:text-white hover:scale-105 transition-all"
       >
         <FaArrowLeft /> Voltar ao Tabuleiro
       </button>
 
-
       {/* Coluna da Roleta */}
-      <div className="flex flex-col items-center gap-4 flex-shrink-0">
-        <h2 className="text-3xl font-bold text-primary-text">Roda da Fortuna</h2>
-
-        {/* Texto dinâmico de status */}
-        {!retryAvailable ? (
-          <p className="text-secondary-text">Teste sua sorte uma vez por dia!</p>
-        ) : (
-          <p className="text-yellow-400 font-bold animate-pulse flex items-center gap-2">
-            <FaRedo /> Ops! Item repetido. Gire novamente GRÁTIS!
-          </p>
-        )}
+      <div className="flex flex-col items-center gap-6 flex-shrink-0 relative z-10 w-full lg:w-[60%]">
+        <div className="text-center">
+          <h2 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-b from-yellow-200 to-yellow-600 drop-shadow-[0_0_15px_rgba(250,204,21,0.5)] uppercase tracking-widest mb-3">Roda da Fortuna</h2>
+          
+          {/* Texto dinâmico de status */}
+          {!retryAvailable ? (
+            <p className="text-gray-300 font-medium text-lg bg-black/30 px-6 py-2 rounded-full border border-white/5 inline-block">Teste sua sorte uma vez por dia!</p>
+          ) : (
+            <p className="text-yellow-400 font-bold text-lg animate-pulse flex items-center gap-3 bg-yellow-900/30 px-6 py-2 rounded-full border border-yellow-500/50 inline-flex">
+              <FaRedo className="text-2xl" /> Ops! Item repetido. Gire novamente GRÁTIS!
+            </p>
+          )}
+        </div>
 
         {/* CONTAINER COM POSICIONAMENTO RELATIVO (O segredo está aqui) */}
         <div className="relative flex justify-center items-center">
@@ -198,27 +203,33 @@ const RouletteTab = ({ onReturn, onSpin }) => {
       </div>
 
       {/* Coluna de Vencedores */}
-      <div className="w-full max-w-sm bg-primary-bg/50 p-4 rounded-2xl border border-border-color flex flex-col mt-8 lg:mt-16">
-        <h3 className="text-xl font-bold text-center mb-4 text-[#69e8cb]">Últimos Ganhadores</h3>
-        {loadingWinners ? (<div className="flex-grow flex items-center justify-center py-8"><FaSpinner className="animate-spin text-2xl" /></div>
-        ) : winners.length > 0 ? (
-          <div className="space-y-3">
-            {winners.map((winner, index) => (
-              <div key={index} className="bg-border-color p-3 rounded-lg flex justify-between items-center animate-fadeIn">
-                <span className="font-semibold text-secondary-text">{winner.userName}</span>
-                <span className="font-bold text-yellow-400 px-2 py-1 bg-yellow-400/10 rounded-md text-sm">{winner.prize}</span>
-              </div>
-            ))}
-          </div>
-        ) : (<p className="text-secondary-text text-center italic py-8">Seja o primeiro a ganhar!</p>)}
+      <div className="w-full max-w-sm bg-black/40 backdrop-blur-md p-6 rounded-3xl border border-white/10 flex flex-col mt-8 lg:mt-24 shadow-2xl relative z-10">
+        <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-gradient-to-r from-cyan-600 to-blue-600 px-6 py-2 rounded-full shadow-lg border border-cyan-400/30">
+          <h3 className="text-xl font-black text-white whitespace-nowrap drop-shadow-md">Últimos Ganhadores</h3>
+        </div>
+        
+        <div className="mt-4 flex-grow">
+          {loadingWinners ? (<div className="flex-grow flex items-center justify-center py-12"><FaSpinner className="animate-spin text-4xl text-cyan-500" /></div>
+          ) : winners.length > 0 ? (
+            <div className="space-y-4">
+              {winners.map((winner, index) => (
+                <div key={index} className="bg-white/5 p-4 rounded-xl flex justify-between items-center animate-fadeIn border border-white/5 hover:bg-white/10 transition-colors group">
+                  <span className="font-bold text-gray-200 group-hover:text-white transition-colors">{winner.userName}</span>
+                  <span className="font-bold text-yellow-300 px-3 py-1.5 bg-yellow-400/10 rounded-lg text-sm border border-yellow-500/20 shadow-inner whitespace-nowrap overflow-hidden text-ellipsis max-w-[120px]" title={winner.prize}>{winner.prize}</span>
+                </div>
+              ))}
+            </div>
+          ) : (<p className="text-gray-400 text-center italic py-12">Seja o primeiro a ganhar!</p>)}
+        </div>
       </div>
 
       {/* Modal de Revelação de Prêmio */}
       {revealedPrize && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 animate-fadeIn">
-          <div className="bg-primary-bg border-2 border-yellow-400 p-8 rounded-xl shadow-2xl text-center prize-reveal-box">
-            <h2 className="text-2xl font-light text-secondary-text mb-2">Você ganhou:</h2>
-            <p className="text-4xl font-bold text-yellow-400">{revealedPrize.label}</p>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 animate-fadeIn">
+          <div className="bg-gradient-to-br from-yellow-900 to-black border-2 border-yellow-400 p-12 rounded-3xl shadow-[0_0_80px_rgba(250,204,21,0.4)] text-center prize-reveal-box flex flex-col items-center">
+            <FaGift className="text-7xl text-yellow-400 mb-6 drop-shadow-[0_0_20px_rgba(250,204,21,0.8)] animate-bounce" />
+            <h2 className="text-3xl font-medium text-yellow-100 mb-4 tracking-wide uppercase">Você ganhou:</h2>
+            <p className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-yellow-500 drop-shadow-lg">{revealedPrize.label}</p>
           </div>
         </div>
       )}

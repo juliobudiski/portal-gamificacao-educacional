@@ -11,18 +11,19 @@ function TopActivitiesChart({ data }) {
         <div style={{ width: '100%', height: 300 }}>
             <ResponsiveContainer>
                 <BarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#4A5568" />
-                    <XAxis type="number" stroke="#A0AEC0" allowDecimals={false} />
-                    <YAxis dataKey="name" type="category" stroke="#A0AEC0" width={150} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
+                    <XAxis type="number" stroke="var(--text-secondary)" allowDecimals={false} />
+                    <YAxis dataKey="name" type="category" stroke="var(--text-secondary)" width={150} />
                     <Tooltip
                         contentStyle={{
-                            backgroundColor: '#2D3748',
-                            border: '1px solid #4A5568',
-                            borderRadius: '0.5rem'
+                            backgroundColor: 'var(--background-secondary)',
+                            border: '1px solid var(--border-color)',
+                            borderRadius: '0.5rem',
+                            color: 'var(--text-primary)'
                         }}
-                        labelStyle={{ color: '#E2E8F0' }}
+                        labelStyle={{ color: 'var(--text-primary)' }}
                     />
-                    <Legend wrapperStyle={{ color: '#E2E8F0' }} />
+                    <Legend wrapperStyle={{ color: 'var(--text-secondary)' }} />
                     <Bar dataKey="Cópias" fill="#805AD5" />
                 </BarChart>
             </ResponsiveContainer>

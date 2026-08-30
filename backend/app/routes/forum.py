@@ -6,28 +6,9 @@ from datetime import datetime
 from ..models import db, ForumTopic, ForumPost, User, Activity, ForumCategory, TopicLike, PostLike
 from sqlalchemy import case
 from ..utils.text_sanitizer import clean_text, censor_text
-from ..services.ai_service import ai_service
+from ..services.forum_service import ForumService
 
 forum_bp = Blueprint('forum', __name__)
-# --- FUNÇÃO AUXILIAR PARA CRIAR TÓPICOS PADRÃO ---
-def _create_default_categories(activity_id):
-    """Cria categorias padrão em vez de tópicos padrão."""
-    default_categories = [
-        ForumCategory(
-            activity_id=activity_id,
-            title="Dúvidas Gerais",
-            description="Tem alguma pergunta sobre a matéria? Crie um tópico aqui!"
-        ),
-        ForumCategory(
-            activity_id=activity_id,
-            title="Sugestões e Feedback",
-            description="Ideias para melhorar a atividade? Partilhe aqui."
-        )
-    ]
-    db.session.add_all(default_categories)
-    db.session.commit()
-    current_app.logger.info(f"Categorias padrão criadas para a atividade ID {activity_id}.")
-
 @forum_bp.route('/activity/<int:activity_id>/categories', methods=['GET', 'OPTIONS'])
 @jwt_required()
 def get_forum_categories(activity_id):
@@ -36,7 +17,7 @@ def get_forum_categories(activity_id):
 
     categories = ForumCategory.query.filter_by(activity_id=activity_id).all()
     if not categories:
-        _create_default_categories(activity_id)
+        ForumService.create_default_categories(activity_id)
         categories = ForumCategory.query.filter_by(activity_id=activity_id).all()
         
     return jsonify([category.to_dict() for category in categories]), 200
@@ -59,47 +40,15 @@ def create_topic_in_category(category_id):
     user_id = get_jwt_identity()
     data = request.get_json()
 
-    raw_title = data.get('title')
-    raw_body = data.get('body')
+    raw_title = data.get('title', '')
+    raw_body = data.get('body', '')
     
-    # VALIDAÇÃO DE TAMANHO
-    if len(raw_title) > 150:
-        return jsonify({"message": "O título é muito longo (máx 150 caracteres)."}), 400
-    if len(raw_body) > 5000:
-        return jsonify({"message": "O texto é muito longo (máx 5000 caracteres)."}), 400
+    result, error, status = ForumService.create_topic_with_moderation(category_id, user_id, raw_title, raw_body)
     
-    if not raw_title or not raw_body:
-        return jsonify({"message": "Título e corpo são obrigatórios."}), 400
-
-    # 1. Sanitização de HTML (Segurança Técnica - XSS)
-    safe_title = clean_text(raw_title, context='forum')
-    safe_body = clean_text(raw_body, context='forum')
-
-    # 2. Censura de Palavrões (UX - Substitui por $@#!$)
-    censored_title = censor_text(safe_title)
-    censored_body = censor_text(safe_body)
-
-    # 3. Moderação por IA (Segurança Comportamental - Discurso de Ódio)
-    # Verifica o texto JÁ censurado. Se a IA detectar ódio no que sobrou, bloqueia.
-    full_text_analysis = f"TÍTULO: {censored_title}\n\nCONTEÚDO: {censored_body}"
-    ai_check = ai_service.moderate_content(full_text_analysis)
-    if not ai_check.get('safe', True):
-        return jsonify({
-            "message": "Seu tópico não pôde ser publicado.",
-            "reason": ai_check.get('reason', 'Violação das diretrizes da comunidade.'),
-            "detail": "Discurso de ódio ou assédio detectado."
-        }), 400
-    
-    new_topic = ForumTopic(
-        title=censored_title, 
-        body=censored_body, 
-        category_id=category_id, 
-        author_id=user_id,
-        activity_id=ForumCategory.query.get(category_id).activity_id
-    )
-    db.session.add(new_topic)
-    db.session.commit()
-    return jsonify(new_topic.to_dict()), 201
+    if error:
+        return jsonify(error), status
+        
+    return jsonify(result), status
 
 # --- ROTA DETALHES DO TÓPICO ---
 @forum_bp.route('/topics/<int:topic_id>', methods=['GET', 'OPTIONS'])
@@ -137,33 +86,14 @@ def create_post(topic_id):
     if request.method == 'OPTIONS': return jsonify({'message': 'CORS preflight'}), 200
     user_id = get_jwt_identity()
     data = request.get_json()
-    raw_body = data.get('body')
-    # VALIDAÇÃO DE TAMANHO
-    if len(raw_body) > 5000:
-        return jsonify({"message": "A resposta é muito longa (máx 5000 caracteres)."}), 400
-    if not raw_body:
-        return jsonify({"message": "O corpo da resposta é obrigatório."}), 400
-
-    # 1. Sanitização HTML
-    safe_body = clean_text(raw_body, context='forum')
-
-    # 2. Censura Palavrões
-    censored_body = censor_text(safe_body)
-
-    # 3. IA Check (Opcional: Verifica apenas se o texto for longo o suficiente para ter contexto)
-    if len(censored_body) > 10:
-        ai_check = ai_service.moderate_content(censored_body)
-        if not ai_check.get('safe', True):
-            return jsonify({
-                "message": "Sua resposta não foi publicada.",
-                "reason": ai_check.get('reason', 'Conteúdo ofensivo detectado.'),
-            }), 400
-
-    topic = ForumTopic.query.get_or_404(topic_id)
-    new_post = ForumPost(body=censored_body, topic_id=topic.id, author_id=user_id)
-    db.session.add(new_post)
-    db.session.commit()
-    return jsonify(new_post.to_dict()), 201
+    raw_body = data.get('body', '')
+    
+    result, error, status = ForumService.create_post_with_moderation(topic_id, user_id, raw_body)
+    
+    if error:
+        return jsonify(error), status
+        
+    return jsonify(result), status
 
 # --- ROTA PARA A AÇÃO DE MARCAR A MELHOR RESPOSTA ---
 

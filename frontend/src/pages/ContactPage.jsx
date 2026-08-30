@@ -78,11 +78,11 @@ const ContactPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 p-6 flex items-center justify-center">
-            <div className="max-w-full w-full bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 border border-gray-200 dark:border-gray-700">
+        <div className="min-h-screen bg-primary-bg text-gray-800 dark:text-gray-100 p-6 flex items-center justify-center">
+            <div className="max-w-full w-full bg-secondary-bg rounded-xl shadow-lg p-8 border border-border-color">
 
                 <h1 className="text-3xl font-bold mb-2 text-indigo-600 dark:text-indigo-400">Fale Conosco</h1>
-                <p className="text-gray-600 dark:text-gray-400 mb-8">
+                <p className="text-secondary-text mb-8">
                     Tem dúvidas sobre o Gamefica.Edu ou encontrou um bug? Mande uma mensagem.
                 </p>
 
@@ -102,7 +102,7 @@ const ContactPage = () => {
                                 required
                                 value={formData.name}
                                 onChange={handleChange}
-                                className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-indigo-500 outline-none transition"
+                                className="w-full p-3 rounded-lg border border-border-color bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-indigo-500 outline-none transition"
                             />
                         </div>
                         <div>
@@ -113,7 +113,7 @@ const ContactPage = () => {
                                 required
                                 value={formData.email}
                                 onChange={handleChange}
-                                className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-indigo-500 outline-none transition"
+                                className="w-full p-3 rounded-lg border border-border-color bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-indigo-500 outline-none transition"
                             />
                         </div>
                     </div>
@@ -127,7 +127,7 @@ const ContactPage = () => {
                             value={formData.subject}
                             onChange={handleChange}
                             placeholder="Ex: Dúvida sobre XP / Bug no Tabuleiro"
-                            className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-indigo-500 outline-none transition"
+                            className="w-full p-3 rounded-lg border border-border-color bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-indigo-500 outline-none transition"
                         />
                     </div>
 
@@ -139,7 +139,7 @@ const ContactPage = () => {
                             required
                             value={formData.message}
                             onChange={handleChange}
-                            className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-indigo-500 outline-none transition"
+                            className="w-full p-3 rounded-lg border border-border-color bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-indigo-500 outline-none transition"
                         ></textarea>
                     </div>
 

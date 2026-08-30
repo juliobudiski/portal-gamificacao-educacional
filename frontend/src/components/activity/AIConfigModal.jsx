@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FaMagic, FaTimes, FaRobot, FaBook, FaUsers, FaPlus, FaTrash, FaSlidersH, FaBullseye, FaGraduationCap, FaToggleOn, FaToggleOff } from 'react-icons/fa';
+import { FaMagic, FaTimes, FaRobot, FaBook, FaUsers, FaPlus, FaTrash, FaSlidersH, FaBullseye, FaGraduationCap, FaToggleOn, FaToggleOff, FaExclamationTriangle } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { io } from 'socket.io-client';
 import { useToast } from '../../context/ToastContext';
+import { useNavigate } from 'react-router-dom';
 
 const PERSONALITIES = [
     { id: 'Socrático', label: 'Mestre Socrático (Faz pensar)', desc: 'Foca em perguntas reflexivas e aprendizado guiado.' },
@@ -21,12 +22,15 @@ const AUDIENCE_LEVELS = [
 
 const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, contextData }) => {
     const { user } = useAuth();
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
+    const [hasApiKey, setHasApiKey] = useState(true);
     const [step, setStep] = useState(1); // 1 = Config Básica, 2 = Personagens/Avançado
     const [progress, setProgress] = useState(0);
     const [progressMessage, setProgressMessage] = useState("Iniciando...");
     const socketRef = useRef(null); // Referência para o socket
     const progressInterval = useRef(null); // Referência para o intervalo de progresso
+    const deadlockTimeoutRef = useRef(null); // Referência para o timeout de fallback de comunicação
     const { showToast } = useToast();
     // Refs para garantir que o socket não reconecte se as funções do pai mudarem (evita desconexões no log)
     const onSuccessRef = useRef(onSuccess);
@@ -61,6 +65,22 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
         setProgress(0);
         setProgressMessage("Aguardando configuração...");
 
+        // Buscar status da chave de API
+        const fetchApiKey = async () => {
+            try {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/user/api-keys`, {
+                    headers: { 'Authorization': `Bearer ${user.token}` }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    setHasApiKey(!!data.gemini_api_key);
+                }
+            } catch (error) {
+                console.error("Erro ao buscar chaves de API:", error);
+            }
+        };
+        fetchApiKey();
+
         // Pre-preencher dados se disponíveis no contexto (template)
         if (contextData) {
             setConfig(prev => ({
@@ -75,8 +95,8 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
         const socket = io(socketUrl, {
             transports: ['websocket'], // Força WebSocket (evita polling em túneis)
             reconnectionAttempts: 5,
-            reconnectionDelay: 1000,
-            timeout: 60000, // Aumenta timeout de conexão para 60s
+            reconnectionDelay: 2000,
+            timeout: 120000, // Aumenta timeout de conexão para 120s (2 min) para tolerar IA lenta
             forceNew: true
         });
         socketRef.current = socket;
@@ -90,36 +110,51 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
 
         // 4. Listeners para os eventos de progresso da IA
         socket.on('ai_progress', (data) => {
-            // Garante que o progresso não ultrapasse 100% ou seja inválido
+            // Se recebeu evento, significa que a comunicação está viva, podemos dar um "reset" no timeout se quisermos
             const safePercent = Math.min(Math.max(data.percent || 0, 0), 99);
             setProgress(safePercent);
             setProgressMessage(data.message || "Processando...");
         });
 
         socket.on('ai_complete', (data) => {
+            if (deadlockTimeoutRef.current) clearTimeout(deadlockTimeoutRef.current);
             const contentMap = data.result || data;
 
             if (!contentMap || typeof contentMap !== 'object' || Object.keys(contentMap).length === 0) {
-                showToast("A IA não conseguiu gerar o conteúdo. Tente novamente.");
+                showToast("A IA não conseguiu gerar o conteúdo. O formato retornado é inválido. Tente novamente.", "error");
                 setLoading(false);
+                setProgressMessage("Falha na geração.");
                 return;
             }
 
             setProgress(100);
-            setProgressMessage("Roteiro concluído!");
+            setProgressMessage("Roteiro concluído com sucesso!");
             setTimeout(() => {
                 if (onSuccessRef.current) onSuccessRef.current(contentMap);
                 if (onCloseRef.current) onCloseRef.current();
-            }, 1500);
+            }, 2000);
         });
 
         socket.on('ai_error', (data) => {
-            showToast(`Erro na geração: ${data.message}`);
+            if (deadlockTimeoutRef.current) clearTimeout(deadlockTimeoutRef.current);
+            showToast(`Falha da IA: ${data.message || 'Erro desconhecido'}`, "error");
             setLoading(false); // Libera o botão para nova tentativa
+            setProgressMessage("Falha na geração.");
+            setProgress(0);
+        });
+
+        // Caso ocorra desconexão antes da conclusão (timeout da thread)
+        socket.on('disconnect', (reason) => {
+            console.warn("Socket Desconectado:", reason);
+            // Se desconectou enquanto carregava e a razão foi timeout ou erro de rede
+            if (['transport error', 'transport close', 'ping timeout'].includes(reason)) {
+                 // Apenas avisar se o loading não estava concluído
+            }
         });
 
         // 5. Função de Cleanup: Roda quando o modal fecha (isOpen se torna false)
         return () => {
+            if (deadlockTimeoutRef.current) clearTimeout(deadlockTimeoutRef.current);
             if (socket) {
                 console.log("Desconectando socket...");
                 socket.disconnect();
@@ -156,13 +191,22 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
 
     const handleOrchestrate = async () => {
         if (!config.teachingFocus.trim()) {
-            return showToast("Por favor, defina o Tópico de Ensino (ex: 'Ponteiros em C', 'Loop For'). A IA precisa disso para criar as questões.");
+            return showToast("Por favor, defina o Tópico de Ensino (ex: 'Ponteiros em C', 'Loop For'). A IA precisa disso para criar as questões.", "warning");
         }
-        if (!config.narrativeGoal.trim()) return showToast("Descreva o enredo.");
+        if (!config.narrativeGoal.trim()) return showToast("Descreva o contexto da história.", "warning");
 
         setLoading(true);
-        setProgress(2);
-        setProgressMessage("Conectando ao servidor...");
+        setProgress(5);
+        setProgressMessage("Estabelecendo conexão neural...");
+
+        // Safety fallback: se a IA demorar mais de 120 segundos sem emitir complete/error
+        if (deadlockTimeoutRef.current) clearTimeout(deadlockTimeoutRef.current);
+        deadlockTimeoutRef.current = setTimeout(() => {
+            showToast("A conexão com o Roteirista Virtual expirou ou falhou de forma silenciosa. Tente novamente.", "error");
+            setLoading(false);
+            setProgressMessage("Falha de Comunicação.");
+            setProgress(0);
+        }, 120000);
 
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/content_editor/orchestrate`, {
@@ -172,21 +216,20 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                     structure,
                     config,
                     context: contextData
-                    // O socket_id não é mais necessário, o backend usará o room_id derivado do JWT
                 })
             });
             if (response.status === 202) {
-                // Sucesso no início. Não fazemos nada aqui, 
-                // apenas esperamos os eventos 'ai_progress' e 'ai_complete'.
-                console.log("Geração assíncrona iniciada...");
+                console.log("Geração assíncrona iniciada. Aguardando WebSocket...");
             } else {
                 const errorData = await response.json();
-                showToast(`Erro ao iniciar: ${errorData.message}`);
+                showToast(`Erro ao iniciar: ${errorData.message}`, "error");
                 setLoading(false);
+                setProgressMessage("");
             }
         } catch (error) {
-            showToast("Erro de conexão com o servidor.");
+            showToast("Erro de conexão com o servidor. Verifique sua rede.", "error");
             setLoading(false);
+            setProgressMessage("");
         }
     };
     if (!isOpen) return null;
@@ -194,7 +237,7 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
     return (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
 
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl border border-purple-500/30 overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="bg-secondary-bg rounded-2xl shadow-2xl w-full max-w-2xl border border-purple-500/30 overflow-hidden flex flex-col max-h-[90vh]">
 
                 {/* Header */}
                 <div className="bg-gradient-to-r from-purple-700 to-indigo-700 p-6 text-white flex justify-between items-center shrink-0">
@@ -222,7 +265,7 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                                     {progress > 5 && <FaMagic className="text-white text-xs animate-spin-slow" />}
                                 </div>
                             </div>
-                            <p className="text-xs text-center mt-3 text-gray-500 dark:text-gray-400">A IA está pensando...</p>
+                            <p className="text-xs text-center mt-3 text-secondary-text">A IA está pensando...</p>
                         </div>
                     )}
                     {!loading && step === 1 ? (
@@ -235,7 +278,7 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                                     </label>
                                     <input
                                         type="text"
-                                        className="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-sm focus:ring-2 focus:ring-purple-500"
+                                        className="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-border-color text-sm focus:ring-2 focus:ring-purple-500"
                                         placeholder="Ex: Diferença entre Git Merge e Rebase"
                                         value={config.teachingFocus}
                                         onChange={e => setConfig({ ...config, teachingFocus: e.target.value })}
@@ -247,7 +290,7 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                                         <FaGraduationCap className="text-blue-500" /> Nível da Turma
                                     </label>
                                     <select
-                                        className="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-sm"
+                                        className="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-border-color text-sm"
                                         value={config.targetAudience}
                                         onChange={e => setConfig({ ...config, targetAudience: e.target.value })}
                                     >
@@ -263,7 +306,7 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                                     <FaBook className="text-purple-500" /> Contexto da História
                                 </label>
                                 <textarea
-                                    className="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-sm focus:ring-2 focus:ring-purple-500"
+                                    className="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-border-color text-sm focus:ring-2 focus:ring-purple-500"
                                     rows="3"
                                     placeholder="Ex: O servidor caiu e a equipe precisa analisar os logs para achar o erro de memória..."
                                     value={config.narrativeGoal}
@@ -278,7 +321,7 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                             {/* Tom e Personalidade */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block font-bold text-sm mb-2 text-gray-600 dark:text-gray-300">Gênero / Tom</label>
+                                    <label className="block font-bold text-sm mb-2 text-secondary-text">Gênero / Tom</label>
                                     <select
                                         className="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-700 border dark:border-gray-600"
                                         value={config.tone}
@@ -292,7 +335,7 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block font-bold text-sm mb-2 text-gray-600 dark:text-gray-300">Personalidade da Historia</label>
+                                    <label className="block font-bold text-sm mb-2 text-secondary-text">Personalidade da Historia</label>
                                     <select
                                         className="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-700 border dark:border-gray-600"
                                         value={config.personality}
@@ -353,7 +396,7 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                                 )}
                             </div>
 
-                            <hr className="border-gray-200 dark:border-gray-700" />
+                            <hr className="border-border-color" />
 
                             {/* Sliders de Controle */}
                             <div>
@@ -392,33 +435,44 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                 </div>
 
                 {/* Footer */}
-                <div className="p-6 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-700 flex gap-3">
-                    {step === 2 && (
-                        <button
-                            onClick={() => setStep(1)}
-                            disabled={loading}
-                            className="px-6 py-3 rounded-xl border border-gray-300 text-gray-600 hover:bg-gray-100 font-bold"
-                        >
-                            Voltar
-                        </button>
+                <div className="p-6 bg-primary-bg/50 border-t border-border-color flex flex-col gap-3">
+                    {!hasApiKey && step === 2 && (
+                        <div className="bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-400 text-yellow-800 dark:text-yellow-200 p-3 rounded-lg text-sm flex items-start gap-2 mb-2">
+                            <FaExclamationTriangle className="mt-1 flex-shrink-0" />
+                            <div>
+                                <strong>Aviso:</strong> Você não possui uma chave de API configurada. O sistema usará a cota compartilhada, o que pode causar lentidão. 
+                                <button onClick={() => navigate('/profile')} className="ml-1 underline font-bold hover:text-yellow-600">Configurar Chave no Perfil</button>
+                            </div>
+                        </div>
                     )}
-
-                    <button
-                        onClick={step === 1 ? () => setStep(2) : handleOrchestrate}
-                        disabled={loading}
-                        className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg flex items-center justify-center gap-2"
-                    >
-                        {/* O conteúdo do botão muda, mas o elemento <button> permanece no DOM */}
-                        {loading && (
-                            <span className="flex items-center gap-2">
-                                <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
-                                Criando Roteiro...
-                            </span>
+                    <div className="flex gap-3 w-full">
+                        {step === 2 && (
+                            <button
+                                onClick={() => setStep(1)}
+                                disabled={loading}
+                                className="px-6 py-3 rounded-xl border border-gray-300 text-gray-600 hover:bg-gray-100 font-bold"
+                            >
+                                Voltar
+                            </button>
                         )}
-                        {!loading && step === 1 && 'Continuar para Personagens'}
-                        {!loading && step === 2 && <><FaMagic /> Gerar História</>}
 
-                    </button>
+                        <button
+                            onClick={step === 1 ? () => setStep(2) : handleOrchestrate}
+                            disabled={loading}
+                            className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg flex items-center justify-center gap-2"
+                        >
+                            {/* O conteúdo do botão muda, mas o elemento <button> permanece no DOM */}
+                            {loading && (
+                                <span className="flex items-center gap-2">
+                                    <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
+                                    Criando Roteiro...
+                                </span>
+                            )}
+                            {!loading && step === 1 && 'Continuar para Personagens'}
+                            {!loading && step === 2 && <span className="flex items-center gap-2"><FaMagic /> Gerar História</span>}
+
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

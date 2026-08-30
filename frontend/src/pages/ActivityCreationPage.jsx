@@ -11,15 +11,16 @@ import Step2_DesiredScenario from '../components/activity/creation_steps/Step2_A
 import Step3_ActivityPlanning from '../components/activity/creation_steps/Step3_Activity';
 import Step4_PlayerProfile from '../components/activity/creation_steps/Step4_Activity';
 import Step5_GameElements from '../components/activity/creation_steps/Step5_Activity';
-import Step6_RewardsOffered from '../components/activity/creation_steps/Step6_Activity';
-import Step7_RewardedActions from '../components/activity/creation_steps/Step7_Activity';
-import Step8_RulesAndSharing from '../components/activity/creation_steps/Step8_Activity';
-import QuizEditor from './QuizEditorPage';
-import NarrativeEditor from './NarrativeEditorPage';
-import LearningContentEditor from './LearningContentEditorPage';
+import Step6_GameBoard from '../components/activity/creation_steps/Step6_Activity';
+import Step7_RewardsOffered from '../components/activity/creation_steps/Step7_Activity';
+import Step8_RewardedActions from '../components/activity/creation_steps/Step8_Activity';
+import Step9_RulesAndSharing from '../components/activity/creation_steps/Step9_Activity';
+import ActivityCreationModals from './ActivityCreation/components/ActivityCreationModals';
 import { useTutorial } from '../context/TutorialContext';
 import { useToast } from '../context/ToastContext';
 import ActivityCreationStepper from '../components/activity/ActivityCreationStepper';
+import InitialSelectionPanel from './ActivityCreation/components/InitialSelectionPanel';
+import ActivityCreationHeader from './ActivityCreation/components/ActivityCreationHeader';
 import { FaCheckCircle, FaTimesCircle, FaSync } from 'react-icons/fa';
 
 import {
@@ -28,6 +29,7 @@ import {
   WIZARD_DYNAMICS_STEPS,
   WIZARD_PROFILES_STEPS,
   WIZARD_ELEMENTS_STEPS,
+  WIZARD_GAMEBOARD_STEPS,
   WIZARD_END_STEPS
 } from '../data/tutorialSteps';
 
@@ -55,7 +57,7 @@ const hubElementCardMap = {
 function ActivityCreationPage({ existingActivity }) {
   const navigate = useNavigate();
   const { startTour, stopTour } = useTutorial();
-  const totalSteps = 8;
+  const totalSteps = 9;
   const { user } = useAuth();
   const formStartedRef = useRef(false);
   const { activityId } = useParams();
@@ -95,7 +97,7 @@ function ActivityCreationPage({ existingActivity }) {
 
   useEffect(() => {
     if (isEditMode) {
-      setMaxReachedStep(8);
+      setMaxReachedStep(9);
     } else {
       if (currentStep > maxReachedStep) {
         setMaxReachedStep(currentStep);
@@ -105,7 +107,7 @@ function ActivityCreationPage({ existingActivity }) {
 
   useEffect(() => {
     if (formStartedRef.current && activityData.title && !isEditMode) {
-      setMaxReachedStep(8);
+      setMaxReachedStep(9);
     }
   }, [formStartedRef.current, activityData.title, isEditMode]);
 
@@ -145,6 +147,16 @@ function ActivityCreationPage({ existingActivity }) {
   const startTourRef = useRef(startTour);
   useEffect(() => { startTourRef.current = startTour; }, [startTour]);
 
+  // Tour handler unmount cleanup
+  useEffect(() => {
+    return () => {
+      if (!isNavigating && !isSubmittingRef.current) {
+        // Se desmontou por qualquer motivo que não seja fluxo de envio/navegação normal
+        sessionStorage.removeItem('TUTORIAL_MODE');
+      }
+    };
+  }, [isNavigating]);
+
   useEffect(() => {
     const sessionForce = sessionStorage.getItem('TUTORIAL_MODE') === 'true';
     const stateForce = location.state?.forceTour === true;
@@ -165,8 +177,9 @@ function ActivityCreationPage({ existingActivity }) {
           case 3: startTourFn(WIZARD_DYNAMICS_STEPS, 'creation_step_3_dynamics', true); break;
           case 4: startTourFn(WIZARD_PROFILES_STEPS, 'creation_step_4_profiles', true); break;
           case 5: startTourFn(WIZARD_ELEMENTS_STEPS, 'creation_step_5_elements', true); break;
-          case 8: startTourFn(WIZARD_END_STEPS, 'creation_step_8_end', true); break;
-          default: break;
+          case 6: startTourFn(WIZARD_GAMEBOARD_STEPS, 'creation_step_6_gameboard', true); break;
+          case 9: startTourFn(WIZARD_END_STEPS, 'creation_step_9_end', true); break;
+          default: stopTour(); break;
         }
       }
     }, 600);
@@ -466,18 +479,27 @@ function ActivityCreationPage({ existingActivity }) {
         setTimeout(() => setIsNavigating(false), 300);
         return;
       }
+    }
 
-      // TRAVA: Verifica se o tabuleiro de progressão tem pelo menos 1 passo
+    // Etapa 6: Tabuleiro de Progressão
+    if (currentStep === 6) {
       const path = activityData.gamificationDesign?.progression_path || [];
       if (path.length === 0) {
         showToast('O Editor do Tabuleiro não pode ficar vazio. Adicione pelo menos um passo (Conteúdo, Quiz ou Narrativa) à trilha.', 'warning');
         setTimeout(() => setIsNavigating(false), 300);
         return;
       }
+      
+      const hasUnvalidatedDrafts = path.some(step => step.isDraft === true);
+      if (hasUnvalidatedDrafts) {
+        showToast('Atenção: Você possui rascunhos automáticos da IA no tabuleiro! Clique no lápis (✏️) em cada passo gerado para revisar e validar o conteúdo antes de avançar.', 'warning');
+        setTimeout(() => setIsNavigating(false), 300);
+        return;
+      }
     }
 
-    // Etapa 6: Recompensas (NOVO)
-    if (currentStep === 6) {
+    // Etapa 7: Recompensas (NOVO)
+    if (currentStep === 7) {
       const hasPredefined = activityData.rewardsOffered?.selectedRewards?.length > 0;
       const hasCustom = activityData.rewardsOffered?.otherReward?.trim().length > 0;
       if (!hasPredefined && !hasCustom) {
@@ -487,8 +509,8 @@ function ActivityCreationPage({ existingActivity }) {
       }
     }
 
-    // Etapa 7: Ações Recompensadas (NOVO)
-    if (currentStep === 7) {
+    // Etapa 8: Ações Recompensadas (NOVO)
+    if (currentStep === 8) {
       const hasPredefined = activityData.rewardedActions?.selectedActions?.length > 0;
       const hasCustom = activityData.rewardedActions?.otherAction?.trim().length > 0;
       if (!hasPredefined && !hasCustom) {
@@ -498,8 +520,8 @@ function ActivityCreationPage({ existingActivity }) {
       }
     }
 
-    // Etapa 8: Regras (NOVO)
-    if (currentStep === 8) {
+    // Etapa 9: Regras (NOVO)
+    if (currentStep === 9) {
       const hasPredefined = activityData.gamificationRules?.generalRules?.length > 0;
       const hasCustom = activityData.gamificationRules?.specificRules?.trim().length > 0;
       if (!hasPredefined && !hasCustom) {
@@ -678,148 +700,38 @@ function ActivityCreationPage({ existingActivity }) {
       case 2: return <Step2_DesiredScenario {...commonStepProps} openHelpModal={openHelpModal} />;
       case 3: return <Step3_ActivityPlanning {...commonStepProps} />;
       case 4: return <Step4_PlayerProfile {...commonStepProps} openHelpModal={openHelpModal} />;
-      case 5: return <Step5_GameElements {...commonStepProps} onEditContent={handleOpenContentEditor} onStructureChange={handleAutoSaveStructure} />;
-      case 6: return <Step6_RewardsOffered {...commonStepProps} />;
-      case 7: return <Step7_RewardedActions {...commonStepProps} />;
-      case 8: return <Step8_RulesAndSharing {...commonStepProps} />;
+      case 5: return <Step5_GameElements {...commonStepProps} />;
+      case 6: return <Step6_GameBoard {...commonStepProps} onEditContent={handleOpenContentEditor} onStructureChange={handleAutoSaveStructure} />;
+      case 7: return <Step7_RewardsOffered {...commonStepProps} />;
+      case 8: return <Step8_RewardedActions {...commonStepProps} />;
+      case 9: return <Step9_RulesAndSharing {...commonStepProps} />;
       default: return null;
     }
   };
 
   return (
-    <div className="min-h-screen bg-primary-bg dark:bg-primary-bg">
+    <div className="min-h-screen bg-primary-bg">
       <div className="container mx-auto px-4 py-8">
         {/* Cabeçalho */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-primary-text dark:text-primary-text">
-            {isEditMode ? 'Editar Atividade' : 'Criar Nova Atividade Gamificada'}
-          </h1>
-          <p className="mt-2 text-secondary-text dark:text-secondary-text">
-            Siga as etapas para criar uma experiência de aprendizado envolvente.
-          </p>
-
-          {/* INDICADOR DE AUTOSAVE */}
-          {!showInitialSelection && autoSaveStatus !== 'idle' && (
-            (() => {
-              let statusConfig = { borderColor: 'border-gray-300', icon: null, text: '' };
-              switch (autoSaveStatus) {
-                case 'saving':
-                  statusConfig = { borderColor: 'border-accent-yellow', icon: <FaSync className="animate-spin text-accent-yellow" />, text: 'Salvando alterações...' };
-                  break;
-                case 'saved':
-                  statusConfig = {
-                    borderColor: 'border-green-500', icon: <FaCheckCircle className="text-green-500" />,
-                    text: lastSavedAt ? `Salvo às ${lastSavedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'Alterações salvas'
-                  };
-                  break;
-                case 'error':
-                  statusConfig = { borderColor: 'border-red-500', icon: <FaTimesCircle className="text-red-500" />, text: 'Erro ao salvar alterações' };
-                  break;
-                default: return null;
-              }
-              return (
-                <div className="fixed bottom-5 right-5 z-[60] animate-slide-in-right">
-                  <div className={`bg-secondary-bg border-l-4 px-6 py-4 rounded shadow-2xl flex items-center gap-4 min-w-[300px] max-w-md border border-[#3e4a52] transition-all duration-300 ${statusConfig.borderColor}`}>
-                    <div className="text-xl">{statusConfig.icon}</div>
-                    <div className="flex-1"><p className="font-medium text-sm md:text-base text-primary-text">{statusConfig.text}</p></div>
-                  </div>
-                </div>
-              );
-            })()
-          )}
-        </div>
+        <ActivityCreationHeader 
+          isEditMode={isEditMode}
+          showInitialSelection={showInitialSelection}
+          autoSaveStatus={autoSaveStatus}
+          lastSavedAt={lastSavedAt}
+        />
 
         {(showInitialSelection && !isEditMode) ? (
           // Seleção Inicial
-          <div className="bg-secondary-bg dark:bg-primary-bg p-8 rounded-lg shadow-md">
-            <h3 className="text-2xl font-bold text-center mb-8 bg-gradient-to-r from-accent-purple to-accent-teal bg-clip-text text-transparent">
-              Como você gostaria de começar?
-            </h3>
-
-            {!showTemplateList ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div id="tour-start-scratch" className="relative bg-secondary-bg rounded-2xl shadow-xl overflow-hidden border border-[var(--border-color)] hover:border-accent-yellow/50 transition-all duration-300 group">
-                  <div className="absolute inset-0 bg-gradient-to-r from-accent-teal/5 to-accent-purple/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="relative z-10 p-6 flex flex-col items-center text-center h-full">
-                    <div className="mb-4 bg-gradient-to-r from-accent-yellow to-accent-teal p-1 rounded-full">
-                      <div className="bg-primary-bg rounded-full p-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-accent-yellow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                      </div>
-                    </div>
-                    <h4 className="text-xl font-semibold text-primary-text mb-2">Iniciar do Zero</h4>
-                    <p className="text-secondary-text mb-6 flex-grow">Comece com um formulário completamente vazio e personalize cada detalhe.</p>
-                    <button onClick={handleStartFromScratch} className="w-full py-3 px-6 bg-gradient-to-r from-accent-yellow to-accent-teal text-white dark:text-primary-bg font-bold rounded-xl shadow-lg hover:shadow-xl hover:brightness-110 transform hover:-translate-y-0.5 transition-all duration-300 ease-out">
-                      Atividade em Branco
-                    </button>
-                  </div>
-                </div>
-
-                <div className="relative bg-secondary-bg rounded-2xl shadow-xl overflow-hidden border border-[var(--border-color)] hover:border-accent-purple/50 transition-all duration-300 group">
-                  <div className="absolute inset-0 bg-gradient-to-r from-accent-purple/5 to-accent-yellow/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="relative z-10 p-6 flex flex-col items-center text-center h-full">
-                    <div className="mb-4 bg-gradient-to-r from-accent-purple to-accent-teal p-1 rounded-full">
-                      <div className="bg-primary-bg rounded-full p-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-accent-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
-                        </svg>
-                      </div>
-                    </div>
-                    <h4 className="text-xl font-semibold text-primary-text mb-2">Escolher um Template</h4>
-                    <p className="text-secondary-text mb-6 flex-grow">Use um de nossos templates predefinidos para agilizar a criação.</p>
-                    <button id="tour-choose-scratch" onClick={handleShowTemplates} className="w-full py-3 px-6 bg-gradient-to-r from-accent-purple to-accent-teal text-white dark:text-primary-bg font-bold rounded-xl shadow-lg hover:shadow-xl hover:brightness-110 transform hover:-translate-y-0.5 transition-all duration-300 ease-out">
-                      Ver Templates
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="mt-6">
-                <h4 className="text-xl font-bold text-center mb-6 bg-gradient-to-r from-accent-purple to-accent-yellow bg-clip-text text-transparent">
-                  Templates Predefinidos
-                </h4>
-                {loadingTemplates ? (
-                  <div className="text-center py-10">
-                    <div className="inline-block animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-accent-teal"></div>
-                    <p className="mt-4 text-secondary-text">Carregando templates...</p>
-                  </div>
-                ) : templateError ? (
-                  <div className="bg-danger-bg border border-danger/20 text-danger p-4 rounded-xl text-center"><p>Erro: {templateError}</p></div>
-                ) : templates.length === 0 ? (
-                  <div className="bg-info-bg border border-info/20 text-info p-4 rounded-xl text-center"><p>Nenhum template disponível no momento.</p></div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {templates.map(template => (
-                      <div key={template.id} className="relative bg-secondary-bg rounded-2xl shadow-xl p-6 border border-[var(--border-color)] hover:border-accent-teal/50 transition-all duration-300 group overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-r from-accent-purple/5 to-accent-yellow/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        <div className="relative z-10 flex flex-col h-full">
-                          <div className="flex justify-center mb-4">
-                            <div className="bg-gradient-to-r from-accent-purple to-accent-yellow p-1 rounded-full">
-                              <div className="bg-primary-bg rounded-full p-2"><span className="text-2xl">{template.icon}</span></div>
-                            </div>
-                          </div>
-                          <h5 className="text-lg font-semibold text-primary-text text-center mb-2">{template.name}</h5>
-                          <p className="text-secondary-text text-sm mb-4 flex-grow text-center">{template.description}</p>
-                          <button onClick={() => handleSelectTemplate(template.data)} className="mt-auto py-2 px-4 bg-gradient-to-r from-accent-purple to-accent-teal text-white dark:text-primary-bg font-medium rounded-xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300">
-                            Usar Template
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <div className="mt-8 text-center">
-                  <button onClick={handleBackToInitialSelection} className="py-2 px-4 border border-accent-teal/30 rounded-xl shadow-sm text-sm font-medium text-primary-text bg-secondary-bg hover:bg-primary-bg transition duration-300">
-                    <span className="flex items-center justify-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-                      Voltar para Seleção Inicial
-                    </span>
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+          <InitialSelectionPanel
+            showTemplateList={showTemplateList}
+            handleStartFromScratch={handleStartFromScratch}
+            handleShowTemplates={handleShowTemplates}
+            handleSelectTemplate={handleSelectTemplate}
+            handleBackToInitialSelection={handleBackToInitialSelection}
+            loadingTemplates={loadingTemplates}
+            templateError={templateError}
+            templates={templates}
+          />
         ) : (
           <>
             {/* Barra de Progresso */}
@@ -867,9 +779,9 @@ function ActivityCreationPage({ existingActivity }) {
         {showHelpModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
             <div className="bg-secondary-bg dark:bg-primary-bg rounded-lg shadow-xl max-w-lg w-full p-6">
-              <h3 className="text-lg font-medium leading-6 text-primary-text dark:text-primary-text">{helpContent.title}</h3>
+              <h3 className="text-lg font-medium leading-6 text-primary-text">{helpContent.title}</h3>
               <div className="mt-2">
-                <p className="text-sm text-secondary-text dark:text-secondary-text">{helpContent.text}</p>
+                <p className="text-sm text-secondary-text">{helpContent.text}</p>
               </div>
               <div className="mt-4">
                 <button type="button" className="inline-flex justify-center rounded-md border border-transparent bg-teal-100 px-4 py-2 text-sm font-medium text-teal-900 hover:bg-teal-200" onClick={closeHelpModal}>
@@ -881,44 +793,11 @@ function ActivityCreationPage({ existingActivity }) {
         )}
 
         {/* MODAIS DE CONTEÚDO */}
-        {editingStep?.type === 'quiz' && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
-            <div className="bg-white dark:bg-primary-bg p-6 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-              <QuizEditor
-                initialData={editingStep.content?.questions || []}
-                onSave={(questions) => handleSaveContentLocally({ type: 'quiz', questions })}
-                onCancel={() => setEditingStep(null)}
-                isOfflineMode={true}
-              />
-            </div>
-          </div>
-        )}
-
-        {editingStep?.type === 'narrative' && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
-            <div className="bg-white dark:bg-primary-bg p-6 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-              <NarrativeEditor
-                initialData={editingStep.content}
-                onSave={(data) => handleSaveContentLocally({ type: 'narrative', ...data })}
-                onCancel={() => setEditingStep(null)}
-                isOfflineMode={true}
-              />
-            </div>
-          </div>
-        )}
-
-        {editingStep?.type === 'content' && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
-            <div className="bg-white dark:bg-primary-bg p-6 rounded-xl w-full max-w-5xl max-h-[90vh] overflow-y-auto relative">
-              <button onClick={() => setEditingStep(null)} className="absolute top-4 right-4 text-gray-500 hover:text-red-500 font-bold text-xl z-10"></button>
-              <LearningContentEditor
-                initialData={editingStep.content}
-                onSave={(data) => handleSaveContentLocally({ type: 'content', ...data })}
-                isOfflineMode={true}
-              />
-            </div>
-          </div>
-        )}
+        <ActivityCreationModals 
+          editingStep={editingStep}
+          setEditingStep={setEditingStep}
+          handleSaveContentLocally={handleSaveContentLocally}
+        />
       </div>
     </div>
   );

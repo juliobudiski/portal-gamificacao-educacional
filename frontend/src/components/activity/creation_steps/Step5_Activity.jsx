@@ -7,7 +7,6 @@ import {
   FaBookOpen, FaAward, FaTrophy, FaGamepad, FaBullseye, FaBrain, FaLightbulb,
   FaStar, FaProjectDiagram, FaCodeBranch, FaUsers, FaComments, FaExclamationTriangle
 } from 'react-icons/fa';
-import GameBoardEditor from '../../activity/GameBoardEditor';
 import { useHelpModal } from "../../../context/HelpModalContext";
 import api from '../../../services/api';
 
@@ -44,7 +43,7 @@ const ICON_MAP = {
   "Conquistas digitais para metas alcançadas": <FaAward />,
 };
 
-function Step5_GameElements({ activityData, handleInputChange, setActivityData, onEditContent, onStructureChange }) {
+function Step5_GameElements({ activityData, handleInputChange, setActivityData }) {
   const { openHelp } = useHelpModal();
   const [clusters, setClusters] = useState({ recommended: [], neutral: [], forbidden: [] });
   const [loading, setLoading] = useState(true);
@@ -208,9 +207,9 @@ function Step5_GameElements({ activityData, handleInputChange, setActivityData, 
   if (loading) return <div className="p-8 text-center">Carregando sugestões do Motor Contextual...</div>;
 
   return (
-    <div className="space-y-8 animate-fade-in pb-10">
+    <div id="tour-step-elements" className="space-y-8 animate-fade-in pb-10">
       <div>
-        <h2 className="text-2xl font-bold text-primary-text dark:text-primary-text">
+        <h2 className="text-2xl font-bold text-primary-text">
           Design Guiado: Elementos de Jogo
         </h2>
         <p className="mt-2 text-secondary-text">
@@ -263,15 +262,6 @@ function Step5_GameElements({ activityData, handleInputChange, setActivityData, 
           placeholder="Ex: Cartas Colecionáveis Físicas..."
         />
       </div>
-
-      <GameBoardEditor
-        gamificationDesign={activityData.gamificationDesign}
-        setActivityData={setActivityData}
-        onEditContent={onEditContent}
-        onStructureChange={onStructureChange}
-        activityId={activityData.id}
-        fullActivityData={activityData}
-      />
 
       {conflictModal.isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">

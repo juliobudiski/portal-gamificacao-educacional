@@ -96,7 +96,7 @@ function AboutUsPage() {
         <h1 className="text-4xl md:text-5xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-[#ffbd30] to-[#69e8cb]">
           Sobre o Portal
         </h1>
-        <p className="text-xl text-secondary-text dark:text-secondary-text max-w-full mx-auto">
+        <p className="text-xl text-secondary-text max-w-full mx-auto">
           Transformando a educação através da gamificação e engajamento
         </p>
       </div>
@@ -106,8 +106,8 @@ function AboutUsPage() {
         <div className="flex items-start mb-4">
           <BookOpen className="w-10 h-10 text-accent-yellow mr-4 flex-shrink-0" />
           <div>
-            <h2 className="text-3xl font-bold mb-3 text-primary-text dark:text-primary-text">Nossa Missão</h2>
-            <p className="text-lg text-secondary-text dark:text-secondary-text leading-relaxed">
+            <h2 className="text-3xl font-bold mb-3 text-primary-text">Nossa Missão</h2>
+            <p className="text-lg text-secondary-text leading-relaxed">
               Transformar a experiência educacional em uma jornada engajadora, interativa e divertida através da gamificação. Queremos revolucionar a forma como professores ensinam e alunos aprendem, criando um ecossistema educacional vibrante.
             </p>
           </div>
@@ -116,7 +116,7 @@ function AboutUsPage() {
 
       {/* NOVO: Seção de Estatísticas (Nosso Impacto em Números) */}
       <div className="mb-16">
-        <h2 className="text-3xl font-bold text-center mb-8 text-primary-text dark:text-primary-text">Nosso Impacto em Números</h2>
+        <h2 className="text-3xl font-bold text-center mb-8 text-primary-text">Nosso Impacto em Números</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
 
           <div className="bg-secondary-bg p-6 rounded-2xl shadow-lg border border-accent-purple/20 flex flex-col items-center text-center group hover:border-accent-purple transition-all duration-300">
@@ -176,7 +176,7 @@ function AboutUsPage() {
               <h3 className="text-2xl font-bold mb-1 dark:text-primary-text">{member.name}</h3>
               <p className="text-[#ffbd30] font-semibold mb-4">{member.role}</p>
 
-              <div className="text-secondary-text dark:text-secondary-text text-left mb-4">
+              <div className="text-secondary-text text-left mb-4">
                 <p>
                   {expandedIndex === index ? member.bio : `${member.bio.substring(0, 150)}...`}
                 </p>
@@ -186,7 +186,7 @@ function AboutUsPage() {
                 </button>
               </div>
 
-              <div className="flex space-x-4 mt-auto pt-4 border-t border-border-color dark:border-gray-600 w-full justify-center">
+              <div className="flex space-x-4 mt-auto pt-4 border-t border-border-color w-full justify-center">
                 <a href={member.lattes} target="_blank" rel="noopener noreferrer" className="text-secondary-text hover:text-[#69e8cb] transition-colors" title="Currículo Lattes">
                   <LattesIcon />
                 </a>
@@ -206,7 +206,7 @@ function AboutUsPage() {
             <Shield className="w-6 h-6 text-accent-teal mr-2" />
             Para Professores
           </h3>
-          <p className="text-lg text-secondary-text dark:text-secondary-text mb-4">
+          <p className="text-lg text-secondary-text mb-4">
             Oferecemos ferramentas intuitivas para criar e gerenciar atividades gamificadas, permitindo personalizar o ensino e motivar seus alunos. Com nosso sistema, você pode:
           </p>
           <ul className="space-y-3">
@@ -218,18 +218,18 @@ function AboutUsPage() {
             ].map((item, index) => (
               <li key={index} className="flex items-start">
                 <span className="text-[#ffbd30] mr-3 mt-1">•</span>
-                <span className="text-secondary-text dark:text-secondary-text">{item}</span>
+                <span className="text-secondary-text">{item}</span>
               </li>
             ))}
           </ul>
         </div>
 
-        <div className="bg-secondary-bg dark:bg-secondary-bg p-6 rounded-2xl shadow-lg border-t-4 border-[#9570d9]">
+        <div className="bg-secondary-bg p-6 rounded-2xl shadow-lg border-t-4 border-[#9570d9]">
           <h3 className="text-2xl font-bold mb-4 text-primary-text flex items-center">
             <Award className="w-6 h-6 text-[#9570d9] mr-2" />
             Para Alunos
           </h3>
-          <p className="text-lg text-secondary-text dark:text-secondary-text mb-4">
+          <p className="text-lg text-secondary-text mb-4">
             Proporcionamos um ambiente dinâmico onde o progresso é recompensado e a colaboração é incentivada. Em nossa plataforma, você pode:
           </p>
           <ul className="space-y-3">
@@ -241,7 +241,7 @@ function AboutUsPage() {
             ].map((item, index) => (
               <li key={index} className="flex items-start">
                 <span className="text-[#ffbd30] mr-3 mt-1">•</span>
-                <span className="text-secondary-text dark:text-secondary-text">{item}</span>
+                <span className="text-secondary-text">{item}</span>
               </li>
             ))}
           </ul>
@@ -254,13 +254,13 @@ function AboutUsPage() {
           {values.map((value, index) => (
             <div
               key={index}
-              className="bg-secondary-bg dark:bg-secondary-bg p-6 rounded-xl shadow-lg border border-[#69e8cb]/20 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+              className="bg-secondary-bg p-6 rounded-xl shadow-lg border border-[#69e8cb]/20 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
             >
               <div className="text-[#ffbd30] mb-4">
                 {value.icon}
               </div>
               <h3 className="text-xl font-bold mb-3 dark:text-primary-text">{value.title}</h3>
-              <p className="text-secondary-text dark:text-secondary-text">{value.description}</p>
+              <p className="text-secondary-text">{value.description}</p>
             </div>
           ))}
         </div>
@@ -272,7 +272,7 @@ function AboutUsPage() {
 
         <Heart className="w-12 h-12 mx-auto text-[#ff6b6b] mb-4" />
         <h2 className="text-3xl font-bold mb-4 dark:text-primary-text">Junte-se a Nossa Comunidade</h2>
-        <p className="text-xl text-secondary-text dark:text-secondary-text max-w-2xl mx-auto mb-8">
+        <p className="text-xl text-secondary-text max-w-2xl mx-auto mb-8">
           Faça parte desta revolução educacional que já transforma a vida de milhares de professores e alunos.
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4">

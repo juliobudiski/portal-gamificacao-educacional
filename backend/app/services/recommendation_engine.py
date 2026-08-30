@@ -44,6 +44,51 @@ class GameficaContextInput(BaseModel):
     playerProfile: PlayerProfileInput = Field(default_factory=PlayerProfileInput)
     activityPlanning: LogisticsInput = Field(default_factory=LogisticsInput)
 
+    activityPlanning: LogisticsInput = Field(default_factory=LogisticsInput)
+
+# ==========================================
+# CONSTANTES DE MAPEAMENTO E MODIFICADORES
+# ==========================================
+FRONTEND_MAP = {
+    "Nível": "Níveis",
+    "Pontos": "Sistema de pontuação",
+    "Estatísticas": "Estatísticas (métricas de progresso)",
+    "Economia": "Economia (sistema monetário)",
+    "Pressão de tempo": "Pressão de tempo",
+    "Competição": "Sistema de classificação e ranking",
+    "Cooperação": "Fórum de Discussão", 
+    "Objetivo": "Objetivo (missão, meta do jogo)",
+    "Quebra cabeça": "Quebra-cabeça",
+    "Narrativa": "Narrativas",
+    "Progressão": "Progressão baseada em habilidade",
+    "Reconhecimento": "Conquistas digitais para metas alcançadas"
+}
+
+ALL_REACT_ELEMENTS = [
+    "Níveis", "Sistema de pontuação", "Estatísticas (métricas de progresso)", "Reconhecimento",
+    "Raridade (itens exclusivos, objetos raros)", "Economia (sistema monetário)",
+    "Chance (sorte e probabilidade)", "Pressão de tempo", "Reputação (prestígio, renome, status)",
+    "Pressão social", "Objetivo (missão, meta do jogo)", "Quebra-cabeça", 
+    "Renovação (atualizações de conteúdo)", "Novidade (novas funcionalidades)", 
+    "Customização de personagem", "Customização de equipamento", "Chat ou sistema de mensagens", 
+    "Fórum de Discussão", "Interação social com outros jogadores", "Feedback claro sobre o desempenho",
+    "Progressão baseada em habilidade", "Narrativa", "Sistema de classificação e ranking",
+    "Recompensas atraentes", "Conquistas digitais para metas alcançadas"
+]
+
+PROFILE_MODS = {
+    "competitivo": { "Competição": {"mu": 1.5, "lambda": 0.5}, "Pressão de tempo": {"mu": 1.5, "lambda": 0.5}, "Cooperação": {"mu": 0.1, "lambda": 5.0} },
+    "social": { "Cooperação": {"mu": 1.5, "lambda": 0.5}, "Narrativa": {"mu": 1.5, "lambda": 0.5}, "Competição": {"mu": 0.1, "lambda": 5.0} }, 
+    "realizador": { "Pontos": {"mu": 1.5, "lambda": 0.5}, "Nível": {"mu": 1.5, "lambda": 0.5}, "Quebra cabeça": {"mu": 1.5, "lambda": 0.5}, "Reconhecimento": {"mu": 1.5, "lambda": 0.5} },
+    "explorador": { "Narrativa": {"mu": 1.5, "lambda": 0.5}, "Quebra cabeça": {"mu": 1.5, "lambda": 0.5}, "Pressão de tempo": {"mu": 0.1, "lambda": 5.0} }
+}
+
+OBJECTIVE_MODS = {
+    "teorico": { "Narrativa": {"mu": 1.5, "lambda": 0.5}, "Quebra cabeça": {"mu": 1.5, "lambda": 0.5}, "Pressão de tempo": {"mu": 0.1, "lambda": 5.0}, "Economia": {"mu": 0.1, "lambda": 5.0} },
+    "pratico": { "Pontos": {"mu": 1.5, "lambda": 0.5}, "Economia": {"mu": 1.5, "lambda": 0.5}, "Pressão de tempo": {"mu": 1.5, "lambda": 0.5}, "Estatísticas": {"mu": 1.5, "lambda": 0.5}, "Narrativa": {"mu": 0.1, "lambda": 5.0} }, 
+    "colaborativo": { "Cooperação": {"mu": 1.5, "lambda": 0.5}, "Reconhecimento": {"mu": 1.5, "lambda": 0.5}, "Competição": {"mu": 0.1, "lambda": 5.0} }
+}
+
 # ==========================================
 # 2. MOTOR DE PRECIFICAÇÃO HEURÍSTICA (M.U.I. - Heuristic Scoring Engine)
 # ==========================================
@@ -51,46 +96,6 @@ class ContextualRecommendationEngine:
     def __init__(self, kb_path: str = "knowledge_base.json"):
         self.kb_path = kb_path
         self._load_knowledge_base()
-
-        self.frontend_map = {
-            "Nível": "Níveis",
-            "Pontos": "Sistema de pontuação",
-            "Estatísticas": "Estatísticas (métricas de progresso)",
-            "Economia": "Economia (sistema monetário)",
-            "Pressão de tempo": "Pressão de tempo",
-            "Competição": "Sistema de classificação e ranking",
-            "Cooperação": "Fórum de Discussão", 
-            "Objetivo": "Objetivo (missão, meta do jogo)",
-            "Quebra cabeça": "Quebra-cabeça",
-            "Narrativa": "Narrativas",
-            "Progressão": "Progressão baseada em habilidade",
-            "Reconhecimento": "Conquistas digitais para metas alcançadas"
-        }
-
-        self.all_react_elements = [
-            "Níveis", "Sistema de pontuação", "Estatísticas (métricas de progresso)", "Reconhecimento",
-            "Raridade (itens exclusivos, objetos raros)", "Economia (sistema monetário)",
-            "Chance (sorte e probabilidade)", "Pressão de tempo", "Reputação (prestígio, renome, status)",
-            "Pressão social", "Objetivo (missão, meta do jogo)", "Quebra-cabeça", 
-            "Renovação (atualizações de conteúdo)", "Novidade (novas funcionalidades)", 
-            "Customização de personagem", "Customização de equipamento", "Chat ou sistema de mensagens", 
-            "Fórum de Discussão", "Interação social com outros jogadores", "Feedback claro sobre o desempenho",
-            "Progressão baseada em habilidade", "Narrativa", "Sistema de classificação e ranking",
-            "Recompensas atraentes", "Conquistas digitais para metas alcançadas"
-        ]
-
-        # Configurações de Conflito Severo baseadas na Calibração Matemática
-        self.profile_mods = {
-            "competitivo": { "Competição": {"mu": 1.5, "lambda": 0.5}, "Pressão de tempo": {"mu": 1.5, "lambda": 0.5}, "Cooperação": {"mu": 0.1, "lambda": 5.0} },
-            "social": { "Cooperação": {"mu": 1.5, "lambda": 0.5}, "Narrativa": {"mu": 1.5, "lambda": 0.5}, "Competição": {"mu": 0.1, "lambda": 5.0} }, 
-            "realizador": { "Pontos": {"mu": 1.5, "lambda": 0.5}, "Nível": {"mu": 1.5, "lambda": 0.5}, "Quebra cabeça": {"mu": 1.5, "lambda": 0.5}, "Reconhecimento": {"mu": 1.5, "lambda": 0.5} },
-            "explorador": { "Narrativa": {"mu": 1.5, "lambda": 0.5}, "Quebra cabeça": {"mu": 1.5, "lambda": 0.5}, "Pressão de tempo": {"mu": 0.1, "lambda": 5.0} }
-        }
-
-        self.objective_mods = {
-            "teorico": { "Narrativa": {"mu": 1.5, "lambda": 0.5}, "Quebra cabeça": {"mu": 1.5, "lambda": 0.5}, "Pressão de tempo": {"mu": 0.1, "lambda": 5.0}, "Economia": {"mu": 0.1, "lambda": 5.0} },
-            "pratico": { "Pontos": {"mu": 1.5, "lambda": 0.5}, "Economia": {"mu": 1.5, "lambda": 0.5}, "Pressão de tempo": {"mu": 1.5, "lambda": 0.5}, "Estatísticas": {"mu": 1.5, "lambda": 0.5}, "Narrativa": {"mu": 0.1, "lambda": 5.0} }, 
-            "colaborativo": { "Cooperação": {"mu": 1.5, "lambda": 0.5}, "Reconhecimento": {"mu": 1.5, "lambda": 0.5}, "Competição": {"mu": 0.1, "lambda": 5.0} }
 
     def _load_knowledge_base(self):
         try:
@@ -190,7 +195,7 @@ class ContextualRecommendationEngine:
         processed_react_names = set()
 
         for elemento_json, dados_literatura in elementos_area.items():
-            react_name = self.frontend_map.get(elemento_json, elemento_json)
+            react_name = FRONTEND_MAP.get(elemento_json, elemento_json)
             processed_react_names.add(react_name)
 
             # 1. Extração de Dados Puros e Metadados do JSON purificado
@@ -199,8 +204,8 @@ class ContextualRecommendationEngine:
             meta = dados_literatura.get("metadata", {})
 
             # 2. Moduladores de Contexto (Perfil da Turma vs Objetivo Pedagógico)
-            mu_prof, lam_prof, pos_prof, neg_prof = self._get_context_modifiers(profiles, self.profile_mods, elemento_json)
-            mu_obj, lam_obj, pos_obj, neg_obj = self._get_context_modifiers(objectives, self.objective_mods, elemento_json)
+            mu_prof, lam_prof, pos_prof, neg_prof = self._get_context_modifiers(profiles, PROFILE_MODS, elemento_json)
+            mu_obj, lam_obj, pos_obj, neg_obj = self._get_context_modifiers(objectives, OBJECTIVE_MODS, elemento_json)
             
             # Lógica Min-Max (Gargalo de Segurança)
             mu_total = min(mu_prof, mu_obj)
@@ -286,16 +291,16 @@ class ContextualRecommendationEngine:
         # CORREÇÃO: AVALIAÇÃO DE CONTEXTO PARA MECÂNICAS SEM LASTRO (FALLBACK)
         # ------------------------------------------------------------------
         # Dicionário reverso para que as regras heurísticas entendam o React
-        react_to_internal = {v: k for k, v in self.frontend_map.items()}
+        react_to_internal = {v: k for k, v in FRONTEND_MAP.items()}
 
-        for react_elem in self.all_react_elements:
+        for react_elem in ALL_REACT_ELEMENTS:
             if react_elem not in processed_react_names:
                 # 1. Recupera o nome interno para cruzar com as matrizes (ex: "Competição")
                 internal_name = react_to_internal.get(react_elem, react_elem)
                 
                 # 2. Avalia Moduladores de Contexto (O CORAÇÃO DA CORREÇÃO)
-                mu_prof, lam_prof, pos_prof, neg_prof = self._get_context_modifiers(profiles, self.profile_mods, internal_name)
-                mu_obj, lam_obj, pos_obj, neg_obj = self._get_context_modifiers(objectives, self.objective_mods, internal_name)
+                mu_prof, lam_prof, pos_prof, neg_prof = self._get_context_modifiers(profiles, PROFILE_MODS, internal_name)
+                mu_obj, lam_obj, pos_obj, neg_obj = self._get_context_modifiers(objectives, OBJECTIVE_MODS, internal_name)
                 
                 # Lógica Min-Max (Gargalo de Segurança Estrito)
                 mu_total = min(mu_prof, mu_obj)
@@ -412,17 +417,12 @@ class ContextualRecommendationEngine:
         for key in response:
             response[key] = sorted(response[key], key=lambda x: x["score"], reverse=True)
 
-# ==========================================
+        # ==========================================
         # SONDA DE DEBUG PARA O TERMINAL PYTHON
         # ==========================================
-        print("\n" + "="*50)
-        print("🔍 DIAGNÓSTICO DO MOTOR DE RECOMENDAÇÃO (MUI)")
-        print("="*50)
-        print(f"Área SWEBOK processada: {area_swebok}")
-        print(f"Perfis recebidos: {profiles}")
-        print(f"Objetivos detectados: {objectives}")
-        print(f"Teto Algébrico (Max Abs): {max_abs}")
-        print("-" * 50)
+        logger.debug("🔍 DIAGNÓSTICO DO MOTOR DE RECOMENDAÇÃO (MUI)")
+        logger.debug(f"Área SWEBOK processada: {area_swebok} | Perfis: {profiles} | Objetivos: {objectives}")
+        logger.debug(f"Teto Algébrico (Max Abs): {max_abs}")
         
         recomendados_count = 0
         neutros_count = 0
@@ -441,13 +441,8 @@ class ContextualRecommendationEngine:
             else:
                 neutros_count += 1
                 
-            print(f"[{status_txt}] Mecânica: {r['elemento']}")
-            print(f"    Sinergia(mu): {r['mu_total']} | Risco(lam): {r['lam_total']}")
-            print(f"    Score Bruto: {r['score_bruto']:.4f}")
-            print(f"    Culpados do Choque: {r['neg_prof']} / {r['neg_obj']}")
-            print("-" * 50)
+            logger.debug(f"[{status_txt}] Mecânica: {r['elemento']} | mu: {r['mu_total']} | lam: {r['lam_total']} | Score: {r['score_bruto']:.4f}")
             
-        print(f"Resumo da Interface -> Recomendados: {len(response['recommended'])} | Neutros: {len(response['neutral'])} | Lixeira: {len(response['not_recommended'])}")
-        print("="*50 + "\n")
+        logger.debug(f"Resumo da Interface -> Recomendados: {len(response['recommended'])} | Neutros: {len(response['neutral'])} | Lixeira: {len(response['not_recommended'])}")
 
         return response

@@ -124,7 +124,7 @@ function LogExplorerPage() {
                 </button>
             </div>
 
-            <div className="bg-primary-bg/50 p-6 rounded-xl">
+            <div className="bg-secondary-bg border border-border-color p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
                 {/* Filtros da Tabela */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div className="relative">
@@ -134,13 +134,13 @@ function LogExplorerPage() {
                             placeholder="Buscar por nome de usuário..."
                             value={userSearch}
                             onChange={(e) => setUserSearch(e.target.value)}
-                            className="w-full bg-primary-bg/50 border border-border-color rounded-lg pl-10 pr-4 py-2 focus:ring-2 focus:ring-accent-teal outline-none"
+                            className="w-full bg-primary-bg border border-border-color rounded-lg pl-10 pr-4 py-2 text-primary-text focus:ring-2 focus:ring-accent-teal outline-none transition-all"
                         />
                     </div>
                     <select
                         value={actionFilter}
                         onChange={(e) => setActionFilter(e.target.value)}
-                        className="w-full bg-primary-bg/50 border border-border-color rounded-lg px-4 py-2 focus:ring-2 focus:ring-accent-teal outline-none"
+                        className="w-full bg-primary-bg border border-border-color rounded-lg px-4 py-2 text-primary-text focus:ring-2 focus:ring-accent-teal outline-none transition-all"
                     >
                         <option value="">Filtrar por Ação (Ver Tudo)...</option>
                         {availableActions.map(action => (
@@ -153,8 +153,8 @@ function LogExplorerPage() {
 
                 {/* Tabela de Logs */}
                 <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-700">
-                        <thead className="bg-primary-bg/60">
+                    <table className="min-w-full divide-y divide-border-color">
+                        <thead className="bg-header-bg border-b border-border-color">
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-secondary-text uppercase tracking-wider">Usuário</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-secondary-text uppercase tracking-wider">Ação</th>
@@ -163,7 +163,7 @@ function LogExplorerPage() {
                                 <th className="px-6 py-3 text-left text-xs font-medium text-secondary-text uppercase tracking-wider">IP</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-primary-bg/50 divide-y divide-gray-700">
+                        <tbody className="divide-y divide-border-color">
                             {loading ? (
                                 <tr><td colSpan="5" className="text-center py-10 text-secondary-text">Carregando logs...</td></tr>
                             ) : logs.length === 0 ? (
@@ -191,7 +191,7 @@ function LogExplorerPage() {
                     <button
                         onClick={() => setCurrentPage(p => p - 1)}
                         disabled={!pagination.hasPrev || loading}
-                        className="px-4 py-2 bg-border-color rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                        className="px-4 py-2 bg-primary-bg border border-border-color hover:bg-hover-bg-color rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center transition-all"
                     >
                         <ChevronLeft size={16} className="mr-1" /> Anterior
                     </button>
@@ -201,7 +201,7 @@ function LogExplorerPage() {
                     <button
                         onClick={() => setCurrentPage(p => p + 1)}
                         disabled={!pagination.hasNext || loading}
-                        className="px-4 py-2 bg-border-color rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                        className="px-4 py-2 bg-primary-bg border border-border-color hover:bg-hover-bg-color rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center transition-all"
                     >
                         Próxima <ChevronRight size={16} className="ml-1" />
                     </button>

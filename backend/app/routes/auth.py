@@ -15,164 +15,26 @@ from ..utils.geo import update_user_location_data
 from ..utils.email_sender import send_reset_email
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 
+from ..services.auth_service import AuthService
 auth_bp = Blueprint('auth', __name__)
-
-# --- ESTRUTURA DOS AVATARES PADRÃO ---
-# Defina esta lista no topo do arquivo para ser reutilizada
-DEFAULT_AVATARS = [
-    {"url": "/avatars/avatar1.webp", "name": "Avatar Básico 1", "type": "normal"},
-    {"url": "/avatars/avatar2.webp", "name": "Avatar Básico 2", "type": "normal"},
-    {"url": "/avatars/avatar6.webp", "name": "Avatar Básico 6", "type": "normal"},
-    {"url": "/avatars/avatar7.webp", "name": "Avatar Básico 7", "type": "normal"},
-    {"url": "/avatars/avatar8.webp", "name": "Avatar Básico 8", "type": "normal"},
-    {"url": "/avatars/avatar9.webp", "name": "Avatar Básico 9", "type": "normal"},
-    {"url": "/avatars/default_avatar.webp", "name": "Avatar Padrão", "type": "normal"},
-]
-DEFAULT_PROFILE_PICTURE = "/avatars/default_avatar.webp"
-
-def get_serializer():
-    return URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
-
-# --- 2. FUNÇÃO AUXILIAR PARA LOGGING DE AUTENTICAÇÃO ---
-def _log_auth_event(user_id, action, details, is_success=True):
-    """
-    Cria e salva um evento de log de autenticação.
-    O commit é feito separadamente para garantir que falhas sejam registradas.
-    """
-    try:
-        event = EventLog(
-            user_id=user_id,
-            section='auth',
-            action=action,
-            details=details,
-            ip_address=request.remote_addr,
-            user_agent=request.headers.get("User-Agent")
-        )
-        db.session.add(event)
-        db.session.commit()
-    except Exception as e:
-        db.session.rollback()
-        current_app.logger.error(f"Falha CRÍTICA ao registrar evento de log de auth: {e}")
-# ---------------------------------------------------------
 
 # Rota para registrar um novo usuário
 @auth_bp.route('/register', methods=['POST'])
 def register_user():
-    current_app.logger.info("Tentativa de registro de usuário iniciada.")
     data = request.get_json()
-    current_app.logger.debug(f"Dados recebidos para registro: {data}")
-
-    email = data.get('email')
-    password = data.get('password')
-    name = data.get('name')
-    role = data.get('role', 'aluno')
-
-    if not email or not password or not name:
-        current_app.logger.warning("Falha no registro: campos obrigatórios ausentes.")
-        return jsonify({"message": "Nome, e-mail e senha são obrigatórios."}), 400
-
-    existing_user = User.query.filter_by(email=email).first()
-    if existing_user:
-        current_app.logger.warning(f"Falha no registro: e-mail '{email}' já cadastrado.")
-        _log_auth_event(
-            user_id=None,
-            action='register_fail',
-            details={'email': email, 'reason': 'email_exists'},
-            is_success=False
-        )
-        return jsonify({"message": "E-mail já cadastrado."}), 409
-
-    hashed_password = generate_password_hash(password)
-    new_user = User(
-        email=email, 
-        password_hash=hashed_password, 
-        name=name, 
-        role=role,
-        profile_picture=DEFAULT_PROFILE_PICTURE,      # Avatar padrão equipado
-        unlocked_global_avatars=DEFAULT_AVATARS       # Lista de avatares desbloqueados
-    )
-
-    try:
-        db.session.add(new_user)
-        db.session.commit()
-        current_app.logger.info(f"Usuário '{email}' registrado com sucesso com ID: {new_user.id}")
-        _log_auth_event(
-            user_id=new_user.id,
-            action='register_success',
-            details={'email': new_user.email, 'method': 'email'}
-        )
-
-        additional_claims = {
-            "email": new_user.email, "name": new_user.name, "role": new_user.role,
-            "profile_picture": new_user.profile_picture,
-            "institutionName": new_user.institution_name,
-            "discipline": new_user.discipline,
-            "unlocked_global_avatars": new_user.unlocked_global_avatars,
-            "onboarding_status": new_user.onboarding_status
-        }
-        access_token = create_access_token(identity=str(new_user.id), additional_claims=additional_claims)
-
-        user_data = {
-            "id": new_user.id, "email": new_user.email, "name": new_user.name, "role": new_user.role,
-            "profile_picture": new_user.profile_picture,
-            "institutionName": new_user.institution_name,
-            "discipline": new_user.discipline,
-            "unlocked_global_avatars": new_user.unlocked_global_avatars,
-            "token": access_token,
-            "onboarding_status": new_user.onboarding_status
-        }
-        return jsonify(access_token=access_token, user=user_data), 201
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"message": f"Erro interno ao cadastrar usuário: {str(e)}"}), 500
+    result, error, status = AuthService.register_user(data, request.remote_addr, request.headers.get("User-Agent"))
+    if error:
+        return jsonify(error), status
+    return jsonify(result), status
 
 # Rota para login de usuário com e-mail e senha
 @auth_bp.route('/login', methods=['POST'])
 def login_user():
-    current_app.logger.info("Tentativa de login iniciada.")
     data = request.get_json()
-    current_app.logger.debug(f"Dados recebidos para login: {data.get('email')}")
-
-    email = data.get('email')
-    password = data.get('password')
-
-    user = User.query.filter_by(email=email).first()
-
-    if user and check_password_hash(user.password_hash, password):
-        current_app.logger.info(f"Login bem-sucedido para o usuário: {email}")
-        _log_auth_event(
-            user_id=user.id,
-            action='login_success',
-            details={'email': user.email, 'method': 'email'}
-        )
-        additional_claims = {
-            "email": user.email, "name": user.name, "role": user.role,
-            "profile_picture": user.profile_picture,
-            "institutionName": user.institution_name,
-            "discipline": user.discipline,
-            "unlocked_global_avatars": user.unlocked_global_avatars,
-            "onboarding_status": user.onboarding_status
-        }
-        access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
-        
-        user_data = {
-            "id": user.id, "email": user.email, "name": user.name, "role": user.role,
-            "profile_picture": user.profile_picture, "google_id": user.google_id,
-            "institutionName": user.institution_name, "discipline": user.discipline,
-            "token": access_token,
-            "unlocked_global_avatars": user.unlocked_global_avatars,
-            "onboarding_status": user.onboarding_status
-        }
-        return jsonify(access_token=access_token, user=user_data), 200
-    else:
-        current_app.logger.warning(f"Falha no login para o e-mail: {email}. Credenciais inválidas.")
-        _log_auth_event(
-            user_id=user.id if user else None,  # Loga o ID se o usuário existir mas a senha estiver errada
-            action='login_fail',
-            details={'email': email, 'reason': 'invalid_credentials'},
-            is_success=False
-        )
-        return jsonify({"message": "Credenciais inválidas."}), 401
+    result, error, status = AuthService.login_user(data, request.remote_addr, request.headers.get("User-Agent"))
+    if error:
+        return jsonify(error), status
+    return jsonify(result), status
 
 
     
@@ -183,70 +45,11 @@ def login_user():
 @jwt_required()
 def update_profile():
     current_user_id = get_jwt_identity()
-    current_app.logger.info(f"Usuário ID {current_user_id} tentando atualizar o perfil.")
-    
-    user = User.query.get(current_user_id)
-
-    if not user:
-        current_app.logger.error(f"Tentativa de atualizar perfil para usuário inexistente: ID {current_user_id}")
-        return jsonify({"message": "Usuário não encontrado."}), 404
-
-    if user.role != 'professor':
-        current_app.logger.warning(f"Acesso negado para ID {current_user_id} na rota update-profile. Role: {user.role}")
-        return jsonify({"message": "Acesso negado. Apenas professores podem atualizar essas informações."}), 403
-
     data = request.get_json()
-    current_app.logger.debug(f"Dados recebidos para atualização do perfil do ID {current_user_id}: {data}")
-
-    try:
-        if 'institution_name' in data:
-            user.institution_name = data['institution_name']
-        if 'discipline' in data:
-            user.discipline = data['discipline']
-        
-        db.session.commit()
-        current_app.logger.info(f"Perfil do usuário ID {current_user_id} atualizado com sucesso.")
-
-        # Recrie as claims adicionais com os dados MAIS RECENTES do objeto 'user'
-        # após o commit no banco de dados.
-        additional_claims = {
-            "email": user.email,
-            "name": user.name,
-            "role": user.role,
-            "profile_picture": user.profile_picture,
-            "institutionName": user.institution_name, # <-- AGORA PEGA O VALOR ATUALIZADO
-            "discipline": user.discipline, # <-- AGORA PEGA O VALOR ATUALIZADO
-            "unlocked_global_avatars": user.unlocked_global_avatars,
-            "onboarding_status": user.onboarding_status
-            
-        }
-        new_access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
-
-        # Opcional: Inclua também o objeto user completo na resposta para o frontend
-        # Isso pode simplificar a lógica do frontend, embora o token já contenha os dados.
-        user_data = {
-            "id": user.id,
-            "email": user.email,
-            "name": user.name,
-            "role": user.role,
-            "profile_picture": user.profile_picture,
-            "google_id": user.google_id, # Inclua se aplicável
-            "institutionName": user.institution_name,
-            "discipline": user.discipline,
-            "onboarding_status": user.onboarding_status
-        }
-
-        return jsonify({
-            "message": "Informações do perfil atualizadas com sucesso!",
-            "access_token": new_access_token,
-            "user": user_data # <--- ADICIONADO
-        }), 200
-
-
-    except Exception as e:
-        db.session.rollback()
-        current_app.logger.error(f"ERRO CRÍTICO em update_profile para ID {current_user_id}: {str(e)}", exc_info=True)
-        return jsonify({"message": f"Erro interno ao atualizar o perfil: {str(e)}"}), 500
+    result, error, status = AuthService.update_profile(current_user_id, data)
+    if error:
+        return jsonify(error), status
+    return jsonify(result), status
 
 
 @auth_bp.route('/user/select-avatar', methods=['POST'])
@@ -254,88 +57,34 @@ def update_profile():
 @jwt_required()
 def select_avatar():
     current_user_id = get_jwt_identity()
-    user = User.query.get(current_user_id)
-
-    if not user:
-        return jsonify({"message": "Usuário não encontrado."}), 404
-
     data = request.get_json()
     avatar_url = data.get('avatar_url')
-
-    if not avatar_url:
-        return jsonify({"message": "Nenhum avatar selecionado."}), 400
-
-    # Aqui você pode adicionar uma lógica para verificar se o aluno realmente desbloqueou o avatar
-    # Por enquanto, vamos permitir a seleção direta
-    
-    user.profile_picture = avatar_url
-    db.session.commit()
-    
-    return jsonify({"message": "Avatar selecionado com sucesso!", "user": user.to_dict()}), 200
+    result, error, status = AuthService.select_avatar(current_user_id, avatar_url)
+    if error:
+        return jsonify(error), status
+    return jsonify(result), status
 
 @auth_bp.route('/user/change-password', methods=['POST'])
 @cross_origin()
 @jwt_required()
 def change_password():
     current_user_id = get_jwt_identity()
-    user = User.query.get(current_user_id)
-
-    if not user:
-        return jsonify({"message": "Usuário não encontrado."}), 404
-
-    # Não permite alterar senha de contas Google
-    if user.password_hash == 'google_auth_only':
-        return jsonify({"message": "Não é possível alterar a senha de uma conta vinculada ao Google."}), 400
-
     data = request.get_json()
-    current_password = data.get('currentPassword')
-    new_password = data.get('newPassword')
-
-    if not check_password_hash(user.password_hash, current_password):
-        return jsonify({"message": "Senha atual incorreta."}), 401
-
-    try:
-        user.password_hash = generate_password_hash(new_password)
-        db.session.commit()
-        return jsonify({"message": "Senha alterada com sucesso!"}), 200
-    except Exception as e:
-        db.session.rollback()
-        current_app.logger.error(f"Erro ao alterar senha para o usuário ID {current_user_id}: {str(e)}")
-        return jsonify({"message": "Erro interno ao alterar a senha."}), 500
+    result, error, status = AuthService.change_password(current_user_id, data)
+    if error:
+        return jsonify(error), status
+    return jsonify(result), status
 
 @auth_bp.route('/user/delete_account', methods=['DELETE'])
 @cross_origin()
 @jwt_required()
 def delete_account():
     current_user_id = get_jwt_identity()
-    user = User.query.get(current_user_id)
-
-    if not user:
-        return jsonify({"message": "Usuário não encontrado."}), 404
-
     data = request.get_json()
-    password = data.get('password')
-
-    if not password:
-        return jsonify({"message": "A senha é necessária para excluir a conta."}), 400
-
-    if user.google_id and not user.password_hash:
-         return jsonify({"message": "A exclusão de contas Google precisa de um método de verificação diferente."}), 400
-
-    if not check_password_hash(user.password_hash, password):
-        return jsonify({"message": "Senha atual incorreta."}), 401
-
-    try:
-        # Futuramente, adicione aqui a lógica para deletar dados relacionados
-        # (atividades, matrículas, etc.) antes de deletar o usuário.
-        
-        db.session.delete(user)
-        db.session.commit()
-        return jsonify({"message": "Conta excluída com sucesso."}), 200
-    except Exception as e:
-        db.session.rollback()
-        current_app.logger.error(f"Erro ao excluir a conta do usuário ID {current_user_id}: {str(e)}")
-        return jsonify({"message": "Erro interno ao excluir a conta."}), 500
+    result, error, status = AuthService.delete_account(current_user_id, data)
+    if error:
+        return jsonify(error), status
+    return jsonify(result), status
 
 @auth_bp.route('/user/location-info', methods=['GET'])
 @jwt_required()
@@ -345,20 +94,10 @@ def get_user_location_info():
     Muito mais rápido e evita bloqueios.
     """
     current_user_id = get_jwt_identity()
-    user = User.query.get(current_user_id)
-
-    # Se o usuário não existe ou ainda não tem cidade salva no cache
-    if not user or not user.cached_city:
-        return jsonify(None), 200 
-
-    # Retorna direto das colunas do banco
-    location_info = {
-        "city": user.cached_city,
-        "state": user.cached_state,
-        "country": user.cached_country,
-        "suburb": user.cached_suburb
-    }
-    return jsonify(location_info), 200
+    result, error, status = AuthService.get_user_location_info(current_user_id)
+    if error:
+        return jsonify(error), status
+    return jsonify(result), status
     
 @auth_bp.route('/user/avatar', methods=['PUT'])
 @jwt_required()
@@ -369,98 +108,21 @@ def update_avatar():
     user_id = get_jwt_identity()
     data = request.get_json()
     new_avatar_url = data.get('avatar_url')
-
-    if not new_avatar_url:
-        return jsonify({"msg": "URL do avatar é obrigatória."}), 400
-
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({"msg": "Usuário não encontrado."}), 404
-
-    user.profile_picture = new_avatar_url
-    db.session.commit()
-
-    # Gera um novo token com os dados atualizados para o frontend
-    additional_claims = {
-        "email": user.email,
-        "name": user.name,
-        "role": user.role,
-        "profile_picture": user.profile_picture,
-        "unlocked_global_avatars": user.unlocked_global_avatars,
-        "onboarding_status": user.onboarding_status
-    }
-    access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
-    
-    return jsonify(access_token=access_token), 200    
+    result, error, status = AuthService.update_avatar(user_id, new_avatar_url)
+    if error:
+        return jsonify(error), status
+    return jsonify(result), status
 
 
 @auth_bp.route('/user/unlock-location-avatar', methods=['POST'])
 @jwt_required()
 def unlock_location_avatar():
     user_id = get_jwt_identity()
-    user = User.query.get(user_id)
-    
-    if not user:
-        return jsonify({"msg": "Usuário não encontrado."}), 404
-
     data = request.get_json()
-    latitude = data.get('latitude')
-    longitude = data.get('longitude')
-
-    if latitude is None or longitude is None:
-        return jsonify({"msg": "Coordenadas inválidas."}), 400
-
-    try:
-        # --- A MÁGICA ACONTECE AQUI ---
-        # Chamamos a função do geo.py. Ela salva Lat/Lon E preenche cidade/estado/país
-        update_user_location_data(user, latitude, longitude)
-        
-        # --- LÓGICA DO AVATAR (Atualizada para Avatar 3 / Explorador) ---
-        location_avatar = {
-            "url": "/avatars/avatar3.webp", # Certifique-se que a imagem existe na pasta static
-            "name": "Explorador",
-            "type": "special",
-            "promotable": True
-        }
-
-        if user.unlocked_global_avatars is None:
-            user.unlocked_global_avatars = []
-
-        # Verifica se já tem o avatar (comparando URL para evitar duplicatas)
-        has_avatar = any(a.get('url') == location_avatar['url'] for a in user.unlocked_global_avatars)
-
-        if not has_avatar:
-            user.unlocked_global_avatars.append(location_avatar)
-            flag_modified(user, "unlocked_global_avatars")
-        
-        db.session.commit() # Salva TUDO: localização, cache de cidade e o novo avatar
-
-        # Gera novo token para o frontend atualizar o contexto imediatamente
-        additional_claims = {
-            "email": user.email,
-            "name": user.name,
-            "role": user.role,
-            "profile_picture": user.profile_picture,
-            "institutionName": user.institution_name,
-            "discipline": user.discipline,
-            "unlocked_global_avatars": user.unlocked_global_avatars,
-            "onboarding_status": user.onboarding_status
-        }
-        access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
-        
-        return jsonify({
-            "message": "Localização atualizada e recompensa desbloqueada!",
-            "access_token": access_token,
-            "user": { # Retorna dados úteis para atualização imediata da UI sem precisar decodificar o token
-                "cached_city": user.cached_city,
-                "cached_state": user.cached_state
-            }
-        }), 200
-
-    except Exception as e:
-        db.session.rollback()
-        current_app.logger.error(f"Erro ao processar localização: {str(e)}")
-        return jsonify({"msg": "Erro interno ao salvar localização."}), 500
+    result, error, status = AuthService.unlock_location_avatar(user_id, data)
+    if error:
+        return jsonify(error), status
+    return jsonify(result), status
     
     
 # --- 1. ROTA NOVA: SALVAR STATUS DO TUTORIAL ---
@@ -469,114 +131,47 @@ def unlock_location_avatar():
 @jwt_required()
 def update_onboarding():
     user_id = get_jwt_identity()
-    user = User.query.get(user_id)
-    
-    if not user:
-        return jsonify({"msg": "Usuário não encontrado."}), 404
-
     data = request.get_json()
-    tour_key = data.get('tour_key') # Ex: 'student_dashboard_v1'
-
-    if not tour_key:
-        return jsonify({"msg": "Chave do tutorial é obrigatória."}), 400
-
-    # Inicializa se for None (por segurança)
-    if user.onboarding_status is None:
-        user.onboarding_status = {}
-
-    # Marca como visto
-    user.onboarding_status[tour_key] = True
-    
-    # Força o SQLAlchemy a detectar mudança no JSONB
-    flag_modified(user, "onboarding_status")
-    
-    try:
-        db.session.commit()
-        
-        # Opcional: Retornar novo token atualizado para o frontend não precisar de refresh
-        additional_claims = {
-            "email": user.email, "name": user.name, "role": user.role,
-            "profile_picture": user.profile_picture,
-            "institutionName": user.institution_name, "discipline": user.discipline,
-            "unlocked_global_avatars": user.unlocked_global_avatars,
-            "onboarding_status": user.onboarding_status
-        }
-        new_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
-
-        return jsonify({"message": "Tutorial concluído!", "access_token": new_token}), 200
-    except Exception as e:
-        db.session.rollback()
-        current_app.logger.error(f"Erro ao salvar onboarding: {str(e)}")
-        return jsonify({"msg": "Erro ao salvar progresso."}), 500
+    tour_key = data.get('tour_key')
+    result, error, status = AuthService.update_onboarding(user_id, tour_key)
+    if error:
+        return jsonify(error), status
+    return jsonify(result), status
     
 @auth_bp.route('/forgot-password', methods=['POST'])
 @cross_origin()
 def forgot_password():
-    current_app.logger.info("=== INÍCIO RECUPERAÇÃO DE SENHA ===")
-    
-    try:
-        data = request.get_json()
-        email = data.get('email')
-        current_app.logger.info(f"Solicitação recebida para o email: {email}")
-        
-        user = User.query.filter_by(email=email).first()
-        
-        # Se usuário não existe, fingimos sucesso por segurança
-        if not user:
-            current_app.logger.warning(f"Email {email} não encontrado no banco.")
-            return jsonify({"message": "Se o e-mail existir, um link foi enviado."}), 200
-
-        s = get_serializer()
-        token = s.dumps(user.email, salt='password-reset')
-        
-        # Verifica se a URL do frontend está configurada
-        frontend_url = current_app.config.get('FRONTEND_URL')
-        if not frontend_url:
-            # Fallback para localhost se não estiver no config
-            frontend_url = 'http://localhost:5173'
-            current_app.logger.warning(f"FRONTEND_URL não configurada. Usando fallback: {frontend_url}")
-
-        reset_url = f"{frontend_url}/reset-password/{token}"
-        current_app.logger.info(f"Gerando link de reset: {reset_url}")
-        
-        # Tenta enviar o e-mail
-        email_sent = send_reset_email(user.email, reset_url)
-        
-        if email_sent:
-            current_app.logger.info("E-mail enviado com sucesso via Resend.")
-            return jsonify({"message": "Se o e-mail existir, um link foi enviado."}), 200
-        else:
-            current_app.logger.error("Falha no envio do e-mail (retorno False do send_reset_email).")
-            return jsonify({"error": "Erro interno ao enviar e-mail."}), 500
-
-    except Exception as e:
-        current_app.logger.error(f"ERRO CRÍTICO na rota forgot-password: {str(e)}")
-        return jsonify({"error": "Erro interno do servidor."}), 500
+    data = request.get_json()
+    frontend_url = current_app.config.get('FRONTEND_URL')
+    result, error, status = AuthService.forgot_password(data, frontend_url)
+    if error:
+        return jsonify(error), status
+    return jsonify(result), status
 
 @auth_bp.route('/reset-password/<token>', methods=['POST'])
 @cross_origin() # <--- IMPORTANTE
 def reset_password(token):
-    current_app.logger.info("=== INÍCIO RESET DE SENHA ===")
-    s = get_serializer()
     data = request.get_json()
-    new_password = data.get('password')
+    password = data.get('password')
+    result, error, status = AuthService.reset_password(token, password)
+    if error:
+        return jsonify(error), status
+    return jsonify(result), status
+@auth_bp.route('/user/api-keys', methods=['GET'])
+@jwt_required()
+def get_api_keys():
+    user_id = get_jwt_identity()
+    result, error, status = AuthService.get_api_keys(user_id)
+    if error:
+        return jsonify(error), status
+    return jsonify(result), status
 
-    try:
-        email = s.loads(token, salt='password-reset', max_age=3600)
-        current_app.logger.info(f"Token válido para o email: {email}")
-    except SignatureExpired:
-        current_app.logger.warning("Token expirado.")
-        return jsonify({"error": "O link expirou."}), 400
-    except BadSignature:
-        current_app.logger.warning("Token inválido.")
-        return jsonify({"error": "Link inválido."}), 400
-
-    user = User.query.filter_by(email=email).first()
-    if not user:
-        return jsonify({"error": "Usuário não encontrado."}), 404
-
-    user.password_hash = generate_password_hash(new_password)
-    db.session.commit()
-    current_app.logger.info("Senha atualizada no banco com sucesso.")
-
-    return jsonify({"message": "Senha atualizada com sucesso!"}), 200
+@auth_bp.route('/user/api-keys', methods=['POST'])
+@jwt_required()
+def update_api_keys():
+    user_id = get_jwt_identity()
+    data = request.get_json()
+    result, error, status = AuthService.update_api_keys(user_id, data)
+    if error:
+        return jsonify(error), status
+    return jsonify(result), status

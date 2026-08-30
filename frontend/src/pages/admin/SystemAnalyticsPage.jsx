@@ -11,7 +11,7 @@ import {
 // --- Componentes de UI Reutilizáveis (sem alterações) ---
 
 const KPI_Card = ({ title, value, icon, color }) => (
-    <div className="bg-primary-bg/50 p-6 rounded-xl flex items-center space-x-4">
+    <div className="bg-secondary-bg border border-border-color p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center space-x-4">
         <div className={`p-3 rounded-full ${color}`}>
             {icon}
         </div>
@@ -26,7 +26,7 @@ const HorizontalBarChart = ({ data, dataKey, nameKey, title, icon, barFill = "#8
     // SE NÃO TIVER DADOS, MOSTRA UMA CAIXA VAZIA BONITA
     if (!data || data.length === 0) {
         return (
-            <div className="bg-primary-bg/50 p-6 rounded-xl">
+            <div className="bg-secondary-bg border border-border-color p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
                 <h2 className="text-xl font-bold text-primary-text mb-4 flex items-center"><span className="mr-2">{icon}</span>{title}</h2>
                 <div className="flex items-center justify-center h-[300px] border-2 border-dashed border-border-color rounded-lg text-secondary-text bg-secondary-bg/20">
                     <p className="font-medium text-lg opacity-60">Nenhum dado registrado ainda.</p>
@@ -36,14 +36,14 @@ const HorizontalBarChart = ({ data, dataKey, nameKey, title, icon, barFill = "#8
     }
 
     return (
-        <div className="bg-primary-bg/50 p-6 rounded-xl">
+        <div className="bg-secondary-bg border border-border-color p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
             <h2 className="text-xl font-bold text-primary-text mb-4 flex items-center"><span className="mr-2">{icon}</span>{title}</h2>
             <div style={{ width: '100%', height: 400 }}>
                 <ResponsiveContainer>
                     <BarChart layout="vertical" data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                        <XAxis type="number" stroke="#9ca3af" allowDecimals={false} />
-                        <YAxis type="category" dataKey={nameKey} stroke="#9ca3af" width={170} fontSize={12} />
-                        <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #4b5563' }} cursor={{ fill: 'rgba(107, 114, 128, 0.1)' }} />
+                        <XAxis type="number" stroke="var(--text-secondary)" allowDecimals={false} />
+                        <YAxis type="category" dataKey={nameKey} stroke="var(--text-secondary)" width={170} fontSize={12} />
+                        <Tooltip contentStyle={{ backgroundColor: 'var(--background-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }} cursor={{ fill: 'var(--hover-bg-color)' }} />
                         <Bar dataKey={dataKey} fill={barFill} name="Ocorrências" radius={[0, 4, 4, 0]} />
                     </BarChart>
                 </ResponsiveContainer>
@@ -55,7 +55,7 @@ const HorizontalBarChart = ({ data, dataKey, nameKey, title, icon, barFill = "#8
 const ProfilePieChart = ({ data }) => {
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF'];
     return (
-        <div className="bg-primary-bg/50 p-6 rounded-xl">
+        <div className="bg-secondary-bg border border-border-color p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
             <h2 className="text-xl font-bold text-primary-text mb-4 flex items-center"><Users className="mr-2" />Perfis de Jogador Mais Visados</h2>
             <div style={{ width: '100%', height: 400 }}>
                 <ResponsiveContainer>
@@ -63,7 +63,7 @@ const ProfilePieChart = ({ data }) => {
                         <Pie data={data} cx="50%" cy="50%" labelLine={false} outerRadius={140} fill="#8884d8" dataKey="count" nameKey="profile" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
                             {data.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
                         </Pie>
-                        <PieTooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #4b5563' }} />
+                        <PieTooltip contentStyle={{ backgroundColor: 'var(--background-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }} />
                     </PieChart>
                 </ResponsiveContainer>
             </div>
@@ -74,7 +74,7 @@ const ProfilePieChart = ({ data }) => {
 const CustomPieChart = ({ data, title, icon, dataKey, nameKey }) => {
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF'];
     return (
-        <div className="bg-primary-bg/50 p-6 rounded-xl">
+        <div className="bg-secondary-bg border border-border-color p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
             <h2 className="text-xl font-bold text-primary-text mb-4 flex items-center">{icon}<span className="ml-2">{title}</span></h2>
             <div style={{ width: '100%', height: 400 }}>
                 <ResponsiveContainer>
@@ -82,7 +82,7 @@ const CustomPieChart = ({ data, title, icon, dataKey, nameKey }) => {
                         <Pie data={data} cx="50%" cy="50%" labelLine={false} outerRadius={140} fill="#8884d8" dataKey={dataKey} nameKey={nameKey} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
                             {data.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
                         </Pie>
-                        <PieTooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #4b5563' }} />
+                        <PieTooltip contentStyle={{ backgroundColor: 'var(--background-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }} />
                     </PieChart>
                 </ResponsiveContainer>
             </div>
@@ -219,7 +219,7 @@ function SystemAnalyticsPage() {
                             barFill="#38bdf8"
                         />
 
-                        <div className="bg-primary-bg/50 p-6 rounded-xl text-center border-2 border-dashed border-border-color">
+                        <div className="bg-secondary-bg border border-border-color p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow text-center">
                             <h2 className="text-xl font-bold text-primary-text mb-4">Explorador de Logs</h2>
                             <p className="text-secondary-text mb-4 max-w-lg mx-auto">Para uma análise profunda, busca e filtragem de todos os eventos do sistema, acesse a página dedicada.</p>
                             <button onClick={() => navigate('/admin/logs')} className="py-2 px-5 bg-accent-teal text-primary-text font-bold rounded-lg hover:bg-accent-teal/80 transition-colors">
@@ -245,10 +245,10 @@ function SystemAnalyticsPage() {
                             <KPI_Card title="Total de Abandonos" value={creationStepsData.reduce((s, i) => s + i.abandon_count, 0)} icon={<XCircle size={24} />} color="bg-yellow-500/30" />
                             <KPI_Card title="Pedidos de Ajuda" value={creationStepsData.reduce((s, i) => s + i.help_count, 0)} icon={<HelpCircle size={24} />} color="bg-purple-500/30" />
                         </div>
-                        <div className="bg-primary-bg/50 p-6 rounded-xl">
+                        <div className="bg-secondary-bg border border-border-color p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
                             <h2 className="text-xl font-bold text-primary-text mb-4">Detalhes por Etapa</h2>
                             <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-700">
+                                <table className="min-w-full divide-y divide-border-color">
                                     <thead>
                                         <tr>
                                             <th className="px-4 py-2 text-left text-sm font-medium">Etapa</th>
@@ -257,7 +257,7 @@ function SystemAnalyticsPage() {
                                             <th className="px-4 py-2 text-left text-sm font-medium">Pedidos de Ajuda</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-gray-700">
+                                    <tbody className="divide-y divide-border-color">
                                         {creationStepsData.map((step) => (
                                             <tr key={step.step}>
                                                 <td className="px-4 py-2 text-sm">{step.step_name}</td>

@@ -1,7 +1,7 @@
 // frontend/src/pages/admin/UserManagementPage.jsx
 import React, { useState, useEffect, useContext, useMemo } from 'react';
 import { AuthContext } from '../../context/AuthContext';
-import { ChevronUp, ChevronDown, Pencil, Trash2, Save, X } from 'lucide-react';
+import { ChevronUp, ChevronDown, Pencil, Trash2, Save, X, Search } from 'lucide-react';
 import ConfirmationModal from '../../components/ConfirmationModal';
 /**
  * Componente UserManagementPage
@@ -15,6 +15,7 @@ function UserManagementPage() {
   const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'asc' });
   const [editingUserId, setEditingUserId] = useState(null);
   const [editFormData, setEditFormData] = useState({});
+  const [searchQuery, setSearchQuery] = useState('');
   const { user } = useContext(AuthContext);
   // Estado para controlar o Modal de Confirmação
   const [modalConfig, setModalConfig] = useState({
@@ -53,19 +54,33 @@ function UserManagementPage() {
   // Lógica de ordenação (extraída da AdminPage original)
   const sortedUsers = useMemo(() => {
     let sortableUsers = [...usersList];
+
+    // Aplicar Filtro de Busca
+    if (searchQuery) {
+        const lowerCaseQuery = searchQuery.toLowerCase();
+        sortableUsers = sortableUsers.filter(u => 
+            (u.name && u.name.toLowerCase().includes(lowerCaseQuery)) ||
+            (u.email && u.email.toLowerCase().includes(lowerCaseQuery)) ||
+            (u.role && u.role.toLowerCase().includes(lowerCaseQuery))
+        );
+    }
+
+    // Aplicar Ordenação
     if (sortConfig.key) {
       sortableUsers.sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) {
+        const aVal = a[sortConfig.key] || '';
+        const bVal = b[sortConfig.key] || '';
+        if (aVal < bVal) {
           return sortConfig.direction === 'asc' ? -1 : 1;
         }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
+        if (aVal > bVal) {
           return sortConfig.direction === 'asc' ? 1 : -1;
         }
         return 0;
       });
     }
     return sortableUsers;
-  }, [usersList, sortConfig]);
+  }, [usersList, sortConfig, searchQuery]);
 
   const handleSort = (key) => {
     let direction = 'asc';
@@ -92,9 +107,24 @@ function UserManagementPage() {
   };
 
   const handleSaveEdit = async () => {
-    // A lógica de salvar permanece a mesma da sua AdminPage original
-    alert(`Salvando usuário ${editingUserId}... (Lógica a ser implementada)`);
-    handleCancelEdit(); // Simula o salvamento
+    try {
+      const token = user?.token;
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/users/${editingUserId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(editFormData)
+      });
+      
+      if (!response.ok) throw new Error('Falha ao atualizar usuário.');
+      
+      setUsersList(prev => prev.map(u => u.id === editingUserId ? { ...u, ...editFormData } : u));
+      handleCancelEdit();
+    } catch (e) {
+      alert(e.message);
+    }
   };
 
   const handleDeleteUserClick = (userId, userName) => {
@@ -108,11 +138,24 @@ function UserManagementPage() {
   };
 
   const executeDeleteUser = async () => {
-    const userId = modalConfig.itemId;
-    // Coloque aqui sua lógica real de deleção (fetch DELETE...)
-    alert(`Simulando deleção do usuário ID: ${userId}`);
-
-    setModalConfig({ ...modalConfig, isOpen: false });
+    try {
+      const token = user?.token;
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/users/${modalConfig.itemId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      const responseData = await response.json();
+      if (!response.ok) {
+          throw new Error(responseData.message || 'Falha ao deletar usuário.');
+      }
+      
+      setUsersList(prev => prev.filter(u => u.id !== modalConfig.itemId));
+    } catch (e) {
+      alert(e.message);
+    } finally {
+      setModalConfig({ ...modalConfig, isOpen: false });
+    }
   };
 
 
@@ -120,14 +163,25 @@ function UserManagementPage() {
   if (error) return <div className="text-center text-red-400 p-10">Erro: {error}</div>;
 
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in space-y-6">
       <h1 className="text-3xl font-bold text-primary-text mb-6">Gerenciamento de Usuários</h1>
-      {/* Aqui entrarão os filtros e a barra de busca no Estágio 3 */}
+      
+      {/* Barra de Busca */}
+      <div className="relative max-w-md">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary-text" size={20} />
+        <input
+            type="text"
+            placeholder="Buscar por nome, email ou cargo..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-secondary-bg border border-border-color rounded-lg pl-10 pr-4 py-3 text-primary-text focus:ring-2 focus:ring-accent-teal outline-none transition-all shadow-md hover:shadow-lg"
+        />
+      </div>
 
-      <div className="bg-primary-bg rounded-xl shadow-xl overflow-hidden">
+      <div className="bg-secondary-bg border border-border-color rounded-xl shadow-md hover:shadow-lg transition-shadow overflow-hidden">
         <div className="overflow-x-auto">
           {/* Tabela de Usuários (JSX extraído da AdminPage original) */}
-          <table className="min-w-full divide-y divide-gray-700">
+          <table className="min-w-full divide-y divide-border-color">
             <thead className="bg-gradient-to-r from-accent-teal/20 to-accent-purple/10">
               <tr>
                 {['id', 'name', 'email', 'role'].map((key) => (
@@ -145,14 +199,17 @@ function UserManagementPage() {
                 <th className="py-4 px-4 text-right text-sm font-bold uppercase tracking-wider text-secondary-text">Ações</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-700">
+            <tbody className="divide-y divide-border-color">
               {sortedUsers.map((userItem) => (
                 <tr key={userItem.id} className="hover:bg-border-color/50">
                   {editingUserId === userItem.id ? (
                     <>
                       <td className="py-4 px-4 text-sm">{userItem.id}</td>
-                      <td className="py-4 px-4"><input name="name" value={editFormData.name} onChange={handleEditInputChange} className="bg-border-color text-primary-text rounded px-2 py-1 w-full" /></td>
-                      <td className="py-4 px-4"><input name="email" value={editFormData.email} onChange={handleEditInputChange} className="bg-border-color text-primary-text rounded px-2 py-1 w-full" /></td>
+                      <td className="py-4 px-4 flex flex-col gap-2">
+                        <input name="name" value={editFormData.name || ''} onChange={handleEditInputChange} className="bg-border-color text-primary-text rounded px-2 py-1 w-full" placeholder="Nome" />
+                        <input name="password" value={editFormData.password || ''} onChange={handleEditInputChange} className="bg-border-color text-primary-text rounded px-2 py-1 w-full text-xs" placeholder="Nova Senha (Opcional)" type="text" />
+                      </td>
+                      <td className="py-4 px-4"><input name="email" value={editFormData.email || ''} onChange={handleEditInputChange} className="bg-border-color text-primary-text rounded px-2 py-1 w-full" placeholder="Email" /></td>
                       <td className="py-4 px-4"><select name="role" value={editFormData.role} onChange={handleEditInputChange} className="bg-border-color text-primary-text rounded px-2 py-1 w-full"><option value="aluno">aluno</option><option value="professor">professor</option><option value="admin">admin</option></select></td>
                       <td className="py-4 px-4 flex justify-end space-x-2">
                         <button onClick={handleSaveEdit} className="p-2 hover:bg-green-500/20 rounded"><Save size={18} className="text-green-400" /></button>

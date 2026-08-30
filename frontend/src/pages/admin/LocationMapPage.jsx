@@ -54,7 +54,7 @@ function LocationMapPage() {
             <h1 className="text-3xl font-bold">Mapa de Acessos</h1>
 
             {/* Mapa Interativo */}
-            <div className="bg-primary-bg/50 p-6 rounded-xl h-[600px] w-full">
+            <div className="bg-secondary-bg border border-border-color p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow h-[600px] w-full">
                 <MapContainer center={mapCenter} zoom={4} style={{ height: '100%', width: '100%', borderRadius: '12px' }}>
                     <TileLayer
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -73,11 +73,11 @@ function LocationMapPage() {
             </div>
 
             {/* Tabela de Localizações */}
-            <div className="bg-primary-bg/50 p-6 rounded-xl">
+            <div className="bg-secondary-bg border border-border-color p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow mt-8">
                 <h2 className="text-xl font-bold mb-4">Lista de Localizações Registradas</h2>
                 <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-700">
-                        <thead className="bg-primary-bg/60">
+                    <table className="min-w-full divide-y divide-border-color">
+                        <thead className="bg-header-bg border-b border-border-color">
                             <tr>
                                 <th className="px-4 py-2 text-left">Usuário</th>
                                 <th className="px-4 py-2 text-left">Cidade</th>
@@ -87,7 +87,7 @@ function LocationMapPage() {
                                 <th className="px-4 py-2 text-left">Última Atualização</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-700">
+                        <tbody className="divide-y divide-border-color">
                             {locations.map(loc => (
                                 <tr key={loc.user_id} className="hover:bg-border-color/50">
                                     <td className="px-4 py-2">{loc.user_name}</td>

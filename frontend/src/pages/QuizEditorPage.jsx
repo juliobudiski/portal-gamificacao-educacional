@@ -164,130 +164,136 @@ function QuizEditorPage({ initialData, onSave, onCancel, isOfflineMode = false }
     if (error) return <div className="text-center text-red-500 p-10">Erro: {error}</div>;
 
     return (
-        <div className="min-h-screen bg-primary-bg text-primary-text p-4 md:p-8 transition-colors duration-300">
-            <div className="max-w-4xl mx-auto">
+        <div className="min-h-screen bg-gray-900 text-gray-200 p-4 md:p-8 transition-colors duration-300 relative overflow-hidden">
+            {/* Efeitos de luz ao fundo */}
+            <div className="fixed top-1/4 left-0 w-[400px] h-[400px] bg-teal-600/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
+            <div className="fixed bottom-0 right-0 w-[500px] h-[400px] bg-purple-600/10 rounded-full blur-[150px] pointer-events-none z-0"></div>
+
+            <div className="max-w-4xl mx-auto relative z-10">
                 {/* Cabeçalho */}
-                <div className="flex items-center gap-3 mb-6">
-                    <div className="bg-accent-yellow p-3 rounded-xl shadow-lg">
-                        {/* Ajuste de cor do ícone para garantir contraste no amarelo */}
-                        <FaQuestion className="text-xl text-white dark:text-primary-bg" />
+                <div className="flex items-center gap-3 mb-6 bg-black/30 p-6 rounded-3xl border border-white/5 shadow-xl backdrop-blur-md">
+                    <div className="bg-gradient-to-br from-yellow-400 to-orange-500 p-4 rounded-2xl shadow-[0_0_20px_rgba(250,204,21,0.4)]">
+                        <FaQuestion className="text-2xl text-gray-900" />
                     </div>
                     <div>
-                        <h1 className="text-2xl md:text-3xl font-bold">Editor de Quiz</h1>
-                        <h2 className="text-lg md:text-xl text-accent-yellow font-medium">{activityTitle}</h2>
+                        <h1 className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400 drop-shadow-md">Editor de Quiz</h1>
+                        <h2 className="text-lg md:text-xl text-gray-400 font-medium tracking-wide mt-1">{activityTitle}</h2>
                     </div>
                 </div>
 
                 {/* Formulário de Edição/Criação */}
-                <div className="bg-secondary-bg p-6 rounded-2xl shadow-xl mb-8 border border-[var(--border-color)]">
-                    <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-primary-text">
-                        <FaEdit className="text-accent-teal" />
-                        {editingIndex !== null ? 'Editando Pergunta' : 'Nova Pergunta'}
+                <div className="bg-black/40 backdrop-blur-lg p-8 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] mb-8 border border-white/10">
+                    <h3 className="text-2xl font-bold mb-6 flex items-center gap-3 text-white">
+                        <div className="bg-teal-500/20 p-2 rounded-lg">
+                             <FaEdit className="text-teal-400" />
+                        </div>
+                        {editingIndex !== null ? 'Editando Pergunta Holográfica' : 'Nova Pergunta Holográfica'}
                     </h3>
 
-                    <div className="space-y-5">
+                    <div className="space-y-6">
                         {/* Campo Pergunta */}
                         <div>
-                            <label className="block text-sm text-secondary-text mb-1 flex items-center gap-1">
-                                <FaQuestion className="text-accent-teal" /> Pergunta
+                            <label className="block text-sm text-gray-400 mb-2 font-bold uppercase tracking-wider flex items-center gap-2">
+                                <FaQuestion className="text-teal-400" /> Pergunta
                             </label>
                             <textarea
                                 name="text"
                                 value={currentQuestion.text}
                                 onChange={handleInputChange}
                                 placeholder="Digite o texto da pergunta..."
-                                className="w-full p-3 bg-primary-bg text-primary-text rounded-xl border border-[var(--border-color)] focus:border-accent-yellow focus:ring-1 focus:ring-accent-yellow outline-none transition-all duration-300 placeholder-secondary-text"
+                                className="w-full p-4 bg-gray-900/60 text-white rounded-2xl border border-white/10 focus:border-teal-400/70 focus:bg-gray-800/80 outline-none transition-all duration-300 placeholder-gray-600 shadow-inner"
+                                rows="3"
                             />
                         </div>
 
                         {/* Opções de Resposta */}
                         <div>
-                            <label className="block text-sm text-secondary-text mb-1 flex items-center gap-1">
-                                <FaList className="text-accent-teal" /> Opções de Resposta
+                            <label className="block text-sm text-gray-400 mb-2 font-bold uppercase tracking-wider flex items-center gap-2">
+                                <FaList className="text-purple-400" /> Opções de Resposta
                             </label>
                             {currentQuestion.options.map((option, index) => (
-                                <div key={index} className="flex items-center mb-2">
-                                    <div className="mr-3 text-secondary-text font-bold">{index + 1}.</div>
+                                <div key={index} className="flex items-center mb-3">
+                                    <div className="mr-3 text-purple-400 font-extrabold bg-purple-500/10 w-10 h-10 flex items-center justify-center rounded-xl border border-purple-500/20">{index + 1}</div>
                                     <input
                                         name="options"
                                         value={option}
                                         onChange={(e) => handleInputChange(e, index)}
                                         placeholder={`Opção ${index + 1}`}
-                                        className="flex-1 p-3 bg-primary-bg text-primary-text rounded-xl border border-[var(--border-color)] focus:border-accent-yellow focus:ring-1 focus:ring-accent-yellow outline-none transition-all duration-300 placeholder-secondary-text"
+                                        className="flex-1 p-4 bg-gray-900/60 text-white rounded-2xl border border-white/10 focus:border-purple-400/70 focus:bg-gray-800/80 outline-none transition-all duration-300 placeholder-gray-600 shadow-inner"
                                     />
                                 </div>
                             ))}
                         </div>
 
                         {/* Grid de Configurações */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <label className="block text-sm text-secondary-text mb-1 flex items-center gap-1">
-                                    <FaCheck className="text-accent-teal" /> Resposta Correta
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div className="lg:col-span-2">
+                                <label className="block text-sm text-gray-400 mb-2 font-bold uppercase tracking-wider flex items-center gap-2">
+                                    <FaCheck className="text-green-400" /> Resposta Correta
                                 </label>
                                 <select
                                     name="correct_option"
                                     value={currentQuestion.correct_option}
                                     onChange={handleInputChange}
-                                    className="w-full p-3 bg-primary-bg text-primary-text rounded-xl border border-[var(--border-color)] focus:border-accent-yellow outline-none transition-all duration-300"
+                                    className="w-full p-4 bg-gray-900/60 text-white rounded-2xl border border-white/10 focus:border-green-400/70 outline-none transition-all duration-300 appearance-none"
                                 >
-                                    <option value="">Selecione a resposta correta</option>
-                                    {currentQuestion.options.map((opt, i) => (opt && <option key={`${opt}-${i}`} value={opt}>{opt}</option>))}
+                                    <option value="" className="bg-gray-900">Selecione a resposta correta</option>
+                                    {currentQuestion.options.map((opt, i) => (opt && <option key={`${opt}-${i}`} value={opt} className="bg-gray-900 text-white">{opt}</option>))}
                                 </select>
                             </div>
 
                             <div>
-                                <label className="block text-sm text-secondary-text mb-1 flex items-center gap-1">
-                                    <FaStar className="text-accent-teal" /> Pontos
+                                <label className="block text-sm text-gray-400 mb-2 font-bold uppercase tracking-wider flex items-center gap-2">
+                                    <FaStar className="text-yellow-400" /> Pontos
                                 </label>
                                 <input
                                     type="number"
                                     name="points"
                                     value={currentQuestion.points}
                                     onChange={handleInputChange}
-                                    className="w-full p-3 bg-primary-bg text-primary-text rounded-xl border border-[var(--border-color)] focus:border-accent-yellow outline-none transition-all duration-300"
+                                    className="w-full p-4 bg-gray-900/60 text-white rounded-2xl border border-white/10 focus:border-yellow-400/70 outline-none transition-all duration-300 text-center font-bold text-lg"
                                 />
                             </div>
 
                             {/* Campo Moedas */}
                             <div>
-                                <label className="block text-sm text-secondary-text mb-1 flex items-center gap-1">
-                                    <FaGem className="text-accent-yellow" /> Moedas
+                                <label className="block text-sm text-gray-400 mb-2 font-bold uppercase tracking-wider flex items-center gap-2">
+                                    <FaGem className="text-blue-400" /> Moedas
                                 </label>
                                 <input
                                     type="number"
                                     name="coins"
                                     value={currentQuestion.coins}
                                     onChange={handleInputChange}
-                                    className="w-full p-3 bg-primary-bg text-primary-text rounded-xl border border-[var(--border-color)] focus:border-accent-yellow outline-none transition-all duration-300"
+                                    className="w-full p-4 bg-gray-900/60 text-white rounded-2xl border border-white/10 focus:border-blue-400/70 outline-none transition-all duration-300 text-center font-bold text-lg"
                                 />
                             </div>
 
                             {/* Tempo Limite */}
                             {isTimed && (
-                                <div>
-                                    <label className="block text-sm text-secondary-text mb-1 flex items-center gap-1">
-                                        <FaClock className="text-accent-teal" /> Tempo Limite (s)
+                                <div className="lg:col-span-4">
+                                    <label className="block text-sm text-gray-400 mb-2 font-bold uppercase tracking-wider flex items-center gap-2">
+                                        <FaClock className="text-red-400" /> Tempo Limite (s)
                                     </label>
                                     <input
                                         type="number"
                                         name="timeLimit"
                                         value={currentQuestion.timeLimit}
                                         onChange={handleInputChange}
-                                        className="w-full p-3 bg-primary-bg text-primary-text rounded-xl border border-[var(--border-color)] focus:border-accent-yellow outline-none transition-all duration-300"
+                                        className="w-full p-4 bg-gray-900/60 text-white rounded-2xl border border-white/10 focus:border-red-400/70 outline-none transition-all duration-300 text-center font-bold text-lg"
                                     />
                                 </div>
                             )}
                         </div>
 
                         {/* Botão Adicionar/Atualizar */}
-                        <div className="pt-2">
+                        <div className="pt-4 flex justify-end">
                             <button
                                 onClick={handleAddOrUpdateQuestion}
-                                className="w-full md:w-auto bg-accent-yellow hover:brightness-110 text-white dark:text-primary-bg font-bold py-3 px-6 rounded-xl flex items-center justify-center shadow-lg transition-all duration-300 group"
+                                className="w-full md:w-auto bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-400 hover:to-cyan-500 text-white font-bold py-4 px-8 rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(20,184,166,0.4)] transition-all duration-300 hover:scale-105 active:scale-95 group uppercase tracking-widest text-sm"
                             >
-                                <FaPlus className="mr-2 transform group-hover:scale-110 transition-transform" />
-                                {editingIndex !== null ? 'Atualizar Pergunta' : 'Adicionar Pergunta'}
+                                <FaPlus className="mr-2 transform group-hover:scale-110 group-hover:rotate-90 transition-all duration-500" />
+                                {editingIndex !== null ? 'Salvar Edição' : 'Adicionar ao Banco'}
                             </button>
                         </div>
                     </div>
@@ -295,43 +301,44 @@ function QuizEditorPage({ initialData, onSave, onCancel, isOfflineMode = false }
 
                 {/* Lista de Perguntas */}
                 {questions.length > 0 && (
-                    <div className="mb-8">
-                        <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-primary-text">
-                            <FaList className="text-accent-teal" />
-                            Perguntas do Quiz ({questions.length})
+                    <div className="mb-10 bg-black/20 p-8 rounded-3xl border border-white/5 backdrop-blur-md">
+                        <h3 className="text-2xl font-bold mb-6 flex items-center gap-3 text-white">
+                            <div className="bg-purple-500/20 p-2 rounded-lg">
+                                <FaList className="text-purple-400" />
+                            </div>
+                            Banco de Perguntas <span className="bg-purple-600 text-white text-sm py-1 px-3 rounded-full ml-2">{questions.length}</span>
                         </h3>
 
                         <div className="space-y-4">
                             {questions.map((q, index) => (
                                 <div
                                     key={index}
-                                    // Card da pergunta usa secondary-bg
-                                    className="bg-secondary-bg p-4 rounded-xl flex justify-between items-center border border-[var(--border-color)] shadow-sm hover:shadow-md transition-all duration-300"
+                                    className="bg-gray-900/70 p-5 rounded-2xl flex justify-between items-center border border-white/5 hover:border-purple-500/30 shadow-lg hover:shadow-[0_0_15px_rgba(168,85,247,0.2)] transition-all duration-300 group"
                                 >
                                     <div className="flex-1">
                                         <div className="flex items-start">
-                                            {/* Badge numérico roxo */}
-                                            <div className="bg-accent-purple w-8 h-8 rounded-full flex items-center justify-center mr-3 mt-0.5 flex-shrink-0 text-white">
-                                                <span className="font-bold text-sm">{index + 1}</span>
+                                            {/* Badge numérico */}
+                                            <div className="bg-gradient-to-br from-purple-500 to-indigo-600 w-10 h-10 rounded-xl flex items-center justify-center mr-4 mt-1 flex-shrink-0 text-white shadow-md">
+                                                <span className="font-extrabold">{index + 1}</span>
                                             </div>
                                             <div>
-                                                <p className="font-medium text-primary-text">{q.text}</p>
+                                                <p className="font-bold text-gray-200 text-lg mb-2">{q.text}</p>
                                                 <div className="flex flex-wrap gap-2 mt-2">
-                                                    <span className="bg-primary-bg border border-[var(--border-color)] px-2 py-1 rounded-lg text-xs flex items-center text-secondary-text">
-                                                        <FaCheck className="mr-1 text-success" />
+                                                    <span className="bg-green-500/10 border border-green-500/20 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center text-green-400 shadow-inner">
+                                                        <FaCheck className="mr-1.5" />
                                                         {q.correct_option}
                                                     </span>
-                                                    <span className="bg-primary-bg border border-[var(--border-color)] px-2 py-1 rounded-lg text-xs flex items-center text-secondary-text">
-                                                        <FaStar className="mr-1 text-accent-teal" />
-                                                        {q.points} pontos
+                                                    <span className="bg-yellow-500/10 border border-yellow-500/20 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center text-yellow-400 shadow-inner">
+                                                        <FaStar className="mr-1.5" />
+                                                        {q.points} XP
                                                     </span>
-                                                    <span className="bg-primary-bg border border-[var(--border-color)] px-2 py-1 rounded-lg text-xs flex items-center text-secondary-text">
-                                                        <FaGem className="mr-1 text-accent-yellow" />
-                                                        {q.coins || 0} moedas
+                                                    <span className="bg-blue-500/10 border border-blue-500/20 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center text-blue-400 shadow-inner">
+                                                        <FaGem className="mr-1.5" />
+                                                        {q.coins || 0}
                                                     </span>
                                                     {isTimed && (
-                                                        <span className="bg-primary-bg border border-[var(--border-color)] px-2 py-1 rounded-lg text-xs flex items-center text-secondary-text">
-                                                            <FaClock className="mr-1 text-accent-teal" />
+                                                        <span className="bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center text-red-400 shadow-inner">
+                                                            <FaClock className="mr-1.5" />
                                                             {q.timeLimit}s
                                                         </span>
                                                     )}
@@ -339,19 +346,17 @@ function QuizEditorPage({ initialData, onSave, onCancel, isOfflineMode = false }
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="flex gap-2 ml-4">
-                                        {/* Botão Editar: Roxo */}
+                                    <div className="flex gap-3 ml-6 opacity-80 group-hover:opacity-100 transition-opacity">
                                         <button
                                             onClick={() => handleEditQuestion(index)}
-                                            className="p-3 bg-accent-purple hover:brightness-110 text-white rounded-xl transition-all duration-300 shadow-sm"
+                                            className="p-3.5 bg-gray-800 hover:bg-teal-600/20 hover:text-teal-400 text-gray-400 rounded-xl border border-white/5 hover:border-teal-500/30 transition-all duration-300"
                                             aria-label="Editar pergunta"
                                         >
                                             <FaEdit />
                                         </button>
-                                        {/* Botão Excluir: Estilo Ghost Vermelho */}
                                         <button
                                             onClick={() => handleDeleteQuestionClick(index)}
-                                            className="p-3 text-danger hover:bg-danger-bg rounded-xl transition-colors duration-300"
+                                            className="p-3.5 bg-gray-800 hover:bg-red-600/20 hover:text-red-400 text-gray-400 rounded-xl border border-white/5 hover:border-red-500/30 transition-all duration-300"
                                             aria-label="Excluir pergunta"
                                         >
                                             <FaTrash />
@@ -365,23 +370,23 @@ function QuizEditorPage({ initialData, onSave, onCancel, isOfflineMode = false }
 
                 {/* Salvar Alterações */}
                 {questions.length > 0 && (
-                    <div className="mt-8 pt-4 border-t border-[var(--border-color)]">
+                    <div className="mt-8 pt-8 border-t border-white/10 flex flex-col items-center">
                         <button
                             onClick={handleSaveChanges}
-                            className="bg-accent-teal hover:brightness-110 text-white dark:text-primary-bg font-bold text-lg py-3 px-6 rounded-xl flex items-center justify-center shadow-lg transition-all duration-300 w-full md:w-auto group disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-400 hover:to-cyan-500 text-white font-extrabold text-lg py-4 px-12 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(20,184,166,0.5)] hover:shadow-[0_0_40px_rgba(20,184,166,0.7)] transition-all duration-300 hover:scale-105 active:scale-95 uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto group"
                             disabled={loading}
                         >
-                            <FaSave className="mr-2 transform group-hover:scale-110 transition-transform" />
-                            {loading ? 'Salvando...' : 'Salvar Quiz Completo'}
+                            <FaSave className="mr-3 transform group-hover:scale-125 transition-transform" />
+                            {loading ? 'Sincronizando...' : 'Publicar Módulo de Quiz'}
                         </button>
                         {message && (
-                            <div className="mt-4 p-3 bg-success-bg border border-success/20 rounded-xl text-success flex items-center">
-                                <span className="font-bold mr-2">✓</span> {message}
+                            <div className="mt-6 p-4 bg-green-900/30 border border-green-500/50 rounded-xl text-green-400 flex items-center font-bold shadow-[0_0_15px_rgba(34,197,94,0.2)]">
+                                <span className="mr-3 text-xl">✓</span> {message}
                             </div>
                         )}
                         {error && (
-                            <div className="mt-4 p-3 bg-danger-bg border border-danger/20 rounded-xl text-danger flex items-center">
-                                <span className="font-bold mr-2">!</span> Erro: {error}
+                            <div className="mt-6 p-4 bg-red-900/30 border border-red-500/50 rounded-xl text-red-400 flex items-center font-bold shadow-[0_0_15px_rgba(239,68,68,0.2)]">
+                                <span className="mr-3 text-xl">!</span> Erro: {error}
                             </div>
                         )}
                     </div>

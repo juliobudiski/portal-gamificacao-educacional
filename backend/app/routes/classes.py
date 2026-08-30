@@ -7,6 +7,10 @@ import logging
 from flask_cors import cross_origin
 import random
 
+import random
+
+from ..services.class_service import ClassService
+
 class_bp = Blueprint('classes', __name__)
 logger = logging.getLogger(__name__)
 
@@ -264,42 +268,16 @@ def join_class():
         current_app.logger.warning(f"Tentativa de entrada em turma pelo ID {current_user_id} falhou: código ausente.")
         return jsonify({"message": "Código de inscrição é obrigatório."}), 400
 
-    class_to_join = Class.query.filter_by(enrollment_code=enrollment_code).first()
-
-    if not class_to_join:
-        current_app.logger.warning(f"Tentativa de entrada em turma pelo ID {current_user_id} falhou: código '{enrollment_code}' inválido.")
-        return jsonify({"message": "Código de inscrição inválido."}), 404
-
-    existing_enrollment = Enrollment.query.filter_by(student_id=user.id, class_id=class_to_join.id).first()
-    if existing_enrollment:
-        current_app.logger.warning(f"Aluno ID {current_user_id} já está matriculado na turma ID {class_to_join.id}.")
-        return jsonify({"message": "Você já está matriculado nesta turma."}), 409
-
     try:
-        new_enrollment = Enrollment(student_id=user.id, class_id=class_to_join.id)
-        existing_teams = Team.query.filter_by(class_id=class_to_join.id).all()
+        class_data, error, status_code = ClassService.join_class(user, enrollment_code)
         
-        if existing_teams:
-            # Estratégia: Encontrar o time com MENOS membros para manter equilíbrio
-            # Precisamos contar quantos enrollments cada time tem.
-            # Uma forma simples (mas não a mais performática para milhões de alunos) é:
+        if error:
+            return jsonify(error), status_code
             
-            # Ordena os times pelo tamanho da lista de membros
-            existing_teams.sort(key=lambda t: len(t.members))
-            
-            # Pega o primeiro (o menor)
-            target_team = existing_teams[0]
-            new_enrollment.team_id = target_team.id
-            
-            current_app.logger.info(f"Aluno {user.id} sorteado automaticamente para a Casa {target_team.name}")
-            
-        db.session.add(new_enrollment)
-        db.session.commit()
-        current_app.logger.info(f"Aluno ID {current_user_id} matriculado com sucesso na turma '{class_to_join.name}' (ID: {class_to_join.id}).")
-        return jsonify({"message": "Matrícula realizada com sucesso!", "class": class_to_join.to_dict()}), 201
+        return jsonify({"message": "Matrícula realizada com sucesso!", "class": class_data}), status_code
     except Exception as e:
         db.session.rollback()
-        current_app.logger.error(f"Erro ao matricular aluno ID {current_user_id} na turma ID {class_to_join.id}: {str(e)}", exc_info=True)
+        current_app.logger.error(f"Erro ao matricular aluno ID {current_user_id} na turma: {str(e)}", exc_info=True)
         return jsonify({"message": f"Erro interno do servidor ao matricular na turma: {str(e)}"}), 500
 
 @class_bp.route('/<int:class_id>/leave', methods=['POST'])
@@ -543,40 +521,10 @@ def generate_teams(class_id):
     custom_names = data.get('names', [])
     method = data.get('method', 'random')
 
-    # 1. Cria a ESTRUTURA (As Casas) - Isso acontece independente de ter alunos
-    created_teams = []
-    for i in range(num_teams):
-        name = custom_names[i] if i < len(custom_names) else f"Equipe {i+1}"
-        new_team = Team(name=name, class_id=class_id)
-        db.session.add(new_team)
-        created_teams.append(new_team)
-    
-    db.session.flush() # Gera os IDs
-
-    # 2. Busca alunos existentes (pode ser lista vazia)
-    enrollments = Enrollment.query.filter_by(class_id=class_id).all()
-    
-    # 3. Só distribui SE houver alunos
-    if enrollments:
-        students = [e for e in enrollments]
-        
-        if method == 'balanced':
-            # Ordena por XP Global para balancear veteranos
-            # Nota: Precisamos garantir que o relacionamento 'student' esteja carregado
-            students.sort(key=lambda x: x.student.global_xp if x.student else 0, reverse=True)
-            
-            for index, enrollment in enumerate(students):
-                team_index = index % num_teams
-                target_team = created_teams[team_index]
-                enrollment.team_id = target_team.id
-        else:
-            # Aleatório
-            random.shuffle(students)
-            for index, enrollment in enumerate(students):
-                target_team = created_teams[index % num_teams]
-                enrollment.team_id = target_team.id
-
-    db.session.commit()
-    
-    msg = "Casas criadas com sucesso!" if not enrollments else "Casas criadas e alunos distribuídos!"
-    return jsonify({"message": msg}), 201
+    try:
+        had_students = ClassService.generate_teams(class_id, num_teams, custom_names, method)
+        msg = "Casas criadas com sucesso!" if not had_students else "Casas criadas e alunos distribuídos!"
+        return jsonify({"message": msg}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": str(e)}), 500

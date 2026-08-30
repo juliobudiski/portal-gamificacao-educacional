@@ -196,32 +196,41 @@ const StoreTab = ({ items, userPoints, onPurchaseSuccess, onAddItem, onDeleteIte
     };
 
     return (
-        <div className="w-full max-w-5xl mx-auto p-4 relative pt-16 text-primary-text">
+        <div className="w-full max-w-6xl mx-auto p-8 relative mt-8 mb-8 text-primary-text bg-gray-900 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.8)] border border-white/10 min-h-[70vh]">
+            {/* Efeito de luz de fundo */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-indigo-600/20 rounded-full blur-[100px] pointer-events-none"></div>
+
             <div className='flex-shrink-0'>
                 <button
                     onClick={onReturn}
-                    className="absolute top-4 left-4 z-20 flex items-center gap-2 py-2 px-4 
-                           bg-secondary-bg text-secondary-text 
-                           border border-border-color rounded-full shadow-lg 
-                           hover:bg-primary-bg hover:shadow-xl transition-all"
+                    className="absolute top-6 left-6 z-20 flex items-center gap-2 py-2.5 px-5 
+                           bg-black/50 text-gray-300 font-bold backdrop-blur-md
+                           border border-white/10 rounded-full shadow-lg 
+                           hover:bg-white/10 hover:text-white hover:scale-105 transition-all"
                 >
                     <FaArrowLeft /> Voltar ao Tabuleiro
                 </button>
             </div>
 
-            <header className="flex justify-between items-center mb-8 pt-8">
-                <h1 className="text-4xl font-bold">Loja</h1>
-                {userRole === 'aluno' && (
-                    <div className="text-2xl font-bold text-yellow-300 bg-black/30 px-4 py-2 rounded-full flex items-center gap-2">
-                        <FaCoins />
-                        <span>{userPoints}</span>
-                    </div>
-                )}
-                {userRole === 'professor' && !showAddForm && (
-                    <button onClick={() => setShowAddForm(true)} className="flex items-center gap-2 py-2 px-4 bg-blue-600 hover:bg-blue-500 rounded-lg font-bold">
-                        <FaPlus /> Adicionar Item
-                    </button>
-                )}
+            <header className="flex flex-col sm:flex-row justify-between items-center mb-12 pt-16 relative z-10">
+                <div className="flex flex-col items-center sm:items-start">
+                    <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] uppercase tracking-tight mb-2">Loja Virtual</h1>
+                    <p className="text-gray-400 font-medium">Equipe-se para a sua jornada de aprendizado</p>
+                </div>
+                
+                <div className="mt-6 sm:mt-0">
+                    {userRole === 'aluno' && (
+                        <div className="text-2xl font-black text-yellow-400 bg-black/50 backdrop-blur-md px-6 py-3 rounded-full flex items-center gap-3 border border-yellow-500/30 shadow-[0_0_20px_rgba(250,204,21,0.2)]">
+                            <FaCoins className="drop-shadow-[0_0_8px_rgba(250,204,21,0.8)] text-3xl" />
+                            <span className="drop-shadow-lg tracking-widest">{userPoints}</span>
+                        </div>
+                    )}
+                    {userRole === 'professor' && !showAddForm && (
+                        <button onClick={() => setShowAddForm(true)} className="flex items-center gap-2 py-3 px-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 rounded-xl font-bold shadow-[0_0_15px_rgba(79,70,229,0.5)] transform hover:-translate-y-1 transition-all text-white">
+                            <FaPlus /> Adicionar Novo Item
+                        </button>
+                    )}
+                </div>
             </header>
 
             {userRole === 'professor' && (
@@ -281,7 +290,7 @@ const StoreTab = ({ items, userPoints, onPurchaseSuccess, onAddItem, onDeleteIte
             )}
 
             {items.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 relative z-10 p-4">
                     {items.map(item => (
                         <ItemCard
                             key={item.id}

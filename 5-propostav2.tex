@@ -1,0 +1,653 @@
+O Modelo de Design Contextualizado (MDC) constitui o principal artefato conceitual e formal proposto nesta tese. O modelo foi concebido em resposta à principal lacuna identificada na literatura (Capítulo \ref{chapter:relacionados}): a prevalência da abordagem de Tamanho Único (\textit{One-Size-Fits-All}) e a ausência de ferramentas de autoria para a orquestração segura da gamificação educacional. 
+
+A premissa do MDC estabelece que a inserção de elementos de jogos em disciplinas de Engenharia de Software não deve ocorrer de forma desvinculada das restrições logísticas institucionais, da complexidade do conteúdo ensinado ou do perfil dos estudantes. Em cenários nos quais essas interdependências são ignoradas, a gamificação pode transitar do engajamento construtivo para a indução de comportamentos indesejados, fenômeno mapeado como o \textit{Dark Side of Gamification} \cite{toda2017dark}.
+
+Neste sentido, a contribuição científica primária do artefato proposto não reside na criação de novos elementos de jogos, mas na formulação de um mecanismo de sugestão e aconselhamento. O MDC tem como objetivo atuar como uma camada de auxílio ao planejamento instrucional para o docente, fornecendo uma estrutura na qual a seleção das mecânicas seja respaldada pelas variáveis do ambiente de aprendizagem. As seções a seguir detalham a arquitetura do modelo, evidenciando o percurso entre a fundamentação teórica e a formulação de seu núcleo formal.
+
+
+\section{Arquitetura da Proposta}
+
+Em sua estrutura global, o propósito do MDC é atuar como um modelo conceitual que converte diretrizes teóricas qualitativas da gamificação educacional em regras de inferência computáveis. A Figura \ref{fig:arquitetura_alto_nivel} ilustra a visão de alto nível dessa arquitetura, delineando o fluxo de dados desde a inserção do diagnóstico pelo docente até a categorização de saída das sugestões instrucionais. Detalhes sobre o fluxo de dados, bem como sobre cada um dos módulos da arquitetura do MDC, são apresentados nas subseções subsequentes.
+
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=1\linewidth]{sadAltonivel.pdf}
+    \caption{Visão geral e modularizada em alto nível da arquitetura do Modelo de Design Contextualizado (MDC).}
+    \label{fig:arquitetura_alto_nivel}
+\end{figure}
+
+As regras de negócio do MDC foram estruturadas a partir da associação entre elementos de jogos e as áreas de conhecimento do SWEBOK \cite{abran2001guide}. A arquitetura estabelece que a parametrização do ambiente seja realizada pelo docente durante o diagnóstico da turma. Essa escolha caracteriza a ferramenta como um Sistema de Apoio à Decisão (SAD), preservando a autoridade pedagógica do professor.
+
+O modelo estabelece como premissa que o conservadorismo instrucional e a mitigação de riscos têm prioridade sobre o estímulo lúdico descontextualizado. A aplicação indiscriminada de dinâmicas (como pressão de tempo ou comparação social direta) em turmas inadequadas desencadeia desengajamento e ansiedade \cite{toda2017dark}. Para mitigar esses riscos, a arquitetura emprega um motor de cálculo determinístico baseado em multiplicadores escalares, favorecendo a rastreabilidade lógica. Formalmente, o sistema opera como uma função matemática que recebe um vetor de estado (as condições da sala de aula) e devolve uma lista priorizada de elementos de jogos. Conforme ilustra a Figura~\ref{fig:placeholder1}.
+
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=1\linewidth]{arquiteturaProposta.pdf}
+    \caption{Visão geral da arquitetura do Modelo de Design Contextualizado (MDC).}
+    \label{fig:placeholder1}
+\end{figure}
+
+\subsection{Hierarquia Arquitetural da Solução}
+
+A arquitetura do Sistema de Apoio à Decisão (SAD) que operacionaliza o MDC estrutura-se em um fluxo modular de processamento, organizado em três módulos de servidor (Módulos A, B e C) e pela camada de apresentação gráfica. Com o objetivo de conferir transparência à solução, a Figura \ref{fig:modulos_sad} detalha o tráfego de dados e o papel de cada componente nesse pipeline:
+
+\begin{itemize}
+    \item \textbf{Módulo A (Base de Conhecimento e Pesos):} camada de dados e persistência estática. É responsável por armazenar a matriz de evidências extraída da literatura, aplicar a ponderação pedagógica de Bloom ($\omega$) e gerar as constantes de Sinergia Pura ($S_b$) e Risco Puro ($P_c$).
+    \item \textbf{Módulo B (Motor de Utilidade Instrucional - MUI):} camada de lógica de negócios analítica. Atua como o núcleo matemático do modelo, recebendo as variáveis do Vetor de Contexto ($V_{ctx}$) enviadas pelo docente e aplicando as equações de modulação de Risco ($\tau, \Phi$) e de Afinidade/Atrito ($\mu, \lambda$) para calcular o Escore Bruto da Fronteira de Decisão.
+    \item \textbf{Módulo C (Motor de Apoio ao Contexto e Apresentação - MAC):} Módulo funcional de \textit{middleware} e filtros. Atua na adequação final dos resultados antes do envio à interface, executando a redução taxonômica (mapeamento MDA), a verificação do Alerta Logístico booleano ($I_C$), o nivelamento matemático e a serialização dos dados em formato JSON.
+    \item \textbf{Camada de Apresentação (Portal GamificaEdu):} interface gráfica desenvolvida em \textit{React}. Permite que o docente preencha o diagnóstico da turma, envie o Vetor de Contexto ($V_{ctx}$) via requisições HTTP/API e visualize as sugestões de elementos de jogos organizadas por categorias de sugestão.
+\end{itemize}
+
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=0.95\linewidth]{modulosabc.pdf}
+    \caption{Estruturação hierárquica e fluxo de dados entre os módulos funcionais do Sistema de Apoio à Decisão (Módulos A, B e C) e a interface do usuário.}
+    \label{fig:modulos_sad}
+\end{figure}
+
+\subsection{Modelagem do Vetor de Contexto ($V_{ctx}$)}
+
+Para que o MUI processe o ambiente e efetue o cálculo das pontuações, os dados inseridos pelo docente são estruturados no Vetor de Contexto ($V_{ctx}$), composto por quatro dimensões independentes. Na taxonomia de artefatos da \textit{Design Science Research}, o vocabulário e os símbolos criados para definir e descrever um problema constituem os \textbf{Constructos} da pesquisa \cite{dresch2014design}. Assim, as dimensões a seguir representam os constructos formais elaborados pelo modelo para mapear a complexidade do ambiente educacional:
+
+A primeira dimensão, \textbf{Domínio do Conhecimento ($I_A$)}, mapeia a área da disciplina com base na taxonomia SWEBOK, atuando como uma aproximação operacional do nível de densidade teórica e de abstração exigido. Essa dimensão impede o modelo de sugerir elementos que possam induzir sobrecarga cognitiva excessiva. Caso a área não seja identificada na base de conhecimento, o motor adota uma disciplina de prática neutra como linha de base (contingência).
+
+
+A segunda dimensão, \textbf{Objetivo Pedagógico ($I_B$)}, capta a intenção instrucional do professor ao enquadrar a atividade em três focos fundamentais: teórico, prático ou colaborativo. Em vez de recorrer a processamento semântico complexo, o modelo adota o pareamento direto de radicais e palavras-chave. Ao cruzar esses objetivos com a base de conhecimento, o modelo ajusta os fatores de modulação das sugestões. Se o objetivo é colaborativo, por exemplo, mecânicas de isolamento têm sua prioridade reduzida, enquanto missões cooperativas ganham destaque.
+
+A terceira dimensão avalia a \textbf{Infraestrutura e Restrições Logísticas ($I_C$)}. Essa variável mapeia a infraestrutura tecnológica disponível. Diferentemente das demais variáveis que atuam como multiplicadores escalares, a dimensão $I_C$ atua como um sinalizador booleano de roteamento (um filtro). Se o docente sinalizar um cenário de ensino ``desplugado'', o modelo restringe qualquer sugestão de mecânicas dependentes de tecnologia (como fóruns online e economias virtuais).
+
+Por fim, a quarta dimensão mapeia o \textbf{Perfil Motivacional da Turma ($I_D$)}, parametrizando as tendências comportamentais dos estudantes. O algoritmo processa as inclinações motivacionais predominantes (Competitivo, Social, Realizador ou Explorador) conforme o apontamento do professor, selecionando elementos com maior afinidade com o grupo-alvo da intervenção. A consolidação destas quatro dimensões, que estruturam as variáveis de entrada do modelo, é apresentada na Figura~\ref{fig:vetor_contexto}.
+
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=1\linewidth]{vetor_contexto.pdf}
+    \caption{Estruturação das variáveis de entrada do Vetor de Contexto ($V_{ctx}$).}
+    \label{fig:vetor_contexto}
+\end{figure}
+
+\subsection{Mecânica de Avaliação e a Fronteira de Decisão}
+
+Na \textit{Design Science Research}, um \textbf{Modelo} é formalmente definido como um conjunto de proposições ou equações que expressam as relações estabelecidas entre os \textbf{Constructos} da pesquisa \cite{march1995design, dresch2014design}. Em alinhamento com esta premissa, o Modelo de Utilidade Instrucional (MUI) atua como o núcleo relacional e formal do artefato, avaliando as mecânicas de jogo segundo duas métricas fundamentais: o potencial de engajamento (Sinergia) e o potencial de prejuízo ao aprendizado (Risco). A decisão algorítmica de sugerir ou vetar um elemento baseia-se no balanceamento matemático dessas métricas, em que as equações algébricas atuam como representação formal das relações entre os constructos e os coeficientes de contexto.
+
+As variáveis-base das equações são derivadas empiricamente a partir da revisão da literatura \cite{terciario2023}. A contagem de relatos qualitativos positivos (como melhoria de desempenho ou colaboração) consolida a variável \textbf{Sinergia Pura ($S_b$)}, enquanto as ocorrências documentadas de falhas e de sobrecarga cognitiva formam o \textbf{Risco Puro ($P_c$)}. Contudo, os impactos educacionais extraídos da literatura não possuem o mesmo peso cognitivo. Para refletir essa assimetria, $S_b$ e $P_c$ não atuam como contagens absolutas; as frequências são multiplicadas pelos parâmetros de ponderação dos impactos pedagógicos ($\omega_{pos}$ e $\omega_{neg}$). Resultados de maior complexidade cognitiva, como a efetiva retenção de conhecimento, possuem maior peso na equação do que o engajamento superficial.
+
+Em contrapartida, as variáveis estruturais e ambientais, representadas pelo Fator de Atenuação Estrutural ($\tau$), Carga Cognitiva ($\Phi$), Afinidade ($\mu$) e Atrito ($\lambda$), atuam como fatores de modulação contextual. A função dessas constantes é ajustar a Sinergia Pura e o Risco Puro, priorizando o conservadorismo instrucional e a consistência computacional frente à realidade da turma.
+
+Com base nessas premissas, o motor calcula a Fronteira de Decisão. O sistema estabelece o Benefício Esperado ($S_{mod}$) ao multiplicar a Sinergia Pura ($S_b$) pelo fator de Afinidade contextual ($\mu$). O Risco Modificado ($P_{mod}$) é calculado multiplicando o Risco Puro ($P_c$) pelos multiplicadores escalares de proteção e contexto ($\tau$, $\Phi$ e $\lambda$). 
+
+Computacionalmente, a arquitetura combina duas escalas distintas. A extração de $S_b$ e $P_c$ utiliza escala logarítmica para atenuar a super-representação de mecânicas excessivamente populares na literatura. Enquanto isso, os coeficientes contextuais ($\mu, \tau, \Phi, \lambda$) atuam como multiplicadores lineares. Essa assimetria matemática impõe que as restrições da sala de aula tenham precedência sobre a frequência histórica do elemento de jogo na literatura.
+
+Após o cálculo, o algoritmo aplica o Veto Pedagógico. A restrição é acionada se, e somente se, forem satisfeitas simultaneamente duas condições: (I) o risco modificado supera o benefício esperado ($P_{mod} > S_{mod}$) e (II) $P_{mod} > 0,1$. Cabe diferenciar que a imposição do limite inferior $P_c \ge 0,1$ atua como piso do Risco Puro para evitar que um risco nulo anule a ação dos multiplicadores contextuais subsequentes (por multiplicação por zero). Já a segunda condição ($P_{mod} > 0,1$) funciona como um limiar de significância, condicionando que o veto ocorra apenas quando houver um risco modificado residual relevante. Essa formulação restringe o bloqueio a cenários com evidências negativas reais ou quando o risco basal é amplificado diretamente pelos fatores de contexto ($\lambda$ ou $\Phi$).
+
+Como mecanismo de contingência à avaliação algébrica, o algoritmo mantém a regra de restrição para choques severos. Se os parâmetros de contexto indicarem conflito crítico ($\mu \le 0,1$ e $\lambda \ge 5,0$), a mecânica é automaticamente considerada inadequada ao contexto, evitando vetos indevidos em cenários nos quais elementos com alto volume de citação histórica possuem atrito pontual com a turma. O fluxo completo de processamento e a arquitetura da fronteira de decisão estão ilustrados na Figura~\ref{fig:placeholder3}. Para aprofundar a compreensão sobre o funcionamento interno destas etapas, a Figura~\ref{fig:fluxo_submodulos} detalha os submódulos matemáticos, demonstrando a sequência exata de cálculos da Sinergia, a aplicação paramétrica dos Riscos e a estrutura condicional do Gatilho de Veto Algébrico.
+
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=1\linewidth]{imgs/fluxo_decisao.pdf}
+    \caption{Fluxograma da Mecânica de Avaliação e da Fronteira de Decisão do MUI.}
+    \label{fig:placeholder3}
+\end{figure}
+
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=0.85\linewidth]{fluxo_matematico.pdf}
+    \caption{Fluxograma detalhado dos submódulos matemáticos: cálculo da Sinergia, do Risco e aplicação do Veto Algébrico.}
+    \label{fig:fluxo_submodulos}
+\end{figure}
+
+%%###############################################################
+%%###############################################################
+%%###############################################################
+
+
+\section{Estruturação da Base de Conhecimento Multivariável}
+
+A etapa inicial do sistema avalia a associação descrita na literatura para 46 elementos de jogos aplicados ao ensino de Computação. O motor de cálculo consome uma Base de Conhecimento estática, instanciada a partir de um Estudo Terciário \cite{terciario2023}, cujos dados brutos e matrizes de extração encontram-se disponibilizados no repositório público da pesquisa\footnote{Matriz de dados bibliométricos do Estudo Terciário disponível em: \url{https://bit.ly/3UlWoNy}}. Um algoritmo de \textit{parsing} e normalização léxica processa a matriz de dados, extraindo chaves textuais para contabilizar a frequência absoluta dos impactos instrucionais. Em seguida, o modelo computacional converte essas contagens brutas nos parâmetros formais de Sinergia Pura ($S_b$) e Risco Puro ($P_c$). A derivação dessas variáveis ocorre por meio de um \textit{pipeline} de padronização matemática, tratamento da assimetria entre evidências e atribuição de metadados estruturais\footnote{Consiste na aplicação de classificadores (flags booleanas) para categorizar a natureza intrínseca da mecânica no banco de dados, distinguindo, por exemplo, mecânicas de recompensa de mecânicas de competição.}.
+
+Visando proporcionar transparência à modelagem formal, a Tabela \ref{tab:origem_componentes} sintetiza a origem, a natureza e a forma de avaliação de cada componente matemático e heurístico utilizado no MDC.
+
+\begin{table}[htpb]
+\centering
+\small
+\caption{Origem, natureza e forma de avaliação dos componentes formais do MDC.}
+\label{tab:origem_componentes}
+\resizebox{1.0\textwidth}{!}{%
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{L{2cm} L{4.5cm} L{3.5cm} L{4.5cm}}
+\toprule
+\textbf{Componente} & \textbf{Fundamentação / Origem} & \textbf{Natureza} & \textbf{Forma de Avaliação} \\
+\midrule
+$S_b, P_c$ & Mapeamento da Literatura (Estudo Terciário) & Empírica & Consolidação da base de evidências \\
+$\omega$ & Taxonomia de Bloom e decisão de modelagem & Teórico-heurística & Análise de sensibilidade computacional \\
+$\tau$ & Escala de Risco (Dark Side) e decisão de modelagem & Teórico-heurística & Simulação computacional e especialistas \\
+$\Phi$ & Teoria da Carga Cognitiva (aproximação) & Teórico-heurística & Simulação computacional e especialistas \\
+$\mu$ & Matriz de Perfil e Objetivo Pedagógico & Heurística & Avaliação por painel de especialistas \\
+$\lambda$ & Matriz de Conflito Contextual & Heurística & Avaliação por painel de especialistas \\
+$0,1$ & Decisão de modelagem (piso estrutural) & Computacional & Análise de sensibilidade computacional \\
+\bottomrule
+\end{tabular}%
+}
+\fonte{Elaborado pelo autor.}
+\end{table}
+
+%%###############################################################
+%%###############################################################
+%%###############################################################
+
+\subsection{Gradiente Cognitivo de Impacto Pedagógico ($\omega$)}
+%provar_omega.py e analisar_csv_omega.py em Testes do Portal - Códigos Calibragem.
+
+Na literatura de gamificação educacional, os impactos positivos relatados divergem em complexidade, variando desde estímulos motivacionais de curto prazo até a retenção consolidada de conhecimento. Para que o algoritmo não atribua o mesmo peso matemático a resultados educacionais com exigências cognitivas distintas, estabeleceu-se um critério formal de diferenciação. Para isso, o modelo implementa o Gradiente de Ponderação ($\omega$), um parâmetro de calibração que atua como multiplicador escalar sobre a frequência extraída.
+
+Como a literatura fornece hierarquias qualitativas de aprendizagem, a fundamentação conceitual da ordenação dos parâmetros $\omega$ apoia-se na Taxonomia de Objetivos Educacionais de Bloom \cite{anderson2001taxonomy, ferraz2010taxonomia}. Cabe ressaltar que a taxonomia justifica a relação hierárquica entre os níveis ($\omega_{base} < \omega_{intermediario} < \omega_{maximo}$), enquanto os valores numéricos específicos atribuídos a cada patamar constituem decisões de modelagem posteriormente avaliadas por meio de análise de sensibilidade. A distribuição dos valores, pautada no esforço mental exigido, segue os seguintes patamares:
+
+\begin{itemize}
+    \item \textbf{Peso Base ($1,0$) -- Engajamento e Afetividade:} Atribuiu-se o valor neutro ($1,0$) a relatos genéricos de ``Engajamento''. Sob a ótica de Bloom, esse patamar representa a camada fundacional (atenção). Por ser o impacto mais comum na literatura, atua como a âncora do sistema, preservando a frequência histórica original sem conceder bonificação.
+    \item \textbf{Peso Intermediário ($1,2$) -- Aplicação e Interação (+20\%):} Ocorrências de ``Colaboração'' exigem que o estudante aplique habilidades interpessoais e tomada de decisão em grupo. O acréscimo de $20\%$ representa o escalar mínimo, identificado em simulação, necessário para que a equação diferencie dinâmicas de aplicação de estímulos puramente afetivos, sem provocar distorções acentuadas na distribuição original dos dados.
+    \item \textbf{Peso Máximo ($1,5$) -- Síntese e Avaliação (+50\%):} O valor de $1,5$ foi atribuído aos impactos de ``Melhoria de Desempenho'' e ``Retenção de Conhecimento''. Como a comprovação da retenção exige maior rigor empírico nos estudos originais e representa níveis elevados da taxonomia de Bloom, o modelo pondera essas evidências com o multiplicador máximo. A adoção do teto de $50\%$ evita que valores maiores gerem distorções estatísticas excessivas nos cálculos subsequentes.
+\end{itemize}
+
+
+De maneira simétrica, a ponderação dos impactos negativos ($\omega_{neg}$) aplica a mesma escala para calcular o Risco Puro. Relatos de ``Indiferença'' do estudante assumem o peso base de $1,0$. Em contrapartida, ocorrências explícitas de ``Comportamentos Indesejados'' ou ``Perda de Desempenho'' ativam o multiplicador máximo de $1,5$, fazendo com que falhas instrucionais relevantes tenham maior peso no cálculo de penalização.
+
+Para avaliar o comportamento matemático dessa ponderação e fundamentar a seleção dos valores $(1,0; 1,2; 1,5)$, o modelo foi submetido a uma Análise de Sensibilidade Computacional. O algoritmo executou o processamento de 225 cenários sintéticos de calibragem (registrados nos scripts \texttt{provar\_omega.py} e \texttt{analisar\_omega.py}, cujos dados brutos encontram-se no arquivo \texttt{analise\_sensibilidade\_omega.csv} no repositório da pesquisa\footnote{Dados brutos da análise de sensibilidade disponíveis em: \url{https://bit.ly/3UlWoNy}}), baseando-se em duas métricas de avaliação:
+
+\begin{itemize}
+    \item \textbf{Coeficiente de Correlação de Spearman ($\rho$):} Mensura o grau de preservação da ordenação gerada pelos novos pesos em relação ao ranqueamento histórico original da literatura (no qual todos os pesos equivaleriam a $1,0$).
+    \item \textbf{Índice de Perturbação Mínima ($\Sigma \omega$):} Mensura a soma matemática das alterações introduzidas no sistema pelos multiplicadores, buscando alinhar os parâmetros para que modifiquem os dados empíricos apenas o estritamente necessário para cumprir o papel de separação conceitual.
+\end{itemize}
+
+A execução do algoritmo sobre a matriz empírica do estudo terciário indicou estabilidade na formulação. A aplicação dos parâmetros ampliou o distanciamento entre as mecânicas, preservando a ordem de grandeza histórica. A Tabela \ref{tab:analise_sensibilidade_bloom} sumariza o extrato do ponto selecionado e as alternativas viáveis identificadas no platô de estabilidade.
+
+\begin{table}[htpb]
+\centering
+\caption{Análise de Sensibilidade dos Parâmetros de Ponderação dos Impactos Pedagógicos.}
+\label{tab:analise_sensibilidade_bloom}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Posição na Análise} & \textbf{Peso Colaboração ($\omega_{mid}$)} & \textbf{Peso Retenção ($\omega_{high}$)} & \textbf{Preservação (Spearman -- $\rho$)} & \textbf{Índice de Perturbação} \\ 
+\midrule
+\textbf{Ponto Focal Selecionado} & \textbf{1,2} & \textbf{1,5} & \textbf{0,9777} & \textbf{2,7 (Mínimo)} \\
+2º Lugar no Platô & 1,2 & 1,6 & 0,9777 & 2,8 \\
+3º Lugar no Platô & 1,2 & 1,7 & 0,9777 & 2,9 \\
+4º Lugar no Platô & 1,3 & 1,6 & 0,9777 & 2,9 \\ 
+\bottomrule
+\end{tabular}%
+}
+\fonte{Extraído dos dados do Algoritmo de Análise de Sensibilidade baseados no Estudo Terciário.}
+\end{table}
+
+A análise indicou a estabilidade das equações: as combinações testadas mantiveram elevada preservação da ordenação acadêmica original ($\rho = 0,9777$). O Ponto Focal padronizado em $\omega_{mid}=1,2$ e $\omega_{high}=1,5$ foi selecionado como o ponto de equilíbrio segundo os critérios definidos, pois satisfaz a premissa de valorizar impactos cognitivos mais complexos mantendo o menor índice de alteração matemática ($\Sigma \omega = 2,7$) em relação aos dados empíricos originais. A Figura \ref{fig:placeholder5} ilustra a progressão e a estabilidade desses parâmetros.
+
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=0.80\linewidth]{step_chart_bloom.pdf}
+    \caption{Visualização do Ponto Focal no platô de estabilidade dos parâmetros de ponderação de Bloom.}
+    \label{fig:placeholder5}
+\end{figure}
+
+%%###############################################################
+%%###############################################################
+%%###############################################################
+
+\subsection{Modelagem Heurística da Associação entre Mecânicas e Impactos}
+
+O processamento da base de dados bibliométricos do estudo terciário revelou uma limitação recorrente na literatura da área: os estudos primários frequentemente relatam o sucesso ou fracasso de uma intervenção de forma agrupada (por exemplo, ``houve melhoria de desempenho no ensino de Testes de Software''), sem isolar a contribuição individual de cada elemento de jogo empregado na atividade.
+
+Para atribuir essas evidências aos elementos de forma proporcional, o algoritmo emprega uma heurística de distribuição baseada no histórico de utilização. A premissa estrutural assume que as mecânicas com maior frequência de uso registrada em uma determinada disciplina recebem uma fração proporcional do impacto documentado naquele domínio. O modelo operacionaliza essa atribuição calculando a Frequência Efetiva ($E_{i,m}$) de cada impacto instrucional $i$ em relação a cada mecânica $m$, conforme demonstrado na Equação \ref{eq:frequencia_efetiva}:
+
+
+\begin{equation} \label{eq:frequencia_efetiva}
+E_{i,m} = \sum_{a \in A} \left( F_{i,a} \cdot \frac{C_{m,a}}{C_{total\_a}} \right)
+\end{equation}
+
+Nesta equação, $F_{i,a}$ representa o número absoluto de relatos do impacto $i$ na disciplina $a$, extraído do estudo terciário. A razão $\frac{C_{m,a}}{C_{total\_a}}$ representa a proporção relativa da frequência histórica, utilizada pelo MDC como estimador heurístico: $C_{m,a}$ é a frequência registrada da mecânica $m$ na disciplina, e $C_{total\_a}$ é o somatório do uso de todas as mecânicas no mesmo domínio.
+
+Como exemplo ilustrativo, caso a literatura registre $10$ relatos de ``Melhoria de Desempenho'' na área de Testes de Software, e a mecânica ``Pontos'' tenha sido empregada em $30\%$ dessas intervenções, o algoritmo apropria proporcionalmente $3,0$ dessas ocorrências para a referida mecânica.
+
+Contudo, repassar o valor absoluto de $E_{i,m}$ para as equações subsequentes do sistema causaria distorções pela multiplicação sucessiva de frequências brutas. Para conter esse crescimento, o motor aplica uma normalização proporcional, convertendo a frequência efetiva em uma Proporção Relativa ($P_{m|i}$), limitada ao intervalo de $[0,0; 1,0]$. O cálculo divide a frequência efetiva da mecânica pelo somatório total de ocorrências daquele impacto nas demais mecânicas, conforme a Equação \ref{eq:probabilidade_relativa}:
+
+\begin{equation} \label{eq:probabilidade_relativa}
+P_{m|i} = \frac{E_{i,m}}{\sum_{k \in M} E_{i,k}}
+\end{equation}
+
+Essa normalização (cuja rotina computacional está implementada no script \texttt{geradorJSON.py}, no repositório da pesquisa\footnote{Script de geração e normalização da base de conhecimento disponível em: \url{https://bit.ly/3UlWoNy}}) atua como um mecanismo de consistência computacional. A operação condiciona a ponderação de cada mecânica a representar sua fração de participação sobre o impacto geral, impedindo o crescimento descontrolado dos valores de base no modelo.
+
+%%###############################################################
+%%###############################################################
+%%###############################################################
+
+\subsection{Tratamento da Assimetria entre Evidências Positivas e Negativas}
+
+A análise dos dados extraídos do estudo terciário evidenciou uma assimetria entre relatos positivos e negativos na literatura, aspecto que pode estar associado, entre outros fatores, a vieses de publicação ou de relato de experiências. O cálculo estritamente linear dessas frequências permitiria que mecânicas com elevado volume de citação encobrissem os indícios de risco. Para tratar essa assimetria e estabelecer valores de Sinergia e Risco para cada mecânica $m$ em uma disciplina $a$, o motor computacional submete as frequências a funções de suavização logarítmica, conforme demonstrado nas Equações \ref{eq:sinergia_pura} e \ref{eq:risco_puro}:
+
+\begin{equation} \label{eq:sinergia_pura}
+S_{b\_puro}(a, m) = \log_{10}\left(1 + \sum_{i \in Imp_{pos}} \left( F_{i,a} \cdot P_{m|i} \cdot \omega_{i} \right)\right)
+\end{equation}
+
+\begin{equation} \label{eq:risco_puro}
+P_{c\_puro}(a, m) = \max \left( 0,1; \log_{10}\left(1 + \sum_{i \in Imp_{neg}} \left( F_{i,a} \cdot P_{m|i} \cdot \omega_{i} \right)\right) \right)
+\end{equation}
+
+Nessas formulações, o sistema processa os dados combinando a incidência absoluta do impacto na disciplina ($F_{i,a}$) com a proporção relativa da mecânica ($P_{m|i}$), ponderando o resultado pelo parâmetro de ponderação do impacto ($\omega_i$). A aplicação do logaritmo na base 10 atua como um mecanismo de suavização, controlando a influência do alto volume de citações de elementos de jogos muito frequentes na literatura.
+
+Um componente estrutural importante da formulação é a introdução do \textbf{Limiar Basal de Risco} na Equação \ref{eq:risco_puro}. A função $\max$ estabelece um piso inferior, impedindo que o Risco Puro assuma um valor menor que a constante $0,1$. Essa restrição trata a escassez de registros negativos na literatura: caso o algoritmo atribuísse risco nulo ($P_c = 0$) na ausência de relatos negativos empíricos, a ação dos multiplicadores contextuais em equações subsequentes seria anulada por multiplicação por zero. O estabelecimento do risco residual básico em $0,1$ permite que os fatores de modulação do contexto continuem capazes de ajustar o risco da atividade de forma consistente.
+
+%%###############################################################
+%%###############################################################
+%%###############################################################
+
+\subsection{Pipeline Computacional e Consolidação JSON}
+
+Para instanciar as equações no software, foi desenvolvido um algoritmo que automatiza o processamento dos dados brutos (implementado no script \texttt{geradorJSON.py}, disponível no repositório da pesquisa\footnote{Script de compilação da base de conhecimento disponível em: \url{https://bit.ly/3UlWoNy}}). O \textit{pipeline} opera sequencialmente: na primeira etapa, as disciplinas acadêmicas registradas nos artigos do estudo terciário são consolidadas em categorias padronizadas utilizando a taxonomia oficial do SWEBOK ($I_A$). Em seguida, o algoritmo aplica a Equação \ref{eq:frequencia_efetiva} para instanciar a distribuição proporcional da relação indireta.
+
+Com os valores efetivos calculados, o código processa as Equações \ref{eq:sinergia_pura} e \ref{eq:risco_puro} em lote. É nessa etapa de compilação dos vetores de base que a restrição do limite inferior é aplicada via código (função \textit{max}), estabelecendo o piso de risco puro ($P_c \ge 0,1$) e evitando a anulação dos multiplicadores contextuais em cálculos subsequentes.
+
+Por fim, o algoritmo anexa metadados estruturais (classificadores booleanos) a cada nó de informação do banco de dados. Esses metadados categorizam o cruzamento de dados, indicando, por exemplo, se a disciplina processada apresenta alta densidade teórica ou se a mecânica em questão aciona dinâmicas competitivas ou de estresse cognitivo. Toda a estrutura de dados é compilada e exportada no arquivo \texttt{knowledge\_base.json}. Esse artefato final é carregado no \textit{Back-end} da plataforma (Módulo A), atuando como o repositório consultivo sobre o qual o Modelo de Utilidade Instrucional (MUI) aplicará os fatores de modulação contextual em tempo real.
+
+%%###############################################################
+%%###############################################################
+%%###############################################################
+
+\subsection{Redução Taxonômica e o Mapeamento via MDA (46 $\to$ 25 $\to$ 14)}
+\label{subsec:MDA}
+
+A transição dos dados processados para a interface do docente exige uma etapa de adequação. O estudo terciário extraiu 46 termos distintos referentes a elementos de gamificação. Exibir essa granularidade bruta na interface causaria sobrecarga cognitiva durante o planejamento. Para solucionar esse gargalo operacional, o modelo implementa um funil de redução baseado em duas etapas de abstração.
+
+A primeira etapa reduz os 46 elementos empíricos para 25 estratégias de engajamento por meio de agrupamento semântico. Esse agrupamento foi conduzido pela equipe de pesquisa com base na identificação de sinônimos e sobreposições funcionais no contexto educacional. Por exemplo, termos como \textit{Rewards}, \textit{Awards}, \textit{Gifts} e \textit{Prizes} foram unificados sob a categoria ``Recompensas Atraentes''. Essa compactação preserva o peso estatístico das citações originais enquanto simplifica a estrutura consultiva do sistema. Para verificar se essa redução preserva as diferenças pedagógicas relevantes, a matriz de agrupamento integra o conjunto de heurísticas que será submetido à avaliação do Painel de Especialistas (Nível II).
+
+A segunda etapa realiza a convergência entre o design instrucional e os componentes da aplicação, fundamentando-se no framework MDA (\textit{Mechanics, Dynamics, Aesthetics}) \cite{hunicke2004mda}. Em vez de impor uma relação direta e exclusiva entre mecânicas e dinâmicas, o MDA é utilizado como um guia conceitual para orientar a transformação entre categorias abstratas de design (estratégias) e componentes operacionalizáveis na interface gráfica.
+
+A implementação dessa conversão utiliza um mapeamento estruturado no \textit{Back-end}. O propósito da Tabela \ref{tab:funil_taxonomico} é materializar essa regra de negócio, evidenciando como o sistema organiza a complexidade da literatura em 14 módulos acionáveis de software. Por exemplo, quando a avaliação do modelo indica a conveniência de estratégias colaborativas, a tabela de roteamento instrui a aplicação a habilitar o componente de interface correspondente (o módulo de ``Fórum de Discussão'').
+
+\begin{table}[htpb]
+\centering
+\caption{Dicionário de dados para a Redução Taxonômica e instanciação visual no Front-end.}
+\label{tab:funil_taxonomico}
+\resizebox{1.0\textwidth}{!}{%
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{p{5.5cm} p{5.5cm} p{3.5cm}}
+\hline
+\textbf{Etapa 1: Literatura Bruta} \newline (Total de 46 Termos Originais) & \textbf{Etapa 2: Agrupamento Semântico} \newline (Total de 25 Sugestões do Sistema) & \textbf{Etapa 3: Instanciação} \newline (14 Módulos Acionáveis) \\ \hline
+\textit{Points, Scores, Progress Bar, Dashboard} & 
+Sistema de pontuação, Estatísticas (métricas de progresso) & 
+\textbf{XP / Pontuação} \\ \hline
+\textit{Levels, Milestones, Progression} & 
+Níveis, Progressão baseada em habilidade & 
+\textbf{Níveis} \\ \hline
+\textit{Marketplace, Economies, Resource Acquisition} & 
+Economia (sistema monetário), Raridade (itens exclusivos, objetos raros) & 
+\textbf{Loja / Moedas} \\ \hline
+\textit{Leaderboards, Ranking, Competition, Duel} & 
+Sistema de classificação e ranking, Pressão social & 
+\textbf{Ranking} \\ \hline
+\textit{Badges, Achievements, Awards, Status, Status Social} & 
+Conquistas digitais para metas alcançadas, Reconhecimento, Reputação (prestígio, renome, status) & 
+\textbf{Medalhas} \\ \hline
+\textit{Collaboration, Teams, Altruism, Cooperation, Social Graph} & 
+Fórum de Discussão, Interação social com outros jogadores & 
+\textbf{Fórum} \\ \hline
+\textit{Social Relation, Sharing} & 
+Chat ou sistema de mensagens & 
+\textbf{Chat} \\ \hline
+\textit{Challenges, Quests, Mission, Boss Fight, Clear Goal, Time Pressure, Constrains, Feedback, Immediate Feedback} & 
+Quebra-cabeça, Objetivo (missão, meta do jogo), Pressão de tempo, Feedback claro sobre o desempenho & 
+\textbf{Quiz} \\ \hline
+\textit{Rewards, Win States} & 
+Recompensas atraentes & 
+\textbf{Recompensa Final} \\ \hline
+\textit{Gifts, Virtual Gift, Prize} & 
+Chance (sorte e probabilidade) & 
+\textbf{Roleta}, \newline \textbf{Máquina de Prêmios} \\ \hline
+\textit{Storytelling, Narrative, Story, Emotions} & 
+Narrativas envolventes & 
+\textbf{Narrativa} \\ \hline
+\textit{Content Unlocking} & 
+Renovação (atualizações de conteúdo), Novidade (novas funcionalidades) & 
+\textbf{Leitura de Conteúdo} \\ \hline
+\textit{Avatar} & 
+Customização de personagem, Customização de equipamento & 
+\textbf{Personalização} \\ \hline
+\end{tabular}%
+}
+\fonte{Elaborado pelo autor com base no mapeamento do Estudo Terciário e na arquitetura do software.}
+\end{table}
+
+Após essa compatibilização estrutural, o algoritmo anexa metadados de classificação a cada mecânica, categorizando-as sob rótulos específicos de comportamento (por exemplo, mecânica competitiva, elemento estrutural ou mecânica de carga cognitiva aguda). Essa atribuição transforma os dados genéricos em uma base parametrizada, preparando as variáveis para receberem a aplicação direta dos fatores de modulação contextual ($\tau, \Phi, \mu, \lambda$) na etapa de avaliação do modelo.
+
+%%###############################################################
+%%###############################################################
+%%###############################################################
+
+\section{Calibração do Fator de Atenuação Estrutural ($\tau$)}
+
+Embora a Base de Conhecimento ateste que os dados estejam fundamentados em evidências da literatura, as mecânicas de jogo não apresentam o mesmo potencial de prejuízo ao aprendizado em situações reais. Apoiando-se na taxonomia de \citeonline{toda2019}, que categoriza os elementos do \textit{Dark Side} da gamificação, evidencia-se que os elementos de jogos afetam os estudantes de forma assimétrica. Com base nesse referencial teórico, o MUI introduz o Fator de Atenuação Estrutural ($\tau$), operando como um multiplicador escalar sobre o Risco Puro ($P_c$) para ajustar a equação de acordo com a natureza da mecânica.
+
+%%###############################################################
+%%###############################################################
+%%###############################################################
+
+\subsection{Papel do Piso de Risco Puro ($P_c \ge 0,1$)}
+
+Conforme estabelecido na formulação das equações de base, o modelo atribui um piso inferior ao Risco Puro ($P_c \ge 0,1$). A fixação desse limite inferior impede que a ausência de relatos negativos na literatura não anule a ação dos multiplicadores contextuais subsequentes em operações de produto (multiplicação por zero), permitindo que o contexto da turma seja considerado.
+
+A utilidade dessa restrição pode ser observada em cenários de conflito contextual. Considere uma mecânica de risco padrão ($\tau = 1,0$) sem ocorrências negativas registradas na literatura, inserida em um cenário de conflito severo com o perfil da turma, no qual os fatores de modulação elevam o atrito ($\lambda = 5,0$) e a carga cognitiva ($\Phi = 2,0$).
+
+Ao processar a equação do Risco Modificado ($P_{mod} = P_c \cdot \tau \cdot \Phi \cdot \lambda$), o risco inicial da mecânica evolui de $0,1$ para $1,0$ (visto que $0,1 \times 1,0 \times 2,0 \times 5,0 = 1,0$). Caso a equação operasse sob a hipótese de risco nulo ($P_c = 0,0$), o produto resultaria em zero ($0 \times 1,0 \times 2,0 \times 5,0 = 0,0$), e a restrição gerada pelo conflito contextual seria desconsiderada. Portanto, tratar a ausência de evidências negativas empíricas como um estado de risco residual inicial ($0,1$) sustenta a consistência do modelo e viabiliza a avaliação dos fatores de contexto pelo algoritmo.
+
+%%###############################################################
+%%###############################################################
+%%###############################################################
+\subsection{Aplicação do Fator de Atenuação ($\tau$ em Mecânicas Estruturais)}
+
+A definição do piso de risco direciona a atribuição do Fator de Atenuação Estrutural ($\tau$). Se o algoritmo submetesse todas as mecânicas de jogo ao multiplicador de risco integral ($\tau = 1,0$), a ferramenta assumiria um comportamento estritamente restritivo. Sob essa condição, componentes voltados à imersão, ambientação e colaboração (como narrativas, fóruns e progressão de níveis) poderiam ser vetados ao menor sinal de atrito contextual indicado pelo professor.
+
+Para evitar restrições excessivas sobre mecânicas de suporte, o modelo atribui o coeficiente de atenuação ($\tau = 0,1$) a esse grupo de elementos. A premissa subjacente é que tais mecânicas não carregam um potencial inerente de induzir estresse ou sobrecarga cognitiva na turma. Na formulação matemática, essa atenuação reduz o risco modificado base: ao multiplicar o Risco Puro inicial ($0,1$) pelo fator $\tau = 0,1$, o risco ajustado resulta em $0,01$, amortecendo variações residuais na equação.
+
+Em contrapartida, a literatura aponta que dinâmicas baseadas em desempenho individual, escassez de recursos e comparação pública (como \textit{rankings}, economias virtuais e disputa direta) possuem maior probabilidade de provocar ansiedade e queda de autoeficácia quando aplicadas inadequadamente \cite{toda2017dark}. Para o processamento desses elementos, o algoritmo mantém a aplicação do risco integral ($\tau = 1,0$), fazendo com que a mecânica absorva a totalidade do risco indicado pelo contexto.
+
+A atuação do fator $\tau$ sobre as mecânicas estruturais foi avaliada por meio de simulação computacional (executada pelo script \texttt{validate\_tau\_structural.py}, cujos registros de \textit{log} encontram-se no arquivo \texttt{validacao\_tau\_estrutural.csv} no repositório da pesquisa\footnote{Logs da simulação do fator $\tau$ disponíveis em: \url{https://bit.ly/3UlWoNy}}). O experimento gerou um espaço amostral de 200 cenários sintéticos, combinando variações de benefício esperado ($0,3 \le S_b \le 1,2$) com multiplicadores de atrito contextual ($1,0 \le \lambda \le 5,0$).
+
+Os resultados sumarizados na Tabela \ref{tab:fator_tau} apresentam a comparação da contagem de vetos observados no cenário sem atenuação ($\tau = 1,0$) em contraposição ao cenário com aplicação da atenuação estrutural ($\tau = 0,1$).
+
+\begin{table}[htbp]
+\centering
+\caption{Avaliação computacional do Fator de Atenuação Estrutural ($\tau$).}
+\label{tab:fator_tau}
+\vspace{0.5em}
+\begin{tabularx}{\textwidth}{lc>{\centering\arraybackslash}X>{\centering\arraybackslash}X}
+\toprule
+\textbf{Mecânica} & \textbf{Amostras} & \textbf{Vetos sem Atenuação ($\tau=1,0$)} & \textbf{Mecânicas Mantidas ($\tau=0,1$)} \\
+\midrule
+Nível & 50 & 4 vetos (8\% do total) & 100\% Mantida \\
+Progressão & 50 & 4 vetos (8\% do total) & 100\% Mantida \\
+Objetivo & 50 & 4 vetos (8\% do total) & 100\% Mantida \\
+Estatísticas & 50 & 4 vetos (8\% do total) & 100\% Mantida \\
+\bottomrule
+\end{tabularx}
+\vspace{0.5em}
+\fonte{Extraído dos logs do algoritmo de avaliação estrutural (\texttt{validacao\_tau\_estrutural.csv}).}
+\end{table}
+
+Os resultados da simulação indicam o efeito amortecedor do multiplicador $\tau$: o algoritmo preserva as mecânicas que estruturam a atividade instrucional, concentrando a sensibilidade a riscos sobre estratégias de maior exposição social e competitiva. As premissas numéricas que balizam esses agrupamentos de mecânicas serão submetidas à avaliação do Painel de Especialistas (Nível II).
+
+%%###############################################################
+%%###############################################################
+%%###############################################################
+
+\section{Calibração do Fator de Carga Cognitiva ($\Phi$)}
+
+Enquanto o Fator Estrutural ($\tau$) modula o risco de mecânicas de alta exposição social, o segundo multiplicador escalar ajusta a carga cognitiva da atividade. Fundamentado na Teoria da Carga Cognitiva \cite{sweller1988cognitive}, o modelo assume que a capacidade de processamento da memória de trabalho humana é limitada. Disciplinas de Engenharia de Software que abordam tópicos de elevada abstração (como especificação formal, modelagem de arquiteturas complexas ou análise de algoritmos) costumam demandar maior esforço mental dos estudantes. Cabe ressaltar que a carga intrínseca depende também da complexidade da tarefa e do conhecimento prévio do aprendiz; portanto, a atribuição realizada pelo MDC constitui uma aproximação operacional do constructo para fins de modelagem, e não uma mensuração direta da carga cognitiva real.
+
+Para incorporar essa diretriz ao algoritmo, o modelo implementa o Fator de Carga Cognitiva ($\Phi$). Esse fator atua como um multiplicador escalar de penalização sobre o Risco Puro ($P_c$), ativado sob duas condições simultâneas: (I) o Domínio do Conhecimento ($I_A$) estar catalogado no sistema como uma área de alta densidade teórica; e (II) a mecânica avaliada possuir o atributo de ``Carga Aguda'' (elementos que exigem atenção dividida ou resposta sob pressão temporal, como economias virtuais ou cronômetros).
+
+Quando essa intersecção é identificada no diagnóstico, o motor aciona o multiplicador $\Phi$ para elevar o risco modificado do elemento de jogo, reduzindo a chance de sugestão de mecânicas que possam gerar sobrecarga extrínseca. Em avaliações sobre mecânicas passivas ou em disciplinas de aplicação estritamente prática, o multiplicador permanece inerte ($\Phi = 1,0$), permitindo que o cálculo de sinergia flua sem adicionais de penalização.
+
+%%###############################################################
+%%###############################################################
+%%###############################################################
+
+\subsection{Análise de Valores Limites na Calibração de $\Phi$}
+
+Para avaliar a calibragem do fator de modulação $\Phi$, executou-se uma simulação baseada em Busca Exaustiva (\textit{Grid Search}). O objetivo algorítmico foi identificar um ponto de equilíbrio: um multiplicador suficiente para atuar em disciplinas teóricas densas sem provocar aumento indesejado de vetos em cenários considerados seguros. Diante da escassez de dados quantitativos de falhas na literatura primária, a simulação adotou a técnica de Análise de Valores Limites (\textit{Boundary Value Analysis}).
+
+O algoritmo (implementado no script \texttt{validate\_phi\_sweller.py}, cujos resultados brutos encontram-se no arquivo \texttt{validacao\_phi\_sweller.csv} no repositório da pesquisa\footnote{Logs da simulação do fator $\Phi$ disponíveis em: \url{https://bit.ly/3UlWoNy}}) gerou um espaço amostral sintético com controle de semente (\textit{seed}). Foram modelados cenários sintéticos de elevado risco contextual ($1,10 \le \lambda \le 1,50$) em contraposição a cenários de baixo risco ($0,15 \le \lambda \le 0,28$). O processamento de $1.400$ simulações cruzadas monitorou o comportamento da Fronteira de Decisão sob diferentes valores do fator $\Phi$, conforme documentado na Tabela \ref{tab:calibracao_phi}.
+
+\begin{table}[htpb]
+\centering
+\caption{Avaliação computacional do Fator $\Phi$ sob variação de carga cognitiva.}
+\label{tab:calibracao_phi}
+\resizebox{0.95\textwidth}{!}{%
+\begin{tabular}{ccccc}
+\toprule
+\textbf{Fator $\Phi$} & \textbf{Amostras} & \textbf{Cenários de Risco Sem Veto} & \textbf{Vetos em Cenários Seguros} & \textbf{Diagnóstico Computacional} \\
+\midrule
+1,0 & 200 & 0 & 0 & Ponto Estável (Base) \\
+1,5 & 200 & 0 & 0 & Ponto Estável \\
+\textbf{2,0} & \textbf{200} & \textbf{0} & \textbf{0} & \textbf{Ponto Focal Selecionado} \\
+2,5 & 200 & 0 & 0 & Ponto Estável \\
+3,0 & 200 & 0 & 0 & Elevação Restritiva Mínima \\
+4,0 & 200 & 0 & 23 & Elevação de Vetos (23 cenários) \\
+5,0 & 200 & 0 & 61 & Elevação de Vetos (61 cenários) \\
+\bottomrule
+\end{tabular}
+}
+\fonte{Extraído dos logs do algoritmo de avaliação da Carga Cognitiva (\texttt{validacao\_phi\_sweller.csv}).}
+\end{table}
+
+A análise da simulação indica que o modelo apresenta sensibilidade restritiva a partir do multiplicador $\Phi = 4,0$. Nesse patamar, a penalização aplicada eleva o Risco Modificado a ponto de superar a Sinergia Teórica ($S_b$), resultando no acionamento de vetos em $23$ cenários configurados como seguros.
+
+Orientado pelo princípio de menor alteração matemática necessária, o modelo fixou $\Phi = 2,0$. Essa calibração dobra o Risco Puro em disciplinas com indicativo de alta demanda cognitiva, sem apresentar disparo de vetos nos cenários seguros avaliados. A progressão do algoritmo até o ponto de elevação restritiva está ilustrada na Figura \ref{fig:placeholder7}.
+
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=0.80\linewidth]{ponto_quebra_phi.pdf}
+    \caption{Comportamento da Fronteira de Decisão e indicação do Ponto Focal na calibração do Fator de Carga Cognitiva ($\Phi$).}
+    \label{fig:placeholder7}
+\end{figure}
+
+%%###############################################################
+%%###############################################################
+%%###############################################################
+
+
+
+\section{Calibração Contextual ($\mu$ e $\lambda$): Afinidade e Atrito}
+
+A Base de Conhecimento e os fatores de correção basal ($\tau$ e $\Phi$) consolidam os dados de base do modelo. Para subsidiar a decisão instrucional, o algoritmo requer o ajuste desses escores às variáveis do ambiente diagnosticadas pelo docente.
+
+Para operacionalizar essa adaptação, o modelo cruza as categorias de elementos de jogos com as dimensões de Perfil Motivacional da Turma ($I_D$) e Objetivo Pedagógico ($I_B$) (detalhado na Subseção \ref{subsec:matrizes}). Matematicamente, essa parametrização ajusta a equação da Fronteira de Decisão ao aplicar dois multiplicadores escalares: o Fator de Afinidade ($\mu$) e o Fator de Atrito ($\lambda$).
+
+A calibração desses fatores emprega uma escala heurística de três estados discretos. A opção por uma escala discreta em três níveis fundamenta-se na busca por clareza na tomada de decisão em Sistemas de Apoio à Decisão (SAD), reduzindo ambiguidades na identificação de conflitos. O motor processa os elementos sob três lógicas excludentes:
+
+\begin{enumerate}
+    \item \textbf{Afinidade:} ocorre quando a mecânica apresenta alinhamento direto com o perfil motivacional ou com o objetivo da atividade. Nesse estado, o sistema amplia o benefício esperado em $50\%$ ($\mu = 1,5$) e reduz o risco modificado pela metade ($\lambda = 0,5$).
+    \item \textbf{Neutralidade:} acionado quando a literatura não aponta preferência ou atrito empírico entre o contexto e a mecânica. O modelo preserva os valores de base ($\mu = 1,0$ e $\lambda = 1,0$).
+    \item \textbf{Conflito Contextual Severo:} identificado quando as características da turma ou da disciplina divergem da mecânica proposta (por exemplo, aplicar tabelas de classificação pública em turmas com aversão à competição). Nesse estado, o Fator de Afinidade é reduzido a $10\%$ do seu valor original ($\mu = 0,1$), enquanto o Fator de Atrito é elevado ao seu patamar máximo ($\lambda = 5,0$).
+\end{enumerate}
+
+A definição desses valores fundamenta-se nas heurísticas do modelo. Os valores de Afinidade ($\mu = 1,5; \lambda = 0,5$) foram definidos para evitar que mecânicas com pouca validação teórica superem elementos com maior histórico na literatura. Em contrapartida, os multiplicadores escalares de Conflito Contextual ($\mu = 0,1; \lambda = 5,0$) atuam para que o risco modificado supere a sinergia ($P_{mod} > S_{mod}$), acionando o Veto Algébrico independentemente do volume de citações do elemento.
+
+Durante o diagnóstico, caso o docente sinalize múltiplos atributos na mesma dimensão de contexto (por exemplo, perfis ``Social'' e ``Realizador'' simultaneamente na mesma turma), o algoritmo aplica uma regra de agregação estrita baseada em prioridades:
+
+Primeiramente, processa-se a \textbf{Precedência de Risco}. Se qualquer um dos atributos selecionados indicar conflito com a mecânica, a dimensão assume os valores de Conflito Severo ($\mu = 0,1; \lambda = 5,0$). Caso não haja indicativo de conflito entre as opções marcadas, o sistema aplica a \textbf{Precedência de Afinidade}, selecionando o maior valor de afinidade ($\max(\mu)$) e o menor valor de atrito ($\min(\lambda)$). Essa lógica evita a diluição do risco por médias aritméticas, mantendo o conservadorismo instrucional do sistema em turmas heterogêneas.
+
+%%###############################################################
+%%###############################################################
+%%###############################################################
+
+\subsection{Estruturação das Tabelas Heurísticas de Contexto}
+\label{subsec:matrizes}
+
+Para estruturar a modulação do modelo, os estados de Afinidade e Conflito foram organizados em dicionários de configuração no código-fonte. O mapeamento dessas regras ancora-se em dois eixos teóricos: o perfil dos estudantes e os objetivos pedagógicos da disciplina.
+
+Na dimensão de \textbf{Perfil Motivacional da Turma ($I_D$)}, as regras baseiam-se nas tipologias de usuários em jogos \cite{bartle1996hearts, yee2006motivations}, respaldadas por estudos em gamificação \cite{hamari2014player} e pelo inventário QPJ-BR \cite{andrade2016qpj}. O algoritmo traduz esses perfis em fatores de modulação contextual. Por exemplo, perfis ``Exploradores'' costumam demonstrar aversão a restrições temporais, resultando na classificação de ``Pressão de Tempo'' como Conflito Contextual. Em contrapartida, perfis ``Sociais'' ativam o estado de Afinidade para mecânicas de ``Cooperação'' e ``Chat''.
+
+No eixo de \textbf{Objetivo Pedagógico ($I_B$)}, o mapeamento fundamenta-se na aproximação da Teoria da Carga Cognitiva e na Taxonomia de Bloom \cite{anderson2001taxonomy, ferraz2010taxonomia}. Disciplinas com foco conceitual ou abstrato indicam afinidade para elementos de imersão (``Narrativas'' e ``Quebra-cabeças''), mas apresentam conflito com mecânicas de ritmo acelerado (``Economias Virtuais'' e ``Pressão de Tempo''). Inversamente, objetivos focados em aplicação prática repetitiva recebem Afinidade com ``Pontos'', ``Estatísticas'' e ``Pressão de Tempo''.
+
+Sob a ótica formal da \textit{Design Science Research}, o cruzamento dessas variáveis constitui o que a literatura denomina \textbf{Heurísticas Contingenciais} \cite{dresch2014design}. Ao contrário de heurísticas de construção (que orientam a montagem do artefato), as heurísticas contingenciais definem as condições de aplicabilidade da solução frente ao ambiente de ensino. No MDC, essas heurísticas expressam que a sugestão da mecânica não é absoluta, mas depende do contexto da turma e da disciplina.
+
+A Tabela \ref{tab:matrizes_contextuais} detalha o dicionário de regras do motor de cálculo, apresentando as mecânicas que recebem bônus ou penalizações de acordo com o vetor de contexto.
+
+\begin{table}[htpb]
+\centering
+\small
+\caption{Heurísticas Contingenciais do Modelo: Dicionário de regras para Calibração Contextual ($\mu$ e $\lambda$).}
+\label{tab:matrizes_contextuais}
+\resizebox{1.0\textwidth}{!}{%
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{L{4cm} L{5.5cm} L{5.5cm}}
+\toprule
+\textbf{Variável de Contexto} & \textbf{Estado de Afinidade} \newline ($\mu=1,5; \lambda=0,5$) & \textbf{Estado de Conflito} \newline ($\mu=0,1; \lambda=5,0$) \\ 
+\midrule
+
+\multicolumn{3}{c}{\textbf{Dimensão do Perfil Motivacional da Turma ($I_D$)}} \\ 
+\midrule
+
+\textbf{Perfil Competitivo} & Competição, Pressão de tempo & Cooperação \\ 
+\textbf{Perfil Social} & Cooperação, Narrativa, Storytelling & Competição \\ 
+\textbf{Perfil Realizador} & Pontos, Níveis, Quebra-cabeça, Reconhecimento & \textit{Nenhum conflito pré-mapeado} \\ 
+\textbf{Perfil Explorador} & Narrativa, Storytelling, Quebra-cabeça & Pressão de tempo \\ 
+
+\midrule
+\multicolumn{3}{c}{\textbf{Dimensão do Objetivo Pedagógico ($I_B$)}} \\ 
+\midrule
+
+\textbf{Foco Teórico} \newline \small{(Ex: Lógica, Abstração)} & Narrativa, Quebra-cabeça & Pressão de tempo, Economia virtual \\ 
+\textbf{Foco Prático} \newline \small{(Ex: Testes, Depuração)} & Pontos, Economia, Pressão de tempo, Estatísticas & Narrativa \\ 
+\textbf{Foco Colaborativo} \newline \small{(Ex: Metodologias Ágeis)} & Cooperação, Reconhecimento & Competição \\ 
+\bottomrule
+\end{tabular}%
+}
+\fonte{Elaborado pelo autor.}
+\end{table}
+
+Qualquer elemento de jogo que não conste nos polos de Afinidade ou Conflito da Tabela \ref{tab:matrizes_contextuais} é classificado pelo algoritmo no estado de Neutralidade ($\mu=1,0; \lambda=1,0$). Esse tratamento faz com que a avaliação da mecânica, na ausência de condicionantes específicos do contexto, dependa da frequência de relatos registrada na literatura.
+
+%%###############################################################
+%%###############################################################
+%%###############################################################
+
+\subsection{Resolução de Conflitos Multivariáveis (Abordagem Min-Max)}
+
+A avaliação do modelo exige o cruzamento simultâneo entre diferentes dimensões do vetor de contexto. Nas situações de planejamento, é comum que o Perfil Motivacional da Turma ($I_D$) e o Objetivo Pedagógico ($I_B$) apresentem multiplicadores opostos. Um exemplo ocorre quando o objetivo instrucional favorece mecânicas de ``Competição'', mas a turma mapeada apresenta predominância de perfil ``Social'', que indica aversão a pressões competitivas.
+
+Simulações preliminares identificaram que a aplicação de médias aritméticas ($\bar{\mu}$ e $\bar{\lambda}$) para conciliar essas divergências gerava atenuação excessiva do atrito. Esse nivelamento estatístico reduzia a sensibilidade ao risco, podendo resultar na sugestão de mecânicas em cenários de conflito com a turma.
+
+Para evitar o nivelamento estatístico e manter o conservadorismo instrucional do algoritmo, o cálculo de médias foi substituído por funções limitantes (\textit{min} e \textit{max}). Aplicando a regra da Agregação Pessimista (\textit{Pessimistic Aggregation}), o algoritmo prioriza os coeficientes mais conservadores sempre que as variáveis de contexto divergirem.
+
+Na implementação do código, no cálculo do benefício esperado ($S_{mod}$), a Sinergia Pura da mecânica é multiplicada pelo menor valor de afinidade disponível no subconjunto ($\min(\mu)$). Simetricamente, no cálculo do Risco Modificado ($P_{mod}$), aplica-se o maior fator de atrito mapeado no vetor ($\max(\lambda)$). Como o espaço de busca ($N$) restringe-se às dimensões do vetor de contexto da turma, a varredura opera em tempo linear, $O(N)$, mantendo baixa latência no processamento.
+
+O comportamento dessa arquitetura pode ser observado em um cenário analítico: um docente planeja uma atividade prática de otimização de código, objetivo cujo processamento atribui afinidade com a mecânica ``Pressão de Tempo'' ($\mu_{objetivo} = 1,5; \lambda_{objetivo} = 0,5$). Em contrapartida, a turma caracteriza-se pelo perfil ``Explorador'', o qual parametriza conflito com restrições temporais ($\mu_{perfil} = 0,1; \lambda_{perfil} = 5,0$). A aplicação de médias aritméticas aprovaria a atividade atribuindo-lhe risco moderado. Contudo, sob a regra Min-Max, a afinidade restringe-se ao limite inferior ($\min(1,5; 0,1) = 0,1$), enquanto o atrito assume o valor máximo ($\max(0,5; 5,0) = 5,0$). Essa combinação faz com que o risco modificado supere a sinergia ($P_{mod} > S_{mod}$), acionando o Veto Algébrico. Essa solução lógica resolve o conflito multivariável condicionando os multiplicadores de engajamento às restrições comportamentais indicadas para a turma.
+
+%%###############################################################
+%%###############################################################
+%%###############################################################
+
+\subsection{Simulação Multivariável (\textit{Grid Search}) em Cenários de Conflito}
+
+Para avaliar a magnitude dos multiplicadores escalares de Conflito Contextual ($\mu$ e $\lambda$), o modelo foi submetido a uma simulação de \textit{Grid Search} computacional (executada pelo script \texttt{validar\_mu\_lambda.py}, cujos registros de \textit{log} encontram-se no arquivo \texttt{validacao\_mu\_lambda\_contexto.csv} no repositório da pesquisa\footnote{Logs do Grid Search de conflito contextual disponíveis em: \url{https://bit.ly/3UlWoNy}}). O experimento gerou um espaço amostral de $5.148$ cenários sintéticos.
+
+A composição dessa amostra fundamentou-se na geração estruturada de $1.716$ instâncias de base de mecânicas com alto volume de citações históricas (Sinergia Pura elevada, $0,5 \le S_b \le 1,8$) e Risco Puro baixo ($0,1 \le P_c \le 0,4$). A escolha de instâncias com elevado histórico na literatura teve como propósito avaliar o comportamento das equações: o sistema precisava demonstrar capacidade de acionar o veto em elementos frequentes na literatura quando associados a contextos incompatíveis. Cada instância foi submetida a três configurações de atrito: Leve, Moderada e Severa.
+
+O critério de avaliação verificou se, diante de um cenário configurado como Conflito Contextual, a equação resultava na elevação do risco modificado sobre o benefício esperado ($P_{mod} > S_{mod}$). O atendimento a essa condição atua para que mecânicas com indicativo de incompatibilidade com a turma não deixem de ser vetadas apenas devido ao volume de suas citações históricas.
+
+Os registros consolidados na simulação multivariável, sumarizados na Tabela \ref{tab:grid_search_contexto}, evidenciam o comportamento das fronteiras de decisão.
+
+\begin{table}[htpb]
+\centering
+\caption{Avaliação computacional de vetos em cenários sintéticos de conflito.}
+\label{tab:grid_search_contexto}
+\resizebox{1.0\textwidth}{!}{%
+\begin{tabular}{lccc}
+\toprule
+\textbf{Estado de Conflito} & \textbf{Cenários Simulados} & \textbf{Cenários Sem Veto} & \textbf{Comportamento da Fronteira} \\ 
+\midrule
+Leve ($\mu=0,5; \lambda=2,0$) & 1.716 & 1.037 & Ativação Parcial de Vetos \\
+Moderado ($\mu=0,3; \lambda=3,0$) & 1.716 & 154 & Ativação Intermediária de Vetos \\
+\textbf{Severo ($\mu=0,1; \lambda=5,0$)} & \textbf{1.716} & \textbf{0} & \textbf{Ativação Consolidada de Vetos} \\ 
+\bottomrule
+\end{tabular}%
+}
+\vspace{0.5em}
+\fonte{Extraído dos logs do algoritmo de calibração contextual (\texttt{validacao\_mu\_lambda\_contexto.csv}).}
+\end{table}
+
+A análise dos resultados indica a influência do alto volume de citações históricas nas equações de base. A adoção de multiplicadores de atrito brandos (Conflito Leve ou Moderado) permitiu que a variável $S_b$ superasse o risco modulado em parte das instâncias, mantendo a sugestão de mecânicas mesmo em contextos divergentes.
+
+Em contrapartida, a configuração do estado Severo ($\mu = 0,1$ e $\lambda = 5,0$) indicou a ativação do Veto Algébrico em todos os cenários simulados nessa amostragem sintética. Esse resultado não afere infalibilidade em salas de aula reais, mas demonstra a consistência matemática interna do algoritmo: os multiplicadores do estado Severo impõem que as restrições contextuais tenham precedência sobre a frequência de citação da mecânica na literatura, bloqueando elementos com indicativo de incompatibilidade.
+
+%%###############################################################
+%%###############################################################
+%%###############################################################
+
+
+\section{Restrições Ambientais e Nivelamento Matemático}
+
+Após o cálculo da Fronteira de Decisão e a aplicação dos fatores de modulação contextual ($\tau, \Phi, \mu, \lambda$), o modelo produz os escores brutos das mecânicas. Contudo, a utilidade prática dessas sugestões depende de adaptações à realidade física da instituição e de uma normalização que viabilize a ordenação padronizada dos resultados na interface. Essa etapa final do processamento ocorre em dois momentos: a aplicação das restrições logísticas do ambiente e a normalização do escore final.
+
+%%###############################################################
+%%###############################################################
+%%###############################################################
+
+\subsection{Alerta Logístico (Restrição Booleana de Infraestrutura)}
+
+A modelagem matemática baseada na literatura não contempla diretamente a infraestrutura física das instituições de ensino. Consequentemente, uma mecânica de jogo pode alcançar a pontuação máxima de sinergia na avaliação teórica, mas revelar-se inexequível na prática educacional. Para tratar essa divergência entre a avaliação teórica e a viabilidade material, a arquitetura introduz uma camada de validação baseada na dimensão de Infraestrutura e Restrições Logísticas ($I_C$) do Vetor de Contexto.
+
+Diferentemente do cálculo de risco, que sofre modulação algébrica gradativa, a ausência de recursos tecnológicos inviabiliza certas dinâmicas de forma categórica. O sistema adota, portanto, uma restrição booleana de roteamento. Se o diagnóstico indicar um cenário de ensino sem conectividade (``desplugado''), o modelo aciona o Alerta Logístico.
+
+Esse gatilho condicional aplica uma substituição direta na camada de saída, bloqueando a sugestão de elementos estritamente digitais, como fóruns online e economias virtuais. Na arquitetura de dados, a ativação do alerta ignora o processamento regular do Risco Modificado e atribui à mecânica uma constante negativa estática ($Score = -50$).
+
+A adoção desse valor absoluto atua exclusivamente como um delimitador de ordenação algorítmica, constituindo uma decisão de modelagem computacional sem relação direta com os índices de risco da literatura empírica. Seu único objetivo estrutural é deslocar a mecânica inviável para a base do ranqueamento do modelo, restringindo as sugestões visíveis na interface da plataforma às estratégias compatíveis com a realidade infraestrutural reportada pelo docente.
+
+
+%%###############################################################
+%%###############################################################
+%%###############################################################
+
+\subsection{Nivelamento Matemático e Escala Relativa}
+
+A ordenação final das sugestões do modelo não utiliza limites absolutos universais, operando sob uma Escala de Normalização Dinâmica Relativa. Para impedir que mecânicas com elevado risco dominem o ranqueamento puramente devido à sua popularidade na literatura, o sistema adota uma métrica de balanço penalizado, definida como Escore Bruto ($Score_{bruto}$).
+
+Matematicamente, o Escore Bruto é calculado pela diferença entre o Benefício Esperado e o Risco Modificado. Para evitar que o risco residual ($0,1$), introduzido nas equações de base para impedir a anulação dos multiplicadores, penalize indevidamente mecânicas sem indicativo de atrito, a fórmula integra a Função Indicadora de Risco Ativo ($\mathbb{I}_{risco}$): 
+$Score_{bruto} = S_{mod} - [P_{mod} \times \mathbb{I}_{risco}]$. 
+
+A indicadora assume o valor $1$ (habilitando a subtração) apenas se houver risco mapeado na literatura ($P_c > 0,1$) ou atrito identificado no contexto da turma ($\lambda > 1,0$ ou $\Phi > 1,0$). Caso contrário, assume o valor $0$, igualando o Escore Bruto ao Benefício Esperado. Na estrutura condicional dessa indicadora, a omissão do Fator de Atenuação Estrutural ($\tau$) é intencional. Ao manter $\tau$ fora do teste de ativação, o algoritmo impede que a própria proteção basal atribuída às mecânicas de suporte ($\tau = 0,1$) provoque uma penalização de seu escore.
+
+A partir do Escore Bruto, estabelece-se o Teto Algébrico da requisição para compor o denominador da normalização. A função de maximização ($\max$) opera exclusivamente sobre o conjunto de mecânicas elegíveis. Para compor o denominador, a mecânica deve satisfazer duas condições: possuir escore positivo ($Score_{bruto} > 0$) e estar livre de bloqueios (ausência de Veto Pedagógico ou Alerta Logístico). A limpeza do subespaço amostral previne a distorção estatística, evitando que mecânicas bloqueadas, porém amplamente citadas na literatura, comprimam artificialmente as notas dos elementos adequados à turma.
+
+Para mitigar a elevação artificial dos escores em cenários de alta restrição (situação em que elementos com benefício diminuto seriam forçados ao topo da escala relativa), o sistema impõe uma Trava Mínima de Relevância. Se o teto algébrico da requisição for inferior ao dobro do risco residual básico ($< 0,2$), o algoritmo abandona a normalização dinâmica e fixa o denominador em $1,0$. Essa restrição previne indefinições matemáticas na divisão da normalização e preserva a consistência do modelo na ausência de evidências literárias robustas.
+
+A normalização matemática categoriza a saída lógica do modelo em três estratos de sugestão:
+\begin{itemize}
+    \item \textbf{Não Sugeridas:} elementos bloqueados pelos vetos do sistema ou que atingiram escore negativo ($Score < 0$), indicando que os riscos mapeados superam os benefícios.
+    \item \textbf{Uso Neutro:} elementos de jogos sem atritos graves ($0 \le Score < 25$), porém de impacto mediano. Esse estrato atua também como contingência para a ausência de dados empíricos. Se uma mecânica não possuir registros no domínio SWEBOK avaliado, o algoritmo inicia seu cálculo com escore nulo, submetendo-a normalmente aos multiplicadores contextuais ($\mu, \lambda$). Se não houver conflito, a estratégia é classificada como neutra, indicando ausência de atritos conhecidos.
+    \item \textbf{Sugeridas:} elementos que atingem $25\%$ ou mais da métrica relativa do cenário. Mecânicas com desempenho local elevado ($\ge 80\%$ de aderência) recebem um atributo lógico de pré-seleção no \textit{Frontend}, facilitando a identificação das opções mais indicadas para a turma.
+\end{itemize}
+
+A adoção de uma normalização dinâmica preserva a utilidade prática do modelo em cenários restritos, nos quais um limite de corte absoluto inviabilizaria as sugestões. Essa relatividade matemática resguarda o conservadorismo instrucional, uma vez que o Veto Algébrico já atua como filtro de precedência rígido ($P_{mod} > S_{mod}$). O detalhamento desse fluxo de consolidação dos escores e da aplicação das travas lógicas está ilustrado na Figura \ref{fig:placeholder4}.
+
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=0.85\linewidth]{imgs/escore_dinamico.pdf}
+    \caption{Fluxograma do nivelamento matemático, aplicação de travas e categorização do escore dinâmico.}
+    \label{fig:placeholder4}
+\end{figure}
+
+
+%%###############################################################
+%%###############################################################
+%%###############################################################
+
+
+\section{Rastreabilidade Lógica e Explicabilidade (\textit{White-Box})}
+
+Um dos diferenciais do Modelo de Design Contextualizado (MDC) é a adoção de um processamento determinístico, em contraste com a automação opaca típica de sistemas baseados puramente em aprendizado de máquina (caixas-pretas). O modelo opera como um Sistema de Apoio à Decisão Interpretável (\textit{White-Box DSS}), fundamentado em equações algébricas e regras heurísticas. A escolha por essa arquitetura preserva a rastreabilidade lógica (\textit{Logic Traceability}) do artefato.
+
+No contexto desta pesquisa, a explicabilidade do modelo significa que o sistema permite reconstruir e auditar todo o caminho da tomada de decisão. O fluxo de cálculo pode ser rastreado linearmente: partindo da entrada de dados (o Vetor de Contexto), passando pela seleção dos fatores de modulação, pela execução das equações no núcleo matemático, pelo cálculo do escore bruto, até a classificação final da mecânica na escala de sugestões.
+
+Cada penalização ou bônus atribuído a um elemento de jogo possui um lastro direto e auditável nos fatores de modulação contextual parametrizados pelo docente. Na interface da plataforma GamificaEdu, essa rastreabilidade possibilita que as sugestões e, principalmente, os vetos do sistema sejam acompanhados de justificativas textuais explícitas. Essas justificativas indicam detalhadamente quais características do contexto (como um objetivo prático específico ou um perfil explorador da turma) contribuíram para aquela decisão algorítmica.
+
+Essa transparência computacional visa projetar o MDC como um facilitador cognitivo. Ao fornecer os fundamentos matemáticos e heurísticos de suas sugestões de forma compreensível, o sistema ampara o planejamento pedagógico sem substituir a agência e o julgamento final do professor.
+
+
+%%###############################################################
+%%###############################################################
+%%###############################################################
+
+\section{Limitações da Arquitetura do Modelo}
+
+A concepção algorítmica do Modelo de Design Contextualizado (MDC) priorizou a rastreabilidade lógica, o conservadorismo instrucional e a viabilidade computacional. Contudo, essa arquitetura impõe limitações técnicas e teóricas que devem ser reconhecidas.
+
+A primeira restrição decorre da natureza indireta dos dados primários. Como a literatura raramente isola o impacto individual de múltiplas mecânicas aplicadas em uma mesma intervenção, a heurística de distribuição proporcional adotada pelo algoritmo atua como uma aproximação baseada no histórico de uso, e não como uma evidência de causalidade absoluta de eficácia instrucional.
+
+Do ponto de vista computacional, a rotina de extração do Objetivo Pedagógico ($I_B$) apresenta limitações semânticas. A opção por utilizar Expressões Regulares (Regex) ancoradas no limite de palavra (\verb|\b|), em detrimento de um motor avançado de Processamento de Linguagem Natural (PLN), proporcionou baixa latência computacional ao protótipo e dispensou a dependência de servidores externos. No entanto, essa abordagem determinística é semanticamente cega. O mapeamento torna-se suscetível a classificações indevidas em casos de negação de sentido nas entradas de texto do docente (por exemplo, escrever ``sem o uso de lógica'' ativaria o gatilho da palavra ``lógica''), podendo gerar distorções pontuais na parametrização do vetor de contexto.
+
+Por fim, destaca-se a rigidez estrutural da Base de Conhecimento. O modelo opera sob dicionários estáticos de regras de negócio, elaborados a partir de um recorte temporal específico do estado da arte. Diferentemente de arquiteturas baseadas em Aprendizado de Máquina (\textit{Machine Learning}), o MDC carece de mecanismos de retroalimentação autônoma. Essa escolha arquitetural foi necessária para preservar a transparência da caixa-branca (\textit{White-Box}), mas tem como consequência o fato de que o sistema não ajusta seus pesos dinamicamente com base no sucesso ou fracasso histórico das atividades geradas pela ferramenta. A manutenção da sua acurácia científica a longo prazo exige, portanto, atualizações manuais periódicas na matriz de dados a partir de revisões contínuas da literatura.
+
+%%###############################################################
+%%###############################################################
+
+
+

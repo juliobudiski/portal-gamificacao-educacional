@@ -7,7 +7,7 @@ import logging
 from ..models import db, Activity, ActivityRating, Tag, activity_tag, ActivityRevision, User, Class, ActivityProgress, StudentResponse, EventLog, Conversation, ChatMessage, ActivityRating
 from ..services import activity_service
 from ..utils.logging import _log_system_event
-from .medals import check_and_award_medals
+from ..services.medal_service import MedalService
 from datetime import datetime, time
 activity_bp = Blueprint('activities', __name__)
 logger = logging.getLogger(__name__)
@@ -74,7 +74,7 @@ def submit_answer(activity_id):
         current_app.logger.info(f"[DEBUG_POINTS] New progress.total_xp_earned AFTER update: {progress.total_xp_earned}")
         # O gatilho agora tem acesso às variáveis 'is_correct' and 'question_text'
         try:
-            check_and_award_medals(
+            MedalService.check_and_award_medals(
                 user_id=current_user_id,
                 activity_id=activity_id,
                 event_type='quiz_answer_submitted',
@@ -226,114 +226,14 @@ def assign_activity_to_class(activity_id):
     data = request.get_json()
     class_id = data.get('class_id')
     
-    available_from_date_str = data.get('available_from_date')
-    available_from_time_str = data.get('available_from_time')
-    expires_at_date_str = data.get('expires_at_date')
-    expires_at_time_str = data.get('expires_at_time')
-
-    available_from = None
-    expires_at = None
-
-    # TODO: Extrair lógica de parsing de data/hora para uma função utilitária (DRY).
-    # Processa a data/hora de TÉRMINO
-    if expires_at_date_str:
-        expires_date = datetime.strptime(expires_at_date_str, '%Y-%m-%d').date()
-        # Se o professor NÃO informou a hora, assume 23:59:59
-        if not expires_at_time_str:
-            expires_time = time(23, 59, 59)
-        else:
-            expires_time = datetime.strptime(expires_at_time_str, '%H:%M').time()
-        expires_at = datetime.combine(expires_date, expires_time)
-
-    # Processa a data/hora de INÍCIO
-    if available_from_date_str:
-        available_date = datetime.strptime(available_from_date_str, '%Y-%m-%d').date()
-        # Se o professor NÃO informou a hora, assume a hora atual
-        if not available_from_time_str:
-            available_time = datetime.utcnow().time()
-        else:
-            available_time = datetime.strptime(available_from_time_str, '%H:%M').time()
-        available_from = datetime.combine(available_date, available_time)
-
-    
-
-    if not class_id:
-        return jsonify({"message": "O ID da turma é obrigatório para atribuir a atividade."}), 400
-
-    target_class = Class.query.get(class_id)
-    if not target_class or target_class.professor_id != user.id:
-        return jsonify({"message": "Turma não encontrada ou você não tem permissão sobre ela."}), 404
-
     try:
-        
-        # Lógica de Negócio: Diferenciação entre atribuição direta e cópia
-        # CASO 1: A atividade é um "modelo mestre" e nunca foi atribuída.
-        if original_activity.class_id is None:
-            current_app.logger.info(f"Atividade ID {activity_id} é um modelo. Atribuindo diretamente à turma ID {class_id}.")
-            _log_system_event(
-                user_id=user.id,
-                action='activity_assigned',
-                activity_id=original_activity.id,
-                details={'class_id': class_id, 'method': 'direct_assignment'}
-            )
-            # Apenas atualiza a atividade original com o ID da turma
-            original_activity.class_id = class_id
-            original_activity.assignment_count += 1 # Incrementa o contador
-            original_activity.available_from = available_from
-            original_activity.expires_at = expires_at
-            
-            db.session.add(original_activity)
-            db.session.commit()
-            
-            return jsonify({
-                "message": "Atividade atribuída à turma com sucesso!", 
-                "activity": original_activity.to_dict()
-            }), 200
-
-        # CASO 2: A atividade já está em uso. Cria uma cópia.
-        else:
-            current_app.logger.info(f"Atividade ID {activity_id} já está em uso. Criando uma cópia para a turma ID {class_id}.")
-            _log_system_event(
-                user_id=user.id,
-                action='activity_assigned',
-                activity_id=new_activity.id, # Loga o ID da nova atividade copiada
-                details={
-                    'class_id': class_id, 
-                    'method': 'copy_assignment',
-                    'original_activity_id': original_activity.id
-                }
-            )
-            # Cria uma cópia da atividade original
-            new_activity = Activity(
-                professor_id=user.id,
-                title=original_activity.title,
-                description=original_activity.description,
-                current_scenario=deepcopy(original_activity.current_scenario),
-                desired_scenario=deepcopy(original_activity.desired_scenario),
-                activity_planning=deepcopy(original_activity.activity_planning),
-                player_profile=deepcopy(original_activity.player_profile),
-                game_elements=deepcopy(original_activity.game_elements),
-                rewards_offered=deepcopy(original_activity.rewards_offered),
-                rewarded_actions=deepcopy(original_activity.rewarded_actions),
-                gamification_rules=deepcopy(original_activity.gamification_rules),
-                area_knowledge=original_activity.area_knowledge,
-                is_public=False,
-                class_id=class_id, # Atribui a cópia à nova turma
-                available_from=available_from,
-                expires_at=expires_at
-            )
-
-            # Incrementa o contador da atividade original
-            original_activity.assignment_count += 1
-
-            db.session.add(original_activity)
-            db.session.add(new_activity)
-            db.session.commit()
-            
-            return jsonify({
-                "message": "Atividade copiada e atribuída à turma com sucesso!", 
-                "activity": new_activity.to_dict()
-            }), 200
+        response, status_code = activity_service.assign_activity_to_class_service(
+            user, 
+            original_activity, 
+            class_id, 
+            data
+        )
+        return jsonify(response), status_code
         
     except Exception as e:
         db.session.rollback()

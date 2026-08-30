@@ -246,8 +246,7 @@ function AppContent() {
   const handleStudentTour = () => {
     debugLog('[AppContent] handleStudentTour: Iniciando tour do aluno.');
     closeAllMenus();
-    startTour(STUDENT_DASHBOARD_STEPS, 'student_dashboard_v1', true);
-    navigate('/aluno/dashboard');
+    navigate('/aluno/dashboard', { state: { forceTour: true } });
   };
 
   const handleLogout = () => {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaClock, FaCheckCircle } from 'react-icons/fa'; // Removi FaArrowLeft não usado no render
+import { FaClock, FaCheckCircle, FaTimes } from 'react-icons/fa';
 import PropTypes from 'prop-types';
 import { useAuth } from '../../context/AuthContext';
 import { useParams } from 'react-router-dom';
@@ -173,10 +173,14 @@ const QuizTab = ({ content, gameElements, onAnswerCorrect, onComplete, isReplay 
 
   if (isFinished) {
     return (
-      <div className="bg-primary-bg p-8 rounded-lg text-primary-text text-center">
-        <FaCheckCircle className="text-green-400 text-6xl mb-4" />
-        <h2 className="text-3xl font-bold text-green-400 mb-4">Quiz Finalizado!</h2>
-        <p className="text-lg text-secondary-text">Retornando ao tabuleiro...</p>
+      <div className="w-full max-w-5xl mx-auto rounded-3xl overflow-hidden shadow-2xl border border-white/10 min-h-[600px] flex flex-col items-center justify-center p-6 relative transition-all"
+        style={{ backgroundImage: `url(${backgroundImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-md"></div>
+        <div className="relative z-10 flex flex-col items-center bg-black/40 p-10 rounded-3xl border border-green-500/30 shadow-[0_0_40px_rgba(74,222,128,0.2)]">
+          <FaCheckCircle className="text-green-400 text-7xl mb-6 drop-shadow-[0_0_15px_rgba(74,222,128,0.8)] animate-bounce" />
+          <h2 className="text-4xl font-bold text-white mb-4 drop-shadow-lg">Desafio Concluído!</h2>
+          <p className="text-xl text-green-200 font-medium">Preparando próxima etapa...</p>
+        </div>
       </div>
     );
   }
@@ -192,72 +196,93 @@ const QuizTab = ({ content, gameElements, onAnswerCorrect, onComplete, isReplay 
   }
 
   return (
-    <div className="bg-primary-bg p-8 rounded-lg text-primary-text relative"
+    <div className="relative w-full max-w-5xl mx-auto rounded-3xl overflow-hidden shadow-2xl border border-white/10 min-h-[600px] flex flex-col p-6 sm:p-10 transition-all text-white"
       style={{
         backgroundImage: `url(${backgroundImage})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        minHeight: '600px',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        padding: '2rem',
-        borderRadius: '1rem',
-        boxShadow: '0 5px 15px rgba(0, 0, 0, 0.5)',
-        color: 'white',
-        width: '90%',
-        maxWidth: '1200px',
       }}>
+      
+      {/* Overlay Glassmorphism */}
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-md"></div>
 
-      {isReplay && (
-        <div className="mb-4 p-3 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-400/30 text-center">
-          <p><strong>Modo de Revisão:</strong> As recompensas para este desafio já foram coletadas.</p>
+      <div className="relative z-10 w-full h-full flex flex-col">
+        {isReplay && (
+          <div className="mb-6 p-4 rounded-2xl bg-blue-500/20 text-blue-100 border border-blue-400/30 text-center backdrop-blur-sm flex items-center justify-center gap-3">
+            <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></div>
+            <p className="font-medium"><strong>Modo de Revisão:</strong> As recompensas para este desafio já foram coletadas.</p>
+          </div>
+        )}
+
+        {/* Modal de Feedback (Sucesso/Erro) */}
+        {feedback.message && (
+          <div className={`fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fadeIn`}>
+             <div className={`p-8 rounded-3xl shadow-2xl transform scale-110 flex flex-col items-center gap-4 border-2 transition-all duration-300
+                ${feedback.type === 'success' ? 'bg-green-900/90 border-green-400 shadow-[0_0_60px_rgba(74,222,128,0.4)]' : 'bg-red-900/90 border-red-400 shadow-[0_0_60px_rgba(248,113,113,0.4)]'}`}>
+                {feedback.type === 'success' ? <FaCheckCircle className="text-7xl text-green-400 drop-shadow-[0_0_15px_rgba(74,222,128,0.8)]" /> : <FaTimes className="text-7xl text-red-400 drop-shadow-[0_0_15px_rgba(248,113,113,0.8)]" />}
+                <h2 className={`text-4xl font-bold text-white drop-shadow-lg text-center`}>{feedback.message}</h2>
+             </div>
+          </div>
+        )}
+
+        {/* Top Header */}
+        <div className="flex justify-between items-center w-full mb-8">
+          <div className="bg-black/40 px-6 py-3 rounded-full border border-white/10 flex flex-col items-center shadow-inner">
+             <span className="text-cyan-400 font-bold tracking-wider text-xs uppercase mb-1">Progresso</span>
+             <span className="text-xl sm:text-2xl font-bold text-white tracking-widest">{currentIndex + 1} <span className="text-gray-400 text-lg">/ {questions.length}</span></span>
+          </div>
+          
+          {isTimed && currentQuestion.timeLimit && (
+            <div className={`px-6 py-3 rounded-full border flex items-center gap-3 text-2xl font-bold shadow-lg transition-colors duration-500
+               ${timeLeft <= 10 ? 'bg-red-500/80 border-red-400 text-white animate-pulse shadow-[0_0_20px_rgba(239,68,68,0.6)]' : 'bg-black/40 border-white/10 text-yellow-400'}`}>
+              <FaClock className={timeLeft <= 10 ? "animate-bounce" : ""} /> 
+              <span>{timeLeft}s</span>
+            </div>
+          )}
         </div>
-      )}
 
-      {feedback.message && (
-        <div className={`absolute top-0 left-1/2 -translate-x-1/2 p-4 rounded-b-lg text-xl font-bold animate-bounce ${feedback.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>
-          {feedback.message}
+        {/* Pergunta */}
+        <div className="bg-black/30 p-6 sm:p-10 rounded-3xl border border-white/10 mb-8 backdrop-blur-sm shadow-inner relative overflow-hidden">
+          {/* Efeito de luz sutil no fundo */}
+          <div className="absolute -top-20 -right-20 w-40 h-40 bg-cyan-500/20 rounded-full blur-[50px]"></div>
+          <p className="text-2xl sm:text-3xl text-white font-medium leading-relaxed text-center drop-shadow-md relative z-10">
+            {currentQuestion.text}
+          </p>
         </div>
-      )}
 
-      {isTimed && currentQuestion.timeLimit && (
-        <div className="absolute top-4 right-4 text-2xl font-bold flex items-center">
-          <FaClock className="mr-2" /> {timeLeft}s
+        {/* Opções */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow content-start">
+          {currentQuestion.options.map(option => (
+            <button
+              key={option}
+              disabled={isSubmitting}
+              onClick={() => {
+                if (!firstClickTimestamp.current) firstClickTimestamp.current = Date.now();
+                setSelectedAnswer(option);
+              }}
+              className={`p-5 rounded-2xl text-left text-lg font-semibold transition-all duration-300 transform outline-none
+                ${selectedAnswer === option 
+                  ? 'bg-gradient-to-r from-yellow-500 to-orange-500 shadow-[0_0_20px_rgba(234,179,8,0.5)] scale-[1.02] border-transparent text-white' 
+                  : 'bg-white/10 hover:bg-white/20 border border-white/20 hover:scale-[1.01] hover:shadow-lg text-gray-100'}
+                ${isSubmitting ? 'cursor-not-allowed opacity-70 scale-100' : ''} 
+              `}>
+              {option}
+            </button>
+          ))}
         </div>
-      )}
 
-      <h3 className="text-2xl mb-6">Pergunta {currentIndex + 1}/{questions.length}</h3>
-      <p className="text-xl mb-8">{currentQuestion.text}</p>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {currentQuestion.options.map(option => (
+        {/* Botão Confirmar */}
+        <div className="mt-8 pt-6 border-t border-white/10 flex justify-center">
           <button
-            key={option}
-            // [5] Bloqueia seleção de novas opções durante o processamento
-            disabled={isSubmitting}
-            onClick={() => {
-              if (!firstClickTimestamp.current) firstClickTimestamp.current = Date.now();
-              setSelectedAnswer(option);
-            }}
-            className={`p-4 rounded-lg text-left text-lg transition-all 
-              ${selectedAnswer === option ? 'bg-yellow-500 ring-4 ring-yellow-300' : 'bg-border-color hover:bg-hover-bg-color'}
-              ${isSubmitting ? 'cursor-not-allowed opacity-80' : ''} 
-            `}>
-            {option}
+            onClick={() => handleSubmit(selectedAnswer)}
+            disabled={!selectedAnswer || isSubmitting}
+            className="w-full md:w-auto md:min-w-[350px] py-4 px-8 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 rounded-full text-xl font-bold shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:shadow-[0_0_30px_rgba(6,182,212,0.6)] disabled:from-gray-700 disabled:to-gray-800 disabled:shadow-none disabled:cursor-not-allowed transition-all transform hover:-translate-y-1 disabled:translate-y-0 text-white flex justify-center items-center gap-3">
+            {isSubmitting ? (
+              <><div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin"></div> Processando...</>
+            ) : 'Confirmar Resposta'}
           </button>
-        ))}
+        </div>
       </div>
-
-      <button
-        onClick={() => handleSubmit(selectedAnswer)}
-        // [6] PROTEÇÃO DO BOTÃO: Desabilitado se sem resposta OU processando
-        disabled={!selectedAnswer || isSubmitting}
-        className="mt-8 w-full py-3 px-6 bg-blue-600 hover:bg-blue-700 rounded-lg text-xl font-bold disabled:bg-gray-500 disabled:cursor-not-allowed transition-colors">
-        {/* [7] Feedback textual */}
-        {isSubmitting ? 'Processando...' : 'Confirmar Resposta'}
-      </button>
     </div>
   );
 };

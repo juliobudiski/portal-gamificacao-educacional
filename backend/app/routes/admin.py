@@ -4,12 +4,16 @@ from flask import Blueprint, jsonify, current_app, request, Response
 import csv
 from io import StringIO
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from ..models import db, User, Activity, EventLog, Purchase, ActivityProgress, ContactMessage, StudentResponse, RouletteWin, SlotWin, ForumTopic, ForumPost
+from werkzeug.security import generate_password_hash
+from ..models import db, User, Activity, EventLog, Purchase, ActivityProgress, ContactMessage, StudentResponse, RouletteWin, SlotWin, ForumTopic, ForumPost, Class, Enrollment
 from sqlalchemy import func, case, cast, Numeric
 from datetime import datetime, timedelta
 from collections import Counter
 import requests
+import os
 from ..models import ContactMessage
+from ..services.admin_service import AdminService
+from ..utils.email_sender import send_teacher_code_email
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -36,6 +40,63 @@ def get_dashboard_data():
         "total_professors": total_professors,
         "total_students": total_students,
         "total_activities": total_activities,
+    })
+
+@admin_bp.route('/analytics/activity-status', methods=['GET'])
+@jwt_required()
+def get_activity_status_stats():
+    if not check_admin(): return jsonify({"message": "Acesso negado."}), 403
+    
+    total_classes = Class.query.count()
+    activities = Activity.query.filter(Activity.class_id.isnot(None)).all()
+    total_activities = len(activities)
+    
+    not_started = 0
+    in_progress = 0
+    completed = 0
+    
+    for activity in activities:
+        enrollments = Enrollment.query.filter_by(class_id=activity.class_id).all()
+        if not enrollments:
+            not_started += 1
+            continue
+            
+        student_ids = [e.student_id for e in enrollments]
+        progress_records = ActivityProgress.query.filter(
+            ActivityProgress.activity_id == activity.id,
+            ActivityProgress.student_id.in_(student_ids)
+        ).all()
+        
+        if not progress_records:
+            not_started += 1
+        else:
+            all_completed = True
+            any_progress = False
+            for p in progress_records:
+                if p.status == 'completed':
+                    any_progress = True
+                elif p.status == 'in_progress':
+                    any_progress = True
+                    all_completed = False
+                elif p.status == 'not_started':
+                    all_completed = False
+                    
+            if len(progress_records) < len(student_ids):
+                all_completed = False
+                
+            if all_completed:
+                completed += 1
+            elif any_progress:
+                in_progress += 1
+            else:
+                not_started += 1
+                
+    return jsonify({
+        "total_classes": total_classes,
+        "total_activities": total_activities,
+        "not_started": not_started,
+        "in_progress": in_progress,
+        "completed": completed
     })
 
 # Rota para listar todos os usuários
@@ -548,56 +609,7 @@ def get_user_locations():
     if not check_admin():
         return jsonify({"message": "Acesso negado."}), 403
 
-    # Busca todos os usuários que já tiveram a localização registrada
-    users_with_location = User.query.filter(
-        User.last_known_latitude.isnot(None),
-        User.last_known_longitude.isnot(None)
-    ).all()
-
-    locations_data = []
-    # Usaremos um cache simples para não chamar a API para a mesma coordenada várias vezes
-    geo_cache = {}
-
-    for user in users_with_location:
-        lat = user.last_known_latitude
-        lon = user.last_known_longitude
-        cache_key = f"{lat:.4f},{lon:.4f}" # Chave de cache com 4 casas decimais
-
-        if cache_key in geo_cache:
-            address = geo_cache[cache_key]
-        else:
-            try:
-                geo_url = f"https://nominatim.openstreetmap.org/reverse?format=json&lat={lat}&lon={lon}"
-                headers = {'User-Agent': 'GamificaEduPortal/1.0'}
-                geo_res = requests.get(geo_url, headers=headers, timeout=5)
-                geo_res.raise_for_status()
-                geo_data = geo_res.json().get('address', {})
-                
-                address = {
-                    'city': geo_data.get('city') or geo_data.get('town') or geo_data.get('village', 'N/A'),
-                    'state': geo_data.get('state', 'N/A'),
-                    'country': geo_data.get('country', 'N/A'),
-                    'suburb': geo_data.get('suburb', 'N/A') # Bairro/Subúrbio
-                }
-                geo_cache[cache_key] = address # Salva no cache
-
-            except requests.exceptions.RequestException as e:
-                current_app.logger.error(f"Falha na geocodificação para user {user.id}: {e}")
-                address = None
-        
-        if address:
-            locations_data.append({
-                "user_id": user.id,
-                "user_name": user.name,
-                "latitude": lat,
-                "longitude": lon,
-                "city": address.get('city'),
-                "state": address.get('state'),
-                "country": address.get('country'),
-                "suburb": address.get('suburb'),
-                "last_update": user.last_location_update.isoformat() if user.last_location_update else 'N/A'
-            })
-            
+    locations_data = AdminService.get_user_locations_data()
     return jsonify(locations_data)
 
 @admin_bp.route('/contact/messages', methods=['GET'])
@@ -626,68 +638,115 @@ def mark_contact_message_read(msg_id):
     
     return jsonify({"success": True, "message": "Mensagem marcada como lida"})
 
+@admin_bp.route('/contact/messages/<int:msg_id>/send_code', methods=['POST'])
+@jwt_required()
+def send_access_code_email(msg_id):
+    if not check_admin():
+        return jsonify({"message": "Acesso negado."}), 403
+
+    msg = ContactMessage.query.get_or_404(msg_id)
+    
+    if not msg.email:
+        return jsonify({"message": "Esta mensagem não possui um e-mail válido para resposta."}), 400
+
+    access_code = os.environ.get('TEACHER_ACCESS_CODE', 'GAMIFICA_PROF_2026')
+    name = msg.name or 'Professor(a)'
+
+    success = send_teacher_code_email(msg.email, access_code, name)
+    if success:
+        return jsonify({"success": True, "message": "Código enviado com sucesso!"})
+    else:
+        return jsonify({"success": False, "message": "Falha ao enviar e-mail. Verifique os logs."}), 500
+
 @admin_bp.route('/analytics/logs/export', methods=['GET'])
 @jwt_required()
 def export_logs_csv():
     if not check_admin(): return jsonify({"message": "Acesso negado."}), 403
 
-    # Pega os mesmos filtros da tela
     search_user = request.args.get('user', None, type=str)
     filter_action = request.args.get('action', None, type=str)
     start_date_str = request.args.get('startDate', None)
     end_date_str = request.args.get('endDate', None)
     
-    query = db.session.query(
-        EventLog, User.name, User.email, User.role
-    ).join(User, User.id == EventLog.user_id)
-
-    if search_user: query = query.filter(User.name.ilike(f'%{search_user}%'))
-    if filter_action: query = query.filter(EventLog.action == filter_action)
+    generator = AdminService.generate_csv_logs(search_user, filter_action, start_date_str, end_date_str)
     
-    if start_date_str:
-        try:
-            start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
-            query = query.filter(EventLog.created_at >= start_date)
-        except ValueError: pass
-            
-    if end_date_str:
-        try:
-            end_date = datetime.strptime(end_date_str, '%Y-%m-%d') + timedelta(days=1)
-            query = query.filter(EventLog.created_at < end_date)
-        except ValueError: pass
-    
-    query = query.order_by(EventLog.created_at.desc())
-    logs = query.all()
-
-    # Gera o CSV em memória
-    def generate():
-        data = StringIO()
-        writer = csv.writer(data, delimiter=';') # Ponto e vírgula evita bugar no Excel BR
-        
-        # Cabeçalho do CSV
-        writer.writerow(['ID_Log', 'Data_Hora', 'Usuario', 'Email', 'Role', 'Secao', 'Acao', 'Detalhes_JSON', 'IP'])
-        yield data.getvalue()
-        data.seek(0)
-        data.truncate(0)
-
-        # Linhas de dados
-        for log, user_name, user_email, user_role in logs:
-            writer.writerow([
-                log.id,
-                log.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-                user_name,
-                user_email,
-                user_role,
-                log.section,
-                log.action,
-                log.details, # O JSON vai inteiro como string numa coluna
-                log.ip_address
-            ])
-            yield data.getvalue()
-            data.seek(0)
-            data.truncate(0)
-
-    # Retorna o arquivo como um Download
-    response = Response(generate(), mimetype='text/csv')
+    response = Response(generator, mimetype='text/csv')
     response.headers.set("Content-Disposition", "attachment", filename="gamefica_logs_export.csv")
     return response
+
+# --- ROTAS DE GERENCIAMENTO DE USUÁRIOS E ATIVIDADES ---
+
+@admin_bp.route('/users/<int:user_id>', methods=['PUT'])
+@jwt_required()
+def update_user(user_id):
+    if not check_admin(): return jsonify({"message": "Acesso negado."}), 403
+    
+    user_to_edit = User.query.get_or_404(user_id)
+    data = request.json
+    
+    if 'name' in data: user_to_edit.name = data['name']
+    if 'email' in data: user_to_edit.email = data['email']
+    if 'password' in data and data['password'].strip():
+        user_to_edit.password_hash = generate_password_hash(data['password'].strip())
+    if 'role' in data:
+        if data['role'] in ['aluno', 'professor', 'admin']:
+            user_to_edit.role = data['role']
+    
+    try:
+        db.session.commit()
+        return jsonify({"success": True, "message": "Usuário atualizado com sucesso."})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": f"Erro ao atualizar usuário: {str(e)}"}), 500
+
+@admin_bp.route('/users/<int:user_id>', methods=['DELETE'])
+@jwt_required()
+def delete_user(user_id):
+    if not check_admin(): return jsonify({"message": "Acesso negado."}), 403
+    
+    user_to_delete = User.query.get_or_404(user_id)
+    
+    if user_to_delete.id == get_jwt_identity():
+        return jsonify({"success": False, "message": "Você não pode deletar a si mesmo."}), 400
+
+    try:
+        # Como o banco não tem cascade all completo configurado no User, a exclusão pode falhar 
+        # se houver dependências não tratadas. Uma abordagem manual simplificada para EventLogs:
+        EventLog.query.filter_by(user_id=user_to_delete.id).delete()
+        
+        db.session.delete(user_to_delete)
+        db.session.commit()
+        return jsonify({"success": True, "message": "Usuário deletado com sucesso."})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": f"Erro ao deletar usuário. Pode haver registros dependentes. Detalhes: {str(e)}"}), 500
+
+@admin_bp.route('/activities/<int:activity_id>/visibility', methods=['PATCH'])
+@jwt_required()
+def toggle_activity_visibility(activity_id):
+    if not check_admin(): return jsonify({"message": "Acesso negado."}), 403
+    
+    activity = Activity.query.get_or_404(activity_id)
+    activity.is_public = not activity.is_public
+    
+    try:
+        db.session.commit()
+        return jsonify({"success": True, "message": f"Visibilidade alterada para {'Pública' if activity.is_public else 'Privada'}."})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": f"Erro ao alterar visibilidade: {str(e)}"}), 500
+
+@admin_bp.route('/activities/<int:activity_id>', methods=['DELETE'])
+@jwt_required()
+def delete_activity(activity_id):
+    if not check_admin(): return jsonify({"message": "Acesso negado."}), 403
+    
+    activity = Activity.query.get_or_404(activity_id)
+    
+    try:
+        db.session.delete(activity)
+        db.session.commit()
+        return jsonify({"success": True, "message": "Atividade deletada com sucesso."})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": f"Erro ao deletar atividade: {str(e)}"}), 500

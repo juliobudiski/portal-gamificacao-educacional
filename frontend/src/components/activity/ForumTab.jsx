@@ -397,24 +397,27 @@ const ForumTab = ({ onReturn }) => {
     };
 
     return (
-        // PADRONIZAÇÃO DO CONTAINER PARA FICAR IGUAL AO STORE_TAB E CHAT_TAB
-        <div className="w-full max-w-5xl mx-auto p-4 relative pt-16 text-primary-text flex flex-col h-full min-h-[80vh]">
+        // PADRONIZAÇÃO DO CONTAINER PARA FICAR IGUAL AO STORE_TAB
+        <div className="w-full max-w-6xl mx-auto p-8 relative mt-8 mb-8 text-primary-text bg-gray-900 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.8)] border border-white/10 min-h-[80vh] flex flex-col overflow-hidden">
+            {/* Efeito de luz de fundo */}
+            <div className="absolute top-0 right-0 w-[600px] h-[300px] bg-teal-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 w-[500px] h-[400px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none"></div>
 
             {/* BOTÃO VOLTAR GLOBAL (Top Left) */}
             <div className='flex-shrink-0'>
                 <button
                     onClick={onReturn}
-                    className="absolute top-4 left-4 z-20 flex items-center gap-2 py-2 px-4 
-                           bg-secondary-bg text-secondary-text font-bold
-                           border border-border-color rounded-full shadow-lg 
-                           hover:bg-primary-bg hover:text-accent-yellow transition-all"
+                    className="absolute top-6 left-6 z-20 flex items-center gap-2 py-2.5 px-5 
+                           bg-black/50 text-gray-300 font-bold backdrop-blur-md
+                           border border-white/10 rounded-full shadow-lg 
+                           hover:bg-white/10 hover:text-white hover:scale-105 transition-all"
                 >
                     <FaArrowLeft /> Voltar ao Tabuleiro
                 </button>
             </div>
 
             {/* CONTAINER PRINCIPAL DO FÓRUM */}
-            <div className="flex-grow relative overflow-hidden flex flex-col bg-primary-bg rounded-2xl border border-border-color shadow-2xl p-4 md:p-8 mt-4">
+            <div className="flex-grow relative overflow-hidden flex flex-col bg-black/40 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl p-4 md:p-8 mt-12 z-10">
                 {renderContent()}
             </div>
         </div>

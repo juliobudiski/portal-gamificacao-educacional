@@ -35,12 +35,16 @@ function AdminPage() {
 
   // Renderização principal do layout do admin
   return (
-    <div className="min-h-screen w-full bg-border-color flex">
+    <div className="min-h-screen w-full bg-gray-900 flex relative overflow-hidden">
+      {/* Luzes Holográficas de Fundo globais para o Admin */}
+      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-accent-purple/30 rounded-full blur-[120px] pointer-events-none"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-accent-teal/20 rounded-full blur-[120px] pointer-events-none"></div>
+
       {/* Barra de Navegação Lateral Fixa */}
       <Sidebar />
 
       {/* Área de Conteúdo Principal */}
-      <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+      <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto relative z-10">
         {/* O React Router renderizará a página aninhada correspondente aqui */}
         <Outlet />
       </main>

@@ -14,18 +14,19 @@ function UserGrowthChart({ data }) {
           data={data}
           margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
         >
-          <CartesianGrid strokeDasharray="3 3" stroke="#4A5568" />
-          <XAxis dataKey="date" stroke="#A0AEC0" />
-          <YAxis stroke="#A0AEC0" allowDecimals={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
+          <XAxis dataKey="date" stroke="var(--text-secondary)" />
+          <YAxis stroke="var(--text-secondary)" allowDecimals={false} />
           <Tooltip
             contentStyle={{
-              backgroundColor: '#2D3748',
-              border: '1px solid #4A5568',
-              borderRadius: '0.5rem'
+              backgroundColor: 'var(--background-secondary)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '0.5rem',
+              color: 'var(--text-primary)'
             }}
-            labelStyle={{ color: '#E2E8F0' }}
+            labelStyle={{ color: 'var(--text-primary)' }}
           />
-          <Legend wrapperStyle={{ color: '#E2E8F0' }} />
+          <Legend wrapperStyle={{ color: 'var(--text-secondary)' }} />
           <Line type="monotone" dataKey="Novos Usuários" stroke="#38B2AC" strokeWidth={2} activeDot={{ r: 8 }} />
         </LineChart>
       </ResponsiveContainer>

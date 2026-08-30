@@ -71,10 +71,10 @@ function Step4_PlayerProfile({ activityData, setActivityData, openHelpModal }) {
     <div id="tour-step-profiles" className="space-y-8 animate-fade-in">
       {/* SEÇÃO 1: Título e Descrição */}
       <div>
-        <h2 className="text-2xl font-bold text-primary-text dark:text-primary-text">
+        <h2 className="text-2xl font-bold text-primary-text">
           Qual perfil de jogador você quer engajar?
         </h2>
-        <p className="mt-2 text-secondary-text dark:text-secondary-text">
+        <p className="mt-2 text-secondary-text">
           Selecionar os perfis corretos ajuda a definir os elementos de gamificação mais eficazes para a sua atividade.
         </p>
       </div>
@@ -101,7 +101,7 @@ function Step4_PlayerProfile({ activityData, setActivityData, openHelpModal }) {
               <h4 className={`text-base font-semibold ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-primary-text dark:text-secondary-text'}`}>
                 {profile.name}
               </h4>
-              <p className={`text-xs ${isSelected ? 'text-teal-700 dark:text-teal-200' : 'text-secondary-text dark:text-secondary-text'}`}>
+              <p className={`text-xs ${isSelected ? 'text-teal-700 dark:text-teal-200' : 'text-secondary-text'}`}>
                 {profile.description}
               </p>
             </div>

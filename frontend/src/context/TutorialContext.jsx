@@ -71,6 +71,11 @@ export const TutorialProvider = ({ children }) => {
         if (finishedStatuses.includes(status)) {
             setRun(false);
 
+            // APENAS LIMPA SE NÃO FOR A TRANSIÇÃO DO DASHBOARD PARA A CRIAÇÃO OU SE FOI PULADO
+            if (tourKey !== 'teacher_dashboard_v1' || status === STATUS.SKIPPED) {
+                sessionStorage.removeItem('TUTORIAL_MODE'); // Limpa a flag global de tour
+            }
+
             // Só salva no banco se o usuário estiver logado e tiver uma chave de tour
             if (user && tourKey) {
                 try {

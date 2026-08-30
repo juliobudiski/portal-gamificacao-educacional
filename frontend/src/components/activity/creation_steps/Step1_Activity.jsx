@@ -96,9 +96,9 @@ function Step1_InitialDetails({ activityData, handleInputChange, setActivityData
   };
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div id="tour-step-scenario-inputs" className="space-y-8 animate-fade-in">
       <div>
-        <h2 className="text-2xl font-bold text-primary-text dark:text-primary-text">
+        <h2 className="text-2xl font-bold text-primary-text">
           Definindo o Cenário
         </h2>
         <p className="mt-2 text-secondary-text">
@@ -114,7 +114,7 @@ function Step1_InitialDetails({ activityData, handleInputChange, setActivityData
             name="title"
             value={activityData.title}
             onChange={handleInputChange}
-            className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-primary-bg border border-border-color dark:border-gray-600 rounded-md shadow-sm focus:ring-teal-500 sm:text-sm"
+            className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-primary-bg border border-border-color rounded-md shadow-sm focus:ring-teal-500 sm:text-sm"
             placeholder="Ex: A Jornada do Herói em Java"
             required
           />
@@ -131,7 +131,7 @@ function Step1_InitialDetails({ activityData, handleInputChange, setActivityData
               name="areaKnowledge"
               value={currentArea}
               onChange={handleAreaChange}
-              className="pl-10 block w-full px-4 py-2 bg-secondary-bg dark:bg-primary-bg border border-border-color dark:border-gray-600 rounded-md focus:ring-teal-500 sm:text-sm"
+              className="pl-10 block w-full px-4 py-2 bg-secondary-bg dark:bg-primary-bg border border-border-color rounded-md focus:ring-teal-500 sm:text-sm"
             >
               <option value="Computação e Engenharia de Software">Computação e Engenharia de Software</option>
               <option value="Outras Áreas">Outras Áreas (Modo Genérico)</option>

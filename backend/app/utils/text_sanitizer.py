@@ -243,6 +243,49 @@ def clean_text(text: str, context: str = 'chat') -> str:
     # Remove espaços em branco excessivos no início/fim
     return cleaned.strip()
 
+# --- PROTEÇÃO CONTRA INJECTIONS (WAF) ---
+
+PROMPT_INJECTION_PATTERNS = [
+    r"ignore\s+(all\s+)?(previous\s+)?(instructions|rules|directions)",
+    r"forget\s+(all\s+)?(previous\s+)?(instructions|rules|directions)",
+    r"desconsidere\s+as\s+instruções",
+    r"ignore\s+as\s+regras",
+    r"you\s+are\s+now",
+    r"system\s+prompt",
+    r"bypass",
+    r"modo\s+desenvolvedor",
+    r"developer\s+mode",
+    r"jailbreak",
+    r"print\s+all\s+instructions"
+]
+
+STRICT_SQL_PATTERNS = [
+    r"(?i)\b(SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|TRUNCATE|EXEC|UNION)\b",
+    r"(--|;|\/\*|\*\/|@@)", # Comentários SQL e variáveis globais
+    r"(\bOR\b|\bAND\b)\s+['\"0-9a-zA-Z]+\s*[=<>]\s*['\"0-9a-zA-Z]+" # ' OR '1'='1
+]
+
+def detect_prompt_injection(text: str) -> bool:
+    """Verifica se o texto contém padrões clássicos de tentativa de manipular o LLM."""
+    if not text:
+        return False
+    normalized = text.lower()
+    for pattern in PROMPT_INJECTION_PATTERNS:
+        if re.search(pattern, normalized, re.IGNORECASE):
+            logger.warning(f"🚨 PROMPT INJECTION DETECTADO: {pattern}")
+            return True
+    return False
+
+def detect_strict_sql_injection(text: str) -> bool:
+    """Validação RÍGIDA contra caracteres SQL (Usar apenas em campos restritos como Auth)."""
+    if not text:
+        return False
+    for pattern in STRICT_SQL_PATTERNS:
+        if re.search(pattern, text):
+            logger.warning(f"🚨 STRICT SQL INJECTION DETECTADO: {pattern}")
+            return True
+    return False
+
 def check_profanity(text: str) -> bool:
     """
     Verifica se o texto contém termos proibidos usando Regex e Normalização.

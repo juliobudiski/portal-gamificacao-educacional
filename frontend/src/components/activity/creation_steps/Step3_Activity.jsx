@@ -85,10 +85,10 @@ function Step3_ActivityPlanning({ activityData, handleInputChange, setActivityDa
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
-        <h2 className="text-2xl font-bold text-primary-text dark:text-primary-text">
+        <h2 className="text-2xl font-bold text-primary-text">
           Planejamento da Atividade
         </h2>
-        <p className="mt-2 text-secondary-text dark:text-secondary-text">
+        <p className="mt-2 text-secondary-text">
           Descreva as características e a logística da atividade. Essas informações são cruciais para um bom planejamento.
         </p>
       </div>
@@ -141,7 +141,7 @@ function Step3_ActivityPlanning({ activityData, handleInputChange, setActivityDa
 
       {/* NOVO: SEÇÃO DE AMBIENTE EXCLUDENTE */}
       <div>
-        <h3 className="text-lg font-semibold text-primary-text dark:text-primary-text flex items-center gap-2 mb-4">
+        <h3 className="text-lg font-semibold text-primary-text flex items-center gap-2 mb-4">
           Ambiente de Aplicação <span className="text-xs font-normal text-secondary-text bg-secondary-bg px-2 py-1 rounded-full border border-border-color">Obrigatório (Escolha Única)</span>
         </h3>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -172,7 +172,7 @@ function Step3_ActivityPlanning({ activityData, handleInputChange, setActivityDa
       </div>
 
       <div>
-        <h3 className="text-lg font-semibold text-primary-text dark:text-primary-text">
+        <h3 className="text-lg font-semibold text-primary-text">
           Outras Características (Múltipla Escolha)
         </h3>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -203,7 +203,7 @@ function Step3_ActivityPlanning({ activityData, handleInputChange, setActivityDa
       </div>
 
       <div className="pt-4">
-        <h3 className="text-lg font-semibold text-primary-text dark:text-primary-text">
+        <h3 className="text-lg font-semibold text-primary-text">
           Detalhes Logísticos
         </h3>
         <div className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-2">

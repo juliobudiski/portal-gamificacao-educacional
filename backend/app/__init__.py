@@ -1,81 +1,113 @@
 # backend/app/__init__.py
 
+import os
+import logging
 from flask import Flask, send_from_directory, jsonify
 from flask_cors import CORS
 from .extensions import socketio, scheduler, db, migrate
 
-import os
-import logging
-
-
 def create_app():
     """
-    Função 'Application Factory'. Todo o setup da aplicação acontece aqui dentro.
+    Função 'Application Factory'. Setup inicial e injeção de dependências.
     """
     app = Flask(__name__)
 
-    # 2. Carregue a configuração a partir de um arquivo/objeto
+    _configure_app(app)
+    _initialize_extensions(app)
+    _register_blueprints_and_routes(app)
+    _register_cli_commands(app)
+    
+    return app
+
+def _configure_app(app):
+    """Encapsula o carregamento das configurações globais."""
     from .config import Config
     app.config.from_object(Config)
+    
+    from .utils.logging import configure_logging
+    configure_logging(app)
+    
+    from .utils.auth_utils import configure_jwt
+    configure_jwt(app)
+
+def _initialize_extensions(app):
+    """Responsável por ligar o app às extensões externas (BD, Sockets, Scheduler)."""
     from app.commands import seed, triggers, simulations, maintenance
     
-    # 3. Associe as instâncias das extensões com o objeto 'app'
     db.init_app(app)
     migrate.init_app(app, db)
     maintenance.init_app(app)
-    # Habilita o CORS globalmente
-    CORS(app, resources={r"/api/*": {"origins": "*"}}) 
-    
-    # Inicializa o socketio importado do extensions.py
-    socketio.init_app(app)
-    # --- INICIALIZAÇÃO DO SCHEDULER ---
-    # Precisamos permitir que o APScheduler use as configs do Flask
-    app.config['SCHEDULER_API_ENABLED'] = True 
-    scheduler.init_app(app)
-    if os.environ.get('WERKZEUG_RUN_MAIN') == 'true' or not app.debug:
-        scheduler.start()
-    
-    # Registra as tarefas (importação local para evitar ciclo)
-    from .tasks import register_tasks
-    register_tasks(app)
-    # ----------------------------------
-    
     seed.init_app(app)
     triggers.init_app(app)
     simulations.init_app(app)
     
-    # Importa e configura o JWT
-    from .utils.auth_utils import configure_jwt
-    configure_jwt(app)
+    # Habilita o CORS globalmente
+    CORS(app, resources={r"/api/*": {"origins": "*"}}) 
+    socketio.init_app(app)
     
-    # É CRUCIAL que a importação e o registro dos Blueprints (rotas)
-    # aconteçam DENTRO da função create_app, depois que tudo foi inicializado.
+    # INICIALIZAÇÃO DO SCHEDULER
+    app.config['SCHEDULER_API_ENABLED'] = True 
+    scheduler.init_app(app)
+    
+    # Para evitar que múltiplos workers do Gunicorn rodem o scheduler ao mesmo tempo,
+    # verificamos uma variável de ambiente ou apenas rodamos se for Werkzeug main.
+    if os.environ.get('WERKZEUG_RUN_MAIN') == 'true' or os.environ.get('RUN_SCHEDULER') == 'true':
+        scheduler.start()
+        
+    # Registra as tarefas
+    from .tasks import register_tasks
+    register_tasks(app)
+
+def _register_blueprints_and_routes(app):
+    """Isola os registros de rotas, mantendo o Factory limpo."""
     with app.app_context():
-        # 4. Importe e registre os Blueprints aqui
         from .routes import register_blueprints
         register_blueprints(app)
+        from . import models  # para que a migração os reconheça
+        
+    @app.route('/medals/<path:filename>')
+    def serve_medal_image(filename):
+        directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'medals')
+        return send_from_directory(directory, filename)
+    
+    @app.route('/api/public/stats', methods=['GET'])
+    def get_public_stats():
+        from .models import User, Activity, Class 
+        try:
+            return jsonify({
+                "users": User.query.count(),
+                "professors": User.query.filter_by(role='professor').count(),
+                "students": User.query.filter_by(role='aluno').count(),
+                "activities": Activity.query.count(),
+                "classes": Class.query.count()
+            }), 200
+        except Exception as e:
+            app.logger.error(f"Erro ao buscar stats publicas: {str(e)}")
+            return jsonify({"error": str(e)}), 500
 
-    # 5. Importe os modelos para que a migração os reconheça
-    from . import models
+    @app.route('/api/health', methods=['GET'])
+    def health_check():
+        """Endpoint ultraleve para keep-alive (UptimeRobot, etc) evitar cold start"""
+        return jsonify({"status": "ok", "message": "Server is awake"}), 200
 
-    # 6. Configure o logging (se tiver)
-    from .utils.logging import configure_logging
-    configure_logging(app)
+def _register_cli_commands(app):
+    """Centraliza a definição de comandos de linha de comando."""
     
     @app.cli.command("clean-paths")
     def clean_avatar_paths_command():
-        # ... (seu comando clean-paths existente, sem alterações)
         """Encontra e corrige caminhos de imagem de avatares incorretos no banco de dados."""
         from .models import db, ActivityProgress, StoreItem, User
         from sqlalchemy.orm.attributes import flag_modified
         import json
+        
         print("Iniciando limpeza de caminhos de avatares...")
         updated_count = 0
+        
         for progress in ActivityProgress.query.all():
-            modified_in_progress = False
+            modified = False
             if progress.equipped_activity_avatar_url and progress.equipped_activity_avatar_url.startswith('/images/'):
                 progress.equipped_activity_avatar_url = progress.equipped_activity_avatar_url.replace('/images/avatars/', '/avatars/')
-                modified_in_progress = True
+                modified = True
             if progress.unlocked_activity_avatars:
                 new_list = []
                 list_changed = False
@@ -87,9 +119,9 @@ def create_app():
                 if list_changed:
                     progress.unlocked_activity_avatars = new_list
                     flag_modified(progress, "unlocked_activity_avatars")
-                    modified_in_progress = True
-            if modified_in_progress:
-                updated_count += 1
+                    modified = True
+            if modified: updated_count += 1
+            
         for item in StoreItem.query.filter_by(item_type='avatar').all():
             if item.effect_id:
                 effect = item.effect_id
@@ -101,11 +133,12 @@ def create_app():
                     item.effect_id = effect
                     flag_modified(item, "effect_id")
                     updated_count += 1
+                    
         for user in User.query.all():
-            modified_in_user = False
+            modified = False
             if user.profile_picture and user.profile_picture.startswith('/images/'):
                 user.profile_picture = user.profile_picture.replace('/images/avatars/', '/avatars/')
-                modified_in_user = True
+                modified = True
             if user.unlocked_global_avatars:
                 new_list = []
                 list_changed = False
@@ -117,58 +150,21 @@ def create_app():
                 if list_changed:
                     user.unlocked_global_avatars = new_list
                     flag_modified(user, "unlocked_global_avatars")
-                    modified_in_user = True
-            if modified_in_user:
-                updated_count += 1
+                    modified = True
+            if modified: updated_count += 1
+            
         if updated_count > 0:
             db.session.commit()
-            print(f"Limpeza concluída! {updated_count} ocorrências de caminhos foram corrigidas.")
+            print(f"Limpeza concluída! {updated_count} ocorrências corrigidas.")
         else:
-            print("Nenhum caminho incorreto foi encontrado para corrigir.")
-    
-    # --- ROTA PARA SERVIR IMAGENS DAS MEDALHAS ---
-    @app.route('/medals/<path:filename>')
-    def serve_medal_image(filename):
-        directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'medals')
-        return send_from_directory(directory, filename)
-    
-    # --- ROTA PARA DADOS PÚBLICOS DA PÁGINA SOBRE NÓS ---
-    @app.route('/api/public/stats', methods=['GET'])
-    def get_public_stats():
-        # Importação local aqui dentro para evitar "Circular Import" (Erro de importação)
-        from .models import User, Activity, Class 
-        
-        try:
-            total_users = User.query.count()
-            total_professors = User.query.filter_by(role='professor').count()
-            total_students = User.query.filter_by(role='aluno').count()
-            total_activities = Activity.query.count()
-            total_classes = Class.query.count()
+            print("Nenhum caminho incorreto foi encontrado.")
 
-            return jsonify({
-                "users": total_users,
-                "professors": total_professors,
-                "students": total_students,
-                "activities": total_activities,
-                "classes": total_classes
-            }), 200
-        except Exception as e:
-            app.logger.error(f"Erro ao buscar stats publicas: {str(e)}")
-            return jsonify({"error": str(e)}), 500
-
-    # Certifique-se de colar ANTES do "return app" no final da função create_app()
-    return app
-    
-    # --- NOVO COMANDO PARA O SEEDING DAS MEDALHAS ---
-    # --- COMANDO PARA O SEEDING DAS MEDALHAS (VERSÃO COMPLETA) ---
     @app.cli.command("seed-medals")
     def seed_medals_command():
         """Popula ou ATUALIZA a base de dados com as medalhas predefinidas."""
         from .models import db, Medal
-
-        # Lista COMPLETA de todas as medalhas com os nomes de ficheiro corretos
+        
         medals_data = [
-            # --- Medalhas de Atividade (Adaptadas ou Nativas) ---
             {'name': 'Medalha do Inspetor', 'description': 'Atingir 100% de acerto em todos os questionários e tarefas de uma atividade na primeira tentativa.', 'image_url': '/medals/MedalhaInspetor.webp', 'type': 'ACTIVITY_TEMPLATE', 'notes': 'Incentivar a atenção ao detalhe e a busca pela perfeição.'},
             {'name': 'Medalha do Explorador', 'description': 'Completar todos os módulos e atividades de uma trilha de aprendizagem.', 'image_url': '/medals/MedalhaExplorador.webp', 'type': 'ACTIVITY_TEMPLATE', 'notes': 'Celebrar a finalização completa de uma jornada de aprendizagem.'},
             {'name': 'Medalha do Velocista', 'description': 'Estar entre os 3 primeiros a concluir esta atividade.', 'image_url': '/medals/MedalhaVelocista.webp', 'type': 'ACTIVITY_TEMPLATE', 'notes': 'Recompensar a agilidade e a rapidez na conclusão.'},
@@ -177,8 +173,6 @@ def create_app():
             {'name': 'Medalha "Arquiteto do Conhecimento"', 'description': 'Completar um módulo dentro da atividade que seja marcado como "fundamental".', 'image_url': '/medals/MedalhaArquiteto.webp', 'type': 'ACTIVITY_TEMPLATE', 'notes': 'Reforçar a importância de dominar os fundamentos.'},
             {'name': 'Medalha do Mestre', 'description': 'Concluir a atividade de nível mais avançado ("especialista" ou "masterclass") numa área.', 'image_url': '/medals/MedalhaMestre.webp', 'type': 'ACTIVITY_TEMPLATE', 'notes': 'Reconhecer o mais alto nível de especialização numa atividade.'},
             {'name': 'Medalha do Inovador', 'description': 'Submeter um projeto que receba nota máxima no critério de "Criatividade e Originalidade".', 'image_url': '/medals/MedalhaInovador.webp', 'type': 'ACTIVITY_TEMPLATE', 'notes': 'Estimular o pensamento criativo e a experimentação.'},
-
-            # --- Medalhas de Plataforma (Globais - Implementação Futura) ---
             {'name': 'Medalha "Diamante de Excelência"', 'description': 'Atingir o nível máximo de maestria, completando 100% de todos os cursos, trilhas e desafios disponíveis.', 'image_url': '/medals/MedalhaDiamante.webp', 'type': 'PLATFORM', 'notes': 'Servir como o objetivo final e a maior honra da plataforma.'},
             {'name': 'Medalha do Maratonista', 'description': 'Manter uma sequência de estudos diária por 7, 15 ou 30 dias consecutivos.', 'image_url': '/medals/MedalhaMaratonista.webp', 'type': 'PLATFORM', 'notes': 'Fomentar o hábito e a disciplina da aprendizagem contínua.'},
             {'name': 'Medalha "Espírito de Equipe"', 'description': 'Concluir com sucesso um projeto em grupo com avaliações positivas dos colegas.', 'image_url': '/medals/MedalhaEquipe.webp', 'type': 'PLATFORM', 'notes': 'Valorizar a colaboração, a comunicação e o trabalho em equipa.'},
@@ -193,14 +187,12 @@ def create_app():
             {'name': 'Medalha "Sinergia"', 'description': 'Resolver um problema que exija a aplicação de conhecimentos de, pelo menos, duas áreas distintas.', 'image_url': '/medals/MedalhaSinergia.webp', 'type': 'PLATFORM', 'notes': 'Promover o pensamento interdisciplinar e a capacidade de sintetizar informações.'},
         ]
 
-
         print("Iniciando o seeding/atualização de medalhas...")
         update_count = 0
         create_count = 0
         for data in medals_data:
             existing_medal = Medal.query.filter_by(name=data['name']).first()
             if existing_medal:
-                # Se a medalha já existe, verifica se algo mudou e atualiza
                 if (existing_medal.image_url != data['image_url'] or 
                     existing_medal.description != data['description'] or
                     existing_medal.type != data['type'] or
@@ -212,7 +204,6 @@ def create_app():
                     existing_medal.notes = data['notes']
                     update_count += 1
             else:
-                # Se não existe, cria uma nova
                 medal = Medal(**data)
                 db.session.add(medal)
                 create_count += 1
@@ -222,5 +213,3 @@ def create_app():
             print(f"Sucesso! {create_count} novas medalhas criadas e {update_count} medalhas atualizadas.")
         else:
             print("Nenhuma alteração necessária. A base de dados já está atualizada.")
-
-    return app

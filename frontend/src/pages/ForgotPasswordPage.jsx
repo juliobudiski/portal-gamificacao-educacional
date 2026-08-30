@@ -38,18 +38,18 @@ function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
-      <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
+    <div className="min-h-screen flex items-center justify-center bg-primary-bg px-4 sm:px-6 lg:px-8 transition-colors duration-300">
+      <div className="max-w-md w-full space-y-8 bg-secondary-bg p-8 rounded-xl shadow-lg border border-border-color">
 
         {/* Cabeçalho */}
         <div className="text-center">
           <div className="mx-auto h-12 w-12 bg-teal-100 dark:bg-teal-900/50 rounded-full flex items-center justify-center mb-4">
             <FaLock className="h-6 w-6 text-teal-600 dark:text-teal-400" />
           </div>
-          <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white">
+          <h2 className="text-3xl font-extrabold text-primary-text">
             Recuperação de Senha
           </h2>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          <p className="mt-2 text-sm text-secondary-text">
             {!isSubmitted
               ? "Insira seu e-mail para receber as instruções de redefinição."
               : "Verifique sua caixa de entrada."}
@@ -105,7 +105,7 @@ function ForgotPasswordPage() {
                     type="email"
                     autoComplete="email"
                     required
-                    className="appearance-none rounded-md relative block w-full px-3 py-2 pl-10 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-teal-500 focus:border-teal-500 focus:z-10 sm:text-sm transition-colors"
+                    className="appearance-none rounded-md relative block w-full px-3 py-2 pl-10 border border-border-color placeholder-gray-500 dark:placeholder-gray-400 text-primary-text bg-secondary-bg focus:outline-none focus:ring-teal-500 focus:border-teal-500 focus:z-10 sm:text-sm transition-colors"
                     placeholder="Endereço de e-mail"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
