@@ -77,25 +77,25 @@ function LocationMapPage() {
                 <h2 className="text-xl font-bold mb-4">Lista de Localizações Registradas</h2>
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-border-color">
-                        <thead className="bg-header-bg border-b border-border-color">
+                        <thead className="bg-gradient-to-r from-accent-teal/10 to-accent-purple/10 border-b border-border-color">
                             <tr>
-                                <th className="px-4 py-2 text-left">Usuário</th>
-                                <th className="px-4 py-2 text-left">Cidade</th>
-                                <th className="px-4 py-2 text-left">Bairro</th>
-                                <th className="px-4 py-2 text-left">Estado</th>
-                                <th className="px-4 py-2 text-left">País</th>
-                                <th className="px-4 py-2 text-left">Última Atualização</th>
+                                <th className="px-4 py-3 text-left text-sm font-semibold uppercase tracking-wider text-secondary-text">Usuário</th>
+                                <th className="px-4 py-3 text-left text-sm font-semibold uppercase tracking-wider text-secondary-text">Cidade</th>
+                                <th className="px-4 py-3 text-left text-sm font-semibold uppercase tracking-wider text-secondary-text">Bairro</th>
+                                <th className="px-4 py-3 text-left text-sm font-semibold uppercase tracking-wider text-secondary-text">Estado</th>
+                                <th className="px-4 py-3 text-left text-sm font-semibold uppercase tracking-wider text-secondary-text">País</th>
+                                <th className="px-4 py-3 text-left text-sm font-semibold uppercase tracking-wider text-secondary-text">Última Atualização</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border-color">
                             {locations.map(loc => (
-                                <tr key={loc.user_id} className="hover:bg-border-color/50">
-                                    <td className="px-4 py-2">{loc.user_name}</td>
-                                    <td className="px-4 py-2">{loc.city}</td>
-                                    <td className="px-4 py-2">{loc.suburb}</td>
-                                    <td className="px-4 py-2">{loc.state}</td>
-                                    <td className="px-4 py-2">{loc.country}</td>
-                                    <td className="px-4 py-2 text-sm">{new Date(loc.last_update).toLocaleString()}</td>
+                                <tr key={loc.user_id} className="hover:bg-hover-bg-color0 transition-colors">
+                                    <td className="px-4 py-4 text-sm text-primary-text font-medium">{loc.user_name}</td>
+                                    <td className="px-4 py-4 text-sm text-primary-text">{loc.city}</td>
+                                    <td className="px-4 py-4 text-sm text-primary-text">{loc.suburb}</td>
+                                    <td className="px-4 py-4 text-sm text-primary-text">{loc.state}</td>
+                                    <td className="px-4 py-4 text-sm text-primary-text">{loc.country}</td>
+                                    <td className="px-4 py-4 text-sm text-secondary-text">{new Date(loc.last_update).toLocaleString()}</td>
                                 </tr>
                             ))}
                         </tbody>

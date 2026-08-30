@@ -99,14 +99,14 @@ function ActivityManagementPage() {
                     placeholder="Buscar por título ou professor..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-secondary-bg border border-border-color rounded-lg pl-10 pr-4 py-3 text-primary-text focus:ring-2 focus:ring-accent-teal outline-none transition-all shadow-md hover:shadow-lg"
+                    className="w-full bg-primary-bg border border-border-color rounded-lg pl-10 pr-4 py-3 text-primary-text focus:ring-2 focus:ring-accent-teal outline-none transition-all shadow-inner hover:shadow-md"
                 />
             </div>
 
             <div className="bg-secondary-bg border border-border-color rounded-xl shadow-md hover:shadow-lg transition-shadow overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-border-color">
-                        <thead className="bg-gradient-to-r from-blue-400/20 to-accent-purple/10">
+                        <thead className="bg-gradient-to-r from-accent-teal/10 to-accent-purple/10 border-b border-border-color">
                             <tr>
                                 <th className="py-4 px-4 text-left text-sm font-bold uppercase">ID</th>
                                 <th className="py-4 px-4 text-left text-sm font-bold uppercase">Título</th>
@@ -119,7 +119,7 @@ function ActivityManagementPage() {
                         <tbody className="divide-y divide-border-color">
                             {filteredActivities.map((activity) => (
                                 <React.Fragment key={activity.id}>
-                                    <tr className="hover:bg-border-color/50">
+                                    <tr className={`transition-colors ${expandedActivityId === activity.id ? 'bg-accent-teal/5' : 'hover:bg-hover-bg-color0'}`}>
                                         <td className="py-4 px-4 text-sm font-medium text-accent-yellow">{activity.id}</td>
                                         <td className="py-4 px-4 text-sm text-primary-text">{activity.title}</td>
                                         <td className="py-4 px-4 text-sm text-secondary-text">{activity.professor_name || 'N/A'}</td>
@@ -143,7 +143,7 @@ function ActivityManagementPage() {
                                     </tr>
                                     {expandedActivityId === activity.id && (
                                         <tr>
-                                            <td colSpan="6" className="p-4 bg-hover-bg-color">
+                                            <td colSpan="6" className="p-4 bg-accent-teal/5">
                                                 <div className="bg-secondary-bg border border-border-color p-4 rounded-lg">
                                                     <h4 className="font-bold text-primary-text mb-2">Descrição:</h4>
                                                     <p className="text-secondary-text text-sm leading-relaxed">{activity.description || 'Sem descrição.'}</p>

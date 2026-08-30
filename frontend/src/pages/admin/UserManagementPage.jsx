@@ -174,7 +174,7 @@ function UserManagementPage() {
             placeholder="Buscar por nome, email ou cargo..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-secondary-bg border border-border-color rounded-lg pl-10 pr-4 py-3 text-primary-text focus:ring-2 focus:ring-accent-teal outline-none transition-all shadow-md hover:shadow-lg"
+            className="w-full bg-primary-bg border border-border-color rounded-lg pl-10 pr-4 py-3 text-primary-text focus:ring-2 focus:ring-accent-teal outline-none transition-all shadow-inner hover:shadow-md"
         />
       </div>
 
@@ -182,7 +182,7 @@ function UserManagementPage() {
         <div className="overflow-x-auto">
           {/* Tabela de Usuários (JSX extraído da AdminPage original) */}
           <table className="min-w-full divide-y divide-border-color">
-            <thead className="bg-gradient-to-r from-accent-teal/20 to-accent-purple/10">
+            <thead className="bg-gradient-to-r from-accent-teal/10 to-accent-purple/10 border-b border-border-color">
               <tr>
                 {['id', 'name', 'email', 'role'].map((key) => (
                   <th key={key} className="py-4 px-4 text-left text-sm font-bold uppercase tracking-wider text-secondary-text cursor-pointer" onClick={() => handleSort(key)}>
@@ -201,16 +201,16 @@ function UserManagementPage() {
             </thead>
             <tbody className="divide-y divide-border-color">
               {sortedUsers.map((userItem) => (
-                <tr key={userItem.id} className="hover:bg-border-color/50">
+                <tr key={userItem.id} className={`transition-colors ${editingUserId === userItem.id ? 'bg-accent-teal/5' : 'hover:bg-hover-bg-color0'}`}>
                   {editingUserId === userItem.id ? (
                     <>
-                      <td className="py-4 px-4 text-sm">{userItem.id}</td>
+                      <td className="py-4 px-4 text-sm font-bold text-accent-yellow">{userItem.id}</td>
                       <td className="py-4 px-4 flex flex-col gap-2">
-                        <input name="name" value={editFormData.name || ''} onChange={handleEditInputChange} className="bg-border-color text-primary-text rounded px-2 py-1 w-full" placeholder="Nome" />
-                        <input name="password" value={editFormData.password || ''} onChange={handleEditInputChange} className="bg-border-color text-primary-text rounded px-2 py-1 w-full text-xs" placeholder="Nova Senha (Opcional)" type="text" />
+                        <input name="name" value={editFormData.name || ''} onChange={handleEditInputChange} className="bg-primary-bg border border-border-color text-primary-text rounded-md px-3 py-2 w-full focus:ring-2 focus:ring-accent-teal outline-none shadow-inner" placeholder="Nome" />
+                        <input name="password" value={editFormData.password || ''} onChange={handleEditInputChange} className="bg-primary-bg border border-border-color text-primary-text rounded-md px-3 py-2 w-full text-xs focus:ring-2 focus:ring-accent-teal outline-none shadow-inner" placeholder="Nova Senha (Opcional)" type="text" />
                       </td>
-                      <td className="py-4 px-4"><input name="email" value={editFormData.email || ''} onChange={handleEditInputChange} className="bg-border-color text-primary-text rounded px-2 py-1 w-full" placeholder="Email" /></td>
-                      <td className="py-4 px-4"><select name="role" value={editFormData.role} onChange={handleEditInputChange} className="bg-border-color text-primary-text rounded px-2 py-1 w-full"><option value="aluno">aluno</option><option value="professor">professor</option><option value="admin">admin</option></select></td>
+                      <td className="py-4 px-4"><input name="email" value={editFormData.email || ''} onChange={handleEditInputChange} className="bg-primary-bg border border-border-color text-primary-text rounded-md px-3 py-2 w-full focus:ring-2 focus:ring-accent-teal outline-none shadow-inner" placeholder="Email" /></td>
+                      <td className="py-4 px-4"><select name="role" value={editFormData.role} onChange={handleEditInputChange} className="bg-primary-bg border border-border-color text-primary-text rounded-md px-3 py-2 w-full focus:ring-2 focus:ring-accent-teal outline-none shadow-inner"><option value="aluno">aluno</option><option value="professor">professor</option><option value="admin">admin</option></select></td>
                       <td className="py-4 px-4 flex justify-end space-x-2">
                         <button onClick={handleSaveEdit} className="p-2 hover:bg-green-500/20 rounded"><Save size={18} className="text-green-400" /></button>
                         <button onClick={handleCancelEdit} className="p-2 hover:bg-red-500/20 rounded"><X size={18} className="text-red-400" /></button>

@@ -11,7 +11,7 @@ import {
 // --- Componentes de UI Reutilizáveis (sem alterações) ---
 
 const KPI_Card = ({ title, value, icon, color }) => (
-    <div className="bg-secondary-bg border border-border-color p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center space-x-4">
+    <div className="bg-secondary-bg border border-border-color p-6 rounded-xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all flex items-center space-x-4">
         <div className={`p-3 rounded-full ${color}`}>
             {icon}
         </div>
@@ -306,7 +306,7 @@ function SystemAnalyticsPage() {
                         key={tab}
                         onClick={() => setActiveTab(tab)}
                         className={`px-4 py-2 text-sm font-medium transition-colors duration-200 focus:outline-none ${activeTab === tab
-                            ? 'border-b-2 border-accent-teal text-accent-teal'
+                            ? 'border-b-2 border-accent-teal text-accent-teal bg-accent-teal/10 rounded-t-lg'
                             : 'text-secondary-text hover:text-primary-text'
                             }`}
                     >

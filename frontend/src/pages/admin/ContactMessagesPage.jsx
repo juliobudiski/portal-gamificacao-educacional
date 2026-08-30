@@ -157,7 +157,7 @@ const ContactMessagesPage = () => {
                             <input
                                 type="text"
                                 placeholder="Buscar remetente..."
-                                className="w-full pl-10 pr-4 py-2 bg-primary-bg border border-border-color rounded-lg text-sm text-primary-text focus:border-accent-teal focus:outline-none transition-colors"
+                                className="w-full pl-10 pr-4 py-2 bg-primary-bg border border-border-color rounded-lg text-sm text-primary-text focus:ring-2 focus:ring-accent-teal outline-none transition-all shadow-inner hover:shadow-md"
                             />
                         </div>
                     </div>
@@ -172,8 +172,8 @@ const ContactMessagesPage = () => {
                                 <div
                                     key={msg.id}
                                     onClick={() => handleSelectMessage(msg)}
-                                    className={`p-4 border-b border-border-color cursor-pointer transition-all hover:bg-hover-bg-color group
-                                        ${selectedMsg?.id === msg.id ? 'bg-hover-bg-color border-l-4 border-l-accent-teal' : 'border-l-4 border-l-transparent'}
+                                    className={`p-4 border-b border-border-color cursor-pointer transition-colors hover:bg-hover-bg-color0 group
+                                        ${selectedMsg?.id === msg.id ? 'bg-accent-teal/5 border-l-4 border-l-accent-teal' : 'border-l-4 border-l-transparent'}
                                     `}
                                 >
                                     <div className="flex justify-between items-start mb-1">
