@@ -10,11 +10,11 @@ import { MessageSquare, MapPin, LayoutDashboard, Users, BookCopy, BarChart4, Log
  */
 function Sidebar() {
   // Estilos base para os links de navegação
-  const baseLinkStyle = "flex items-center px-4 py-3 text-secondary-text rounded-lg transition-colors duration-200";
+  const baseLinkStyle = "flex items-center px-4 py-3 text-secondary-text rounded-lg transition-all duration-300";
   // Estilos para o link ativo (página atual)
-  const activeLinkStyle = "bg-gradient-to-r from-accent-teal/20 to-accent-purple/20 text-primary-text font-semibold shadow-inner";
+  const activeLinkStyle = "bg-gradient-to-r from-accent-teal/20 to-accent-purple/20 text-primary-text font-bold shadow-[0_0_15px_rgba(var(--accent-teal),0.1)] border border-accent-teal/10";
   // Estilos para o link inativo (hover)
-  const inactiveLinkStyle = "hover:bg-border-color hover:text-primary-text";
+  const inactiveLinkStyle = "hover:bg-hover-bg-color0 hover:text-primary-text hover:translate-x-1";
 
   return (
     <aside className="w-64 bg-primary-bg/50 backdrop-blur-sm flex-shrink-0 flex flex-col border-r border-border-color">

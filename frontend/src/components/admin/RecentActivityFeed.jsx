@@ -78,15 +78,15 @@ function RecentActivityFeed({ feedItems }) {
   return (
     <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
       {feedItems.map(item => (
-        <div key={item.id} className="flex items-start space-x-3">
-          <div className="flex-shrink-0 bg-border-color p-2 rounded-full">
+        <div key={item.id} className="flex items-start space-x-3 p-3 rounded-xl hover:bg-hover-bg-color0 transition-all duration-200 cursor-pointer">
+          <div className="flex-shrink-0 bg-secondary-bg p-2 rounded-full shadow-sm">
             {iconMap[item.action] || <PlusCircle className="text-secondary-text" size={16} />}
           </div>
           <div>
             <p className="text-sm text-secondary-text">
-              <span className="font-bold">{item.user_name}</span> {formatActionText(item)}
+              <span className="font-bold text-primary-text">{item.user_name}</span> {formatActionText(item)}
             </p>
-            <p className="text-xs text-secondary-text">
+            <p className="text-xs text-secondary-text opacity-70 mt-0.5">
               {formatDistanceToNow(new Date(item.timestamp), { addSuffix: true, locale: ptBR })}
             </p>
           </div>

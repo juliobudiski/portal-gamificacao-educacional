@@ -29,13 +29,14 @@ function UserGrowthChart({ data }) {
             contentStyle={{
               backgroundColor: 'var(--background-secondary)',
               border: '1px solid var(--border-color)',
-              borderRadius: '0.5rem',
-              color: 'var(--text-primary)'
+              borderRadius: '12px',
+              color: 'var(--text-primary)',
+              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
             }}
-            labelStyle={{ color: 'var(--text-primary)' }}
+            labelStyle={{ color: 'var(--text-primary)', fontWeight: 'bold', marginBottom: '4px' }}
           />
           <Legend wrapperStyle={{ color: 'var(--text-secondary)' }} />
-          <Line type="monotone" dataKey="Novos Usuários" stroke="#38B2AC" strokeWidth={2} activeDot={{ r: 8 }} />
+          <Line type="monotone" dataKey="Novos Usuários" stroke="var(--accent-teal)" strokeWidth={3} activeDot={{ r: 6, strokeWidth: 0, fill: "var(--accent-teal)" }} dot={{ r: 4, strokeWidth: 2, fill: 'var(--background-secondary)' }} />
         </LineChart>
       </ResponsiveContainer>
     </div>

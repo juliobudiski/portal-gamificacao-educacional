@@ -26,13 +26,15 @@ function TopActivitiesChart({ data }) {
                         contentStyle={{
                             backgroundColor: 'var(--background-secondary)',
                             border: '1px solid var(--border-color)',
-                            borderRadius: '0.5rem',
-                            color: 'var(--text-primary)'
+                            borderRadius: '12px',
+                            color: 'var(--text-primary)',
+                            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
                         }}
-                        labelStyle={{ color: 'var(--text-primary)' }}
+                        labelStyle={{ color: 'var(--text-primary)', fontWeight: 'bold', marginBottom: '4px' }}
+                        cursor={{ fill: 'var(--background-primary)', opacity: 0.4 }}
                     />
-                    <Legend wrapperStyle={{ color: 'var(--text-secondary)' }} />
-                    <Bar dataKey="Cópias" fill="#805AD5" />
+                    <Legend wrapperStyle={{ color: 'var(--text-secondary)', paddingTop: '10px' }} />
+                    <Bar dataKey="Cópias" fill="var(--accent-purple)" radius={[0, 4, 4, 0]} />
                 </BarChart>
             </ResponsiveContainer>
         </div>
