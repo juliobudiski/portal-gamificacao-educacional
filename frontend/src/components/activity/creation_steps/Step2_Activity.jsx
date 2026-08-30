@@ -99,15 +99,15 @@ function Step2_DesiredScenario({ activityData, handleInputChange, setActivityDat
               className={`
                 group relative flex h-full cursor-pointer flex-col items-center justify-start space-y-3 rounded-xl border p-5 text-center transition-all duration-200
                 ${isSelected
-                  ? 'border-2 border-teal-500 bg-teal-50 dark:bg-teal-900/40 shadow-md'
-                  : 'border-border-color bg-secondary-bg hover:border-teal-400 hover:shadow-lg dark:border-border-color dark:bg-primary-bg'
+                  ? 'border-2 border-accent-teal bg-accent-teal/10 shadow-[0_0_15px_rgba(var(--accent-teal),0.2)]'
+                  : 'border-border-color bg-secondary-bg hover:border-accent-teal/50 hover:shadow-lg'
                 }
               `}
             >
-              <div className={`text-4xl ${isSelected ? 'text-teal-500' : 'text-secondary-text group-hover:text-teal-500 dark:text-secondary-text'}`}>
+              <div className={`text-4xl transition-transform group-hover:scale-110 ${isSelected ? 'text-accent-teal' : 'text-secondary-text group-hover:text-accent-teal'}`}>
                 {objective.icon}
               </div>
-              <p className={`text-sm font-medium ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-secondary-text'}`}>
+              <p className={`text-sm font-medium ${isSelected ? 'text-accent-teal font-bold' : 'text-secondary-text'}`}>
                 {objective.text}
               </p>
             </div>
@@ -125,14 +125,14 @@ function Step2_DesiredScenario({ activityData, handleInputChange, setActivityDat
           name="desiredScenario.otherObjective"
           value={activityData.desiredScenario.otherObjective || ''}
           onChange={handleInputChange}
-          className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-primary-bg border border-border-color rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+          className="mt-1 block w-full px-4 py-2 bg-primary-bg border border-border-color rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-accent-teal sm:text-sm text-primary-text"
           placeholder="Ex: Preparar alunos para a maratona de programação..."
         />
       </div>
 
       <button
         onClick={() => openHelp('cenario_desejado')}
-        className="bg-blue-500 text-white px-4 py-2 rounded"
+        className="bg-info text-white px-4 py-2 rounded-lg font-bold hover:bg-info/90 transition-colors"
       >
         Ajuda
       </button>

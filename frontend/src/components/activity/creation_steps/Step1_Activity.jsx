@@ -153,7 +153,7 @@ function Step1_InitialDetails({ activityData, handleInputChange, setActivityData
               name="subdomain"
               value={activityData.subdomain || ""}
               onChange={handleInputChange}
-              className="block w-full px-4 py-2 bg-teal-50 dark:bg-teal-900/20 border border-teal-300 dark:border-teal-700 rounded-md focus:ring-teal-500 sm:text-sm"
+              className="block w-full px-4 py-2 bg-primary-bg border border-border-color rounded-md focus:ring-accent-teal sm:text-sm text-primary-text"
             >
               <option value="">Geral / Sem foco específico</option>
               {SUBDOMAINS_COMPUTING.map(sub => (
@@ -164,10 +164,10 @@ function Step1_InitialDetails({ activityData, handleInputChange, setActivityData
         )}
 
         {!isComputingArea && (
-          <div className="md:col-span-2 bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-500 p-4 rounded-md animate-fade-in">
+          <div className="md:col-span-2 bg-info-bg/20 border-l-4 border-info p-4 rounded-md animate-fade-in">
             <div className="flex items-start">
-              <FaInfoCircle className="text-blue-500 mt-0.5 mr-3 flex-shrink-0" />
-              <p className="text-sm text-blue-800 dark:text-blue-200">
+              <FaInfoCircle className="text-info mt-0.5 mr-3 flex-shrink-0" />
+              <p className="text-sm text-info dark:text-info">
                 <strong>Modo Exploratório:</strong> O motor de evidências científicas desta versão foca em disciplinas de Computação e Engenharia de Software. Para a sua área, o sistema operará de forma genérica.
               </p>
             </div>
@@ -191,15 +191,15 @@ function Step1_InitialDetails({ activityData, handleInputChange, setActivityData
                 className={`
                   group relative flex cursor-pointer flex-col items-center justify-start space-y-3 rounded-xl border p-4 text-center transition-all duration-200
                   ${isSelected
-                    ? 'border-2 border-teal-500 bg-teal-50 dark:bg-teal-900/40 shadow-md'
-                    : 'border-border-color bg-secondary-bg hover:border-teal-400 hover:shadow-lg dark:bg-primary-bg'
+                    ? 'border-2 border-accent-teal bg-accent-teal/10 shadow-[0_0_15px_rgba(var(--accent-teal),0.2)]'
+                    : 'border-border-color bg-secondary-bg hover:border-accent-teal/50 hover:shadow-lg'
                   }
                 `}
               >
-                <div className={`text-3xl ${isSelected ? 'text-teal-500' : 'text-secondary-text group-hover:text-teal-500'}`}>
+                <div className={`text-3xl transition-transform group-hover:scale-110 ${isSelected ? 'text-accent-teal' : 'text-secondary-text group-hover:text-accent-teal'}`}>
                   {problem.icon}
                 </div>
-                <p className={`text-sm font-medium ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-secondary-text'}`}>
+                <p className={`text-sm font-medium ${isSelected ? 'text-accent-teal font-bold' : 'text-secondary-text'}`}>
                   {problem.text}
                 </p>
               </div>

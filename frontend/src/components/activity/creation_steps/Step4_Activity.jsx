@@ -90,18 +90,18 @@ function Step4_PlayerProfile({ activityData, setActivityData, openHelpModal }) {
               className={`
                 group relative flex h-full cursor-pointer flex-col items-center justify-start space-y-3 rounded-xl border p-6 text-center transition-all duration-200
                 ${isSelected
-                  ? 'border-2 border-teal-500 bg-teal-50 dark:bg-teal-900/40 ring-2 ring-teal-500/20'
-                  : 'border-border-color bg-secondary-bg hover:border-teal-400 hover:shadow-lg dark:border-border-color dark:bg-primary-bg dark:hover:border-teal-500'
+                  ? 'border-2 border-accent-teal bg-accent-teal/10 shadow-[0_0_15px_rgba(var(--accent-teal),0.2)]'
+                  : 'border-border-color bg-secondary-bg hover:border-accent-teal/50 hover:shadow-lg'
                 }
               `}
             >
-              <div className={`text-5xl mb-2 ${isSelected ? 'text-teal-500' : 'text-secondary-text group-hover:text-teal-500 dark:text-secondary-text dark:group-hover:text-teal-400'}`}>
+              <div className={`text-5xl mb-2 transition-transform group-hover:scale-110 ${isSelected ? 'text-accent-teal' : 'text-secondary-text group-hover:text-accent-teal'}`}>
                 {profile.icon}
               </div>
-              <h4 className={`text-base font-semibold ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-primary-text dark:text-secondary-text'}`}>
+              <h4 className={`text-base font-bold ${isSelected ? 'text-accent-teal' : 'text-primary-text'}`}>
                 {profile.name}
               </h4>
-              <p className={`text-xs ${isSelected ? 'text-teal-700 dark:text-teal-200' : 'text-secondary-text'}`}>
+              <p className={`text-xs ${isSelected ? 'text-primary-text' : 'text-secondary-text'}`}>
                 {profile.description}
               </p>
             </div>
@@ -112,8 +112,8 @@ function Step4_PlayerProfile({ activityData, setActivityData, openHelpModal }) {
       {/* SEÇÃO 3: Botão de Ajuda */}
 
       <button
-        onClick={() => openHelp('perfil_jogador')} // Chama pelo ID
-        className="bg-blue-500 text-white px-4 py-2 rounded"
+        onClick={() => openHelp('perfil_jogador')}
+        className="bg-info text-white px-4 py-2 rounded-lg font-bold hover:bg-info/90 transition-colors"
       >
         Ajuda
       </button>

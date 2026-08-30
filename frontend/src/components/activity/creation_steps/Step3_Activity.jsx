@@ -154,15 +154,15 @@ function Step3_ActivityPlanning({ activityData, handleInputChange, setActivityDa
                 className={`
                   group relative flex h-full cursor-pointer flex-col items-center justify-start space-y-3 rounded-xl border p-5 text-center transition-all duration-200
                   ${isSelected
-                    ? 'border-2 border-accent-yellow bg-yellow-50 dark:bg-yellow-900/20 ring-2 ring-yellow-500/20'
+                    ? 'border-2 border-accent-yellow bg-accent-yellow/10 shadow-[0_0_15px_rgba(var(--accent-yellow),0.2)]'
                     : 'border-border-color bg-secondary-bg hover:border-accent-yellow/50 hover:shadow-lg'
                   }
                 `}
               >
-                <div className={`text-4xl ${isSelected ? 'text-accent-yellow' : 'text-secondary-text group-hover:text-accent-yellow/80'}`}>
+                <div className={`text-4xl transition-transform group-hover:scale-110 ${isSelected ? 'text-accent-yellow' : 'text-secondary-text group-hover:text-accent-yellow/80'}`}>
                   {env.icon}
                 </div>
-                <p className={`text-sm font-medium ${isSelected ? 'text-yellow-800 dark:text-yellow-100' : 'text-secondary-text'}`}>
+                <p className={`text-sm font-medium ${isSelected ? 'text-accent-yellow font-bold' : 'text-secondary-text'}`}>
                   {env.text}
                 </p>
               </div>
@@ -185,15 +185,15 @@ function Step3_ActivityPlanning({ activityData, handleInputChange, setActivityDa
                 className={`
                   group relative flex h-full cursor-pointer flex-col items-center justify-start space-y-3 rounded-xl border p-5 text-center transition-all duration-200
                   ${isSelected
-                    ? 'border-2 border-teal-500 bg-teal-50 dark:bg-teal-900/40 ring-2 ring-teal-500/20'
-                    : 'border-border-color bg-secondary-bg hover:border-teal-400 hover:shadow-lg'
+                    ? 'border-2 border-accent-teal bg-accent-teal/10 shadow-[0_0_15px_rgba(var(--accent-teal),0.2)]'
+                    : 'border-border-color bg-secondary-bg hover:border-accent-teal/50 hover:shadow-lg'
                   }
                 `}
               >
-                <div className={`text-4xl ${isSelected ? 'text-teal-500' : 'text-secondary-text group-hover:text-teal-500'}`}>
+                <div className={`text-4xl transition-transform group-hover:scale-110 ${isSelected ? 'text-accent-teal' : 'text-secondary-text group-hover:text-accent-teal'}`}>
                   {char.icon}
                 </div>
-                <p className={`text-sm font-medium ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-secondary-text'}`}>
+                <p className={`text-sm font-medium ${isSelected ? 'text-accent-teal font-bold' : 'text-secondary-text'}`}>
                   {char.text}
                 </p>
               </div>
@@ -209,19 +209,19 @@ function Step3_ActivityPlanning({ activityData, handleInputChange, setActivityDa
         <div className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-2">
           <div>
             <label className="block text-sm font-medium text-secondary-text">Quantidade de participantes</label>
-            <input type="text" name="activityPlanning.participantsQuantity" value={activityData.activityPlanning.participantsQuantity} onChange={handleInputChange} className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-primary-bg border border-border-color rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 sm:text-sm" placeholder="Ex: 25 alunos" />
+            <input type="text" name="activityPlanning.participantsQuantity" value={activityData.activityPlanning.participantsQuantity} onChange={handleInputChange} className="mt-1 block w-full px-4 py-2 bg-primary-bg border border-border-color rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-accent-teal text-primary-text sm:text-sm" placeholder="Ex: 25 alunos" />
           </div>
           <div>
             <label className="block text-sm font-medium text-secondary-text">Duração prevista</label>
-            <input type="text" name="activityPlanning.expectedDuration" value={activityData.activityPlanning.expectedDuration} onChange={handleInputChange} className="mt-1 block w-full px-4 py-2 bg-secondary-bg border border-border-color rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 sm:text-sm" placeholder="Ex: 90 minutos" />
+            <input type="text" name="activityPlanning.expectedDuration" value={activityData.activityPlanning.expectedDuration} onChange={handleInputChange} className="mt-1 block w-full px-4 py-2 bg-primary-bg border border-border-color rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-accent-teal text-primary-text sm:text-sm" placeholder="Ex: 90 minutos" />
           </div>
           <div>
             <label className="block text-sm font-medium text-secondary-text">Localização</label>
-            <input type="text" name="activityPlanning.location" value={activityData.activityPlanning.location} onChange={handleInputChange} className="mt-1 block w-full px-4 py-2 bg-secondary-bg border border-border-color rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 sm:text-sm" placeholder="Ex: Laboratório 5, Online (Discord)" />
+            <input type="text" name="activityPlanning.location" value={activityData.activityPlanning.location} onChange={handleInputChange} className="mt-1 block w-full px-4 py-2 bg-primary-bg border border-border-color rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-accent-teal text-primary-text sm:text-sm" placeholder="Ex: Laboratório 5, Online (Discord)" />
           </div>
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-secondary-text">Outras informações relevantes (Opcional)</label>
-            <textarea name="activityPlanning.otherInfo" value={activityData.activityPlanning.otherInfo} onChange={handleInputChange} rows="3" className="mt-1 block w-full px-4 py-2 bg-secondary-bg border border-border-color rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 sm:text-sm" placeholder="Ex: Os alunos precisam trazer notebook."></textarea>
+            <textarea name="activityPlanning.otherInfo" value={activityData.activityPlanning.otherInfo} onChange={handleInputChange} rows="3" className="mt-1 block w-full px-4 py-2 bg-primary-bg border border-border-color rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-accent-teal text-primary-text sm:text-sm" placeholder="Ex: Os alunos precisam trazer notebook."></textarea>
           </div>
         </div>
       </div>

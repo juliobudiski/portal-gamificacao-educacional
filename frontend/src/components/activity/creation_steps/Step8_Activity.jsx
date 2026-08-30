@@ -90,15 +90,15 @@ function Step7_RewardedActions({ activityData, handleInputChange, setActivityDat
               className={`
                 group relative flex h-full cursor-pointer flex-col items-center justify-start space-y-2 rounded-xl border p-4 text-center transition-all duration-200
                 ${isSelected
-                  ? 'border-2 border-teal-500 bg-teal-50 dark:bg-teal-900/40 ring-2 ring-teal-500/20'
-                  : 'border-border-color bg-secondary-bg hover:border-teal-400 hover:shadow-lg dark:border-border-color dark:bg-primary-bg dark:hover:border-teal-500'
+                  ? 'border-2 border-accent-teal bg-accent-teal/10 shadow-[0_0_15px_rgba(var(--accent-teal),0.2)]'
+                  : 'border-border-color bg-secondary-bg hover:border-accent-teal/50 hover:shadow-lg'
                 }
               `}
             >
-              <div className={`text-4xl ${isSelected ? 'text-teal-500' : 'text-secondary-text group-hover:text-teal-500 dark:text-secondary-text dark:group-hover:text-teal-400'}`}>
+              <div className={`text-4xl transition-transform group-hover:scale-110 ${isSelected ? 'text-accent-teal' : 'text-secondary-text group-hover:text-accent-teal'}`}>
                 {action.icon}
               </div>
-              <p className={`text-sm font-medium ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-secondary-text'}`}>
+              <p className={`text-sm font-medium ${isSelected ? 'text-accent-teal font-bold' : 'text-secondary-text'}`}>
                 {action.text}
               </p>
             </div>
@@ -117,13 +117,13 @@ function Step7_RewardedActions({ activityData, handleInputChange, setActivityDat
           name="rewardedActions.otherAction"
           value={activityData.rewardedActions.otherAction}
           onChange={handleInputChange}
-          className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-primary-bg border border-border-color rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+          className="mt-1 block w-full px-4 py-2 bg-primary-bg border border-border-color rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-accent-teal text-primary-text sm:text-sm"
           placeholder="Descreva uma ação personalizada"
         />
       </div>
       <button
         onClick={() => openHelp('acoes_recompensadas')} // Chama pelo ID
-        className="bg-blue-500 text-white px-4 py-2 rounded"
+        className="bg-info text-white px-4 py-2 rounded-lg font-bold hover:bg-info/90 transition-colors"
       >
         Ajuda
       </button>
