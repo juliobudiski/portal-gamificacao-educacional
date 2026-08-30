@@ -1,3 +1,8 @@
+"""
+Serviço de Turmas (ClassService)
+Gerencia a criação de turmas, o sorteio e balanceamento de equipes (Casas/Guildas)
+e o fluxo de matrícula dos alunos através de códigos de convite.
+"""
 from flask import current_app
 from ..models import db, User, Class, Enrollment, Team
 import random
@@ -5,7 +10,10 @@ import random
 class ClassService:
     @staticmethod
     def assign_student_to_smallest_team(existing_teams, new_enrollment, user_id):
-        """Encontra o time com menos membros e matricula o aluno nele para balanceamento."""
+        """
+        Encontra a equipe com menos membros na turma e matricula o aluno nela.
+        Garante que, se alunos entrarem na turma atrasados, as equipes permaneçam balanceadas.
+        """
         existing_teams.sort(key=lambda t: len(t.members))
         target_team = existing_teams[0]
         new_enrollment.team_id = target_team.id
@@ -13,7 +21,11 @@ class ClassService:
 
     @staticmethod
     def distribute_students_to_teams(students, created_teams, method):
-        """Distribui uma lista de alunos entre times recém-criados usando um método específico."""
+        """
+        Distribui uma lista de alunos entre as equipes recém-criadas.
+        Suporta sorteio 'random' (aleatório) ou 'balanced' (balanceado por XP global),
+        onde os alunos com mais XP são divididos primeiro.
+        """
         num_teams = len(created_teams)
         if method == 'balanced':
             students.sort(key=lambda x: x.student.global_xp if x.student else 0, reverse=True)
@@ -47,7 +59,10 @@ class ClassService:
 
     @staticmethod
     def join_class(user, enrollment_code):
-        """Processa a entrada de um aluno em uma turma pelo código."""
+        """
+        Processa a entrada de um aluno em uma turma utilizando o código de inscrição.
+        Se a turma já possuir equipes, o aluno é automaticamente colocado na equipe menor.
+        """
         class_to_join = Class.query.filter_by(enrollment_code=enrollment_code).first()
         if not class_to_join:
             return None, {"message": "Código de inscrição inválido."}, 404

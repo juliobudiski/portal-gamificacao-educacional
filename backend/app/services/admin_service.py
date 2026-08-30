@@ -1,3 +1,9 @@
+"""
+Serviço de Administração (AdminService)
+Encapsula lógicas pesadas consumidas pelo painel do administrador,
+como processamento em lote de CSVs e integração com APIs externas de geolocalização.
+"""
+
 import requests
 import csv
 from io import StringIO
@@ -10,7 +16,12 @@ from ..models import db, User, EventLog, Activity, ActivityProgress, Purchase
 class AdminService:
     @staticmethod
     def get_user_locations_data():
-        """Busca usuários com localização e resolve os nomes das cidades via API."""
+        """
+        Busca todos os usuários com coordenadas válidas e resolve o nome
+        das cidades via API externa (Nominatim / OpenStreetMap).
+        - Implementa um cache em memória (geo_cache) para evitar consultas
+          repetidas à API para coordenadas idênticas e economizar requisições.
+        """
         users_with_location = User.query.filter(
             User.last_known_latitude.isnot(None),
             User.last_known_longitude.isnot(None)
@@ -29,6 +40,7 @@ class AdminService:
             else:
                 try:
                     geo_url = f"https://nominatim.openstreetmap.org/reverse?format=json&lat={lat}&lon={lon}"
+                    # Header essencial exigido pela política de uso do Nominatim
                     headers = {'User-Agent': 'GamificaEduPortal/1.0'}
                     geo_res = requests.get(geo_url, headers=headers, timeout=5)
                     geo_res.raise_for_status()
@@ -61,7 +73,12 @@ class AdminService:
 
     @staticmethod
     def generate_csv_logs(search_user=None, filter_action=None, start_date_str=None, end_date_str=None):
-        """Gera um iterador com linhas CSV dos logs filtrados para download em streaming."""
+        """
+        Constrói e exporta um arquivo CSV contendo os logs do sistema (EventLog).
+        - Utiliza Yield e StringIO para gerar as linhas sob demanda (streaming),
+          evitando sobrecarregar a memória RAM do servidor com arrays imensos.
+        - Aplica filtros opcionais por usuário, ação e período de tempo.
+        """
         query = db.session.query(
             EventLog, User.name, User.email, User.role
         ).join(User, User.id == EventLog.user_id)

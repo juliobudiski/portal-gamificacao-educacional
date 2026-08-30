@@ -1,3 +1,9 @@
+"""
+Serviço de Autenticação (AuthService)
+Gerencia o registro, login, recuperação de senha e gestão de perfil dos usuários.
+Implementa proteções básicas de segurança (WAF interno) contra injeção SQL/Prompt
+e orquestra a geração dos tokens JWT com as claims (permissões) necessárias.
+"""
 import os
 from flask import current_app, request
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -26,6 +32,10 @@ def get_serializer():
 class AuthService:
     @staticmethod
     def _log_auth_event(user_id, action, details, is_success=True, remote_addr=None, user_agent=None):
+        """
+        Registra tentativas de login/registro (sucessos e falhas) no EventLog 
+        para auditoria de segurança e detecção de anomalias (ex: força bruta).
+        """
         try:
             event = EventLog(
                 user_id=user_id,
@@ -56,6 +66,12 @@ class AuthService:
 
     @staticmethod
     def register_user(data, remote_addr, user_agent):
+        """
+        Processa o cadastro de novos usuários.
+        - Se for professor, exige um código de convite (TEACHER_ACCESS_CODE).
+        - Bloqueia entradas maliciosas (WAF).
+        - Atribui avatares padrões iniciais.
+        """
         email = data.get('email', '')
         password = data.get('password', '')
         raw_name = data.get('name', '')
@@ -118,6 +134,7 @@ class AuthService:
 
     @staticmethod
     def login_user(data, remote_addr, user_agent):
+        """Valida credenciais (Email/Senha) e retorna um JWT contendo os dados essenciais da sessão."""
         email = data.get('email', '')
         password = data.get('password', '')
 
@@ -379,6 +396,10 @@ class AuthService:
 
     @staticmethod
     def get_api_keys(user_id):
+        """
+        Recupera as chaves de API (BYOK - Bring Your Own Key) configuradas pelo professor.
+        Essas chaves são usadas para customizar o provedor LLM.
+        """
         user = User.query.get(user_id)
         if not user:
             return None, {"message": "Usuário não encontrado."}, 404

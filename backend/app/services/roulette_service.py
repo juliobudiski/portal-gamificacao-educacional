@@ -1,3 +1,9 @@
+"""
+Serviço de Roleta e Caça-Níqueis (RouletteService)
+Fornece mecânicas de Recompensas Aleatórias (Chance) baseadas em sorte.
+Inclui a Roda da Fortuna diária (prêmios fixos) e a Slot Machine (Caça-Níqueis)
+onde o aluno pode apostar suas próprias moedas. Usa geração randômica segura (secrets).
+"""
 import secrets
 from datetime import datetime
 from app.models import db, Title, UserUnlockedTitle, RouletteWin, SlotWin
@@ -21,6 +27,11 @@ PAYLINES = [
 ]
 
 def spin_roulette(user, progress, activity_id, is_retry=False):
+    """
+    Gira a Roleta Diária.
+    Tenta garantir que o prêmio ganho não seja repetido (ex: Avatares ou Títulos),
+    girando novamente (re-roll) até 20 vezes nos bastidores.
+    """
     # --- [MODO TESTE] COOLDOWN DESATIVADO ---
     # Para ativar o cooldown diário, remova a checagem is_retry
     if not is_retry and progress.last_spin_date:
@@ -107,6 +118,12 @@ def spin_roulette(user, progress, activity_id, is_retry=False):
 
 
 def play_slot(user, progress, activity_id, bet_cost=10):
+    """
+    Gira o Caça-Níqueis (Slot Machine) de 3x3.
+    Deduz o custo da aposta (bet_cost), gera a matriz de símbolos respeitando seus pesos,
+    calcula as combinações vencedoras baseadas nas linhas de pagamento (paylines) e
+    credita os multiplicadores.
+    """
     current_coins = progress.coins or 0
     if current_coins < bet_cost:
         return {"error": f"Saldo insuficiente. Custo: {bet_cost} moedas.", "status": 400}

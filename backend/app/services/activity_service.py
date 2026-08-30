@@ -1,3 +1,9 @@
+"""
+Serviço de Atividades (ActivityService)
+Responsável por encapsular toda a lógica de negócio referente ao ciclo de vida
+das atividades gamificadas: criação oficial, gerenciamento de rascunhos (autosave),
+cópias, deleção em massa e atribuição a turmas.
+"""
 from .. import db
 from ..models import Activity, ActivityRevision, Tag, EventLog, ActivityProgress, Conversation, ChatMessage, ActivityRating 
 from flask import jsonify
@@ -52,6 +58,11 @@ DEFAULT_TITLES = [
 ]
 
 def create_activity(user, data):
+    """
+    Cria ou promove um rascunho a uma atividade oficial (is_draft = False).
+    Processa o gamificationDesign para instanciar tabelas de Quiz/Narrativa separadamente,
+    garantindo a modularidade do conteúdo criado.
+    """
     logger.info(f"Usuário ID {user.id} tentando criar uma nova atividade (Batch Creation).")
 
     if user.role != 'professor':
@@ -173,7 +184,10 @@ def create_activity(user, data):
         return {"message": f"Erro ao salvar atividade: {str(e)}"}, 500
 
 def update_activity_structure(user, activity_id, data):
-    """Atualiza apenas o campo gamification_design de uma atividade."""
+    """
+    Atualiza especificamente o gamificationDesign de uma atividade.
+    Útil para requisições parciais onde apenas a estrutura do tabuleiro muda.
+    """
     activity = Activity.query.get(activity_id)
 
     if not activity:
@@ -396,7 +410,11 @@ def get_public_activities(current_user_id, search_term=None):
 
 
 def copy_activity(user, activity_id):
-    """Copia uma atividade, permitindo que o professor copie seus próprios templates ou atividades públicas."""
+    """
+    Cria uma cópia exata de uma atividade pública ou do próprio professor.
+    Faz deepcopy de dicionários JSON para evitar referência cruzada e copia
+    individualmente os itens da loja para a nova instância.
+    """
     original_activity = Activity.query.get(activity_id)
 
     if not original_activity:
@@ -476,6 +494,11 @@ def copy_activity(user, activity_id):
         return {"message": str(e)}, 500
 
 def bulk_delete_activities(user, activity_ids):
+    """
+    Exclui um lote de atividades e limpa todas as suas dependências 
+    (Conversas, Avaliações, Loja, Respostas, Logs).
+    Garante que não haverá lixo no banco caso o banco não suporte ON DELETE CASCADE.
+    """
     if not isinstance(activity_ids, list) or not all(isinstance(i, int) for i in activity_ids):
         return {"message": "Entrada inválida. Esperava-se uma lista de IDs numéricos."}, 400
 
@@ -550,8 +573,9 @@ def bulk_delete_activities(user, activity_ids):
     
 def save_autosave(user, data):
     """
-    Salva o estado atual da criação como rascunho.
-    Funciona como UPSERT: Cria se não tiver ID, Atualiza se tiver.
+    Lida com os ciclos de Auto-Save em background do frontend.
+    Opera como UPSERT: Cria um rascunho se for a primeira vez (sem ID), 
+    ou atualiza continuamente o rascunho existente sem publicá-lo para os alunos.
     """
     activity_id = data.get('id')
     

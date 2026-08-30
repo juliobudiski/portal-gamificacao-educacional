@@ -1,9 +1,21 @@
+"""
+Serviço de Contato (ContactService)
+Responsável por abstrair as regras e persistência de mensagens enviadas
+pelos usuários na página de contato do portal.
+"""
+
 from app import db
 from app.models import ContactMessage
 
 class ContactService:
     @staticmethod
     def send_message(user_id, data):
+        """
+        Valida os campos obrigatórios e salva uma nova mensagem no banco de dados.
+        Se user_id for fornecido (usuário logado), ele será vinculado, 
+        senão será tratado como um visitante anônimo.
+        """
+        # Validação simples de requisitos mínimos
         if not data.get('message') or not data.get('email'):
             return {"error": "Campos obrigatórios faltando."}, 400
 

@@ -1,3 +1,9 @@
+"""
+Script de Demonstração (Showcase Scenarios)
+Usado para testar e validar o comportamento do RecommendationEngine via CLI.
+Simula cenários reais de input de professores para garantir que as heurísticas
+de veto e bônus estão funcionando de acordo com as regras de negócio.
+"""
 import json
 from recommendation_engine import ContextualRecommendationEngine
 

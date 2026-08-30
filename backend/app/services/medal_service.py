@@ -1,13 +1,25 @@
+"""
+Serviço de Medalhas (MedalService)
+Responsável pelo motor de regras de conquistas e badges (medalhas).
+Utiliza um padrão Strategy/Observer passivo: ao invés da rota checar cada medalha,
+ela apenas avisa o serviço qual evento ocorreu, e ele verifica os critérios.
+"""
+
 from flask import current_app
 from ..models import db, Medal, UserUnlockedMedal, User, ActivityProgress, StudentResponse, Activity
 
 class MedalService:
     @staticmethod
     def check_and_award_medals(user_id, activity_id, event_type, **kwargs):
-        """Função central que é chamada em pontos chave da aplicação."""
+        """
+        Função central que é chamada em pontos chave da aplicação (ex: finalizar atividade, responder quiz).
+        Recebe o 'event_type' (gatilho) e avalia apenas as funções atreladas a esse evento.
+        Se os requisitos da função forem cumpridos e o usuário não possuir a medalha, ela é destravada.
+        """
         user = User.query.get(user_id)
         if not user: return
 
+        # Mapeia eventos para listas de verificadores de medalha
         event_triggers = {
             'activity_completed': [
                 {'name': 'Medalha do Explorador', 'func': MedalService._check_medal_explorador},
@@ -23,6 +35,7 @@ class MedalService:
         triggered_checks = event_triggers.get(event_type, [])
         if not triggered_checks: return
 
+        # Busca medalhas já destravadas pelo usuário para evitar loops ou duplicidades
         unlocked_medal_ids = {m.medal_id for m in UserUnlockedMedal.query.filter_by(user_id=user_id).all()}
         medals_to_award = []
 
@@ -34,17 +47,20 @@ class MedalService:
             if not medal or medal.id in unlocked_medal_ids:
                 continue
 
+            # Executa a função validadora da medalha específica
             if check_function(user, activity_id, **kwargs):
                 new_unlock = UserUnlockedMedal(user_id=user.id, medal_id=medal.id, activity_id=activity_id)
                 db.session.add(new_unlock)
                 medals_to_award.append(medal.name)
                 current_app.logger.info(f"Medalha '{medal.name}' concedida ao usuário {user_id} na atividade {activity_id}.")
 
+        # Efetua um único commit para todas as medalhas ganhas nesta checagem
         if medals_to_award:
             db.session.commit()
 
     @staticmethod
     def _check_medal_explorador(user, activity_id, **kwargs):
+        """Regra: Completar 100% dos passos de uma atividade que possua trilha."""
         progress = ActivityProgress.query.filter_by(student_id=user.id, activity_id=activity_id).first()
         activity = Activity.query.get(activity_id)
 
@@ -58,6 +74,7 @@ class MedalService:
 
     @staticmethod
     def _check_medal_inspetor(user, activity_id, **kwargs):
+        """Regra: Terminar a atividade sem errar nenhuma questão."""
         incorrect_response = StudentResponse.query.filter_by(
             student_id=user.id, activity_id=activity_id, is_correct=False
         ).first()
@@ -65,6 +82,7 @@ class MedalService:
 
     @staticmethod
     def _check_medal_velocista(user, activity_id, **kwargs):
+        """Regra: Ser um dos 3 primeiros a completar a atividade na turma."""
         completion_count = ActivityProgress.query.filter(
             ActivityProgress.activity_id == activity_id,
             ActivityProgress.completed_at.isnot(None),
@@ -74,6 +92,7 @@ class MedalService:
 
     @staticmethod
     def _check_medal_fenix(user, activity_id, **kwargs):
+        """Regra: Acertar uma questão de quiz que havia errado em uma tentativa anterior."""
         is_current_answer_correct = kwargs.get('is_correct', False)
         if not is_current_answer_correct:
             return False

@@ -1,7 +1,19 @@
+"""
+Construtor de Prompts IA (AIPromptBuilder)
+Este módulo é o coração da Engenharia de Prompt (Prompt Engineering) do sistema.
+Ele dinamicamente orquestra e formata o contexto pedagógico para enviar à API do LLM,
+garantindo que o conteúdo gerado siga regras estritas de progressão curricular e output JSON.
+"""
+
 from typing import Dict, List
 
 def build_prompt(step_type: str, step_idx: int, total_steps: int, context: Dict, config: Dict, execution_trace: Dict) -> str:
-    """Constrói o prompt completo com lógica de progressão curricular."""
+    """
+    Constrói o prompt completo combinando a persona da IA, a fase da história 
+    (baseada no progresso atual) e as regras estritas de output JSON.
+    Assegura que a IA não ensine o tópico inteiro de uma vez, 
+    mas sim fragmente o conhecimento ao longo dos passos.
+    """
     teaching_focus = config.get('teachingFocus') or context.get('title', 'Tópico não definido')
     target_audience = config.get('targetAudience', 'Junior')
     characters_list = config.get('charactersList', [])
@@ -11,7 +23,7 @@ def build_prompt(step_type: str, step_idx: int, total_steps: int, context: Dict,
         for c in characters_list
     ])
 
-    # Calcula o progresso (0.0 a 1.0)
+    # Calcula o progresso (0.0 a 1.0) para definir a fase pedagógica
     progress_ratio = step_idx / total_steps if total_steps > 0 else 0
     
     # Define a fase da história E o foco pedagógico baseado no progresso
@@ -66,7 +78,7 @@ def build_prompt(step_type: str, step_idx: int, total_steps: int, context: Dict,
     """
 
 def get_system_persona(config: Dict) -> str:
-    """Monta a instrução de 'persona' do sistema."""
+    """Monta a instrução de 'persona' do sistema, definindo o tom (ex: Aventura) e a personalidade (ex: Socrático)."""
     personality = config.get('personality', 'Socrático')
     tone = config.get('tone', 'Aventura')
 
@@ -84,7 +96,7 @@ def get_system_persona(config: Dict) -> str:
     """
 
 def get_dynamic_instruction(step_type: str, trace: Dict, phase: str, cast: str, topic: str, config: Dict) -> str:
-    """Retorna a instrução específica da tarefa para a IA com base no tipo de passo."""
+    """Retorna a instrução específica da tarefa para a IA com base no tipo de passo (Narrativa, Quiz ou Conteúdo)."""
     if step_type == 'narrative':
         return f"""
         **TAREFA:** Escrever um roteiro de diálogo curto e tenso.
@@ -143,7 +155,10 @@ def get_dynamic_instruction(step_type: str, trace: Dict, phase: str, cast: str, 
     return ""
 
 def get_strict_instructions(step_type: str, quiz_count: int, dialogue_len: int, char_list: List[Dict]) -> str:
-    """Define e retorna o schema JSON que a IA deve seguir para sua resposta."""
+    """
+    Define e retorna o schema JSON que a IA deve seguir para a sua resposta.
+    Isso é vital para que o parser do backend não falhe na leitura.
+    """
     roles = [c['role'] for c in char_list]
     role1 = roles[0] if len(roles) > 0 else "Mentor"
     role2 = roles[1] if len(roles) > 1 else "Aluno"

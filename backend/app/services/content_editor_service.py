@@ -1,3 +1,9 @@
+"""
+Serviço de Edição de Conteúdo (ContentEditorService)
+Lida exclusivamente com o CRUD de conteúdos granulares (Quiz, Narrativa, Conteúdo Estático)
+que pertencem aos "passos" (steps) individuais do tabuleiro gamificado de uma Atividade.
+Garante que apenas o professor dono da atividade pode modificar esses conteúdos.
+"""
 from flask import current_app
 from ..models import db, Activity, QuizContent, NarrativeContent, LearningContent
 
@@ -14,6 +20,10 @@ class ContentEditorService:
 
     @staticmethod
     def get_step_content(activity_id, step_id, content_type):
+        """
+        Recupera o conteúdo de um passo específico, roteando a busca para a tabela
+        correta (QuizContent, NarrativeContent ou LearningContent) com base no 'content_type'.
+        """
         learning_content = LearningContent.query.filter_by(activity_id=activity_id, step_id=step_id).first()
         current_app.logger.info(f"Buscando conteúdo para step_id: {step_id}")
 
@@ -69,6 +79,12 @@ class ContentEditorService:
 
     @staticmethod
     def save_step_content(activity_id, step_id, data):
+        """
+        Salva ou atualiza os dados de um passo específico na sua respectiva tabela.
+        Este modelo de dados normalizado (tabelas separadas) permite que a plataforma scale
+        suportando arquivos grandes, vídeos e dezenas de perguntas sem sobrecarregar
+        a tabela principal de Atividade.
+        """
         content_type = data.get('type')
 
         current_app.logger.info(f"Salvando conteúdo para step_id: {step_id} do tipo: {content_type}")

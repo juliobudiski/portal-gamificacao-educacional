@@ -1,4 +1,9 @@
-# backend/app/services/recommendation_engine.py
+"""
+Motor de Recomendação Baseado em Contexto (RecommendationEngine)
+Implementa a lógica matemática e heurística (M.U.I.) para sugerir mecânicas
+de gamificação aos professores, baseando-se no perfil da turma, na área de 
+conhecimento (SWEBOK) e na restrição logística (presencial vs EAD).
+"""
 import json
 import os
 import logging
@@ -93,6 +98,11 @@ OBJECTIVE_MODS = {
 # 2. MOTOR DE PRECIFICAÇÃO HEURÍSTICA (M.U.I. - Heuristic Scoring Engine)
 # ==========================================
 class ContextualRecommendationEngine:
+    """
+    Motor heurístico que cruza dados do SWEBOK (Knowledge Base) com
+    o input do professor para calcular o Score Bruto (Benefício) e
+    aplicar vetos/penalidades matemáticas baseadas no risco da mecânica.
+    """
     def __init__(self, kb_path: str = "knowledge_base.json"):
         self.kb_path = kb_path
         self._load_knowledge_base()
@@ -108,6 +118,10 @@ class ContextualRecommendationEngine:
             self.bible = {}
 
     def _classify_objectives(self, frontend_texts: List[str]) -> List[str]:
+        """
+        Lê os objetivos digitados pelo professor e classifica semanticamente
+        em categorias ('teorico', 'pratico', 'colaborativo') usando RegEx.
+        """
         text_joined = " ".join(frontend_texts).lower()
         classes = []
         
@@ -176,6 +190,12 @@ class ContextualRecommendationEngine:
         return final_mu, final_lambda, has_positive, has_negative
 
     def calculate_recommendations(self, context_data: dict) -> dict:
+        """
+        Função principal que orquestra o pipeline matemático.
+        Recebe o contexto completo, cruza com a Knowledge Base, calcula
+        a Fronteira de Decisão (Score), aplica vetos logísticos e 
+        formata a resposta final particionada para a interface React.
+        """
         try:
             val_input = GameficaContextInput(**context_data)
         except Exception as e:

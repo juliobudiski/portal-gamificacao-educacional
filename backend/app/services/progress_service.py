@@ -1,3 +1,9 @@
+"""
+Serviço de Progresso (ProgressService)
+Gerencia a lógica de gamificação vinculada ao aluno: cálculo dinâmico de XP/Níveis,
+rastreamento do avanço nos passos do tabuleiro (board) e posicionamento multiplayer
+em tempo real (quem está em qual casa).
+"""
 from datetime import datetime
 from flask import current_app
 from ..models import db, User, ActivityProgress, Activity, Enrollment, Team
@@ -5,12 +11,20 @@ from ..models import db, User, ActivityProgress, Activity, Enrollment, Team
 class ProgressService:
     @staticmethod
     def xp_for_next_level(level):
-        """Calcula o XP necessário para o próximo nível com base no nível atual."""
+        """
+        Calcula o XP necessário para o próximo nível (Curva de Dificuldade Linear).
+        Nível 1->2 (100xp), 2->3 (150xp), 3->4 (200xp)...
+        """
         return 100 + (level - 1) * 50
 
     @staticmethod
     def calculate_level(total_points):
-        """Calcula o nível atual, o XP para o próximo nível e o XP acumulado até o nível atual."""
+        """
+        Itera sobre o XP total acumulado pelo aluno e retorna:
+        - Nível atual
+        - XP necessário para o *próximo* nível
+        - XP atual *dentro* do nível atual (útil para barra de progresso UI)
+        """
         level = 1
         xp_required_for_current_level = 0
         xp_needed = ProgressService.xp_for_next_level(level)
@@ -34,9 +48,9 @@ class ProgressService:
     @staticmethod
     def get_multiplayer_positions(user_id, activity):
         """
-        Retorna posições no tabuleiro.
-        - Se for EM EQUIPE: Retorna 'teammates' (meu time) e 'rivals' (outros times).
-        - Se for SOLO: Retorna todos os alunos da turma em 'teammates' (como 'Colegas').
+        Calcula onde cada jogador (ou equipe) está no tabuleiro da atividade atual.
+        - Se atividade em Equipe: Retorna a posição do próprio time (teammates) e das outras equipes (rivals).
+        - Se atividade Solo: Retorna a posição de todos os outros alunos da turma como "teammates" para incentivar a competição amigável.
         """
         data = { "teammates": {}, "rivals": {} }
         
@@ -146,6 +160,12 @@ class ProgressService:
 
     @staticmethod
     def get_progress_json(user_id, activity_id):
+        """
+        Ponto central de leitura do progresso do aluno.
+        Garante que a atividade está dentro do prazo (available_from / expires_at),
+        inicia o registro de progresso se for o primeiro acesso, calcula o nível e as 
+        estatísticas finais para o frontend montar a tela da atividade.
+        """
         user = User.query.get(user_id)
         if not user or user.role != 'aluno':
             raise Exception("Acesso negado: Apenas alunos podem ver o progresso.")

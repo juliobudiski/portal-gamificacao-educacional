@@ -1,3 +1,9 @@
+"""
+Serviço de Inteligência Artificial (AIService)
+Responsável por fazer a ponte entre o backend e a API do Google Generative AI (Gemini).
+Gerencia chaves (BYOK), fallback de modelos em caso de limites de taxa (HTTP 429),
+validação estrutural JSON e moderação de conteúdo.
+"""
 import google.generativeai as genai
 import os
 import json

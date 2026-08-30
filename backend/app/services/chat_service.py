@@ -1,3 +1,10 @@
+"""
+Serviço de Chat (ChatService)
+Gerencia as mensagens trocadas nos fóruns/chats das atividades gamificadas.
+Inclui controles anti-spam (Rate Limiting em memória), sanitização de texto,
+bloqueio de palavras ofensivas (profanity check) e o sistema de denúncias
+(onde a mensagem é censurada automaticamente após 5 denúncias).
+"""
 import time
 from ..models import db, Activity, Conversation, ChatMessage, MessageReport
 from ..utils.text_sanitizer import clean_text, check_profanity, detect_prompt_injection
@@ -10,6 +17,10 @@ class ChatService:
 
     @classmethod
     def is_rate_limited(cls, user_id):
+        """
+        Implementação simples de Rate Limiting em memória (Sliding Window).
+        Evita que um usuário faça flood no chat da atividade.
+        """
         now = time.time()
         if user_id not in cls.user_msg_timestamps:
             cls.user_msg_timestamps[user_id] = []
@@ -38,6 +49,10 @@ class ChatService:
 
     @classmethod
     def process_message(cls, sender_id, activity_id, raw_content):
+        """
+        Recebe uma mensagem, aplica os filtros de segurança (spam, tamanho, injeção, ofensas)
+        e salva no banco de dados se for aprovada.
+        """
         if cls.is_rate_limited(sender_id):
             return None, "Você está enviando mensagens muito rápido."
 
@@ -68,6 +83,11 @@ class ChatService:
 
     @staticmethod
     def report_message(msg_id, user_id):
+        """
+        Processa uma denúncia de mensagem feita por um usuário.
+        Se a mensagem atingir o limite (ex: 5 denúncias de usuários diferentes),
+        ela é ocultada do chat publicamente (auto-moderação).
+        """
         message = ChatMessage.query.get(msg_id)
         if not message:
             return None, "Mensagem não encontrada.", 404

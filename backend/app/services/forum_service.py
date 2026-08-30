@@ -1,3 +1,10 @@
+"""
+Serviço de Fórum (ForumService)
+Gerencia a criação de categorias, tópicos e postagens (respostas) do fórum
+interno de uma atividade. Possui forte integração com os utilitários de
+sanitização (prevenção de XSS) e com o AIService para moderação proativa
+de discurso de ódio.
+"""
 from flask import current_app
 from ..models import db, ForumTopic, ForumPost, ForumCategory, TopicLike, PostLike
 from ..utils.text_sanitizer import clean_text, censor_text, detect_prompt_injection
@@ -7,7 +14,10 @@ from sqlalchemy import case
 class ForumService:
     @staticmethod
     def create_default_categories(activity_id):
-        """Cria categorias padrão em vez de tópicos padrão."""
+        """
+        Cria categorias de base ("Dúvidas Gerais" e "Sugestões") automaticamente
+        sempre que um fórum é habilitado para uma atividade, poupando trabalho do professor.
+        """
         default_categories = [
             ForumCategory(
                 activity_id=activity_id,
@@ -26,7 +36,15 @@ class ForumService:
 
     @staticmethod
     def create_topic_with_moderation(category_id, user_id, raw_title, raw_body):
-        """Cria um novo tópico com Sanitização e Moderação."""
+        """
+        Cria um novo tópico de discussão.
+        O fluxo de segurança inclui:
+        1. Limite de caracteres.
+        2. Bloqueio de injeção de prompt.
+        3. Sanitização de tags HTML.
+        4. Censura de palavrões por regex.
+        5. Moderação semântica por IA (LLM).
+        """
         if len(raw_title) > 150:
             return None, {"message": "O título é muito longo (máx 150 caracteres)."}, 400
         if len(raw_body) > 5000:
@@ -69,7 +87,10 @@ class ForumService:
 
     @staticmethod
     def create_post_with_moderation(topic_id, user_id, raw_body):
-        """Adiciona uma nova resposta a um tópico com Sanitização."""
+        """
+        Adiciona uma nova resposta a um tópico existente.
+        Aplica a mesma pipeline de segurança rigída da criação de tópicos.
+        """
         if len(raw_body) > 5000:
             return None, {"message": "A resposta é muito longa (máx 5000 caracteres)."}, 400
         if not raw_body:

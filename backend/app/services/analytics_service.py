@@ -1,9 +1,20 @@
+"""
+Serviço de Análises e Estatísticas (AnalyticsService)
+Responsável por compilar dados de engajamento, precisão e progresso dos alunos
+para preencher os dashboards dos professores. Também gerencia a elegibilidade
+e o envio de feedbacks do sistema.
+"""
+
 from flask import current_app
 from ..models import db, User, Class, Activity, ActivityProgress, Enrollment, StudentResponse, EventLog, QuizContent, SystemFeedback
 
 class AnalyticsService:
     @staticmethod
     def get_professor_filters(user_id):
+        """
+        Retorna as listas de turmas e atividades pertencentes a um professor
+        para preencher os filtros (dropdowns) na interface de dashboard.
+        """
         user = User.query.get(user_id)
         if not user or user.role != 'professor':
             return None, {"message": "Acesso negado. Apenas professores."}, 403
@@ -18,6 +29,11 @@ class AnalyticsService:
 
     @staticmethod
     def _calculate_max_possible_points(activity_id):
+        """
+        Calcula o total de pontos que um aluno pode ganhar ao gabaritar a atividade.
+        Itera sobre todas as questões de todos os quizzes atrelados à atividade.
+        Possui lógica de fallback para modelos de dados legados.
+        """
         total_possible_points = 0
         quiz_contents = QuizContent.query.filter_by(activity_id=activity_id).all()
         
@@ -32,6 +48,7 @@ class AnalyticsService:
                         except:
                             total_possible_points += 10
         
+        # Fallback para atividades antigas onde as questões ficavam em 'game_elements'
         if total_possible_points == 0:
             activity = Activity.query.get(activity_id)
             if activity and activity.game_elements and isinstance(activity.game_elements, dict):
@@ -45,6 +62,7 @@ class AnalyticsService:
                         except:
                             total_possible_points += 10
 
+        # Fallback de segurança para evitar divisão por zero no frontend
         if total_possible_points == 0:
             current_app.logger.warning(f"[ANALYTICS] Atividade {activity_id}: Nenhuma pergunta. Usando fallback 100.")
             total_possible_points = 100 
@@ -54,6 +72,11 @@ class AnalyticsService:
 
     @staticmethod
     def get_student_performance(class_id, activity_id, search_term):
+        """
+        Agrega e compila o desempenho de todos os alunos de uma turma específica,
+        filtrando por uma atividade se fornecida.
+        Retorna pontuação, precisão de respostas, número de tentativas e XP global.
+        """
         try:
             if not class_id:
                 return None, {'error': 'Class ID is required'}, 400
@@ -68,6 +91,7 @@ class AnalyticsService:
             if not target_class: 
                  return None, {"message": "Turma não encontrada."}, 404
 
+            # Busca alunos matriculados na turma e aplica pesquisa por nome se houver
             query = db.session.query(User).join(Enrollment).filter(Enrollment.class_id == class_id)
             if search_term:
                 query = query.filter(User.name.ilike(f'%{search_term}%'))
@@ -103,6 +127,7 @@ class AnalyticsService:
                 }
 
                 if activity_id:
+                    # Busca os dados de progresso e as respostas para calcular a acurácia
                     progress = ActivityProgress.query.filter_by(student_id=student.id, activity_id=activity_id).first()
                     
                     correct_answers = StudentResponse.query.filter_by(student_id=student.id, activity_id=activity_id, is_correct=True).count()
@@ -141,6 +166,7 @@ class AnalyticsService:
                             sum_accuracy += accuracy
                             students_with_progress += 1
                     else:
+                        # Preenche defaults caso o aluno não tenha iniciado
                         student_data.update({
                             'status': 'not_started', 
                             'points_earned': 0, 
@@ -155,12 +181,14 @@ class AnalyticsService:
                         })
 
                 else:
+                    # Visão geral da turma (sem atividade específica)
                     student_data['status'] = 'active'
                     student_data['last_location'] = f"{student.cached_city or ''} - {student.cached_state or ''}"
                     if student_data['last_location'] == " - ": student_data['last_location'] = "Desconhecido"
 
                 results.append(student_data)
 
+            # Calcula médias para os cartões de estatística globais
             if activity_id:
                 if students_with_progress > 0:
                     stats['average_score'] = round(total_activity_points / students_with_progress, 1)
@@ -179,6 +207,11 @@ class AnalyticsService:
 
     @staticmethod
     def check_feedback_eligibility(user_id):
+        """
+        Verifica se o usuário já atendeu aos requisitos mínimos para ser convidado
+        a preencher o formulário de feedback (NPS) do sistema (ex: Professor já criou
+        pelo menos 1 atividade ou Aluno gerou 5 eventos no log).
+        """
         user = User.query.get(user_id)
 
         if SystemFeedback.query.filter_by(user_id=user.id).first():
@@ -193,7 +226,6 @@ class AnalyticsService:
                 
         elif user.role == 'aluno':
             log_count = EventLog.query.filter_by(user_id=user.id).count()
-            
             if log_count >= 5: 
                 show_modal = True
 
@@ -201,6 +233,7 @@ class AnalyticsService:
 
     @staticmethod
     def submit_feedback(user_id, data):
+        """Salva a avaliação de satisfação (NPS e comentários) fornecida pelo usuário."""
         if SystemFeedback.query.filter_by(user_id=user_id).first():
             return None, {"message": "Feedback já enviado."}, 400
 

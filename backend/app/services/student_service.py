@@ -1,9 +1,21 @@
+"""
+Serviço do Aluno (StudentService)
+Responsável por formatar e agregar os dados que abastecem o painel
+principal (Dashboard) da visão do Aluno. Isso inclui nível global,
+atividades pendentes, turmas matriculadas e histórico de conclusão.
+"""
 from ..models import db, Class, Enrollment, Activity, ActivityProgress, UserUnlockedMedal
 
 class StudentService:
     @staticmethod
     def calculate_global_level(total_xp):
-        """Calcula o nível global do aluno (curva mais lenta)."""
+    @staticmethod
+    def calculate_global_level(total_xp):
+        """
+        Calcula o nível global do aluno (Curva Exponencial/Geométrica).
+        Ao contrário do nível da atividade, o nível global exige progressivamente 
+        mais esforço (multiplicador 1.5x) para subir de rank.
+        """
         if total_xp is None:
             total_xp = 0
             
@@ -26,6 +38,11 @@ class StudentService:
 
     @staticmethod
     def get_dashboard_data(user):
+        """
+        Monta o payload inicial da Home do aluno. 
+        Cruza tabelas de Matrícula (Enrollment) com Atividades e Progresso
+        para retornar apenas o que é relevante e pendente (To-Do list).
+        """
         enrolled_classes = Class.query.join(Enrollment).filter(Enrollment.student_id == user.id).all()
         
         classes_data = []
@@ -79,6 +96,11 @@ class StudentService:
 
     @staticmethod
     def get_all_activities(user):
+        """
+        Gera o histórico completo (Histórico Escolar Gamificado) de todas as 
+        atividades (pendentes e concluídas), calculando a porcentagem de 
+        conclusão baseada no Gamification Design (passos do tabuleiro).
+        """
         activities_query = db.session.query(
             Activity,
             ActivityProgress
