@@ -22,6 +22,11 @@ const getYouTubeEmbedUrl = (input) => {
     return /^https?:\/\//i.test(urlString) ? urlString : `https://${urlString}`;
 };
 
+/**
+ * Componente LearningContentEditorPage
+ * 
+ * Página dedicada à edição do conteúdo educacional bruto de uma atividade (questões, texto, links).
+ */
 function LearningContentEditorPage({ initialData, onSave, isOfflineMode = false }) {
     const { activityId, stepId } = useParams();
     const navigate = useNavigate();

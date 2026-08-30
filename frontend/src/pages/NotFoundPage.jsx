@@ -11,6 +11,11 @@ import {
   FaRegSadTear
 } from 'react-icons/fa';
 
+/**
+ * Componente NotFoundPage
+ * 
+ * Página de erro 404 para exibir ao usuário quando acessar uma rota inexistente.
+ */
 function NotFoundPage() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);

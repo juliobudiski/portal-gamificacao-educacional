@@ -18,6 +18,11 @@ const ProfileCard = ({ icon, title, children, className }) => (
   </div>
 );
 
+/**
+ * Componente UserProfilePage
+ * 
+ * Página para gerenciamento do perfil do usuário logado (foto, bio, senha e configurações OAuth).
+ */
 function UserProfilePage() {
   const { user, logout, updateUserData, getToken } = useAuth();
   const navigate = useNavigate();

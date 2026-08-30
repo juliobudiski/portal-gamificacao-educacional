@@ -2,6 +2,11 @@ import React, { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 
+/**
+ * Componente ContactPage
+ * 
+ * Formulário de contato para os usuários enviarem dúvidas, sugestões ou solicitações de chave de acesso.
+ */
 const ContactPage = () => {
     const { user } = useContext(AuthContext); // Pegar dados se logado
     const navigate = useNavigate();

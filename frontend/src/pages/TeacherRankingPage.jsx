@@ -4,6 +4,11 @@ import React, { useState, useEffect } from 'react';
 import TeacherRankingList from '../components/TeacherRankingList'; // Corrigido para o caminho correto
 import { useAuth } from '../context/AuthContext';
 
+/**
+ * Componente TeacherRankingPage
+ * 
+ * Página de ranking da comunidade de professores, possivelmente baseada no número de criações e clones.
+ */
 const TeacherRankingPage = () => {
   const [creatorsRanking, setCreatorsRanking] = useState([]);
   const [isLoading, setIsLoading] = useState(true);

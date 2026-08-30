@@ -6,6 +6,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 // --- 2. DEFINIÇÃO DO COMPONENTE ---
+/**
+ * Componente LoginPage
+ * 
+ * Página de autenticação de usuários (login) via credenciais locais ou Google OAuth.
+ */
 function LoginPage() {
   // --- 3. ESTADOS DO COMPONENTE (State Hooks) ---
   const [email, setEmail] = useState('');

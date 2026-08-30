@@ -69,6 +69,11 @@ const ScoreDistributionChart = ({ students, maxScore }) => {
   );
 };
 
+/**
+ * Componente StudentPerformancePage
+ * 
+ * Página analítica focada no desempenho do aluno, exibindo histórico de notas, XP e uso de mecânicas.
+ */
 const StudentPerformancePage = () => {
   const { user, logout } = useContext(AuthContext); // Pegamos o logout do contexto
 

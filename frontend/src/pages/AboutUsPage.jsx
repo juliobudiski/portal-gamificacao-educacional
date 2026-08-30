@@ -16,6 +16,13 @@ const OrcidIcon = () => (
   </svg>
 );
 
+/**
+ * Componente AboutUsPage
+ * 
+ * Renderiza a página "Sobre o Portal", que apresenta a missão, a equipe de pesquisadores
+ * e as estatísticas globais da plataforma (impacto em números). 
+ * Utiliza fetch para buscar dados reais de estatísticas de uso na rota pública da API.
+ */
 function AboutUsPage() {
   const [expandedIndex, setExpandedIndex] = useState(null);
 

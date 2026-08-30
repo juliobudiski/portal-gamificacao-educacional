@@ -2,6 +2,11 @@ import React, { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { FaLock, FaCheckCircle, FaExclamationCircle, FaArrowLeft } from 'react-icons/fa';
 
+/**
+ * Componente ResetPasswordPage
+ * 
+ * Página final do fluxo de recuperação de senha, permitindo inserir a nova senha validada pelo token.
+ */
 function ResetPasswordPage() {
     // Captura o token da URL (definido na rota /reset-password/:token)
     const { token } = useParams();

@@ -2,6 +2,11 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaEnvelope, FaArrowLeft, FaLock } from 'react-icons/fa';
 
+/**
+ * Componente ForgotPasswordPage
+ * 
+ * Página inicial do fluxo de recuperação de senha, solicitando o e-mail do usuário para envio de token.
+ */
 function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);

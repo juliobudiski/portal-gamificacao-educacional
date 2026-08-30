@@ -1,6 +1,11 @@
 import React from 'react';
 import GameBoardViewer from '../components/activity/GameBoardViewer';
 
+/**
+ * Componente GameBoardTestPage
+ * 
+ * Página de ambiente de testes isolado (sandbox) para as mecânicas de tabuleiro e validação de lógica.
+ */
 function GameBoardTestPage() {
   return (
     <div style={{ padding: '2rem', backgroundColor: '#2c3135' }}>

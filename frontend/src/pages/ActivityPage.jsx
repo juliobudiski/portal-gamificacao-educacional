@@ -238,6 +238,11 @@ const ActivityPageContent = () => {
 // ========================================================================
 // COMPONENTE EXPORTADO (ENTRY POINT) (Sem alterações)
 // ========================================================================
+/**
+ * Componente ActivityPage
+ * 
+ * Página de visualização detalhada de uma atividade e seus metadados, frequentemente usada como hub antes de iniciar.
+ */
 function ActivityPage() {
   const { activityId } = useParams();
   debugLog(`Componente ActivityPage montado para activityId: ${activityId}`);

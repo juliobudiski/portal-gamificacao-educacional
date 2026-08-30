@@ -4,6 +4,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ActivityCreationPage from './ActivityCreationPage'; // Vamos reutilizar a página de criação
 
+/**
+ * Componente ActivityEditPage
+ * 
+ * Página para edição de uma atividade existente, permitindo alterar regras, conteúdo e gamificação.
+ */
 function ActivityEditPage() {
     const { activityId } = useParams();
     const navigate = useNavigate();

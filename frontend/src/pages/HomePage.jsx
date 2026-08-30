@@ -3,6 +3,13 @@ import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
+/**
+ * Componente HomePage
+ * 
+ * Landing page principal do portal, apresentando a proposta de valor, funcionalidades e atalhos de login/cadastro.
+ */
+
+
 function Homepage() {
   const { user } = useContext(AuthContext);
   // Função auxiliar para decidir para onde o botão "Dashboard" leva

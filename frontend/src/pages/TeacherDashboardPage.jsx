@@ -8,6 +8,11 @@ import { useTutorial } from '../context/TutorialContext';
 import { useAuthOperations } from '../hooks/useAuthOperations';
 import FeedbackModal from '../components/FeedbackModal';
 
+/**
+ * Componente TeacherDashboardPage
+ * 
+ * Painel principal do Professor, consolidando métricas, engajamento e atalhos rápidos de criação.
+ */
 function TeacherDashboardPage() {
   const { user } = useAuth();
   const navigate = useNavigate();

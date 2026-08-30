@@ -3,6 +3,11 @@ import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { FaKey, FaSignInAlt, FaUserGraduate } from 'react-icons/fa';
 
+/**
+ * Componente JoinClassPage
+ * 
+ * Página para alunos ingressarem em turmas usando o código de convite fornecido pelo professor.
+ */
 function JoinClassPage() {
     const { user } = useContext(AuthContext);
     const [enrollmentCode, setEnrollmentCode] = useState('');

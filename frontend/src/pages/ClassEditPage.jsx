@@ -3,6 +3,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { FaUserPlus, FaBook, FaTrash, FaSave, FaUsers, FaTasks, FaPlusCircle } from 'react-icons/fa';
 import ConfirmationModal from '../components/ConfirmationModal';
+/**
+ * Componente ClassEditPage
+ * 
+ * Página para edição das configurações de uma turma (nome, descrição, visibilidade).
+ */
 function ClassEditPage() {
     const { class_id } = useParams();
     const { user } = useContext(AuthContext);

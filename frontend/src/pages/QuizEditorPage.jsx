@@ -5,6 +5,11 @@ import { FaPlus, FaSave, FaTrash, FaEdit, FaQuestion, FaList, FaCheck, FaClock, 
 import { useActivityCreation } from '../context/ActivityCreationContext';
 import ConfirmationModal from '../components/ConfirmationModal';
 
+/**
+ * Componente QuizEditorPage
+ * 
+ * Página de criação/edição específica para atividades no formato de Quiz com múltiplas escolhas.
+ */
 function QuizEditorPage({ initialData, onSave, onCancel, isOfflineMode = false }) {
     const { activityId, stepId } = useParams();
     const navigate = useNavigate();

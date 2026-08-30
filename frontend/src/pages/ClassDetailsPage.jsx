@@ -187,6 +187,11 @@ function ActivityCard({ activity }) {
 }
 
 
+/**
+ * Componente ClassDetailsPage
+ * 
+ * Visualização detalhada de uma turma específica, mostrando métricas, ranking e atividades associadas.
+ */
 function ClassDetailsPage() {
     const { class_id } = useParams();
     const { user } = useContext(AuthContext);

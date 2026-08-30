@@ -54,6 +54,11 @@ const hubElementCardMap = {
   "Objetivo (missão, meta do jogo)": ["mission"]
 };
 
+/**
+ * Componente ActivityCreationPage
+ * 
+ * Página principal de criação de atividades gamificadas, gerenciando metadados, conteúdo e mecânicas.
+ */
 function ActivityCreationPage({ existingActivity }) {
   const navigate = useNavigate();
   const { startTour, stopTour } = useTutorial();

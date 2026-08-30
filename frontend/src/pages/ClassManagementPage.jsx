@@ -2,6 +2,13 @@ import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import ConfirmationModal from '../components/ConfirmationModal';
+
+/**
+ * Componente ClassManagementPage
+ * 
+ * Dashboard de gerenciamento de turmas do professor, listando as turmas ativas e atalhos de criação.
+ */
+
 function ClassListPage() {
     const { user } = useContext(AuthContext); // Removido 'authToken' da desestruturação
     const [classes, setClasses] = useState([]);

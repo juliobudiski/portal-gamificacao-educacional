@@ -2,6 +2,11 @@ import React, { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
+/**
+ * Componente CreateClassPage
+ * 
+ * Página contendo o formulário de criação de uma nova turma, gerando o código de convite para os alunos.
+ */
 function CreateClassPage() {
     const { user } = useContext(AuthContext); // Removido 'authToken' da desestruturação
     const [name, setName] = useState('');

@@ -7,6 +7,11 @@ import ConfirmationModal from '../components/ConfirmationModal';
 import activityService from '../services/activityService'; // Importe o serviço
 import { useNavigate } from 'react-router-dom'; // Importe useNavigate
 
+/**
+ * Componente ActivityBankPage
+ * 
+ * Página do Banco de Atividades onde professores podem buscar, filtrar e clonar atividades públicas.
+ */
 function ActivityBankPage() {
     const { user } = useContext(AuthContext);
     const [myActivities, setMyActivities] = useState([]);

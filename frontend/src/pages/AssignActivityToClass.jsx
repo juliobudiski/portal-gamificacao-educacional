@@ -27,6 +27,11 @@ const getRandomHouseNames = (quantity, existingNames = []) => {
     return shuffled.slice(0, quantity);
 };
 
+/**
+ * Componente AssignActivityToClass
+ * 
+ * Página que permite ao professor atribuir uma atividade específica a uma ou mais turmas.
+ */
 function AssignActivityToClass({ onAssignSuccess }) {
     const { activityId } = useParams();
     const { user } = useContext(AuthContext);
