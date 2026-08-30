@@ -6,7 +6,8 @@ bloqueio de palavras ofensivas (profanity check) e o sistema de denúncias
 (onde a mensagem é censurada automaticamente após 5 denúncias).
 """
 import time
-from ..models import db, Activity, Conversation, ChatMessage, MessageReport
+from ..models import db, Activity, Conversation, ChatMessage, MessageReport, ActivityProgress, User, StoreItem, Title
+import json
 from ..utils.text_sanitizer import clean_text, check_profanity, detect_prompt_injection
 from flask import current_app
 
@@ -34,6 +35,50 @@ class ChatService:
         return False
 
     @staticmethod
+    def _enrich_messages_with_cosmetics(messages_dicts, activity_id):
+        if not messages_dicts:
+            return messages_dicts
+
+        sender_ids = list(set(msg['sender_id'] for msg in messages_dicts))
+        
+        progress_records = ActivityProgress.query.filter(
+            ActivityProgress.activity_id == activity_id,
+            ActivityProgress.student_id.in_(sender_ids)
+        ).all()
+        
+        users = User.query.filter(User.id.in_(sender_ids)).all()
+        user_avatars = {u.id: u.profile_picture for u in users}
+
+        cosmetic_map = {}
+        for p in progress_records:
+            name_cosmetic = p.equipped_name_cosmetic.effect_id if p.equipped_name_cosmetic else None
+            title_cosmetic = p.equipped_title_cosmetic.effect_id if p.equipped_title_cosmetic else None
+            
+            # Converte JSON se estiver em string
+            if isinstance(name_cosmetic, str):
+                try: name_cosmetic = json.loads(name_cosmetic)
+                except: pass
+            if isinstance(title_cosmetic, str):
+                try: title_cosmetic = json.loads(title_cosmetic)
+                except: pass
+
+            cosmetic_map[p.student_id] = {
+                "title": p.equipped_title.display_text if p.equipped_title else None,
+                "name_cosmetic": name_cosmetic,
+                "title_cosmetic": title_cosmetic,
+                "avatar": p.equipped_activity_avatar_url or user_avatars.get(p.student_id) or '/avatars/default_avatar.webp'
+            }
+            
+        for msg in messages_dicts:
+            c = cosmetic_map.get(msg['sender_id'], {})
+            msg['title'] = c.get('title')
+            msg['name_cosmetic'] = c.get('name_cosmetic')
+            msg['title_cosmetic'] = c.get('title_cosmetic')
+            msg['avatar'] = c.get('avatar', user_avatars.get(msg['sender_id'], '/avatars/default_avatar.webp'))
+            
+        return messages_dicts
+
+    @staticmethod
     def get_activity_chat_history(activity_id):
         conversation = Conversation.query.filter_by(activity_id=activity_id).first()
         if not conversation:
@@ -45,7 +90,8 @@ class ChatService:
             db.session.commit()
 
         messages = ChatMessage.query.filter_by(conversation_id=conversation.id).order_by(ChatMessage.created_at.asc()).all()
-        return [msg.to_dict() for msg in messages]
+        messages_dicts = [msg.to_dict() for msg in messages]
+        return ChatService._enrich_messages_with_cosmetics(messages_dicts, activity_id)
 
     @classmethod
     def process_message(cls, sender_id, activity_id, raw_content):
@@ -78,7 +124,9 @@ class ChatService:
             )
             db.session.add(new_message)
             db.session.commit()
-            return new_message.to_dict(), None
+            
+            enriched = ChatService._enrich_messages_with_cosmetics([new_message.to_dict()], activity_id)
+            return enriched[0], None
         return None, "Conversa não encontrada."
 
     @staticmethod

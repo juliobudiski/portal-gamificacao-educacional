@@ -233,6 +233,9 @@ class ProgressService:
             "stats": stats,
             "unlocked_activity_avatars": progress.unlocked_activity_avatars or [],
             "equipped_activity_avatar_url": progress.equipped_activity_avatar_url,
+            "equipped_title_id": progress.equipped_title_id,
+            "equipped_name_cosmetic_id": progress.equipped_name_cosmetic_id,
+            "equipped_title_cosmetic_id": progress.equipped_title_cosmetic_id,
             "teammates_positions": multiplayer_data["teammates"],
             "rivals_positions": multiplayer_data["rivals"],
             "team_name": team_name

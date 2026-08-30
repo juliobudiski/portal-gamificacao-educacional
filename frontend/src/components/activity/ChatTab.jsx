@@ -158,15 +158,49 @@ const ChatTab = ({ onReturn }) => {
                       </button>
                     )}
 
+                    {/* Avatar do Usuário */}
+                    {!isMine && msg.avatar && (
+                      <img src={msg.avatar} alt="Avatar" className="w-8 h-8 rounded-full border border-gray-600 self-end mb-2 shadow-md hidden sm:block" />
+                    )}
+
                     {/* A Bolha da Mensagem */}
-                    <div className={`p-4 rounded-2xl shadow-md ${msg.is_censored
+                    <div className={`p-4 rounded-2xl shadow-md flex-1 ${msg.is_censored
                         ? 'bg-gray-800/50 border border-red-500/30 text-gray-500 italic backdrop-blur-sm' // Estilo de censura
                         : isMine
                           ? 'bg-gradient-to-br from-teal-600/90 to-cyan-700/90 border border-teal-400/30 text-white rounded-tr-sm shadow-[0_4px_15px_rgba(20,184,166,0.3)]'
                           : 'bg-gray-800/80 backdrop-blur-md border border-white/10 text-gray-200 rounded-tl-sm shadow-[0_4px_15px_rgba(0,0,0,0.4)]'
                       }`}
                     >
-                      {!isMine && !msg.is_censored && <p className="font-extrabold text-[11px] uppercase tracking-wider text-teal-400 mb-1">{msg.sender_name}</p>}
+                      {!isMine && !msg.is_censored && (
+                         <div className="flex flex-col mb-1">
+                           <span 
+                              className="font-extrabold text-[11px] uppercase tracking-wider text-teal-400"
+                              style={(() => {
+                                  if (!msg.name_cosmetic || msg.name_cosmetic.type !== 'color') return {};
+                                  const c = msg.name_cosmetic.color;
+                                  return msg.name_cosmetic.effect === 'neon' 
+                                      ? { color: c, textShadow: `0 0 5px ${c}, 0 0 7px ${c}` } 
+                                      : { color: c };
+                              })()}
+                           >
+                             {msg.sender_name}
+                           </span>
+                           {msg.title && (
+                               <span 
+                                  className="text-[9px] font-bold text-gray-400 uppercase tracking-widest"
+                                  style={(() => {
+                                      if (!msg.title_cosmetic || msg.title_cosmetic.type !== 'color') return {};
+                                      const c = msg.title_cosmetic.color;
+                                      return msg.title_cosmetic.effect === 'neon' 
+                                          ? { color: c, textShadow: `0 0 5px ${c}, 0 0 7px ${c}` } 
+                                          : { color: c };
+                                  })()}
+                               >
+                                  {msg.title}
+                               </span>
+                           )}
+                         </div>
+                      )}
                       <p className="whitespace-pre-wrap leading-relaxed text-sm md:text-base">{msg.content}</p>
                       <p className={`text-right text-[10px] mt-2 font-medium ${isMine ? 'text-teal-100/70' : 'text-gray-500'}`}>
                         {new Date(msg.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
