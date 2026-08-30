@@ -746,3 +746,21 @@ class SystemFeedback(db.Model):
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
 
     user = db.relationship('User', backref='feedbacks')
+
+class SystemStat(db.Model):
+    """
+    Tabela simples chave-valor para estatísticas globais (ex: contador de visitas).
+    """
+    __tablename__ = 'system_stat'
+
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(50), unique=True, nullable=False, index=True)
+    value = db.Column(db.String(255), nullable=False)
+    updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+
+    def to_dict(self):
+        return {
+            'key': self.key,
+            'value': self.value,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }

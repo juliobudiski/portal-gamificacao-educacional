@@ -1,5 +1,6 @@
 import React from 'react';
 import { FaStar, FaTrophy, FaCoins, FaShieldAlt } from 'react-icons/fa';
+import RecentActivityFeed from './RecentActivityFeed';
 
 const GameHUD = ({ progress }) => {
     // 1. USA OS DADOS VINDOS DO BACKEND (progress.py -> get_activity_progress)
@@ -71,6 +72,11 @@ const GameHUD = ({ progress }) => {
                             {currentPoints}
                         </div>
                         <span className="text-[10px] text-secondary-text uppercase font-bold tracking-widest">Pontos</span>
+                    </div>
+
+                    {/* Ícone do Feed Global */}
+                    <div className="ml-2 pl-2 border-l border-[var(--border-color)]">
+                        <RecentActivityFeed />
                     </div>
                 </div>
 

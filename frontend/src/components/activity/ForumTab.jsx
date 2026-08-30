@@ -26,9 +26,35 @@ const TopicListItem = ({ topic, onSelect }) => (
     <button onClick={() => onSelect(topic.id)} className="w-full text-left p-4 bg-secondary-bg rounded-xl hover:bg-hover-bg-color transition-colors flex justify-between items-center border border-border-color shadow-sm">
         <div className="flex items-center gap-3">
             {topic.is_pinned && <FaThumbtack className="text-accent-teal flex-shrink-0 text-xl" title="Tópico Fixo" />}
+            {topic.avatar && <img src={topic.avatar} alt="Avatar" className="w-10 h-10 rounded-full border border-border-color shadow-sm" />}
             <div>
                 <h3 className="font-bold text-primary-text text-lg">{topic.title}</h3>
-                <p className="text-sm text-secondary-text mt-1">por {topic.author_name} • {topic.post_count} respostas</p>
+                <div className="text-sm mt-1 flex items-center gap-2">
+                    <span className="text-secondary-text">por</span>
+                    <span 
+                        className="font-bold text-accent-teal"
+                        style={(() => {
+                            if (!topic.name_cosmetic || topic.name_cosmetic.type !== 'color') return {};
+                            const c = topic.name_cosmetic.color;
+                            return topic.name_cosmetic.effect === 'neon' ? { color: c, textShadow: `0 0 5px ${c}, 0 0 7px ${c}` } : { color: c };
+                        })()}
+                    >
+                        {topic.author_name}
+                    </span>
+                    {topic.title && (
+                        <span 
+                            className="text-[10px] uppercase font-bold tracking-widest bg-black/20 px-2 py-0.5 rounded-full"
+                            style={(() => {
+                                if (!topic.title_cosmetic || topic.title_cosmetic.type !== 'color') return { color: '#9ca3af' };
+                                const c = topic.title_cosmetic.color;
+                                return topic.title_cosmetic.effect === 'neon' ? { color: c, textShadow: `0 0 5px ${c}, 0 0 7px ${c}` } : { color: c };
+                            })()}
+                        >
+                            {topic.title}
+                        </span>
+                    )}
+                    <span className="text-secondary-text">• {topic.post_count} respostas</span>
+                </div>
             </div>
         </div>
         {topic.best_answer_id && <FaTrophy className="text-accent-yellow text-2xl flex-shrink-0" title="Resolvido" />}
@@ -38,7 +64,33 @@ const TopicListItem = ({ topic, onSelect }) => (
 const PostItem = ({ post, isTopicAuthor, onMarkBest, isBestAnswer, onToggleLike }) => (
     <div className={`p-5 rounded-xl border shadow-sm ${isBestAnswer ? 'bg-accent-yellow/10 border-accent-yellow' : 'bg-secondary-bg border-border-color'}`}>
         <div className="flex justify-between items-start">
-            <p className="font-bold text-accent-teal text-lg">{post.author_name}</p>
+            <div className="flex items-center gap-3">
+                {post.avatar && <img src={post.avatar} alt="Avatar" className="w-12 h-12 rounded-full border border-border-color shadow-sm" />}
+                <div className="flex flex-col">
+                    <span 
+                        className="font-bold text-accent-teal text-lg"
+                        style={(() => {
+                            if (!post.name_cosmetic || post.name_cosmetic.type !== 'color') return {};
+                            const c = post.name_cosmetic.color;
+                            return post.name_cosmetic.effect === 'neon' ? { color: c, textShadow: `0 0 5px ${c}, 0 0 7px ${c}` } : { color: c };
+                        })()}
+                    >
+                        {post.author_name}
+                    </span>
+                    {post.title && (
+                        <span 
+                            className="text-[10px] uppercase font-bold tracking-widest"
+                            style={(() => {
+                                if (!post.title_cosmetic || post.title_cosmetic.type !== 'color') return { color: '#9ca3af' };
+                                const c = post.title_cosmetic.color;
+                                return post.title_cosmetic.effect === 'neon' ? { color: c, textShadow: `0 0 5px ${c}, 0 0 7px ${c}` } : { color: c };
+                            })()}
+                        >
+                            {post.title}
+                        </span>
+                    )}
+                </div>
+            </div>
             <div className="flex items-center gap-3">
                 <span className="text-xs text-secondary-text bg-primary-bg px-2 py-1 rounded">{formatDate(post.created_at)}</span>
                 {isTopicAuthor && !isBestAnswer && (
@@ -283,7 +335,36 @@ const ForumTab = ({ onReturn }) => {
                             </button>
                             <div className="bg-secondary-bg p-6 rounded-2xl border border-border-color shadow-md">
                                 <h2 className="text-2xl md:text-3xl font-bold text-primary-text leading-tight mb-2">{selectedTopic.title}</h2>
-                                <p className="text-sm font-bold text-accent-teal uppercase tracking-wide">Autor: {selectedTopic.author_name}</p>
+                                <div className="flex items-center gap-3 mt-4">
+                                    {selectedTopic.avatar && <img src={selectedTopic.avatar} alt="Avatar" className="w-12 h-12 rounded-full border border-border-color shadow-md" />}
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] text-secondary-text uppercase tracking-widest font-bold">Autor do Tópico</span>
+                                        <div className="flex items-center gap-2">
+                                            <span 
+                                                className="text-lg font-bold text-accent-teal"
+                                                style={(() => {
+                                                    if (!selectedTopic.name_cosmetic || selectedTopic.name_cosmetic.type !== 'color') return {};
+                                                    const c = selectedTopic.name_cosmetic.color;
+                                                    return selectedTopic.name_cosmetic.effect === 'neon' ? { color: c, textShadow: `0 0 5px ${c}, 0 0 7px ${c}` } : { color: c };
+                                                })()}
+                                            >
+                                                {selectedTopic.author_name}
+                                            </span>
+                                            {selectedTopic.title && (
+                                                <span 
+                                                    className="text-xs uppercase font-bold tracking-widest bg-black/20 px-2 py-0.5 rounded-full"
+                                                    style={(() => {
+                                                        if (!selectedTopic.title_cosmetic || selectedTopic.title_cosmetic.type !== 'color') return { color: '#9ca3af' };
+                                                        const c = selectedTopic.title_cosmetic.color;
+                                                        return selectedTopic.title_cosmetic.effect === 'neon' ? { color: c, textShadow: `0 0 5px ${c}, 0 0 7px ${c}` } : { color: c };
+                                                    })()}
+                                                >
+                                                    {selectedTopic.title}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
                                 <div className="mt-4 text-primary-text whitespace-pre-wrap text-base md:text-lg bg-primary-bg/50 p-5 rounded-xl border border-border-color/50 leading-relaxed">
                                     {selectedTopic.body}
                                 </div>

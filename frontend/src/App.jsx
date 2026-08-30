@@ -113,8 +113,20 @@ function AppContent() {
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
   const locationRequestedRef = useRef(false);
   const checkRunRef = useRef(false);
+  const hasRegisteredHitRef = useRef(false); // NOVO: Ref para controle de hit global
   const [loadingAuth, setLoadingAuth] = useState(true); // Começa true até a verificação inicial
   debugLog('AppContent: Renderizando...', { user, isAuthenticated, loadingAuth });
+
+  // --- LÓGICA DE HIT GLOBAL DA PLATAFORMA ---
+  useEffect(() => {
+    if (!hasRegisteredHitRef.current) {
+      hasRegisteredHitRef.current = true;
+      fetch(`${import.meta.env.VITE_API_URL}/api/public/hit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      }).catch(err => console.warn('[App] Erro ao registrar hit global:', err));
+    }
+  }, []);
 
   // --- LÓGICA DE LAYOUT IMERSIVO SIMPLIFICADA ---
   // Verifica APENAS se é uma página de atividade jogável (/activities/ID)

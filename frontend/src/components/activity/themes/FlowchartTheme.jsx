@@ -1,6 +1,8 @@
 import React, { useRef, useLayoutEffect, useState, useMemo } from 'react';
 import { useActivity } from '../../../context/ActivityContext';
+import { useAuth } from '../../../context/AuthContext';
 import GameHUD from '../GameHUD';
+import CurrentUserBadge from './CurrentUserBadge';
 
 // 1. IMPORTAR OS ÍCONES "CLEAN"
 import {
@@ -137,6 +139,8 @@ const FlowchartTheme = ({ children }) => {
         assets,
         userProgress
     } = useActivity();
+    
+    const { user } = useAuth();
 
     const boardRef = useRef(null);
     const [boardWidth, setBoardWidth] = useState(0);
@@ -190,7 +194,28 @@ const FlowchartTheme = ({ children }) => {
 
         return allNodes;
     }, [gamificationDesign, hubElementsToRender, assets]); // Depende do design E dos elementos do hub
-
+    
+    const currentUserStepId = useMemo(() => {
+        if (!userProgress || !userProgress.completed_steps) return 'start';
+        const completed = userProgress.completed_steps;
+        if (completed.length === 0) return 'start';
+        const lastCompleted = completed[completed.length - 1];
+        
+        const pathIds = gamificationDesign?.progression_path?.map(s => s.id) || [];
+        if (pathIds.length === 0) return 'start';
+        
+        if (lastCompleted === pathIds[pathIds.length - 1]) {
+             return userProgress.status === 'completed' ? 'final_reward' : lastCompleted;
+        }
+        
+        const currentIndex = pathIds.indexOf(lastCompleted);
+        if (currentIndex !== -1 && currentIndex + 1 < pathIds.length) {
+             return pathIds[currentIndex + 1];
+        }
+        return lastCompleted;
+    }, [userProgress, gamificationDesign]);
+    
+    const userAvatar = userProgress?.equipped_activity_avatar_url || user?.profile_picture;
 
     // 3. Hooks de Cálculo (agora usam fullPath)
     const { coordinates: stepCoordinates, requiredHeight } = useMemo(
@@ -260,6 +285,11 @@ const FlowchartTheme = ({ children }) => {
                                     const isLocked = status === 'locked';
                                     const isActive = status === 'active';
                                     const isCompleted = status === 'completed';
+                                    
+                                    // Determina se este é o passo atual do usuário
+                                    const isCurrentUserHere = 
+                                        (currentUserStepId === 'start' && step.type === 'mission') ||
+                                        (currentUserStepId === step.id);
 
                                     // Determinar Estilos baseados no tipo e estado
                                     let styles = THEME_COLORS.node.locked;
@@ -317,6 +347,15 @@ const FlowchartTheme = ({ children }) => {
                                                 <text x="0" y="56" textAnchor="middle" className="text-[10px] fill-white font-bold pointer-events-none">
                                                     {index + 1}
                                                 </text>
+                                            )}
+                                            
+                                            {/* Badge do Usuário Atual (Avatar) */}
+                                            {isCurrentUserHere && (
+                                                <foreignObject x="-50" y="-100" width="100" height="100">
+                                                    <div className="w-full h-full flex justify-center items-end pb-2">
+                                                        <CurrentUserBadge avatar={userAvatar} />
+                                                    </div>
+                                                </foreignObject>
                                             )}
                                         </g>
                                     );

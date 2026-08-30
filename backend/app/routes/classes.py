@@ -1,3 +1,9 @@
+"""
+Módulo de Rotas de Turmas (Classes)
+Responsável por gerenciar todo o ciclo de vida das turmas (criação, edição, 
+deleção, matrículas, associação de alunos, times/casas e vinculação de atividades).
+"""
+
 from flask import Blueprint, jsonify, request, current_app
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from .. import db
@@ -19,6 +25,12 @@ logger = logging.getLogger(__name__)
 @cross_origin()
 @jwt_required()
 def create_class():
+    """
+    Cria uma nova turma.
+    Gera automaticamente um código de inscrição (enrollment_code) único para a turma.
+    - Acesso: Apenas professores autenticados.
+    - Payload JSON: { "name": "str", "description": "str" }
+    """
     current_user_id = get_jwt_identity()
     current_app.logger.info(f"Usuário ID {current_user_id} tentando criar uma nova turma.")
     
@@ -63,6 +75,12 @@ def create_class():
 @cross_origin()
 @jwt_required()
 def get_classes():
+    """
+    Lista as turmas do usuário.
+    Se for professor: retorna as turmas que ele criou.
+    Se for aluno: retorna as turmas em que ele está matriculado (junto com o nome do professor).
+    - Acesso: Autenticado.
+    """
     current_user_id = get_jwt_identity()
     current_app.logger.info(f"Usuário ID {current_user_id} solicitou a lista de turmas.")
     
@@ -97,6 +115,11 @@ def get_classes():
 @cross_origin()
 @jwt_required()
 def get_class_details(class_id):
+    """
+    Recupera os detalhes completos de uma turma, incluindo alunos, atividades associadas e times (casas).
+    Se o código de inscrição estiver marcado como privado, ele é ocultado para alunos.
+    - Acesso: O professor dono da turma ou aluno matriculado nela.
+    """
     current_user_id = get_jwt_identity()
     current_app.logger.info(f"Usuário ID {current_user_id} solicitou detalhes da turma ID {class_id}.")
 
@@ -163,6 +186,10 @@ def get_class_details(class_id):
 @cross_origin()
 @jwt_required()
 def update_class(class_id):
+    """
+    Atualiza as configurações básicas de uma turma (Nome, Descrição, Visibilidade do código de inscrição).
+    - Acesso: Apenas o professor dono da turma.
+    """
     current_user_id = get_jwt_identity()
     current_app.logger.info(f"Professor ID {current_user_id} tentando atualizar a turma ID {class_id}.")
 
@@ -203,6 +230,11 @@ def update_class(class_id):
 @cross_origin()
 @jwt_required()
 def delete_class(class_id):
+    """
+    Deleta permanentemente uma turma e limpa todas as suas dependências (Matrículas e Times/Casas).
+    - As atividades vinculadas NÃO são deletadas, mas são desassociadas (class_id = None).
+    - Acesso: Apenas o professor dono da turma.
+    """
     current_user_id = get_jwt_identity()
     current_app.logger.info(f"Professor ID {current_user_id} tentando deletar a turma ID {class_id}.")
 
@@ -251,6 +283,10 @@ def delete_class(class_id):
 @cross_origin()
 @jwt_required()
 def join_class():
+    """
+    Matricula um aluno em uma turma utilizando o código de inscrição da mesma.
+    - Acesso: Apenas Alunos autenticados.
+    """
     current_user_id = get_jwt_identity()
     current_app.logger.info(f"Usuário ID {current_user_id} tentando entrar em uma turma.")
 
@@ -284,6 +320,10 @@ def join_class():
 @cross_origin()
 @jwt_required()
 def leave_class(class_id):
+    """
+    Remove a matrícula (Enrollment) de um aluno em uma turma específica.
+    - Acesso: Apenas o aluno logado matriculado na respectiva turma.
+    """
     current_user_id = get_jwt_identity()
     current_app.logger.info(f"Usuário ID {current_user_id} tentando sair da turma ID {class_id}.")
 
@@ -314,6 +354,10 @@ def leave_class(class_id):
 @cross_origin()
 @jwt_required()
 def get_class_activities(class_id):
+    """
+    Retorna a lista de todas as atividades associadas a uma turma específica.
+    - Acesso: Professor da turma ou Alunos matriculados nela.
+    """
     current_user_id = get_jwt_identity()
     current_app.logger.info(f"Usuário ID {current_user_id} solicitou atividades para a turma ID {class_id}.")
 
@@ -346,6 +390,14 @@ def get_class_activities(class_id):
 @cross_origin()
 @jwt_required()
 def get_class_management_details(class_id):
+    """
+    Rota agregadora para o painel administrativo da turma.
+    Evita múltiplas requisições no frontend agrupando:
+    1. Alunos Matriculados
+    2. Atividades atribuídas à turma
+    3. Atividades do professor que ainda não foram atribuídas
+    - Acesso: Professor dono da turma.
+    """
     current_user_id = get_jwt_identity()
     user = User.query.get(current_user_id)
 
@@ -385,6 +437,10 @@ def get_class_management_details(class_id):
 @cross_origin()
 @jwt_required()
 def add_student_to_class(class_id):
+    """
+    Matricula manualmente um aluno na turma buscando pelo seu e-mail (usado pelo professor).
+    - Acesso: Professor dono da turma.
+    """
     current_user_id = get_jwt_identity()
     professor = User.query.get(current_user_id)
     class_obj = Class.query.get(class_id)
@@ -426,6 +482,10 @@ def add_student_to_class(class_id):
 @cross_origin()
 @jwt_required()
 def remove_student_from_class(class_id, student_id):
+    """
+    Remove manualmente um aluno de uma turma (expulsão da turma pelo professor).
+    - Acesso: Professor dono da turma.
+    """
     current_user_id = get_jwt_identity()
     professor = User.query.get(current_user_id)
     class_obj = Class.query.get(class_id)
@@ -450,6 +510,10 @@ def remove_student_from_class(class_id, student_id):
 @cross_origin()
 @jwt_required()
 def add_activity_to_class(class_id):
+    """
+    Associa uma atividade já criada por este professor a esta turma específica.
+    - Acesso: Professor dono da turma e da atividade.
+    """
     current_user_id = get_jwt_identity()
     professor = User.query.get(current_user_id)
     class_obj = Class.query.get(class_id)
@@ -485,6 +549,10 @@ def add_activity_to_class(class_id):
 @cross_origin()
 @jwt_required()
 def remove_activity_from_class(class_id, activity_id):
+    """
+    Desvincula uma atividade da turma atual (sem deletar a atividade em si).
+    - Acesso: Professor dono da turma.
+    """
     current_user_id = get_jwt_identity()
     professor = User.query.get(current_user_id)
     class_obj = Class.query.get(class_id)
@@ -509,6 +577,11 @@ def remove_activity_from_class(class_id, activity_id):
 @cross_origin()
 @jwt_required()
 def generate_teams(class_id):
+    """
+    Sistema Automático do "Chapéu Seletor" de Harry Potter (Divisão de Turmas em Casas).
+    Lógica de negócio complexa tratada por ClassService.generate_teams().
+    - Acesso: Professor dono da turma.
+    """
     current_user_id = get_jwt_identity()
     professor = User.query.get(current_user_id)
     class_obj = Class.query.get(class_id)

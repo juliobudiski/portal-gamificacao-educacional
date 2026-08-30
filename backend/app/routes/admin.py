@@ -1,3 +1,9 @@
+"""
+Módulo de Rotas do Painel Administrativo (Admin)
+Responsável por fornecer todos os dados analíticos (KPIs, gráficos, logs) 
+para a visão geral do sistema, gerenciar usuários, gerenciar mensagens de contato,
+e permitir a moderação global da plataforma por administradores.
+"""
 # backend/app/routes/admin.py
 from flask_cors import cross_origin 
 from flask import Blueprint, jsonify, current_app, request, Response
@@ -23,10 +29,18 @@ def check_admin():
     user = User.query.get(user_id)
     return user and user.role == 'admin'
 
+# ==============================================================================
+# ROTAS DE DASHBOARD E KPIS GERAIS
+# ==============================================================================
 # Rota para dados dos cards (KPIs)
 @admin_bp.route('/dashboard_data', methods=['GET'])
 @jwt_required()
 def get_dashboard_data():
+    """
+    Retorna os KPIs básicos para os cards superiores do painel de administração
+    (Total de usuários, professores, alunos e atividades criadas).
+    - Acesso: Apenas Administradores.
+    """
     if not check_admin():
         return jsonify({"message": "Acesso negado."}), 403
     
@@ -45,6 +59,10 @@ def get_dashboard_data():
 @admin_bp.route('/analytics/activity-status', methods=['GET'])
 @jwt_required()
 def get_activity_status_stats():
+    """
+    Calcula a distribuição do status das atividades no sistema 
+    (Não iniciadas, Em Andamento e Concluídas) baseada nas matrículas e no ActivityProgress.
+    """
     if not check_admin(): return jsonify({"message": "Acesso negado."}), 403
     
     total_classes = Class.query.count()
@@ -254,6 +272,10 @@ def get_event_distribution():
 @admin_bp.route('/analytics/logs', methods=['GET'])
 @jwt_required()
 def get_system_logs():
+    """
+    Fornece a visualização tabular dos logs do sistema (EventLog), 
+    com suporte à paginação e filtragem por usuário, ação e datas.
+    """
     if not check_admin(): return jsonify({"message": "Acesso negado."}), 403
 
     page = request.args.get('page', 1, type=int)

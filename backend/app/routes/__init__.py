@@ -1,4 +1,10 @@
-# backend/app/routes/__init__.py
+"""
+Módulo de Inicialização das Rotas (Routes Init)
+Responsável por importar todos os blueprints (grupos de rotas) da aplicação 
+e registrá-los no objeto principal do Flask (app).
+Centraliza o roteamento, facilitando a organização das URLs da API.
+"""
+
 from .auth import auth_bp
 from .activities import activity_bp
 from .admin import admin_bp
@@ -13,9 +19,15 @@ from .medals import medals_bp
 from .forum import forum_bp
 from .chat import chat_bp
 from .contact import contact_bp
+
 def register_blueprints(app):
     """
-    Registra todos os blueprints da aplicação.
+    Registra todos os blueprints da aplicação associando a um prefixo de URL.
+    
+    :param app: Instância da aplicação Flask
+    
+    Cada blueprint agrupa rotas relacionadas a um domínio específico.
+    Por exemplo, todas as rotas em auth_bp responderão no prefixo '/api/auth'.
     """
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(activity_bp, url_prefix='/api/activities')

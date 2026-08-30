@@ -1,4 +1,8 @@
-# backend/app/routes/rankings.py
+"""
+Módulo de Rotas de Rankings (Gamificação Social)
+Responsável por gerar quadros de líderes (leaderboards), comparando 
+o desempenho e a criação de conteúdo dos usuários na plataforma.
+"""
 
 from flask import Blueprint, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
@@ -7,23 +11,23 @@ from flask_cors import cross_origin
 from ..services.ranking_service import RankingService
 import logging
 
-# --- ALTERAÇÃO AQUI ---
-# Adicionamos o prefixo /api diretamente aqui para garantir que a rota completa seja /api/rankings
+# Instancia o Blueprint
 rankings_bp = Blueprint('rankings_bp', __name__)
 logger = logging.getLogger(__name__)
 
-# O resto do arquivo permanece o mesmo, mas a rota agora será construída a partir do novo prefixo.
-# O URL final será: /api/rankings/teachers/creators
 @rankings_bp.route('/teachers/creators', methods=['GET'])
 @jwt_required()
 @cross_origin()
 def get_teacher_creators_ranking():
     """
-    Endpoint para obter o ranking de professores que mais criaram atividades.
-    Retorna o Top 10 e a posição do usuário logado.
+    Endpoint para obter o ranking de professores mais ativos na plataforma.
+    A pontuação (ou classificação) é baseada na quantidade de atividades criadas.
+    - Acesso: Usuários autenticados (qualquer role, geralmente professores consultam).
+    - Retorno: Top 10 professores (nome, qtd_atividades) e a posição/rank do usuário atual (se for professor).
     """
     current_user_id = get_jwt_identity()
     
+    # A lógica de agregação do ranking está isolada no service para otimização e cache, se necessário futuramente.
     top_10_ranking, error = RankingService.get_teacher_creators_ranking(current_user_id)
     
     if error:
@@ -33,8 +37,11 @@ def get_teacher_creators_ranking():
 
 
 @rankings_bp.route('/test', methods=['GET'])
-@cross_origin() # Mantemos o cross_origin para testar o CORS
+@cross_origin() # Mantemos o cross_origin para testar o CORS e as rotas abertas.
 def test_route():
-    """ Rota de teste super simples para verificar o Blueprint e o CORS. """
+    """
+    Rota de diagnóstico de conectividade e validação do Blueprint de rankings.
+    - Utilizada durante troubleshooting para confirmar que o roteamento e o CORS estão saudáveis.
+    """
     print("!!! ROTA DE TESTE ACESSADA COM SUCESSO !!!")
     return jsonify({"message": "Olá Mundo, a rota de teste do ranking funciona!"})

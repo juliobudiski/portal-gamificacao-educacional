@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaClock, FaCheckCircle, FaTimes } from 'react-icons/fa';
+import { FaClock, FaCheckCircle, FaTimes, FaMedal } from 'react-icons/fa';
+import { useToast } from '../../context/ToastContext';
 import PropTypes from 'prop-types';
 import { useAuth } from '../../context/AuthContext';
 import { useParams } from 'react-router-dom';
@@ -20,6 +21,7 @@ const QuizTab = ({ content, gameElements, onAnswerCorrect, onComplete, isReplay 
   }
 
   const { user } = useAuth();
+  const { showToast } = useToast();
   const { activityId } = useParams();
   const { logEvent } = useAnalytics("quiz", user.token, activityId);
 
@@ -91,7 +93,7 @@ const QuizTab = ({ content, gameElements, onAnswerCorrect, onComplete, isReplay 
     // O restante do salvamento detalhado da resposta já estava protegido
     if (user?.role === 'aluno') {
       try {
-        await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${activityId}/submit_answer`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/activities/${activityId}/submit_answer`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -105,6 +107,15 @@ const QuizTab = ({ content, gameElements, onAnswerCorrect, onComplete, isReplay 
             coins_earned: coins
           })
         });
+
+        if (res.ok) {
+            const data = await res.json();
+            if (data.new_medals && data.new_medals.length > 0) {
+                data.new_medals.forEach(medal => {
+                    showToast(`🏅 Nova Medalha Desbloqueada: ${medal.name || medal}`, 'success');
+                });
+            }
+        }
 
         if (isCorrect && !isReplay) {
           onAnswerCorrect(points);

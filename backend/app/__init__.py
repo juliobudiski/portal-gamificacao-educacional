@@ -72,17 +72,37 @@ def _register_blueprints_and_routes(app):
     
     @app.route('/api/public/stats', methods=['GET'])
     def get_public_stats():
-        from .models import User, Activity, Class 
+        from .models import User, Activity, Class, SystemStat
         try:
+            visits_stat = SystemStat.query.filter_by(key='total_visits').first()
+            total_visits = int(visits_stat.value) if visits_stat else 0
+            
             return jsonify({
                 "users": User.query.count(),
                 "professors": User.query.filter_by(role='professor').count(),
                 "students": User.query.filter_by(role='aluno').count(),
                 "activities": Activity.query.count(),
-                "classes": Class.query.count()
+                "classes": Class.query.count(),
+                "total_visits": total_visits
             }), 200
         except Exception as e:
             app.logger.error(f"Erro ao buscar stats publicas: {str(e)}")
+            return jsonify({"error": str(e)}), 500
+
+    @app.route('/api/public/hit', methods=['POST'])
+    def register_public_hit():
+        from .models import SystemStat, db
+        try:
+            visits_stat = SystemStat.query.filter_by(key='total_visits').first()
+            if not visits_stat:
+                visits_stat = SystemStat(key='total_visits', value='1')
+                db.session.add(visits_stat)
+            else:
+                visits_stat.value = str(int(visits_stat.value) + 1)
+            db.session.commit()
+            return jsonify({"status": "success", "total_visits": int(visits_stat.value)}), 200
+        except Exception as e:
+            app.logger.error(f"Erro ao registrar hit publico: {str(e)}")
             return jsonify({"error": str(e)}), 500
 
     @app.route('/api/health', methods=['GET'])

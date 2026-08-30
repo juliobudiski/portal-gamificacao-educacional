@@ -2,7 +2,9 @@ import React, { useRef, useState, useLayoutEffect, useMemo } from 'react';
 
 import '../GameBoard.css';
 import { useActivity } from '../../../context/ActivityContext';
+import { useAuth } from '../../../context/AuthContext';
 import GameHUD from '../GameHUD';
+import CurrentUserBadge from './CurrentUserBadge';
 import { FaUsers, FaShieldAlt } from 'react-icons/fa'; // Ícones para o indicador de equipe
 
 // --- COMPONENTE DE BADGE PARA COLEGAS (ALIADOS - AZUL) ---
@@ -188,6 +190,8 @@ const VilaDaAventuraTheme = ({ children }) => {
         userProgress,
         assets
     } = useActivity();
+    
+    const { user } = useAuth();
 
     // === LÓGICA NOVA: PREPARAR ESTILOS DINÂMICOS ===
     // Mapeamento baseado no array 'structural' do GameBoardConfig.js:
@@ -261,7 +265,27 @@ const VilaDaAventuraTheme = ({ children }) => {
     console.log("4. Posições de Rivais (rivals):", userProgress?.rivals_positions);
     // Verifica se as chaves batem com os IDs dos passos
     const stepIds = activity?.gamificationDesign?.progression_path?.map(s => s.id) || [];
-    console.log("5. IDs dos passos na trilha:", stepIds);
+    
+    const currentUserStepId = useMemo(() => {
+        if (!userProgress || !userProgress.completed_steps) return 'start';
+        const completed = userProgress.completed_steps;
+        if (completed.length === 0) return 'start';
+        const lastCompleted = completed[completed.length - 1];
+        
+        if (stepIds.length === 0) return 'start';
+        
+        if (lastCompleted === stepIds[stepIds.length - 1]) {
+             return userProgress.status === 'completed' ? 'final_reward' : lastCompleted;
+        }
+        
+        const currentIndex = stepIds.indexOf(lastCompleted);
+        if (currentIndex !== -1 && currentIndex + 1 < stepIds.length) {
+             return stepIds[currentIndex + 1];
+        }
+        return lastCompleted;
+    }, [userProgress, stepIds]);
+    
+    const userAvatar = userProgress?.equipped_activity_avatar_url || user?.profile_picture;
 
     // Verifica se há alguem na posição 'start' ou 'mission_step_01'
     if (userProgress?.teammates_positions) {
@@ -302,6 +326,7 @@ const VilaDaAventuraTheme = ({ children }) => {
                         {/* RENDERIZA OS BADGES (O Rival estava faltando aqui!) */}
                         <TeamBadge teammates={teammatesPositions['start'] || teammatesPositions['mission_step_01']} title={badgeTitle} />
                         <RivalBadge rivals={rivalsPositions['start'] || rivalsPositions['mission_step_01']} />
+                        {(currentUserStepId === 'start' || currentUserStepId === 'mission_step_01') && <CurrentUserBadge avatar={userAvatar} />}
                     </div>
                 )}
 
@@ -326,6 +351,7 @@ const VilaDaAventuraTheme = ({ children }) => {
                             {/* RENDERIZA OS BADGES (O Rival estava faltando aqui!) */}
                             <TeamBadge teammates={teammatesHere} title={badgeTitle} />
                             <RivalBadge rivals={rivalsHere} />
+                            {currentUserStepId === step.id && <CurrentUserBadge avatar={userAvatar} />}
                         </div>
                     );
                 })}
@@ -342,6 +368,7 @@ const VilaDaAventuraTheme = ({ children }) => {
                         {/* RENDERIZA OS BADGES */}
                         <TeamBadge teammates={teammatesPositions['completed'] || teammatesPositions['final_reward']} title={badgeTitle} />
                         <RivalBadge rivals={rivalsPositions['completed'] || rivalsPositions['final_reward']} />
+                        {(currentUserStepId === 'final_reward' || currentUserStepId === 'completed') && <CurrentUserBadge avatar={userAvatar} />}
                     </div>
                 )}
             </div>

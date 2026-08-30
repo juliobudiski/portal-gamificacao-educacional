@@ -425,6 +425,12 @@ export const useActivityLogic = (activityId) => {
                 setUserProgress(data.updated_progress);
             }
 
+            if (data.new_medals && data.new_medals.length > 0) {
+                data.new_medals.forEach(medal => {
+                    showToast(`🏅 Nova Medalha Desbloqueada: ${medal.name || medal}`, 'success');
+                });
+            }
+
             // (Opcional: Atualizar o XP Global no AuthContext - se/quando implementado)
             // if (data.global_xp) {
             //     auth.updateGlobalXp(data.global_xp);

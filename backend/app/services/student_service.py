@@ -9,8 +9,6 @@ from ..models import db, Class, Enrollment, Activity, ActivityProgress, UserUnlo
 class StudentService:
     @staticmethod
     def calculate_global_level(total_xp):
-    @staticmethod
-    def calculate_global_level(total_xp):
         """
         Calcula o nível global do aluno (Curva Exponencial/Geométrica).
         Ao contrário do nível da atividade, o nível global exige progressivamente 

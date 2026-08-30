@@ -7,7 +7,7 @@ loja de itens cosméticos (Avatares/Títulos) e geração de Leaderboards (Ranki
 # backend/app/routes/progress.py
 from flask import Blueprint, jsonify, request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from ..models import db, Title, UserUnlockedTitle, Purchase, StoreItem, User, ActivityProgress, Activity, StudentResponse, EventLog, RouletteWin, SlotWin, Enrollment, Team
+from ..models import db, Title, UserUnlockedTitle, Purchase, StoreItem, User, ActivityProgress, Activity, StudentResponse, EventLog, RouletteWin, SlotWin, Enrollment, Team, UserUnlockedMedal, Medal
 from sqlalchemy.orm import joinedload
 from flask_cors import cross_origin 
 progress_bp = Blueprint('progress', __name__)
@@ -831,3 +831,49 @@ def equip_cosmetic(activity_id):
     
     db.session.commit()
     return jsonify({"message": f"Cosmético equipado no slot '{slot}' com sucesso!"}), 200
+
+@progress_bp.route('/<int:activity_id>/recent-events', methods=['GET'])
+@jwt_required()
+@cross_origin()
+def get_recent_events(activity_id):
+    """Busca o feed global de eventos recentes da turma na atividade."""
+    # Últimas compras
+    purchases = db.session.query(
+        User.name, Purchase.item_name, Purchase.purchase_date
+    ).join(User, User.id == Purchase.user_id)\
+     .filter(Purchase.activity_id == activity_id)\
+     .order_by(Purchase.purchase_date.desc()).limit(10).all()
+
+    # Últimas medalhas ganhas
+    medals = db.session.query(
+        User.name, Medal.name.label('medal_name'), UserUnlockedMedal.unlocked_at
+    ).join(User, User.id == UserUnlockedMedal.user_id)\
+     .join(Medal, Medal.id == UserUnlockedMedal.medal_id)\
+     .filter(Medal.activity_id == activity_id)\
+     .order_by(UserUnlockedMedal.unlocked_at.desc()).limit(10).all()
+
+    events = []
+    for p in purchases:
+        events.append({
+            "type": "purchase",
+            "user": p.name,
+            "description": f"comprou '{p.item_name}'",
+            "timestamp": p.purchase_date
+        })
+        
+    for m in medals:
+        events.append({
+            "type": "medal",
+            "user": m.name,
+            "description": f"desbloqueou a medalha '{m.medal_name}'",
+            "timestamp": m.unlocked_at
+        })
+        
+    events.sort(key=lambda x: x["timestamp"], reverse=True)
+    events = events[:15]
+    
+    for e in events:
+        e["timestamp"] = e["timestamp"].isoformat() if e["timestamp"] else None
+        
+    return jsonify(events), 200
+

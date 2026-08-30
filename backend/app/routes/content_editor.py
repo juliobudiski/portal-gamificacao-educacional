@@ -1,3 +1,10 @@
+"""
+Módulo de Rotas do Editor de Conteúdo (Content Editor)
+Gerencia as rotas usadas para visualizar, salvar e gerar via Inteligência Artificial (IA) 
+os conteúdos específicos de cada passo (etapa) de uma atividade.
+Engloba Quizzes, Narrativas, Textos e integra a orquestração via WebSocket (SocketIO).
+"""
+
 from flask import Blueprint, jsonify, request, current_app 
 import threading
 from flask_jwt_extended import jwt_required, get_jwt_identity
@@ -5,12 +12,18 @@ from ..models import Activity, QuizContent, NarrativeContent, User, LearningCont
 from ..services.ai_service import ai_service
 from ..services.content_editor_service import ContentEditorService
 from ..utils.text_sanitizer import detect_prompt_injection
+
 content_editor_bp = Blueprint('content_editor', __name__)
 
-# Rota para buscar o conteúdo de um passo (Quiz ou Narrativa)
 @content_editor_bp.route('/activity/<int:activity_id>/step/<string:step_id>/content', methods=['GET'])
 @jwt_required()
 def get_step_content(activity_id, step_id):
+    """
+    Recupera o conteúdo salvo de uma etapa específica da atividade.
+    - Acesso: Somente autores da atividade ou administradores (via ContentEditorService.check_permission).
+    - Params URL: `type` (quizz, narrativa, conteudo_aprendizagem).
+    - Retorno: Dados do conteúdo salvo no formato JSON.
+    """
     user_id = get_jwt_identity()
     if not ContentEditorService.check_permission(user_id, activity_id):
         return jsonify({"message": "Acesso não autorizado."}), 403
@@ -23,10 +36,15 @@ def get_step_content(activity_id, step_id):
         return jsonify(error), status
     return jsonify(result), status
 
-# Rota para salvar/atualizar o conteúdo de um passo
 @content_editor_bp.route('/activity/<int:activity_id>/step/<string:step_id>/content', methods=['POST'])
 @jwt_required()
 def save_step_content(activity_id, step_id):
+    """
+    Salva ou atualiza o conteúdo de uma etapa específica da atividade.
+    - Acesso: Somente autores da atividade.
+    - Payload JSON esperado: Dados estruturados do conteúdo (depende se é Quiz, Narrativa, etc).
+    - Retorno: Mensagem de sucesso (200) e os dados atualizados.
+    """
     user_id = get_jwt_identity()
     if not ContentEditorService.check_permission(user_id, activity_id):
         return jsonify({"message": "Acesso não autorizado."}), 403
@@ -40,9 +58,15 @@ def save_step_content(activity_id, step_id):
     return jsonify(result), status
     
 def orchestrate_worker(app, data, room_id):
+    """
+    Thread Worker em segundo plano que orquestra as chamadas de API (Gemini/LLM).
+    Foi movido para background para não bloquear a requisição HTTP.
+    Utiliza SocketIO para emitir o progresso em tempo real ao frontend.
+    """
     from ..extensions import socketio
     with app.app_context():
         try:
+            # Chama o serviço de IA passando o BYOK (chave própria do usuário) se disponível
             full_content_map = ai_service.orchestrate_story(
                 data['context'], 
                 data['structure'], 
@@ -50,6 +74,7 @@ def orchestrate_worker(app, data, room_id):
                 room_id=room_id,
                 user_api_key=data.get('user_api_key')
             )
+            # Notifica o cliente via WebSocket que a geração concluiu
             socketio.emit('ai_complete', full_content_map, room=room_id, namespace='/')
         except Exception as e:
             current_app.logger.error(f"Erro na thread de IA: {str(e)}")
@@ -58,25 +83,33 @@ def orchestrate_worker(app, data, room_id):
 @content_editor_bp.route('/orchestrate', methods=['POST'])
 @jwt_required()
 def orchestrate_draft_activity():
+    """
+    Inicia o fluxo assíncrono de geração de rascunho de atividade completa via IA.
+    - Acesso: Requer login.
+    - Payload JSON esperado: 'context', 'structure', 'config' com instruções pedagógicas e layout da trilha.
+    - Proteção WAF: Verifica "prompt injection" nos textos inseridos pelo professor.
+    - Retorno: `room_id` para o cliente se inscrever via WebSocket e 202 Accepted.
+    """
     user_id = get_jwt_identity()
     data = request.get_json()
     app = current_app._get_current_object()
     from ..extensions import socketio
 
     user = User.query.get(user_id)
+    # BYOK (Bring Your Own Key): Puxa a chave Gemini privada do professor para uso no orquestrador
     if user and user.gemini_api_key:
         data['user_api_key'] = user.gemini_api_key
 
-    # Verifica Prompt Injection nas configurações
+    # Validação Básica de Segurança (Anti Prompt Injection)
     teaching_focus = data.get('config', {}).get('teachingFocus', '')
     title = data.get('context', {}).get('title', '')
     if detect_prompt_injection(teaching_focus) or detect_prompt_injection(title):
         return jsonify({"message": "Entrada contém comandos não permitidos pelas diretrizes do sistema."}), 400
 
-    # Sala baseada no ID do usuário
+    # Cria uma sala WebSocket exclusiva para este usuário
     room_id = f"user_ai_{user_id}"
 
-    # CORREÇÃO: Usar start_background_task para compatibilidade com Socket.IO (Eventlet/Gevent)
+    # Usa o wrapper do Flask-SocketIO para executar tarefas em background compatíveis com Eventlet/Gevent
     socketio.start_background_task(orchestrate_worker, app, data, room_id)
 
     return jsonify({"message": "Iniciado", "room_id": room_id}), 202
