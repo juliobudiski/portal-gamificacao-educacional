@@ -1,5 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 
+/**
+ * Hook de Autenticação Google
+ * 
+ * Gerencia a injeção do script do Google Identity Services (GSI) e o fluxo do
+ * OAuth 2.0 para login/cadastro unificado.
+ */
+
+
 export default function useGoogleSignIn(handleResponse, buttonText = 'signin_with') {
   const [googleLoaded, setGoogleLoaded] = useState(false);
   const googleButtonRef = useRef(null);

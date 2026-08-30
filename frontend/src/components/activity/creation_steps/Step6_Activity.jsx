@@ -3,6 +3,14 @@ import GameBoardEditor from '../../activity/GameBoardEditor';
 import { useHelpModal } from "../../../context/HelpModalContext";
 import { FaRoute, FaLightbulb, FaRobot } from 'react-icons/fa';
 
+/**
+ * Criação de Atividade - Passo 6 (Revisão e Publicação)
+ * 
+ * Consolida todos os dados configurados nos passos anteriores para revisão final
+ * e realiza o envio (POST) para salvar a atividade no banco de dados.
+ */
+
+
 function Step6_GameBoard({ activityData, setActivityData, onEditContent, onStructureChange }) {
   const { openHelp } = useHelpModal();
 

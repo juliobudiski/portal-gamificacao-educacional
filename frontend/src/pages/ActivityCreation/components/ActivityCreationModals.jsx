@@ -3,6 +3,14 @@ import QuizEditor from '../../QuizEditorPage';
 import NarrativeEditor from '../../NarrativeEditorPage';
 import LearningContentEditor from '../../LearningContentEditorPage';
 
+/**
+ * Modais de Apoio à Criação
+ * 
+ * Conjunto de modais contextuais utilizados durante o fluxo de criação para
+ * confirmar descartes, validar passos ou dar dicas de design gamificado.
+ */
+
+
 function ActivityCreationModals({ editingStep, setEditingStep, handleSaveContentLocally }) {
   if (!editingStep) return null;
 

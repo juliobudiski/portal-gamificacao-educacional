@@ -2,6 +2,14 @@
 import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
+/**
+ * Gráfico de Crescimento de Usuários
+ * 
+ * Componente analítico do painel de administração focado em demonstrar a evolução
+ * do número de novos registros (professores e alunos) ao longo do tempo.
+ */
+
+
 function UserGrowthChart({ data }) {
   if (!data || data.length === 0) {
     return <div className="h-64 flex items-center justify-center text-secondary-text">Sem dados para exibir.</div>;

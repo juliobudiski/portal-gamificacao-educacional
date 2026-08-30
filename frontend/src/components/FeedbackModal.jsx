@@ -1,6 +1,14 @@
 import React, { useState } from 'react';
 import { useAuthOperations } from '../hooks/useAuthOperations';
 
+/**
+ * Modal de Feedback
+ * 
+ * Exibe mensagens de retorno (sucesso, erro, avisos) sobre ações do usuário,
+ * garantindo uma melhor experiência e navegação.
+ */
+
+
 export default function FeedbackModal({ isOpen, onClose, userRole }) {
     const [answers, setAnswers] = useState({});
     const { performAuthRequest } = useAuthOperations();

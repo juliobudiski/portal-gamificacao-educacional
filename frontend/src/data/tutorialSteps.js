@@ -1,3 +1,9 @@
+/**
+ * Passos do Tutorial (Joyride)
+ * 
+ * Arquivo de configuração contendo os passos, seletores CSS e textos (tooltips)
+ * utilizados pela biblioteca react-joyride para guiar os novos usuários.
+ */
 export const STUDENT_DASHBOARD_STEPS = [
     {
         target: 'body', // Alvo genérico (centro da tela)

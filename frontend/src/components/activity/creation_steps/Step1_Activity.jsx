@@ -8,6 +8,13 @@ import {
 } from 'react-icons/fa';
 import { useHelpModal } from "../../../context/HelpModalContext";
 
+/**
+ * Criação de Atividade - Passo 1 (Informações Básicas)
+ * 
+ * Coleta o título, descrição, tipo e visibilidade (pública/privada) da nova atividade.
+ */
+
+
 // --- DADOS DA LITERATURA E GERAIS ---
 const SUBDOMAINS_COMPUTING = [
   "Fundamentos e Programação Introdutória",

@@ -1,3 +1,9 @@
+"""
+Módulo de Configuração (Config)
+
+Define as variáveis de ambiente, configurações do banco de dados (SQLAlchemy),
+chaves secretas (JWT, Flask) e diretórios do sistema.
+"""
 import os
 from dotenv import load_dotenv
 from datetime import timedelta

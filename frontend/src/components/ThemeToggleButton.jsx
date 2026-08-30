@@ -2,6 +2,14 @@ import React from 'react';
 import { useTheme } from '../context/ThemeContext'; // Importa nosso hook customizado
 import { Sun, Moon } from 'lucide-react'; // Importa os ícones que já estão no projeto
 
+/**
+ * Botão de Alternância de Tema
+ * 
+ * Componente de UI flutuante que permite ao usuário alternar globalmente entre o 
+ * Modo Claro (Light) e o Modo Escuro (Dark).
+ */
+
+
 const ThemeToggleButton = () => {
     const { theme, toggleTheme } = useTheme();
 

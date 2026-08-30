@@ -7,6 +7,14 @@ import {
 } from 'react-icons/fa';
 import { useHelpModal } from "../../../context/HelpModalContext";
 
+/**
+ * Criação de Atividade - Passo 2 (Mecânicas e Gamificação)
+ * 
+ * Permite ao professor configurar regras de jogo, pontuação (XP), restrições de tempo
+ * e recompensas associadas à atividade.
+ */
+
+
 // DADOS DA LITERATURA E GERAIS
 const SUBDOMAIN_OBJECTIVES = {
   "Fundamentos e Programação Introdutória": [

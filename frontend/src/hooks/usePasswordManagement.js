@@ -1,5 +1,13 @@
 import { useState } from 'react';
 
+/**
+ * Hook de Gerenciamento de Senhas
+ * 
+ * Encapsula a lógica de negócio e as requisições API (fetch) necessárias para
+ * redefinição, alteração e recuperação de senhas.
+ */
+
+
 export function usePasswordManagement() {
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',

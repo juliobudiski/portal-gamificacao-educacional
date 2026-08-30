@@ -1,5 +1,13 @@
 import React from 'react';
 
+/**
+ * Modal de Estatísticas da Atividade
+ * 
+ * Exibe o desempenho final (XP ganho, tempo gasto, acertos) após o aluno concluir
+ * uma atividade gamificada.
+ */
+
+
 const StatsModal = ({ stats, onClose }) => (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
         <div className="bg-primary-bg p-8 rounded-lg max-w-lg w-full text-primary-text">

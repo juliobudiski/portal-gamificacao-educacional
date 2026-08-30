@@ -3,6 +3,14 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 // Agora o import abaixo vai funcionar porque arrumamos o arquivo acima
 import activityService from '../services/activityService';
 
+/**
+ * Hook de Auto-Salvamento
+ * 
+ * Gerencia timers (debouncing) para salvar automaticamente o progresso em rascunhos
+ * enquanto o professor cria ou edita uma atividade.
+ */
+
+
 export const useAutoSave = (data, updateIdCallback, delay = 2000) => {
     const [saveStatus, setSaveStatus] = useState('idle');
     const [lastSavedAt, setLastSavedAt] = useState(null);

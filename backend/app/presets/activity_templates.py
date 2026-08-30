@@ -1,3 +1,9 @@
+"""
+Templates de Atividade (Activity Templates)
+
+Fornece estruturas pré-definidas (presets) para a criação rápida de atividades gamificadas,
+incluindo modelos para Quizzes, Narrativas e Desafios.
+"""
 # backend/app/presets/activity_templates.py
 
 PREDEFINED_TEMPLATES = [

@@ -2,6 +2,14 @@ import { useState, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import useAnalytics from './useAnalytics';
 
+/**
+ * Hook de Gerenciamento de Perfil
+ * 
+ * Centraliza a lógica para atualizar dados do usuário, trocar avatar e sincronizar
+ * configurações locais com a API.
+ */
+
+
 export function useProfileManagement() {
   const { user, updateUserData, logout } = useAuth();
   const [messages, setMessages] = useState({});

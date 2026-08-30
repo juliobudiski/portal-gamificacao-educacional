@@ -2,6 +2,14 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
+/**
+ * Gráfico de Top Atividades
+ * 
+ * Componente analítico do painel de administração que exibe um gráfico de barras
+ * com as atividades mais populares/engajadoras do sistema.
+ */
+
+
 function TopActivitiesChart({ data }) {
     if (!data || data.length === 0) {
         return <div className="h-64 flex items-center justify-center text-secondary-text">Sem dados para exibir.</div>;

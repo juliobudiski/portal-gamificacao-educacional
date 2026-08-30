@@ -1,5 +1,13 @@
 import React from 'react';
 
+/**
+ * Painel de Seleção Inicial (Criação)
+ * 
+ * Oferece ao professor a escolha entre criar uma atividade do zero ou usar um dos
+ * templates pré-definidos (presets).
+ */
+
+
 function InitialSelectionPanel({
   showTemplateList,
   handleStartFromScratch,

@@ -4,6 +4,14 @@ import React, { useState, useContext, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useAuth } from '../context/AuthContext'; // Importando o hook de autenticação
 
+/**
+ * Lista de Ranking de Professores
+ * 
+ * Renderiza a tabela de classificação (leaderboard) dos educadores com base em suas
+ * contribuições (criações, engajamento e clones) na plataforma.
+ */
+
+
 const TeacherRankingList = ({ title, rankingData, isLoading, error }) => {
   const { user } = useAuth(); // Pegando o usuário logado do contexto
 

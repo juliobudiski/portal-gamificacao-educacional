@@ -3,6 +3,14 @@ import React from 'react';
 import { FaTimes } from 'react-icons/fa';
 import './InteractionPanel.css'; // Vamos criar este arquivo a seguir
 
+/**
+ * Painel de Interação da Atividade
+ * 
+ * Responsável por gerenciar a submissão de respostas, cálculos de feedback imediato
+ * e requisições para a API de validação durante a execução de uma atividade.
+ */
+
+
 const InteractionPanel = ({ isOpen, onClose, title, children }) => {
   return (
     <aside className={`interaction-panel ${isOpen ? 'is-open' : ''}`}>

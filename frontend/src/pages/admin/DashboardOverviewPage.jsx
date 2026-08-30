@@ -6,6 +6,14 @@ import UserGrowthChart from '../../components/admin/UserGrowthChart';
 import TopActivitiesChart from '../../components/admin/TopActivitiesChart';
 import RecentActivityFeed from '../../components/admin/RecentActivityFeed';
 
+/**
+ * Página de Visão Geral (Admin Dashboard)
+ * 
+ * Reúne as principais métricas do sistema em tempo real, fornecendo um panorama
+ * de cadastros, atividades e status das turmas para o administrador.
+ */
+
+
 function DashboardOverviewPage() {
   const [dashboardData, setDashboardData] = useState(null);
   const [userGrowthData, setUserGrowthData] = useState([]);
@@ -132,4 +140,3 @@ function DashboardOverviewPage() {
 }
 
 export default DashboardOverviewPage;
-
