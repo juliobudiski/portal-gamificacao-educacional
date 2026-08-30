@@ -35,6 +35,8 @@ function UserProfilePage() {
   
   const [apiKeys, setApiKeys] = useState({ gemini_api_key: '', openai_api_key: '' });
   const [savingKeys, setSavingKeys] = useState(false);
+  const [passwordData, setPasswordData] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
   const handleUpdateAvatar = async (avatarUrl) => {
     console.log("Selecionado novo avatar:", avatarUrl);
     try {
@@ -172,6 +174,40 @@ function UserProfilePage() {
       showToast('Erro ao salvar as chaves de API.');
     } finally {
       setSavingKeys(false);
+    }
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      return showToast('As senhas não coincidem.', 'warning');
+    }
+    if (passwordData.newPassword.length < 6) {
+      return showToast('A nova senha deve ter pelo menos 6 caracteres.', 'warning');
+    }
+
+    setIsChangingPassword(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/user/change-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getToken()}`
+        },
+        body: JSON.stringify({ 
+          old_password: passwordData.oldPassword, 
+          new_password: passwordData.newPassword 
+        })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Falha ao alterar a senha.');
+      
+      showToast('Senha alterada com sucesso!', 'success');
+      setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (error) {
+      showToast(error.message, 'error');
+    } finally {
+      setIsChangingPassword(false);
     }
   };
 
@@ -336,7 +372,47 @@ function UserProfilePage() {
 
               {!user.google_id && (
                 <ProfileCard icon={<FaKey className="mr-3" />} title="Segurança">
-                  {/* Formulário de alteração de senha aqui */}
+                  <form onSubmit={handleChangePassword} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 dark:text-gray-200 mb-2">Senha Atual</label>
+                      <input
+                        type="password"
+                        required
+                        className="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-border-color text-sm focus:ring-2 focus:ring-purple-500"
+                        value={passwordData.oldPassword}
+                        onChange={e => setPasswordData({...passwordData, oldPassword: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 dark:text-gray-200 mb-2">Nova Senha</label>
+                      <input
+                        type="password"
+                        required
+                        minLength="6"
+                        className="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-border-color text-sm focus:ring-2 focus:ring-purple-500"
+                        value={passwordData.newPassword}
+                        onChange={e => setPasswordData({...passwordData, newPassword: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 dark:text-gray-200 mb-2">Confirmar Nova Senha</label>
+                      <input
+                        type="password"
+                        required
+                        minLength="6"
+                        className="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-border-color text-sm focus:ring-2 focus:ring-purple-500"
+                        value={passwordData.confirmPassword}
+                        onChange={e => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+                      />
+                    </div>
+                    <button 
+                      type="submit" 
+                      disabled={isChangingPassword}
+                      className="mt-2 w-full py-2 px-4 bg-accent-purple text-white font-semibold rounded-lg hover:bg-accent-purple/80 transition-colors"
+                    >
+                      {isChangingPassword ? "Alterando..." : "Alterar Senha"}
+                    </button>
+                  </form>
                 </ProfileCard>
               )}
             </div>

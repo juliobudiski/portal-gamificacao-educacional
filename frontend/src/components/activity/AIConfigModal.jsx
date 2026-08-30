@@ -273,12 +273,12 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                             {/* BLOCO PEDAGÓGICO (NOVO) */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-2">
+                                    <label className="block text-sm font-bold text-primary-text mb-2 flex items-center gap-2">
                                         <FaBullseye className="text-red-500" /> Tópico de Ensino (Obrigatório)
                                     </label>
                                     <input
                                         type="text"
-                                        className="w-full p-3 rounded-xl bg-gray-50 dark:bg-hover-bg-color0 border border-border-color text-sm focus:ring-2 focus:ring-purple-500"
+                                        className="w-full p-3 rounded-xl bg-primary-bg dark:bg-hover-bg-color0 border border-border-color text-sm text-primary-text focus:ring-2 focus:ring-purple-500"
                                         placeholder="Ex: Diferença entre Git Merge e Rebase"
                                         value={config.teachingFocus}
                                         onChange={e => setConfig({ ...config, teachingFocus: e.target.value })}
@@ -286,11 +286,11 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
 
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-2">
+                                    <label className="block text-sm font-bold text-primary-text mb-2 flex items-center gap-2">
                                         <FaGraduationCap className="text-blue-500" /> Nível da Turma
                                     </label>
                                     <select
-                                        className="w-full p-3 rounded-xl bg-gray-50 dark:bg-hover-bg-color0 border border-border-color text-sm"
+                                        className="w-full p-3 rounded-xl bg-primary-bg dark:bg-hover-bg-color0 border border-border-color text-sm text-primary-text"
                                         value={config.targetAudience}
                                         onChange={e => setConfig({ ...config, targetAudience: e.target.value })}
                                     >
@@ -302,11 +302,11 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                             </div>
                             {/* Enredo */}
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-2">
+                                <label className="block text-sm font-bold text-primary-text mb-2 flex items-center gap-2">
                                     <FaBook className="text-purple-500" /> Contexto da História
                                 </label>
                                 <textarea
-                                    className="w-full p-3 rounded-xl bg-gray-50 dark:bg-hover-bg-color0 border border-border-color text-sm focus:ring-2 focus:ring-purple-500"
+                                    className="w-full p-3 rounded-xl bg-primary-bg dark:bg-hover-bg-color0 border border-border-color text-sm text-primary-text focus:ring-2 focus:ring-purple-500"
                                     rows="3"
                                     placeholder="Ex: O servidor caiu e a equipe precisa analisar os logs para achar o erro de memória..."
                                     value={config.narrativeGoal}
@@ -323,7 +323,7 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                                 <div>
                                     <label className="block font-bold text-sm mb-2 text-secondary-text">Gênero / Tom</label>
                                     <select
-                                        className="w-full p-3 rounded-xl bg-gray-50 dark:bg-hover-bg-color0 border dark:border-[var(--border-color)]"
+                                        className="w-full p-3 rounded-xl bg-primary-bg dark:bg-hover-bg-color0 border border-border-color text-primary-text"
                                         value={config.tone}
                                         onChange={e => setConfig({ ...config, tone: e.target.value })}
                                     >
@@ -337,7 +337,7 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                                 <div>
                                     <label className="block font-bold text-sm mb-2 text-secondary-text">Personalidade da Historia</label>
                                     <select
-                                        className="w-full p-3 rounded-xl bg-gray-50 dark:bg-hover-bg-color0 border dark:border-[var(--border-color)]"
+                                        className="w-full p-3 rounded-xl bg-primary-bg dark:bg-hover-bg-color0 border border-border-color text-primary-text"
                                         value={config.personality}
                                         onChange={e => setConfig({ ...config, personality: e.target.value })}
                                     >
@@ -357,24 +357,24 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                         <div className="space-y-6">
                             {/* Gestão de Personagens */}
                             <div>
-                                <label className="block font-bold text-gray-700 dark:text-gray-200 mb-3 flex items-center gap-2">
+                                <label className="block font-bold text-primary-text mb-3 flex items-center gap-2">
                                     <FaUsers className="text-purple-500" /> Elenco (Máx 4)
                                 </label>
                                 <div className="space-y-3">
                                     {config.charactersList.map((char, index) => (
                                         <div key={index} className="flex gap-2 items-center">
-                                            <div className="bg-gray-200 dark:bg-hover-bg-color0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-gray-500">
+                                            <div className="bg-border-color w-8 h-8 rounded-full flex items-center justify-center font-bold text-secondary-text">
                                                 {index + 1}
                                             </div>
                                             <input
                                                 type="text"
                                                 placeholder="Nome (ex: Ana)"
-                                                className="flex-1 p-2 rounded-lg border bg-gray-50 dark:bg-hover-bg-color0 dark:border-[var(--border-color)]"
+                                                className="flex-1 p-2 rounded-lg border bg-primary-bg border-border-color text-primary-text"
                                                 value={char.role}
                                                 onChange={(e) => updateCharacter(index, 'role', e.target.value)}
                                             />
                                             <select
-                                                className="p-2 rounded-lg border bg-gray-50 dark:bg-hover-bg-color0 dark:border-[var(--border-color)] text-sm"
+                                                className="p-2 rounded-lg border bg-primary-bg border-border-color text-primary-text text-sm"
                                                 value={char.type}
                                                 onChange={(e) => updateCharacter(index, 'type', e.target.value)}
                                             >
@@ -400,7 +400,7 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
 
                             {/* Sliders de Controle */}
                             <div>
-                                <label className="block font-bold text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2">
+                                <label className="block font-bold text-primary-text mb-4 flex items-center gap-2">
                                     <FaSlidersH className="text-purple-500" /> Ajustes Finos
                                 </label>
 
@@ -450,7 +450,7 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                             <button
                                 onClick={() => setStep(1)}
                                 disabled={loading}
-                                className="px-6 py-3 rounded-xl border border-gray-300 text-gray-600 hover:bg-gray-100 font-bold"
+                                className="px-6 py-3 rounded-xl border border-border-color text-primary-text hover:bg-hover-bg-color0 font-bold"
                             >
                                 Voltar
                             </button>

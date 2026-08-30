@@ -62,6 +62,10 @@ const ChatTab = ({ onReturn }) => {
       ));
     });
 
+    socket.on('error_message', (data) => {
+      showToast(data.msg || "Erro ao enviar mensagem.", "error");
+    });
+
     return () => {
       socket.disconnect();
     };

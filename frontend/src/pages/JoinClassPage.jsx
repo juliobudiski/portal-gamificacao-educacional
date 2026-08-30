@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { FaKey, FaSignInAlt, FaUserGraduate } from 'react-icons/fa';
+import { useConfetti } from '../context/ConfettiContext';
 
 /**
  * Componente JoinClassPage
@@ -14,6 +15,7 @@ function JoinClassPage() {
     const [message, setMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
+    const { triggerConfetti } = useConfetti();
 
     useEffect(() => {
         console.log('[JoinClassPage] Componente montado.');
@@ -77,8 +79,13 @@ function JoinClassPage() {
             if (response.ok) {
                 setMessage(`Matrícula na turma "${data.class.name}" realizada com sucesso!`);
                 setEnrollmentCode('');
+                triggerConfetti();
                 console.log('[JoinClassPage] Matrícula realizada, navegando para /student/dashboard');
-                navigate('/aluno/dashboard'); // Ou para a lista de turmas do aluno
+                
+                // Redireciona após o confete
+                setTimeout(() => {
+                    navigate('/aluno/dashboard');
+                }, 2000);
             } else {
                 setMessage(data.message || 'Erro desconhecido ao entrar na turma.');
                 console.error('[JoinClassPage] Erro ao entrar na turma:', data.message);

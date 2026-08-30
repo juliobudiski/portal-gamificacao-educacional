@@ -115,19 +115,32 @@ class ChatService:
         if check_profanity(safe_content):
             return None, "Sua mensagem contém termos bloqueados pelas diretrizes da comunidade."
 
+        try:
+            activity_id = int(activity_id)
+            sender_id = int(sender_id)
+        except (ValueError, TypeError):
+            return None, "Dados inválidos."
+
         conversation = Conversation.query.filter_by(activity_id=activity_id).first()
-        if conversation:
-            new_message = ChatMessage(
-                conversation_id=conversation.id,
-                sender_id=sender_id,
-                content=safe_content
-            )
-            db.session.add(new_message)
+        if not conversation:
+            # Cria a conversa caso o frontend envie mensagem antes de chamar a rota GET /messages
+            activity = Activity.query.get(activity_id)
+            if not activity:
+                return None, "Atividade não encontrada."
+            conversation = Conversation(type='group', activity_id=activity.id)
+            db.session.add(conversation)
             db.session.commit()
-            
-            enriched = ChatService._enrich_messages_with_cosmetics([new_message.to_dict()], activity_id)
-            return enriched[0], None
-        return None, "Conversa não encontrada."
+
+        new_message = ChatMessage(
+            conversation_id=conversation.id,
+            sender_id=sender_id,
+            content=safe_content
+        )
+        db.session.add(new_message)
+        db.session.commit()
+        
+        enriched = ChatService._enrich_messages_with_cosmetics([new_message.to_dict()], activity_id)
+        return enriched[0], None
 
     @staticmethod
     def report_message(msg_id, user_id):

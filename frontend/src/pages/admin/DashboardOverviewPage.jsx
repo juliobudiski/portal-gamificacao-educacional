@@ -17,6 +17,7 @@ import RecentActivityFeed from '../../components/admin/RecentActivityFeed';
 function DashboardOverviewPage() {
   const [dashboardData, setDashboardData] = useState(null);
   const [userGrowthData, setUserGrowthData] = useState([]);
+  const [topActivitiesData, setTopActivitiesData] = useState([]);
   const [activityFeed, setActivityFeed] = useState([]);
   const [activityStatus, setActivityStatus] = useState(null);
   const [loading, setLoading] = useState(true);

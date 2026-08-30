@@ -12,6 +12,20 @@ import { useAuthOperations } from '../hooks/useAuthOperations';
 import { useTutorial } from '../context/TutorialContext';
 import { STUDENT_DASHBOARD_STEPS } from '../data/tutorialSteps';
 import { useLocation } from 'react-router-dom';
+import { FaLightbulb } from 'react-icons/fa';
+
+const DAILY_TIPS = [
+  "Divida problemas grandes em partes pequenas antes de começar a codificar.",
+  "Dormir bem ajuda a fixar o que você aprendeu. Não vire a noite programando!",
+  "Sempre leia as mensagens de erro (logs). Elas geralmente dizem exatamente o que está errado.",
+  "Peça ajuda no fórum! A comunidade existe para isso.",
+  "Revise o código antigo para ver o quanto você evoluiu.",
+  "Use nomes descritivos para suas variáveis em vez de 'a', 'b', 'x'.",
+  "Teste seu código com diferentes entradas antes de enviar a missão.",
+  "Lembre-se: todo dev sênior já foi um júnior com muitas dúvidas.",
+  "Existem muitos caminhos para resolver o mesmo problema em TI.",
+  "Faça pausas! A solução para aquele bug pode vir enquanto você toma um café."
+];
 
 /**
  * Cartão que representa uma turma no dashboard
@@ -135,10 +149,11 @@ function StudentDashboardPage() {
 
   useEffect(() => {
     // Verifica se veio do botão "Ver Tutorial" com ordem de força
-    const shouldForce = location.state?.forceTour === true;
+    const shouldForce = location.state?.forceTour === true && !window.hasForcedTourStudent;
 
     // Inicia o tutorial se nunca foi visto ou se forçado
     const timer = setTimeout(() => {
+      if (shouldForce) window.hasForcedTourStudent = true;
       startTour(STUDENT_DASHBOARD_STEPS, 'student_dashboard_v1', shouldForce);
     }, 500);
 
@@ -261,11 +276,27 @@ function StudentDashboardPage() {
     // 3. Limita a lista para os 5 primeiros itens
     .slice(0, 5);
 
+  const tipIndex = Math.floor(Date.now() / 86400000) % DAILY_TIPS.length;
+  const currentTip = DAILY_TIPS[tipIndex];
 
   return (
     <div className="min-h-screen bg-primary-bg p-4 md:p-8 text-primary-text">
       <FeedbackModal isOpen={showFeedback} onClose={() => setShowFeedback(false)} userRole="aluno" />
       <div className="max-w-full mx-auto">
+        
+        {/* --- Dica do Dia --- */}
+        <div className="bg-gradient-to-r from-indigo-900/50 to-purple-900/50 border border-indigo-500/30 rounded-2xl p-4 flex items-center justify-between shadow-lg mb-6">
+          <div className="flex items-center gap-4">
+            <div className="bg-indigo-500/20 p-3 rounded-xl">
+              <FaLightbulb className="text-yellow-400 text-xl animate-pulse" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-indigo-300 uppercase tracking-wider mb-1">Dica do Dia do Mestre</h3>
+              <p className="text-gray-200 font-medium">{currentTip}</p>
+            </div>
+          </div>
+        </div>
+
         {/* Cabeçalho de Boas-vindas */}
         <header className="mb-12">
           <h1 className="text-4xl md:text-5xl font-extrabold">

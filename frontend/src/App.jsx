@@ -54,6 +54,7 @@ import { useTutorial } from './context/TutorialContext';
 import { STUDENT_DASHBOARD_STEPS } from './data/tutorialSteps';
 import { ACTIVITY_SELECTION_STEPS } from './data/tutorialSteps';
 import ServerWakeupNotice from './components/ServerWakeupNotice';
+import useKonamiCode from './hooks/useKonamiCode';
 
 // --- 2. COMPONENTES AUXILIARES ---
 const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === 'true';
@@ -115,6 +116,18 @@ function AppContent() {
   const checkRunRef = useRef(false);
   const hasRegisteredHitRef = useRef(false); // NOVO: Ref para controle de hit global
   const [loadingAuth, setLoadingAuth] = useState(true); // Começa true até a verificação inicial
+
+  // Easter Egg: Konami Code
+  const isMatrixMode = useKonamiCode('exevogranmasvis');
+  
+  useEffect(() => {
+    if (isMatrixMode) {
+      document.body.classList.add('matrix-mode');
+    } else {
+      document.body.classList.remove('matrix-mode');
+    }
+  }, [isMatrixMode]);
+
   debugLog('AppContent: Renderizando...', { user, isAuthenticated, loadingAuth });
 
   // --- LÓGICA DE HIT GLOBAL DA PLATAFORMA ---

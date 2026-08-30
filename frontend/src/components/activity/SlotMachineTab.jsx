@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { FaArrowLeft, FaCoins, FaInfoCircle, FaBolt, FaVolumeUp, FaVolumeMute } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { useParams } from 'react-router-dom';
+import { useConfetti } from '../../context/ConfettiContext';
 
 // --- CONFIGURAÇÃO VISUAL DOS SÍMBOLOS ---
 const SYMBOL_MAP = {
@@ -18,6 +19,7 @@ const CELL_HEIGHT = 96; // 6rem = 96px
 const SlotMachineTab = ({ userCoins, onReturn, onPlay }) => {
   const { user } = useAuth();
   const { activityId } = useParams();
+  const { triggerConfetti } = useConfetti();
 
   // Estados
   const [matrix, setMatrix] = useState([
@@ -72,6 +74,11 @@ const SlotMachineTab = ({ userCoins, onReturn, onPlay }) => {
     if (data.total_win > 0) {
       if (soundEnabled) playSound(data.is_jackpot ? 'jackpot' : 'win');
       setWinData(data);
+      if (data.total_win >= 100) {
+          triggerConfetti(6000);
+      } else {
+          triggerConfetti(3000);
+      }
     }
   };
 

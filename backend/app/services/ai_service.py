@@ -108,6 +108,7 @@ class AIService:
             
             if room_id:
                 percent = int((index / total_steps) * 100)
+                logger.info(f"Emitindo ai_progress para sala {room_id}: {percent}%")
                 socketio.emit('ai_progress', {'percent': percent, 'message': f"Criando {self._get_step_label(step_type)}..."}, room=room_id, namespace='/')
                 socketio.sleep(0) # Força o context switch do eventlet para garantir o envio imediato da mensagem!
 
@@ -159,8 +160,10 @@ class AIService:
 
         if room_id:
              percent = 100
+             logger.info(f"Emitindo ai_progress final 100% para sala {room_id}")
              socketio.emit('ai_progress', {'percent': percent, 'message': f"Finalizando roteiro..."}, room=room_id, namespace='/')
              socketio.sleep(0)
+             logger.info(f"Emitindo ai_complete para sala {room_id} com chaves: {list(final_map.keys())}")
              socketio.emit('ai_complete', {'result': final_map}, room=room_id, namespace='/')
              socketio.sleep(0)
 

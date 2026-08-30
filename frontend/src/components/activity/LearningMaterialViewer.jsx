@@ -36,6 +36,7 @@ const formatExternalUrl = (url) => {
 
 const LearningMaterialViewer = ({ content, onComplete }) => {
     const { video_url, text_content, material_link } = content || {};
+    const [isVideoLoaded, setIsVideoLoaded] = React.useState(false);
 
     const processedText = React.useMemo(() => {
         if (!text_content) return '';
@@ -70,13 +71,24 @@ const LearningMaterialViewer = ({ content, onComplete }) => {
                 {/* CONTAINER DO VÍDEO CORRIGIDO - Iframe Nativo */}
                 {finalVideoUrl && (
                     <div className="relative pt-[56.25%] bg-black rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(0,0,0,0.6)] border border-white/10 group">
+                        {!isVideoLoaded && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-gray-800 animate-pulse">
+                                <div className="flex flex-col items-center">
+                                    <svg className="w-12 h-12 text-gray-500 mb-2 animate-bounce" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
+                                    </svg>
+                                    <span className="text-gray-400 font-medium tracking-wide">Carregando player...</span>
+                                </div>
+                            </div>
+                        )}
                         <iframe
-                            className="absolute top-0 left-0 w-full h-full"
+                            className={`absolute top-0 left-0 w-full h-full transition-opacity duration-500 ${isVideoLoaded ? 'opacity-100' : 'opacity-0'}`}
                             src={finalVideoUrl}
                             title="Video player"
                             frameBorder="0"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                             allowFullScreen
+                            onLoad={() => setIsVideoLoaded(true)}
                         ></iframe>
                         <div className="absolute inset-0 border-2 border-transparent group-hover:border-white/20 rounded-2xl pointer-events-none transition-colors duration-300"></div>
                     </div>

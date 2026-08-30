@@ -135,3 +135,22 @@ body {
   display: flex;
   flex-direction: column;
 }
+/* MATRIX MODE (Konami Code Easter Egg) */
+body.matrix-mode,
+body.matrix-mode * {
+  background-color: #000000 !important;
+  color: #00FF00 !important;
+  border-color: #00FF00 !important;
+  font-family: 'Courier New', Courier, monospace !important;
+}
+
+body.matrix-mode button,
+body.matrix-mode a {
+  box-shadow: 0 0 10px #00FF00 !important;
+}
+
+body.matrix-mode svg {
+  color: #00FF00 !important;
+  fill: #00FF00 !important;
+}
+

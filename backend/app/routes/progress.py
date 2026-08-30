@@ -446,7 +446,7 @@ def spin_roulette_for_activity(activity_id):
     if "error" in result:
         return jsonify({"message": result["error"]}), result.get("status", 400)
 
-    result["updated_progress"] = _get_progress_json(user_id, activity_id)
+    result["updated_progress"] = ProgressService.get_progress_json(user_id, activity_id)
     return jsonify(result), 200
 
 
@@ -494,7 +494,7 @@ def play_slot_machine(activity_id):
     if "error" in result:
         return jsonify({"message": result["error"]}), result.get("status", 400)
 
-    result["updated_progress"] = _get_progress_json(user_id, activity_id)
+    result["updated_progress"] = ProgressService.get_progress_json(user_id, activity_id)
     return jsonify(result), 200
 
 @progress_bp.route('/<int:activity_id>/slot-winners', methods=['GET'])
@@ -670,7 +670,7 @@ def collect_final_reward(activity_id):
 
     db.session.commit()
 
-    updated_progress_data = _get_progress_json(user_id, activity_id)
+    updated_progress_data = ProgressService.get_progress_json(user_id, activity_id)
     return jsonify({
         "message": "Atividade concluída e recompensa coletada com sucesso!",
         "updated_progress": updated_progress_data, # Retorna o JSON completo (Micro)

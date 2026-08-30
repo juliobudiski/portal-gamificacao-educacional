@@ -8,6 +8,7 @@ import { HelpModalProvider } from './context/HelpModalContext.jsx';
 import 'react-roulette-pro/dist/index.css';
 // Importação do Provider
 import { ToastProvider } from './context/ToastContext';
+import { ConfettiProvider } from './context/ConfettiContext';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
@@ -16,7 +17,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <HelpModalProvider>
           {/* Envolvendo a aplicação com o ToastProvider */}
           <ToastProvider>
-            <App />
+            <ConfettiProvider>
+              <App />
+            </ConfettiProvider>
           </ToastProvider>
         </HelpModalProvider>
       </ThemeProvider>

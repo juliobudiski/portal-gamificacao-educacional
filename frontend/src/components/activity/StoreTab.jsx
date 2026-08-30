@@ -6,6 +6,7 @@ import { HexColorPicker } from 'react-colorful';
 import { useAuth } from '../../context/AuthContext'; // <-- IMPORTADO
 import { useParams } from 'react-router-dom'; // <-- IMPORTADO
 import { useToast } from '../../context/ToastContext';
+import { useConfetti } from '../../context/ConfettiContext';
 
 // --- LISTA DE ITENS PRÉ-DEFINIDOS (sem alterações) ---
 const PREDEFINED_COSMETICS = [
@@ -151,6 +152,7 @@ const StoreTab = ({ items, userPoints, onPurchaseSuccess, onAddItem, onDeleteIte
     const { user } = useAuth();
     const { activityId } = useParams();
     const { token } = useAuth();
+    const { triggerConfetti } = useConfetti();
     // Nova função que realiza a compra no backend
     const handlePurchaseItem = async (itemToBuy) => {
         try {
@@ -171,7 +173,7 @@ const StoreTab = ({ items, userPoints, onPurchaseSuccess, onAddItem, onDeleteIte
 
             showToast("Compra realizada com sucesso!");
             console.log("[StoreTab] Compra realizada com sucesso!Resposta do servidor:", data);
-
+            triggerConfetti();
 
             // 3. CHAME A FUNÇÃO CORRETA ('onPurchaseSuccess') que veio pela prop
             onPurchaseSuccess(data.updated_progress);

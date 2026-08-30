@@ -184,14 +184,19 @@ class ProgressService:
         
         if not progress:
             current_app.logger.info(f"Nenhum progresso encontrado para o usuário {user.id}. Criando novo registro para a turma {activity.class_id}.")
-            progress = ActivityProgress(
-                student_id=user.id,
-                activity_id=activity.id,
-                class_id=activity.class_id,
-                status='in_progress'
-            )
-            db.session.add(progress)
-            db.session.commit()
+            try:
+                progress = ActivityProgress(
+                    student_id=user.id,
+                    activity_id=activity.id,
+                    class_id=activity.class_id,
+                    status='in_progress'
+                )
+                db.session.add(progress)
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
+                progress = ActivityProgress.query.filter_by(student_id=user.id, activity_id=activity_id).first()
+                current_app.logger.info(f"Progresso para usuário {user.id} já existia (race condition evitada).")
 
         total_xp = progress.total_xp_earned if progress.total_xp_earned is not None else 0
         level_info = ProgressService.calculate_level(total_xp)

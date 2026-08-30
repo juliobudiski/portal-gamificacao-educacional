@@ -4,6 +4,7 @@ import CustomWheel from './CustomWheel';
 import { FaTrophy, FaGift, FaSyncAlt, FaExclamationTriangle, FaArrowLeft, FaSpinner } from "react-icons/fa";
 import { useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { useConfetti } from "../../context/ConfettiContext";
 
 // Estilo para animações e layout
 const style = `
@@ -29,6 +30,7 @@ const RouletteTab = ({ onReturn, onSpin }) => {
   const { user } = useAuth();
   const { activityId } = useParams();
   const [retryAvailable, setRetryAvailable] = useState(false);
+  const { triggerConfetti } = useConfetti();
 
   const [isSpinning, setIsSpinning] = useState(false);
   const [winningPrizeIndex, setWinningPrizeIndex] = useState(null);
@@ -115,6 +117,15 @@ const RouletteTab = ({ onReturn, onSpin }) => {
       // Sucesso Real (XP ou Item Novo)
       setRetryAvailable(false);
       setRevealedPrize(apiPrize); // Mostra o Modal de Vitória
+      
+      // Checa se o prêmio é bom para disparar confetti
+      const isGoodPrize = apiPrize.label.toLowerCase().includes('raro') || 
+                          apiPrize.label.toLowerCase().includes('título') ||
+                          apiPrize.label.includes('150') || 
+                          apiPrize.label.includes('200');
+      if (isGoodPrize) {
+          triggerConfetti(6000); // 6 segundos
+      }
 
       setTimeout(() => {
         setRevealedPrize(null);
