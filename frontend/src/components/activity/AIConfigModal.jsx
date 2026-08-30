@@ -90,10 +90,9 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
             }));
         }
 
-        // 2. Conexão com o Socket
         const socketUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
         const socket = io(socketUrl, {
-            transports: ['websocket'], // Força WebSocket (evita polling em túneis)
+            // Removendo transports: ['websocket'] para permitir o long-polling do Cloudflare Tunnel
             reconnectionAttempts: 5,
             reconnectionDelay: 2000,
             timeout: 120000, // Aumenta timeout de conexão para 120s (2 min) para tolerar IA lenta
@@ -104,12 +103,17 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
         // 3. Lógica de Conexão e Inscrição na Sala
         socket.on('connect', () => {
             console.log("Socket Conectado. ID:", socket.id);
-            // Emite o evento 'join' para a sala específica do usuário
+            // Continua emitindo join para manter compatibilidade, mas o backend enviará broadcast
             socket.emit('join', `user_ai_${user.id}`);
         });
 
         // 4. Listeners para os eventos de progresso da IA
+        socket.onAny((eventName, ...args) => {
+            console.log(`[SOCKET DEBUG] Evento Recebido: ${eventName}`, args);
+        });
+
         socket.on('ai_progress', (data) => {
+            if (data.room_id !== `user_ai_${user.id}`) return;
             // Se recebeu evento, significa que a comunicação está viva, podemos dar um "reset" no timeout se quisermos
             const safePercent = Math.min(Math.max(data.percent || 0, 0), 99);
             setProgress(safePercent);
@@ -117,6 +121,7 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
         });
 
         socket.on('ai_complete', (data) => {
+            if (data.room_id !== `user_ai_${user.id}`) return;
             if (deadlockTimeoutRef.current) clearTimeout(deadlockTimeoutRef.current);
             const contentMap = data.result || data;
 

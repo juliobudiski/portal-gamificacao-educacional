@@ -108,13 +108,13 @@ function LearningContentEditorPage({ initialData, onSave, isOfflineMode = false 
     const finalVideoUrl = getYouTubeEmbedUrl(contentConfig.video_url);
 
     return (
-        <div className="min-h-screen bg-gray-900 text-gray-200 p-4 md:p-8 transition-colors duration-300 relative overflow-hidden">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 p-4 md:p-8 transition-colors duration-300 relative overflow-hidden">
             {/* Efeitos de luz ao fundo */}
             <div className="fixed top-0 right-1/4 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
             <div className="fixed bottom-0 left-0 w-[500px] h-[400px] bg-green-600/10 rounded-full blur-[150px] pointer-events-none z-0"></div>
 
             <div className="max-w-7xl mx-auto relative z-10">
-                <div className="flex items-center gap-3 mb-8 bg-black/30 p-6 rounded-3xl border border-white/5 shadow-xl backdrop-blur-md">
+                <div className="flex items-center gap-3 mb-8 bg-white/80 dark:bg-black/30 p-6 rounded-3xl border border-gray-200 dark:border-white/5 shadow-xl backdrop-blur-md">
                     <div className="bg-gradient-to-br from-green-400 to-emerald-600 p-4 rounded-2xl shadow-[0_0_20px_rgba(52,211,153,0.4)]">
                         <FaVideo className="text-2xl text-gray-900" />
                     </div>
@@ -127,8 +127,8 @@ function LearningContentEditorPage({ initialData, onSave, isOfflineMode = false 
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
                     {/* COLUNA ESQUERDA: EDITOR */}
                     <div className="space-y-6">
-                        <div className="bg-black/40 backdrop-blur-lg p-8 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] border border-white/10 group">
-                            <label className="block text-sm font-bold mb-3 flex items-center gap-2 text-gray-300 uppercase tracking-wider">
+                        <div className="bg-white/80 dark:bg-black/40 backdrop-blur-lg p-8 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] border border-gray-300 dark:border-white/10 group">
+                            <label className="block text-sm font-bold mb-3 flex items-center gap-2 text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                                 <FaVideo className="text-red-500" /> Link do YouTube (Stream)
                             </label>
                             <input
@@ -137,15 +137,15 @@ function LearningContentEditorPage({ initialData, onSave, isOfflineMode = false 
                                 value={contentConfig.video_url}
                                 onChange={handleInputChange}
                                 placeholder="https://www.youtube.com/watch?v=..."
-                                className="w-full p-4 bg-gray-900/60 text-white rounded-2xl border border-white/10 focus:border-red-500/50 outline-none transition-all duration-300 placeholder-gray-600 shadow-inner group-hover:border-white/20"
+                                className="w-full p-4 bg-white dark:bg-gray-900/60 text-gray-900 dark:text-white rounded-2xl border border-gray-300 dark:border-white/10 focus:border-red-500/50 outline-none transition-all duration-300 placeholder-gray-400 dark:placeholder-gray-600 shadow-inner group-hover:border-white/20"
                             />
                             <p className="text-xs text-gray-500 mt-3 italic">
                                 Dica: Cole o link direto do vídeo ou o código de incorporação (iframe).
                             </p>
                         </div>
 
-                        <div className="bg-black/40 backdrop-blur-lg p-8 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] border border-white/10 group">
-                            <label className="block text-sm font-bold mb-3 flex items-center gap-2 text-gray-300 uppercase tracking-wider">
+                        <div className="bg-white/80 dark:bg-black/40 backdrop-blur-lg p-8 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] border border-gray-300 dark:border-white/10 group">
+                            <label className="block text-sm font-bold mb-3 flex items-center gap-2 text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                                 <FaExternalLinkAlt className="text-blue-400" /> Material Complementar Exato
                             </label>
                             <input
@@ -154,12 +154,12 @@ function LearningContentEditorPage({ initialData, onSave, isOfflineMode = false 
                                 value={contentConfig.material_link}
                                 onChange={handleInputChange}
                                 placeholder="https://drive.google.com/... (PDF/Slide)"
-                                className="w-full p-4 bg-gray-900/60 text-white rounded-2xl border border-white/10 focus:border-blue-400/50 outline-none transition-all duration-300 placeholder-gray-600 shadow-inner group-hover:border-white/20"
+                                className="w-full p-4 bg-white dark:bg-gray-900/60 text-gray-900 dark:text-white rounded-2xl border border-gray-300 dark:border-white/10 focus:border-blue-400/50 outline-none transition-all duration-300 placeholder-gray-400 dark:placeholder-gray-600 shadow-inner group-hover:border-white/20"
                             />
                         </div>
 
-                        <div className="bg-black/40 backdrop-blur-lg p-8 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] border border-white/10 group">
-                            <label className="block text-sm font-bold mb-3 flex items-center gap-2 text-gray-300 uppercase tracking-wider">
+                        <div className="bg-white/80 dark:bg-black/40 backdrop-blur-lg p-8 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] border border-gray-300 dark:border-white/10 group">
+                            <label className="block text-sm font-bold mb-3 flex items-center gap-2 text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                                 <FaAlignLeft className="text-green-400" /> Log de Transmissão (Texto / Markdown)
                             </label>
                             <textarea
@@ -168,15 +168,15 @@ function LearningContentEditorPage({ initialData, onSave, isOfflineMode = false 
                                 value={contentConfig.text_content}
                                 onChange={handleInputChange}
                                 placeholder="# Título da Aula&#10;&#10;Escreva aqui o conteúdo teórico..."
-                                className="w-full p-4 bg-gray-900/60 text-gray-300 rounded-2xl border border-white/10 focus:border-green-400/50 outline-none transition-all duration-300 placeholder-gray-600 shadow-inner font-mono text-sm leading-relaxed group-hover:border-white/20 custom-scrollbar"
+                                className="w-full p-4 bg-white dark:bg-gray-900/60 text-gray-700 dark:text-gray-300 rounded-2xl border border-gray-300 dark:border-white/10 focus:border-green-400/50 outline-none transition-all duration-300 placeholder-gray-400 dark:placeholder-gray-600 shadow-inner font-mono text-sm leading-relaxed group-hover:border-white/20 custom-scrollbar"
                             />
                         </div>
                     </div>
 
                     {/* COLUNA DIREITA: PREVIEW */}
                     <div className="space-y-6">
-                        <div className="bg-black/20 p-8 rounded-3xl border border-white/5 backdrop-blur-md">
-                            <h3 className="text-xl font-bold text-gray-300 mb-6 flex items-center gap-2">
+                        <div className="bg-black/20 p-8 rounded-3xl border border-gray-200 dark:border-white/5 backdrop-blur-md">
+                            <h3 className="text-xl font-bold text-gray-700 dark:text-gray-300 mb-6 flex items-center gap-2">
                                 Pré-visualização do Stream
                             </h3>
 
@@ -191,8 +191,8 @@ function LearningContentEditorPage({ initialData, onSave, isOfflineMode = false 
                                         allowFullScreen
                                     ></iframe>
                                 ) : (
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-600 bg-gray-900/50">
-                                        <div className="w-16 h-16 rounded-full bg-gray-800 flex items-center justify-center mb-3 border border-gray-700 group-hover:scale-110 transition-transform">
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-600 bg-gray-100 dark:bg-gray-900/50">
+                                        <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center mb-3 border border-gray-700 group-hover:scale-110 transition-transform">
                                             <FaVideo size={24} className="opacity-50" />
                                         </div>
                                         <p className="font-medium tracking-wide">Sem sinal de vídeo</p>
@@ -207,12 +207,12 @@ function LearningContentEditorPage({ initialData, onSave, isOfflineMode = false 
                         </div>
 
                         <div className="xl:sticky xl:top-8 space-y-4">
-                            <h3 className="text-xl font-bold text-gray-300 flex items-center gap-2 ml-2">
+                            <h3 className="text-xl font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2 ml-2">
                                 <FaEye className="text-teal-400" /> Interface do Aluno
                             </h3>
 
                             {/* Container estilo Tablet/Mockup */}
-                            <div className="border border-white/10 rounded-[2rem] overflow-hidden bg-gray-900 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-y-auto max-h-[80vh] custom-scrollbar relative">
+                            <div className="border border-gray-300 dark:border-white/10 rounded-[2rem] overflow-hidden bg-gray-50 dark:bg-gray-900 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-y-auto max-h-[80vh] custom-scrollbar relative">
                                 <div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-black/50 to-transparent pointer-events-none z-10"></div>
                                 <LearningMaterialViewer
                                     content={contentConfig}
@@ -223,11 +223,11 @@ function LearningContentEditorPage({ initialData, onSave, isOfflineMode = false 
                     </div>
                 </div>
 
-                <div className="mt-10 pt-8 border-t border-white/10 flex flex-col items-center">
+                <div className="mt-10 pt-8 border-t border-gray-300 dark:border-white/10 flex flex-col items-center">
                     <button
                         onClick={handleSaveChanges}
                         disabled={loading}
-                        className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-extrabold py-4 px-12 rounded-2xl shadow-[0_0_30px_rgba(16,185,129,0.4)] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center gap-3 uppercase tracking-widest text-lg group disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto"
+                        className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-gray-900 dark:text-white font-extrabold py-4 px-12 rounded-2xl shadow-[0_0_30px_rgba(16,185,129,0.4)] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center gap-3 uppercase tracking-widest text-lg group disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto"
                     >
                         <FaSave className="transform group-hover:scale-125 transition-transform" /> 
                         {loading ? 'Transmitindo...' : 'Publicar Módulo de Ensino'}

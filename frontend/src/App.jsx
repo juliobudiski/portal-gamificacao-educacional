@@ -118,7 +118,7 @@ function AppContent() {
   const [loadingAuth, setLoadingAuth] = useState(true); // Começa true até a verificação inicial
 
   // Easter Egg: Konami Code
-  const isMatrixMode = useKonamiCode('exevogranmasvis');
+  const isMatrixMode = useKonamiCode('exevo gran mas vis');
   
   useEffect(() => {
     if (isMatrixMode) {

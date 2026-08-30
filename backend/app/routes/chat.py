@@ -33,6 +33,14 @@ def get_activity_chat_history(activity_id):
 
 # --- EVENTOS DE WEBSOCKET ---
 
+@socketio.on('connect')
+def on_connect():
+    print(f"[SOCKET] CLiente Conectado! SID: {request.sid}")
+
+@socketio.on('disconnect')
+def on_disconnect():
+    print(f"[SOCKET] Cliente Desconectado! SID: {request.sid}")
+
 @socketio.on('join')
 def on_join(data):
     """
@@ -51,6 +59,7 @@ def on_join(data):
         room = data
     
     if room:
+        print(f"[SOCKET] Join received for room: {room}")
         join_room(room)
         # Opcional: Logar entrada do usuário na sala
 

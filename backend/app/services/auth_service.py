@@ -427,3 +427,23 @@ class AuthService:
         except Exception as e:
             db.session.rollback()
             return None, {"message": "Erro ao atualizar chaves."}, 500
+
+    @staticmethod
+    def test_api_key(data):
+        import google.generativeai as genai
+        
+        if 'gemini_api_key' in data and data['gemini_api_key']:
+            try:
+                genai.configure(api_key=data['gemini_api_key'], transport="rest")
+                model = genai.GenerativeModel('models/gemini-2.5-flash-lite')
+                response = model.generate_content("Responda com 'OK'", generation_config={"max_output_tokens": 10})
+                if not response.text:
+                    raise Exception("Resposta vazia da API.")
+            except Exception as e:
+                current_app.logger.warning(f"Falha na validação da chave Gemini: {str(e)}")
+                return None, {"message": "Chave da API Gemini é inválida ou não tem permissão."}, 400
+                
+        # Futuramente pode adicionar teste para OpenAI aqui se necessário
+
+        return {"message": "Chave válida."}, None, 200
+

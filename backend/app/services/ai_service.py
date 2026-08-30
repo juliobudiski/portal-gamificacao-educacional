@@ -5,6 +5,7 @@ Gerencia chaves (BYOK), fallback de modelos em caso de limites de taxa (HTTP 429
 validação estrutural JSON e moderação de conteúdo.
 """
 import google.generativeai as genai
+import google.api_core.exceptions as google_exceptions
 import os
 import json
 import json_repair
@@ -18,6 +19,14 @@ from difflib import get_close_matches
 from .ai_prompt_builder import build_prompt
 
 logger = logging.getLogger(__name__)
+# ADD DEBUG FILE HANDLER
+file_handler = logging.FileHandler('/home/julio/Documentos/projetos/portal-gamificacao-educacional/ai_debug.log')
+file_handler.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
+logger.setLevel(logging.DEBUG)
+
 # --- METADADOS DOS ASSETS ---
 AVAILABLE_SCENARIOS = [
     {"url": "/narrativa/cenarios/cenario1.webp", "description": "Sala de aula moderna e iluminada, ambiente acadêmico limpo."},
@@ -47,7 +56,7 @@ class AIService:
         """
         self.default_api_key = os.environ.get("GOOGLE_API_KEY")
         if self.default_api_key:
-            genai.configure(api_key=self.default_api_key)
+            genai.configure(api_key=self.default_api_key, transport="rest")
         
         # Lista de prioridade de modelos, do mais preferível ao fallback.
         self.MODEL_HIERARCHY = [
@@ -89,11 +98,26 @@ class AIService:
         total_steps = len(steps_to_fill)
         
         final_map = {}
-        current_model_idx = 0 # Sticky Fallback: mantém o modelo que está funcionando
         
-        # Se houver chave personalizada do usuário, usar
+        # Cooldown dinâmico: Se o professor trouxe a própria chave (BYOK), não precisamos 
+        # esperar 2 segundos por passo (evitando rate limit do sistema global).
+        dynamic_cooldown = 0.1 if user_api_key else self.cooldown_seconds
+
+        # Validar chaves antes de tentar gerar (Evita hang do ADC)
+        active_key = user_api_key or self.default_api_key
+        if not active_key:
+            logger.error("Nenhuma chave de API (Usuário ou Sistema) configurada!")
+            if room_id:
+                socketio.emit('ai_error', {'message': 'Nenhuma chave de API configurada. Adicione sua chave no Perfil.', 'room_id': room_id}, namespace='/')
+            return {}
+        
+        # Log de debug para saber qual origem da chave estamos usando
         if user_api_key:
-            genai.configure(api_key=user_api_key)
+            logger.debug("Usando a chave de API fornecida pelo usuário (BYOK).")
+            genai.configure(api_key=user_api_key, transport="rest")
+        else:
+            logger.debug("Usando a chave de API padrão do sistema.")
+            genai.configure(api_key=self.default_api_key, transport="rest")
         
         # Memória de execução persistente durante a orquestração
         execution_trace = {
@@ -108,24 +132,66 @@ class AIService:
             
             if room_id:
                 percent = int((index / total_steps) * 100)
+                # Garante que o frontend saia dos 5% iniciais
+                if percent == 0: percent = 10 
                 logger.info(f"Emitindo ai_progress para sala {room_id}: {percent}%")
-                socketio.emit('ai_progress', {'percent': percent, 'message': f"Criando {self._get_step_label(step_type)}..."}, room=room_id, namespace='/')
+                socketio.emit('ai_progress', {'percent': percent, 'message': f"Criando {self._get_step_label(step_type)}...", 'room_id': room_id}, namespace='/')
                 socketio.sleep(0) # Força o context switch do eventlet para garantir o envio imediato da mensagem!
 
-            # Build prompt usando a memória atualizada
-            full_prompt = build_prompt(step_type, index+1, total_steps, activity_context, ai_config, execution_trace)
+            # Build prompt usando a memória atualizada (agora separa a persona em System Instruction)
+            system_instruction, full_prompt = build_prompt(step_type, index+1, total_steps, activity_context, ai_config, execution_trace)
+            logger.debug(f"[DEBUG] Prompt para o passo {step_id} ({step_type}): {full_prompt[:200]}...")
 
             success = False
             current_retry = 0
-            # Tenta modelos a partir do último que funcionou (current_model_idx)
-            while not success and current_model_idx < len(self.MODEL_HIERARCHY):
-                model_name = self.MODEL_HIERARCHY[current_model_idx]
+            fallback_reason = "Erro na geração pela IA"
+            
+            # Model Routing Inteligente: Quiz usa flash-lite por ser tarefa extrativa simples e rápida.
+            # Narrativa e Conteúdo exigem raciocínio complexo, logo começamos no flash normal.
+            models_to_try = self.MODEL_HIERARCHY.copy()
+            if step_type == 'quiz':
+                # Move o flash-lite para o topo da lista se ele existir
+                lite_models = [m for m in models_to_try if 'lite' in m]
+                if lite_models:
+                    models_to_try.remove(lite_models[0])
+                    models_to_try.insert(0, lite_models[0])
+
+            current_model_idx = 0
+
+            # Tenta modelos da lista dinâmica
+            while not success and current_model_idx < len(models_to_try):
+                model_name = models_to_try[current_model_idx]
+                logger.debug(f"[DEBUG] Tentando modelo {model_name} para {step_type}")
                 try:
-                    model = genai.GenerativeModel(model_name, generation_config=self.generation_config)
+                    config = self.generation_config.copy()
+                    if step_type == 'content':
+                        config.pop('response_mime_type', None) # Desativa o JSON mode para markdown livre
+
+                    # INSTRUÇÃO DE SISTEMA NATIVA: Melhora a aderência às regras e economiza tokens
+                    model = genai.GenerativeModel(
+                        model_name, 
+                        generation_config=config,
+                        system_instruction=system_instruction
+                    )
                     response = model.generate_content(full_prompt)
-                    valid_content = self._clean_and_parse_json(response.text)
+                    logger.debug(f"[DEBUG] Resposta raw do LLM (primeiros 300 chars): {response.text[:300]}...")
                     
-                    if self._validate_content_integrity(step_type, valid_content):
+                    if step_type == 'content':
+                        valid_content = {
+                            "type": "content",
+                            "text_content": response.text.strip(),
+                            "video_url": "",
+                            "material_link": ""
+                        }
+                    else:
+                        valid_content = self._clean_and_parse_json(response.text)
+                        
+                    logger.debug(f"[DEBUG] JSON parseado: {valid_content}")
+                    
+                    is_valid = self._validate_content_integrity(step_type, valid_content)
+                    logger.debug(f"[DEBUG] Validação de integridade ({step_type}): {is_valid}")
+                    
+                    if is_valid:
                         # Pós-processamento específico
                         if step_type == 'quiz':
                             valid_content = self._shuffle_quiz_options(valid_content)
@@ -136,27 +202,34 @@ class AIService:
                         current_retry = 0 # Reseta retry
                         logger.info(f"✅ Passo {step_id} gerado com sucesso usando {model_name}.")
                     else:
-                        raise Exception("Conteúdo inválido gerado")
-                except Exception as e:
-                    if "429" in str(e) or "Quota" in str(e) or "503" in str(e):
-                        if current_retry < 1:
-                            current_retry += 1
-                            logger.warning(f"⚠️ Erro transitório em {model_name} (tentativa {current_retry}/2). Retentando em 2s...")
-                            socketio.sleep(2)
-                            continue # Tenta de novo sem incrementar modelo
-                        else:
-                            logger.warning(f"⚠️ Cota esgotada em {model_name}: {str(e)}. Rebaixando modelo...")
-                            current_model_idx += 1
-                            current_retry = 0
+                        raise Exception("Conteúdo estruturalmente inválido gerado pela IA")
+                except google_exceptions.ResourceExhausted as e:
+                    if current_retry < 1:
+                        current_retry += 1
+                        logger.warning(f"⚠️ Erro transitório (ResourceExhausted) em {model_name} (tentativa {current_retry}/2). Retentando em 2s...")
+                        socketio.sleep(2)
+                        continue
                     else:
-                        logger.error(f"Erro não transitório no modelo {model_name}: {str(e)}")
-                        break # Sai do loop while e usa fallback
+                        logger.warning(f"⚠️ Cota esgotada em {model_name}. Rebaixando modelo...")
+                        current_model_idx += 1
+                        current_retry = 0
+                except google_exceptions.InvalidArgument as e:
+                    logger.error(f"Erro não transitório (InvalidArgument - API Key inválida) no modelo {model_name}: {str(e)}")
+                    fallback_reason = "Chave de API inválida ou sem permissão"
+                    break # Sai do loop while e usa fallback imediato
+                except Exception as e:
+                    logger.error(f"Erro no modelo {model_name}: {str(e)}")
+                    if "429" in str(e) or "Quota" in str(e) or "503" in str(e):
+                        current_model_idx += 1
+                    else:
+                        fallback_reason = str(e)
+                        break
             
             if not success:
                 logger.error(f"Falha ao gerar passo {step_id}. Usando fallback estático.")
-                final_map[step_id] = self._get_fallback_content(step_type)
+                final_map[step_id] = self._get_fallback_content(step_type, fallback_reason)
 
-            socketio.sleep(self.cooldown_seconds)
+            socketio.sleep(dynamic_cooldown)
 
         if room_id:
              percent = 100
@@ -164,18 +237,21 @@ class AIService:
              socketio.emit('ai_progress', {'percent': percent, 'message': f"Finalizando roteiro..."}, room=room_id, namespace='/')
              socketio.sleep(0)
              logger.info(f"Emitindo ai_complete para sala {room_id} com chaves: {list(final_map.keys())}")
-             socketio.emit('ai_complete', {'result': final_map}, room=room_id, namespace='/')
+             socketio.emit('ai_complete', {'result': final_map, 'room_id': room_id}, namespace='/')
              socketio.sleep(0)
 
-        # Restaurar chave default para não vazar a custom key em outras threads assíncronas no escopo global
+        # Restaurar chave default com REST para não vazar a custom key em outras threads assíncronas no escopo global
         if user_api_key and self.default_api_key:
-            genai.configure(api_key=self.default_api_key)
+            genai.configure(api_key=self.default_api_key, transport="rest")
 
         return final_map
 
 
     def _generate_with_sticky_fallback(self, prompt, start_index=0):
-        """Tenta gerar a partir de um índice específico da hierarquia."""
+        """
+        Tenta gerar a partir de um índice específico da hierarquia.
+        Trata exceções tipadas de acordo com o SDK do Google.
+        """
         last_error = None
         # Itera a partir do último modelo que funcionou
         for i in range(start_index, len(self.MODEL_HIERARCHY)):
@@ -184,12 +260,24 @@ class AIService:
                 current_model = genai.GenerativeModel(model_name, generation_config=self.generation_config)
                 response = current_model.generate_content(prompt)
                 return self._clean_and_parse_json(response.text), i # Retorna o conteúdo e o índice que funcionou
-            except Exception as e:
-                if "429" in str(e) or "Quota exceeded" in str(e):
-                    logger.warning(f"⚠️ Cota estourada para {model_name}. Subindo nível de fallback.")
-                    last_error = e
-                    continue
+            except google_exceptions.ResourceExhausted as e:
+                # HTTP 429: Rate Limit / Quota Exceeded
+                logger.warning(f"⚠️ Cota estourada para {model_name} (ResourceExhausted). Subindo nível de fallback.")
+                last_error = e
+                continue
+            except google_exceptions.InvalidArgument as e:
+                # HTTP 400: API Key Invalid, Bad Request, Modelo não existe
+                logger.error(f"❌ Erro não transitório (InvalidArgument) no modelo {model_name}: {e}. Abortando retry.")
+                raise e # Erros 400 não se resolvem tentando o próximo modelo (exceto se for nome do modelo). Para API Key, interrompe na hora.
+            except google_exceptions.PermissionDenied as e:
+                # HTTP 403: Chave não tem permissão para a API
+                logger.error(f"❌ Erro de permissão (PermissionDenied) no modelo {model_name}: {e}. Abortando retry.")
                 raise e
+            except Exception as e:
+                # Outros erros sistêmicos (500, 503, Timeout).
+                logger.error(f"Erro inesperado no modelo {model_name}: {e}")
+                last_error = e
+                continue
         raise last_error
     
     def _generate_content_with_fallback(self, prompt: str) -> str:
@@ -274,33 +362,46 @@ class AIService:
 
         return True
 
-    def _get_fallback_content(self, step_type):
-        """Retorna estrutura vazia segura em caso de falha total."""
+    def _get_fallback_content(self, step_type: str, fallback_reason: str = "Ocorreu um erro ao gerar o conteúdo.") -> Dict:
+        """
+        @desc Gera conteúdo estático de emergência caso a IA falhe completamente.
+        Esse fallback é vital para que a sala não fique bloqueada e o processo continue.
+        Garante que o schema corresponda 100% ao que o Frontend (React) espera.
+        """
         if step_type == 'narrative':
             return {
                 "type": "narrative",
                 "scenario": "/narrativa/cenarios/cenario1.webp",
                 "characters": [
-                    {"role": "Sistema", "image": "/narrativa/personagens/instrutor1.webp"},
-                    {"role": "Dev", "image": "/narrativa/personagens/aluno1.webp"}
+                    {"name": "Sistema", "image": "/narrativa/personagens/robo.webp", "emotion": "sad"}
                 ],
                 "dialogue": [
-                    {"characterRole": "Sistema", "text": "Houve uma instabilidade na conexão neural (API Error)."},
-                    {"characterRole": "Dev", "text": "Entendido. Vou prosseguir com os dados manuais por enquanto."}
+                    {"character": "Sistema", "text": "Houve uma falha na minha matriz gerativa..."},
+                    {"character": "Sistema", "text": f"Motivo do erro: {fallback_reason}. A geração não pôde prosseguir."}
                 ]
             }
         elif step_type == 'quiz':
             return {
                 "type": "quiz",
-                "questions": [{
-                    "text": "Pergunta de Exemplo (Erro na Geração)",
-                    "options": ["Opção A", "Opção B", "Opção C", "Opção D"],
-                    "correct_option": "Opção A",
-                    "explanation": "Esta é uma questão de fallback gerada automaticamente devido a um erro na API de IA.",
-                    "points": 10, "coins": 5, "timeLimit": 60
-                }]
+                "questions": [
+                    {
+                        "text": f"O que aconteceu? (Erro: {fallback_reason})",
+                        "options": ["A API falhou", "Tudo está perfeito", "O servidor caiu", "Magia"],
+                        "correct_option": "A API falhou",
+                        "points": 10,
+                        "coins": 5,
+                        "timeLimit": 30
+                    }
+                ]
             }
-        return {"type": "content", "text_content": "### Conteúdo Temporário\n\nOcorreu um erro na geração deste conteúdo. Por favor, edite este passo manualmente.\n\n```python\n# Placeholder\nprint('Erro na geração')\n```", "video_url": ""}
+        elif step_type == 'content':
+            return {
+                "type": "content", 
+                "text_content": f"### Erro na Geração\nOcorreu um problema ao comunicar com o modelo de linguagem.\n\nMotivo: {fallback_reason}\n\nRecomendamos editar este conteúdo manualmente.", 
+                "video_url": "",
+                "material_link": ""
+            }
+        return {}
 
     def _update_memory_trace(self, trace, step_type, content):
         """Atualiza a memória de curto prazo para o próximo passo."""
@@ -347,13 +448,30 @@ class AIService:
         """
         @desc Limpa e parseia uma string que deveria conter JSON.
         Utiliza a biblioteca json_repair para máxima resiliência contra
-        respostas mal formatadas do LLM.
+        respostas mal formatadas do LLM, e fallback com regex para blocos markdown.
         @param {str} raw_text - Texto bruto retornado pela IA.
         @returns {Dict} Dicionário parseado ou vazio em caso de erro.
         """
+        
+        # 1. Pré-limpeza simples (remover espaços e tags comuns markdown markdown de json)
+        clean_text = raw_text.strip()
+        
+        # Se vier encapsulado em ```json ... ```, extrai o conteúdo do meio via Regex
+        match = re.search(r'```(?:json)?\s*(.*?)\s*```', clean_text, re.DOTALL | re.IGNORECASE)
+        if match:
+            clean_text = match.group(1).strip()
+            
+        # Fast-Path: Tenta usar o parser nativo (super rápido) antes de engatilhar a lib externa.
+        try:
+            result = json.loads(clean_text)
+            if isinstance(result, dict):
+                return result
+        except json.JSONDecodeError:
+            pass # Falhou, vai pro fallback do json_repair
+            
         try:
             # json_repair cuida magicamente de crases, vírgulas sobrando, etc.
-            result = json_repair.loads(raw_text)
+            result = json_repair.loads(clean_text)
             if not isinstance(result, dict):
                 logger.error("JSON Parse Error: Resultado não é um dicionário.")
                 return {}
@@ -474,10 +592,18 @@ class AIService:
                 # SUCESSO: Retorna o resultado imediatamente
                 return result
 
-            except Exception as e:
-                # Se for erro de cota (429) ou erro interno da API, loga e tenta o próximo
-                logger.warning(f"⚠️ Falha na moderação com {model_name}: {str(e)}. Tentando fallback...")
+            except google_exceptions.ResourceExhausted as e:
+                # Se for erro de cota (429), loga e tenta o próximo
+                logger.warning(f"⚠️ Cota estourada na moderação com {model_name}: {str(e)}. Tentando próximo...")
                 time.sleep(1) # Breve pausa para não espamar a API em caso de erro sistêmico
+                continue
+            except google_exceptions.InvalidArgument as e:
+                # 400, API Key errada, quebra de imediato.
+                logger.error(f"❌ Erro não transitório na moderação com {model_name}: {str(e)}.")
+                break # Sai do loop pois a chave ou modelo é permanentemente inválido
+            except Exception as e:
+                logger.warning(f"⚠️ Erro desconhecido na moderação com {model_name}: {str(e)}. Tentando próximo...")
+                time.sleep(1)
                 continue
 
         # Se o loop terminar e nenhum modelo responder:

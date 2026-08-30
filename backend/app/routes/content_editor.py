@@ -74,11 +74,11 @@ def orchestrate_worker(app, data, room_id):
                 room_id=room_id,
                 user_api_key=data.get('user_api_key')
             )
-            # Notifica o cliente via WebSocket que a geração concluiu
-            socketio.emit('ai_complete', full_content_map, room=room_id, namespace='/')
+            # Notifica o cliente via WebSocket            # Emitindo sucesso via socket
+            socketio.emit('ai_complete', {'result': full_content_map, 'room_id': room_id}, namespace='/')
         except Exception as e:
             current_app.logger.error(f"Erro na thread de IA: {str(e)}")
-            socketio.emit('ai_error', {"message": str(e)}, room=room_id, namespace='/')
+            socketio.emit('ai_error', {"message": str(e), 'room_id': room_id}, namespace='/')
 
 @content_editor_bp.route('/orchestrate', methods=['POST'])
 @jwt_required()
@@ -97,8 +97,9 @@ def orchestrate_draft_activity():
 
     user = User.query.get(user_id)
     # BYOK (Bring Your Own Key): Puxa a chave Gemini privada do professor para uso no orquestrador
-    if user and user.gemini_api_key:
-        data['user_api_key'] = user.gemini_api_key
+    # Se o usuário não tiver uma chave configurada, passamos None para que o ai_service 
+    # utilize a chave padrão de fallback do sistema (se houver no .env).
+    data['user_api_key'] = user.gemini_api_key if user and user.gemini_api_key else None
 
     # Validação Básica de Segurança (Anti Prompt Injection)
     teaching_focus = data.get('config', {}).get('teachingFocus', '')
@@ -113,3 +114,23 @@ def orchestrate_draft_activity():
     socketio.start_background_task(orchestrate_worker, app, data, room_id)
 
     return jsonify({"message": "Iniciado", "room_id": room_id}), 202
+
+def test_worker(app, room_id):
+    from ..extensions import socketio
+    with app.app_context():
+        for i in range(5):
+            socketio.sleep(1)
+            print(f"Emitting test_progress {i}")
+            socketio.emit('ai_progress', {'percent': i * 20, 'message': f'Test {i}'}, room=room_id, namespace='/')
+        socketio.emit('ai_complete', {'result': 'success'}, room=room_id, namespace='/')
+
+@content_editor_bp.route('/test_socket', methods=['POST'])
+@jwt_required()
+def test_socket():
+    user_id = get_jwt_identity()
+    room_id = f"user_ai_{user_id}"
+    from flask import current_app
+    app = current_app._get_current_object()
+    from ..extensions import socketio
+    socketio.start_background_task(test_worker, app, room_id)
+    return jsonify({"message": "Test Started", "room_id": room_id}), 202

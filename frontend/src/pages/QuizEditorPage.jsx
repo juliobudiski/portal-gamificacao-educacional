@@ -169,14 +169,14 @@ function QuizEditorPage({ initialData, onSave, onCancel, isOfflineMode = false }
     if (error) return <div className="text-center text-red-500 p-10">Erro: {error}</div>;
 
     return (
-        <div className="min-h-screen bg-gray-900 text-gray-200 p-4 md:p-8 transition-colors duration-300 relative overflow-hidden">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 p-4 md:p-8 transition-colors duration-300 relative overflow-hidden">
             {/* Efeitos de luz ao fundo */}
             <div className="fixed top-1/4 left-0 w-[400px] h-[400px] bg-teal-600/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
             <div className="fixed bottom-0 right-0 w-[500px] h-[400px] bg-purple-600/10 rounded-full blur-[150px] pointer-events-none z-0"></div>
 
             <div className="max-w-4xl mx-auto relative z-10">
                 {/* Cabeçalho */}
-                <div className="flex items-center gap-3 mb-6 bg-black/30 p-6 rounded-3xl border border-white/5 shadow-xl backdrop-blur-md">
+                <div className="flex items-center gap-3 mb-6 bg-white/80 dark:bg-black/30 p-6 rounded-3xl border border-gray-200 dark:border-white/5 shadow-xl backdrop-blur-md">
                     <div className="bg-gradient-to-br from-yellow-400 to-orange-500 p-4 rounded-2xl shadow-[0_0_20px_rgba(250,204,21,0.4)]">
                         <FaQuestion className="text-2xl text-gray-900" />
                     </div>
@@ -187,8 +187,8 @@ function QuizEditorPage({ initialData, onSave, onCancel, isOfflineMode = false }
                 </div>
 
                 {/* Formulário de Edição/Criação */}
-                <div className="bg-black/40 backdrop-blur-lg p-8 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] mb-8 border border-white/10">
-                    <h3 className="text-2xl font-bold mb-6 flex items-center gap-3 text-white">
+                <div className="bg-white/80 dark:bg-black/40 backdrop-blur-lg p-8 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] mb-8 border border-gray-300 dark:border-white/10">
+                    <h3 className="text-2xl font-bold mb-6 flex items-center gap-3 text-gray-900 dark:text-white">
                         <div className="bg-teal-500/20 p-2 rounded-lg">
                              <FaEdit className="text-teal-400" />
                         </div>
@@ -206,7 +206,7 @@ function QuizEditorPage({ initialData, onSave, onCancel, isOfflineMode = false }
                                 value={currentQuestion.text}
                                 onChange={handleInputChange}
                                 placeholder="Digite o texto da pergunta..."
-                                className="w-full p-4 bg-gray-900/60 text-white rounded-2xl border border-white/10 focus:border-teal-400/70 focus:bg-gray-800/80 outline-none transition-all duration-300 placeholder-gray-600 shadow-inner"
+                                className="w-full p-4 bg-white dark:bg-gray-900/60 text-gray-900 dark:text-white rounded-2xl border border-gray-300 dark:border-white/10 focus:border-teal-400/70 focus:bg-gray-800/80 outline-none transition-all duration-300 placeholder-gray-400 dark:placeholder-gray-600 shadow-inner"
                                 rows="3"
                             />
                         </div>
@@ -224,7 +224,7 @@ function QuizEditorPage({ initialData, onSave, onCancel, isOfflineMode = false }
                                         value={option}
                                         onChange={(e) => handleInputChange(e, index)}
                                         placeholder={`Opção ${index + 1}`}
-                                        className="flex-1 p-4 bg-gray-900/60 text-white rounded-2xl border border-white/10 focus:border-purple-400/70 focus:bg-gray-800/80 outline-none transition-all duration-300 placeholder-gray-600 shadow-inner"
+                                        className="flex-1 p-4 bg-white dark:bg-gray-900/60 text-gray-900 dark:text-white rounded-2xl border border-gray-300 dark:border-white/10 focus:border-purple-400/70 focus:bg-gray-800/80 outline-none transition-all duration-300 placeholder-gray-400 dark:placeholder-gray-600 shadow-inner"
                                     />
                                 </div>
                             ))}
@@ -240,10 +240,10 @@ function QuizEditorPage({ initialData, onSave, onCancel, isOfflineMode = false }
                                     name="correct_option"
                                     value={currentQuestion.correct_option}
                                     onChange={handleInputChange}
-                                    className="w-full p-4 bg-gray-900/60 text-white rounded-2xl border border-white/10 focus:border-green-400/70 outline-none transition-all duration-300 appearance-none"
+                                    className="w-full p-4 bg-white dark:bg-gray-900/60 text-gray-900 dark:text-white rounded-2xl border border-gray-300 dark:border-white/10 focus:border-green-400/70 outline-none transition-all duration-300 appearance-none"
                                 >
-                                    <option value="" className="bg-gray-900">Selecione a resposta correta</option>
-                                    {currentQuestion.options.map((opt, i) => (opt && <option key={`${opt}-${i}`} value={opt} className="bg-gray-900 text-white">{opt}</option>))}
+                                    <option value="" className="bg-gray-50 dark:bg-gray-900">Selecione a resposta correta</option>
+                                    {currentQuestion.options.map((opt, i) => (opt && <option key={`${opt}-${i}`} value={opt} className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white">{opt}</option>))}
                                 </select>
                             </div>
 
@@ -256,7 +256,7 @@ function QuizEditorPage({ initialData, onSave, onCancel, isOfflineMode = false }
                                     name="points"
                                     value={currentQuestion.points}
                                     onChange={handleInputChange}
-                                    className="w-full p-4 bg-gray-900/60 text-white rounded-2xl border border-white/10 focus:border-yellow-400/70 outline-none transition-all duration-300 text-center font-bold text-lg"
+                                    className="w-full p-4 bg-white dark:bg-gray-900/60 text-gray-900 dark:text-white rounded-2xl border border-gray-300 dark:border-white/10 focus:border-yellow-400/70 outline-none transition-all duration-300 text-center font-bold text-lg"
                                 />
                             </div>
 
@@ -270,7 +270,7 @@ function QuizEditorPage({ initialData, onSave, onCancel, isOfflineMode = false }
                                     name="coins"
                                     value={currentQuestion.coins}
                                     onChange={handleInputChange}
-                                    className="w-full p-4 bg-gray-900/60 text-white rounded-2xl border border-white/10 focus:border-blue-400/70 outline-none transition-all duration-300 text-center font-bold text-lg"
+                                    className="w-full p-4 bg-white dark:bg-gray-900/60 text-gray-900 dark:text-white rounded-2xl border border-gray-300 dark:border-white/10 focus:border-blue-400/70 outline-none transition-all duration-300 text-center font-bold text-lg"
                                 />
                             </div>
 
@@ -285,7 +285,7 @@ function QuizEditorPage({ initialData, onSave, onCancel, isOfflineMode = false }
                                         name="timeLimit"
                                         value={currentQuestion.timeLimit}
                                         onChange={handleInputChange}
-                                        className="w-full p-4 bg-gray-900/60 text-white rounded-2xl border border-white/10 focus:border-red-400/70 outline-none transition-all duration-300 text-center font-bold text-lg"
+                                        className="w-full p-4 bg-white dark:bg-gray-900/60 text-gray-900 dark:text-white rounded-2xl border border-gray-300 dark:border-white/10 focus:border-red-400/70 outline-none transition-all duration-300 text-center font-bold text-lg"
                                     />
                                 </div>
                             )}
@@ -295,7 +295,7 @@ function QuizEditorPage({ initialData, onSave, onCancel, isOfflineMode = false }
                         <div className="pt-4 flex justify-end">
                             <button
                                 onClick={handleAddOrUpdateQuestion}
-                                className="w-full md:w-auto bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-400 hover:to-cyan-500 text-white font-bold py-4 px-8 rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(20,184,166,0.4)] transition-all duration-300 hover:scale-105 active:scale-95 group uppercase tracking-widest text-sm"
+                                className="w-full md:w-auto bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-400 hover:to-cyan-500 text-gray-900 dark:text-white font-bold py-4 px-8 rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(20,184,166,0.4)] transition-all duration-300 hover:scale-105 active:scale-95 group uppercase tracking-widest text-sm"
                             >
                                 <FaPlus className="mr-2 transform group-hover:scale-110 group-hover:rotate-90 transition-all duration-500" />
                                 {editingIndex !== null ? 'Salvar Edição' : 'Adicionar ao Banco'}
@@ -306,28 +306,28 @@ function QuizEditorPage({ initialData, onSave, onCancel, isOfflineMode = false }
 
                 {/* Lista de Perguntas */}
                 {questions.length > 0 && (
-                    <div className="mb-10 bg-black/20 p-8 rounded-3xl border border-white/5 backdrop-blur-md">
-                        <h3 className="text-2xl font-bold mb-6 flex items-center gap-3 text-white">
+                    <div className="mb-10 bg-black/20 p-8 rounded-3xl border border-gray-200 dark:border-white/5 backdrop-blur-md">
+                        <h3 className="text-2xl font-bold mb-6 flex items-center gap-3 text-gray-900 dark:text-white">
                             <div className="bg-purple-500/20 p-2 rounded-lg">
                                 <FaList className="text-purple-400" />
                             </div>
-                            Banco de Perguntas <span className="bg-purple-600 text-white text-sm py-1 px-3 rounded-full ml-2">{questions.length}</span>
+                            Banco de Perguntas <span className="bg-purple-600 text-gray-900 dark:text-white text-sm py-1 px-3 rounded-full ml-2">{questions.length}</span>
                         </h3>
 
                         <div className="space-y-4">
                             {questions.map((q, index) => (
                                 <div
                                     key={index}
-                                    className="bg-gray-900/70 p-5 rounded-2xl flex justify-between items-center border border-white/5 hover:border-purple-500/30 shadow-lg hover:shadow-[0_0_15px_rgba(168,85,247,0.2)] transition-all duration-300 group"
+                                    className="bg-gray-50 dark:bg-gray-900/70 p-5 rounded-2xl flex justify-between items-center border border-gray-200 dark:border-white/5 hover:border-purple-500/30 shadow-lg hover:shadow-[0_0_15px_rgba(168,85,247,0.2)] transition-all duration-300 group"
                                 >
                                     <div className="flex-1">
                                         <div className="flex items-start">
                                             {/* Badge numérico */}
-                                            <div className="bg-gradient-to-br from-purple-500 to-indigo-600 w-10 h-10 rounded-xl flex items-center justify-center mr-4 mt-1 flex-shrink-0 text-white shadow-md">
+                                            <div className="bg-gradient-to-br from-purple-500 to-indigo-600 w-10 h-10 rounded-xl flex items-center justify-center mr-4 mt-1 flex-shrink-0 text-gray-900 dark:text-white shadow-md">
                                                 <span className="font-extrabold">{index + 1}</span>
                                             </div>
                                             <div>
-                                                <p className="font-bold text-gray-200 text-lg mb-2">{q.text}</p>
+                                                <p className="font-bold text-gray-800 dark:text-gray-200 text-lg mb-2">{q.text}</p>
                                                 <div className="flex flex-wrap gap-2 mt-2">
                                                     <span className="bg-green-500/10 border border-green-500/20 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center text-green-400 shadow-inner">
                                                         <FaCheck className="mr-1.5" />
@@ -354,14 +354,14 @@ function QuizEditorPage({ initialData, onSave, onCancel, isOfflineMode = false }
                                     <div className="flex gap-3 ml-6 opacity-80 group-hover:opacity-100 transition-opacity">
                                         <button
                                             onClick={() => handleEditQuestion(index)}
-                                            className="p-3.5 bg-gray-800 hover:bg-teal-600/20 hover:text-teal-400 text-gray-400 rounded-xl border border-white/5 hover:border-teal-500/30 transition-all duration-300"
+                                            className="p-3.5 bg-gray-200 dark:bg-gray-800 hover:bg-teal-600/20 hover:text-teal-400 text-gray-400 rounded-xl border border-gray-200 dark:border-white/5 hover:border-teal-500/30 transition-all duration-300"
                                             aria-label="Editar pergunta"
                                         >
                                             <FaEdit />
                                         </button>
                                         <button
                                             onClick={() => handleDeleteQuestionClick(index)}
-                                            className="p-3.5 bg-gray-800 hover:bg-red-600/20 hover:text-red-400 text-gray-400 rounded-xl border border-white/5 hover:border-red-500/30 transition-all duration-300"
+                                            className="p-3.5 bg-gray-200 dark:bg-gray-800 hover:bg-red-600/20 hover:text-red-400 text-gray-400 rounded-xl border border-gray-200 dark:border-white/5 hover:border-red-500/30 transition-all duration-300"
                                             aria-label="Excluir pergunta"
                                         >
                                             <FaTrash />
@@ -375,10 +375,10 @@ function QuizEditorPage({ initialData, onSave, onCancel, isOfflineMode = false }
 
                 {/* Salvar Alterações */}
                 {questions.length > 0 && (
-                    <div className="mt-8 pt-8 border-t border-white/10 flex flex-col items-center">
+                    <div className="mt-8 pt-8 border-t border-gray-300 dark:border-white/10 flex flex-col items-center">
                         <button
                             onClick={handleSaveChanges}
-                            className="bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-400 hover:to-cyan-500 text-white font-extrabold text-lg py-4 px-12 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(20,184,166,0.5)] hover:shadow-[0_0_40px_rgba(20,184,166,0.7)] transition-all duration-300 hover:scale-105 active:scale-95 uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto group"
+                            className="bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-400 hover:to-cyan-500 text-gray-900 dark:text-white font-extrabold text-lg py-4 px-12 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(20,184,166,0.5)] hover:shadow-[0_0_40px_rgba(20,184,166,0.7)] transition-all duration-300 hover:scale-105 active:scale-95 uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto group"
                             disabled={loading}
                         >
                             <FaSave className="mr-3 transform group-hover:scale-125 transition-transform" />

@@ -5,9 +5,9 @@ Ele dinamicamente orquestra e formata o contexto pedagógico para enviar à API 
 garantindo que o conteúdo gerado siga regras estritas de progressão curricular e output JSON.
 """
 
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
-def build_prompt(step_type: str, step_idx: int, total_steps: int, context: Dict, config: Dict, execution_trace: Dict) -> str:
+def build_prompt(step_type: str, step_idx: int, total_steps: int, context: Dict, config: Dict, execution_trace: Dict) -> Tuple[str, str]:
     """
     Constrói o prompt completo combinando a persona da IA, a fase da história 
     (baseada no progresso atual) e as regras estritas de output JSON.
@@ -44,9 +44,7 @@ def build_prompt(step_type: str, step_idx: int, total_steps: int, context: Dict,
     specific_instruction = get_dynamic_instruction(step_type, execution_trace, story_phase, formatted_cast, teaching_focus, config)
     json_schema = get_strict_instructions(step_type, config.get('questionsPerQuiz', 4), config.get('linesPerNarrative', 6), characters_list)
 
-    return f"""
-    {system_persona}
-
+    user_prompt = f"""
     --- ESTRUTURA DA TRILHA DE APRENDIZADO ---
     Estamos no PASSO {step_idx} de {total_steps}.
     
@@ -71,11 +69,12 @@ def build_prompt(step_type: str, step_idx: int, total_steps: int, context: Dict,
     {specific_instruction}
 
     --- REGRAS DE SAÍDA ---
-    1. Responda APENAS com JSON válido.
-    2. Siga estritamente o schema abaixo.
+    { "1. Responda APENAS com JSON válido. Siga o schema." if step_type != 'content' else "1. Escreva o conteúdo em Markdown. NÃO USE JSON." }
     
     {json_schema}
     """
+
+    return system_persona, user_prompt
 
 def get_system_persona(config: Dict) -> str:
     """Monta a instrução de 'persona' do sistema, definindo o tom (ex: Aventura) e a personalidade (ex: Socrático)."""
@@ -201,12 +200,9 @@ def get_strict_instructions(step_type: str, quiz_count: int, dialogue_len: int, 
         """
     elif step_type == 'content':
         return f"""
-        JSON Schema para CONTEÚDO:
-        {{
-            "type": "content",
-            "text_content": "### Título\\n\\nExplicação técnica direta.\\n\\n```python\\nprint('Exemplo')\\n```",
-            "video_url": "",
-            "material_link": ""
-        }}
+        SAÍDA PARA CONTEÚDO:
+        Retorne APENAS o código Markdown puro do seu guia. 
+        NÃO envolva a resposta em um bloco JSON. NÃO escreva a palavra 'markdown'.
+        Comece diretamente com o título (###).
         """
     return ""

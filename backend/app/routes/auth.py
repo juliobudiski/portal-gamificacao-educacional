@@ -223,3 +223,15 @@ def update_api_keys():
     if error:
         return jsonify(error), status
     return jsonify(result), status
+
+@auth_bp.route('/user/test-api-key', methods=['POST'])
+@jwt_required()
+def test_api_key():
+    """
+    Testa uma API Key do Gemini (ou OpenAI) antes de salvá-la no banco de dados.
+    """
+    data = request.get_json()
+    result, error, status = AuthService.test_api_key(data)
+    if error:
+        return jsonify(error), status
+    return jsonify(result), status

@@ -158,6 +158,35 @@ function UserProfilePage() {
 
   const handleSaveApiKeys = async () => {
     setSavingKeys(true);
+    
+    // Se o usuário estiver tentando salvar uma chave em branco (removendo), deixamos passar
+    // Se estiver inserindo uma nova chave, testamos primeiro
+    if (apiKeys.gemini_api_key && apiKeys.gemini_api_key.trim() !== '') {
+      try {
+        showToast('Validando chave da API...', 'info');
+        const testResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/user/test-api-key`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getToken()}`
+          },
+          body: JSON.stringify({ gemini_api_key: apiKeys.gemini_api_key })
+        });
+        
+        if (!testResponse.ok) {
+          const errorData = await testResponse.json();
+          showToast(errorData.message || 'Chave de API inválida.', 'error');
+          setSavingKeys(false);
+          return; // Aborta o salvamento
+        }
+      } catch (error) {
+        console.error(error);
+        showToast('Erro de rede ao validar a chave.', 'error');
+        setSavingKeys(false);
+        return;
+      }
+    }
+
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/user/api-keys`, {
         method: 'POST',
@@ -168,10 +197,10 @@ function UserProfilePage() {
         body: JSON.stringify(apiKeys)
       });
       if (!response.ok) throw new Error('Falha ao salvar as chaves.');
-      showToast('Chaves de API salvas com sucesso!');
+      showToast('Chaves de API validadas e salvas com sucesso!', 'success');
     } catch (error) {
       console.error(error);
-      showToast('Erro ao salvar as chaves de API.');
+      showToast('Erro ao salvar as chaves de API.', 'error');
     } finally {
       setSavingKeys(false);
     }
