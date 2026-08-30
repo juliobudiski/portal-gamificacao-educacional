@@ -136,7 +136,7 @@ function Step8_RulesAndSharing({ activityData, handleInputChange, setActivityDat
               className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold shadow transition-all
                 ${isDesplugada
                   ? 'bg-blue-600 text-white hover:bg-blue-700'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-hover-bg-color0 dark:text-secondary-text'
                 }`}
             >
               <FaPrint /> Imprimir Caderno de Aula
@@ -152,7 +152,7 @@ function Step8_RulesAndSharing({ activityData, handleInputChange, setActivityDat
               relative flex cursor-pointer items-center justify-between rounded-xl border p-6 transition-all duration-300
               ${activityData.isPublic
                 ? 'border-[#69e8cb] bg-[#69e8cb]/10 shadow-[0_0_15px_rgba(105,232,203,0.15)]'
-                : 'border-gray-600 bg-secondary-bg hover:border-gray-500 dark:bg-[#2c3135]'
+                : 'border-[var(--border-color)] bg-secondary-bg hover:border-gray-500 dark:bg-[#2c3135]'
               }
             `}
           >
@@ -161,7 +161,7 @@ function Step8_RulesAndSharing({ activityData, handleInputChange, setActivityDat
                 className={`flex h-12 w-12 items-center justify-center rounded-full text-2xl transition-colors duration-300
                   ${activityData.isPublic
                     ? 'bg-[#69e8cb] text-[#2c3135]'
-                    : 'bg-gray-700 text-gray-400'
+                    : 'bg-hover-bg-color0 text-secondary-text'
                   }
                 `}
               >
@@ -172,7 +172,7 @@ function Step8_RulesAndSharing({ activityData, handleInputChange, setActivityDat
                 <span className={`text-lg font-bold transition-colors duration-300 ${activityData.isPublic ? 'text-[#69e8cb]' : 'text-primary-text'}`}>
                   {activityData.isPublic ? 'Atividade Pública' : 'Atividade Privada'}
                 </span>
-                <span className="text-sm text-secondary-text dark:text-gray-400">
+                <span className="text-sm text-secondary-text dark:text-secondary-text">
                   {activityData.isPublic
                     ? 'Sua atividade ficará visível para outros professores usarem como inspiração.'
                     : 'Apenas você e seus alunos terão acesso a esta atividade.'}
@@ -189,8 +189,8 @@ function Step8_RulesAndSharing({ activityData, handleInputChange, setActivityDat
                 onChange={handleInputChange}
                 className="peer sr-only"
               />
-              <div className="h-8 w-14 rounded-full bg-gray-700 transition-colors duration-300 peer-focus:ring-4 peer-focus:ring-[#69e8cb]/40 peer-checked:bg-[#69e8cb]"></div>
-              <div className="absolute left-1 top-1 h-6 w-6 rounded-full bg-white transition-all duration-300 peer-checked:translate-x-6 peer-checked:bg-[#2c3135]"></div>
+              <div className="h-8 w-14 rounded-full bg-hover-bg-color0 transition-colors duration-300 peer-focus:ring-4 peer-focus:ring-[#69e8cb]/40 peer-checked:bg-[#69e8cb]"></div>
+              <div className="absolute left-1 top-1 h-6 w-6 rounded-full bg-primary-bg transition-all duration-300 peer-checked:translate-x-6 peer-checked:bg-[#2c3135]"></div>
             </div>
           </label>
         </div>

@@ -82,7 +82,7 @@ const ProfessorSidebar = ({ analytics, onStudentClick, onOpenQuizEditor, onOpenN
 
               {/* Seção Expansível com as novas estatísticas */}
               {expandedStudentId === student.id && (
-                <div className="p-3 border-t border-gray-600 space-y-1 animate-fade-in">
+                <div className="p-3 border-t border-[var(--border-color)] space-y-1 animate-fade-in">
                   <StatLine icon={<FaEye />} label="Narrativa vista" value={`${student.narrative_views}x`} colorClass="text-blue-300" />
                   <StatLine icon={<FaComments />} label="Msg no Chat" value={`${student.chat_messages}x`} colorClass="text-purple-300" />
                   <StatLine icon={<FaQuestionCircle />} label="Respostas" value={student.total_answers} colorClass="text-secondary-text" />

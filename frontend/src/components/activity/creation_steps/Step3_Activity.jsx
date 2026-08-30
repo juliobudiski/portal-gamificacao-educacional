@@ -111,7 +111,7 @@ function Step3_ActivityPlanning({ activityData, handleInputChange, setActivityDa
                 : 'border-border-color hover:border-gray-400 bg-secondary-bg opacity-70 hover:opacity-100'}
             `}
           >
-            <div className={`p-3 rounded-full ${activityData.activityPlanning.isTeamActivity === false ? 'bg-accent-teal text-white' : 'bg-gray-700 text-gray-400'}`}>
+            <div className={`p-3 rounded-full ${activityData.activityPlanning.isTeamActivity === false ? 'bg-accent-teal text-white' : 'bg-hover-bg-color0 text-secondary-text'}`}>
               <FaUser size={24} />
             </div>
             <div>
@@ -128,7 +128,7 @@ function Step3_ActivityPlanning({ activityData, handleInputChange, setActivityDa
                 : 'border-border-color hover:border-gray-400 bg-secondary-bg opacity-70 hover:opacity-100'}
             `}
           >
-            <div className={`p-3 rounded-full ${activityData.activityPlanning.isTeamActivity === true ? 'bg-accent-purple text-white' : 'bg-gray-700 text-gray-400'}`}>
+            <div className={`p-3 rounded-full ${activityData.activityPlanning.isTeamActivity === true ? 'bg-accent-purple text-white' : 'bg-hover-bg-color0 text-secondary-text'}`}>
               <FaUsers size={24} />
             </div>
             <div>

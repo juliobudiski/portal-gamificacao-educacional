@@ -229,7 +229,7 @@ const QuizTab = ({ content, gameElements, onAnswerCorrect, onComplete, isReplay 
         <div className="flex justify-between items-center w-full mb-8">
           <div className="bg-black/40 px-6 py-3 rounded-full border border-white/10 flex flex-col items-center shadow-inner">
              <span className="text-cyan-400 font-bold tracking-wider text-xs uppercase mb-1">Progresso</span>
-             <span className="text-xl sm:text-2xl font-bold text-white tracking-widest">{currentIndex + 1} <span className="text-gray-400 text-lg">/ {questions.length}</span></span>
+             <span className="text-xl sm:text-2xl font-bold text-white tracking-widest">{currentIndex + 1} <span className="text-secondary-text text-lg">/ {questions.length}</span></span>
           </div>
           
           {isTimed && currentQuestion.timeLimit && (

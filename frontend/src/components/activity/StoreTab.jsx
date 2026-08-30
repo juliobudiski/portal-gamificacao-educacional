@@ -196,7 +196,7 @@ const StoreTab = ({ items, userPoints, onPurchaseSuccess, onAddItem, onDeleteIte
     };
 
     return (
-        <div className="w-full max-w-6xl mx-auto p-8 relative mt-8 mb-8 text-primary-text bg-gray-900 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.8)] border border-white/10 min-h-[70vh]">
+        <div className="w-full max-w-6xl mx-auto p-8 relative mt-8 mb-8 text-primary-text bg-primary-bg/90 rounded-3xl shadow-xl dark:shadow-[0_0_50px_rgba(0,0,0,0.8)] border border-[var(--border-color)] min-h-[70vh] transition-colors duration-300">
             {/* Efeito de luz de fundo */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-indigo-600/20 rounded-full blur-[100px] pointer-events-none"></div>
 
@@ -204,9 +204,9 @@ const StoreTab = ({ items, userPoints, onPurchaseSuccess, onAddItem, onDeleteIte
                 <button
                     onClick={onReturn}
                     className="absolute top-6 left-6 z-20 flex items-center gap-2 py-2.5 px-5 
-                           bg-black/50 text-gray-300 font-bold backdrop-blur-md
-                           border border-white/10 rounded-full shadow-lg 
-                           hover:bg-white/10 hover:text-white hover:scale-105 transition-all"
+                           bg-black/10 dark:bg-black/50 text-secondary-text font-bold backdrop-blur-md
+                           border border-[var(--border-color)] rounded-full shadow-lg 
+                           hover:bg-black/20 dark:hover:bg-white/10 hover:text-primary-text hover:scale-105 transition-all"
                 >
                     <FaArrowLeft /> Voltar ao Tabuleiro
                 </button>
@@ -215,7 +215,7 @@ const StoreTab = ({ items, userPoints, onPurchaseSuccess, onAddItem, onDeleteIte
             <header className="flex flex-col sm:flex-row justify-between items-center mb-12 pt-16 relative z-10">
                 <div className="flex flex-col items-center sm:items-start">
                     <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] uppercase tracking-tight mb-2">Loja Virtual</h1>
-                    <p className="text-gray-400 font-medium">Equipe-se para a sua jornada de aprendizado</p>
+                    <p className="text-secondary-text font-medium">Equipe-se para a sua jornada de aprendizado</p>
                 </div>
                 
                 <div className="mt-6 sm:mt-0">

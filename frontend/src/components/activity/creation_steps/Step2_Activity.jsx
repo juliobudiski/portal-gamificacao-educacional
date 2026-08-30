@@ -115,7 +115,7 @@ function Step2_DesiredScenario({ activityData, handleInputChange, setActivityDat
         })}
       </div>
 
-      <div className="pt-4 border-t dark:border-gray-700">
+      <div className="pt-4 border-t dark:border-[var(--border-color)]">
         <label htmlFor="desiredScenario.otherObjective" className="block text-sm font-medium text-secondary-text">
           Outro objetivo em mente? (Opcional)
         </label>

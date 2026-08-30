@@ -260,7 +260,7 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                                 <span>{progressMessage}</span>
                                 <span>{Math.round(progress)}%</span>
                             </div>
-                            <div className="w-full bg-gray-200 rounded-full h-5 dark:bg-gray-700 overflow-hidden shadow-inner">
+                            <div className="w-full bg-gray-200 rounded-full h-5 dark:bg-hover-bg-color0 overflow-hidden shadow-inner">
                                 <div className="bg-gradient-to-r from-purple-500 to-pink-500 h-5 rounded-full transition-all duration-300 ease-out flex items-center justify-end pr-2" style={{ width: `${progress}%` }}>
                                     {progress > 5 && <FaMagic className="text-white text-xs animate-spin-slow" />}
                                 </div>
@@ -278,7 +278,7 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                                     </label>
                                     <input
                                         type="text"
-                                        className="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-border-color text-sm focus:ring-2 focus:ring-purple-500"
+                                        className="w-full p-3 rounded-xl bg-gray-50 dark:bg-hover-bg-color0 border border-border-color text-sm focus:ring-2 focus:ring-purple-500"
                                         placeholder="Ex: Diferença entre Git Merge e Rebase"
                                         value={config.teachingFocus}
                                         onChange={e => setConfig({ ...config, teachingFocus: e.target.value })}
@@ -290,7 +290,7 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                                         <FaGraduationCap className="text-blue-500" /> Nível da Turma
                                     </label>
                                     <select
-                                        className="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-border-color text-sm"
+                                        className="w-full p-3 rounded-xl bg-gray-50 dark:bg-hover-bg-color0 border border-border-color text-sm"
                                         value={config.targetAudience}
                                         onChange={e => setConfig({ ...config, targetAudience: e.target.value })}
                                     >
@@ -306,7 +306,7 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                                     <FaBook className="text-purple-500" /> Contexto da História
                                 </label>
                                 <textarea
-                                    className="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-border-color text-sm focus:ring-2 focus:ring-purple-500"
+                                    className="w-full p-3 rounded-xl bg-gray-50 dark:bg-hover-bg-color0 border border-border-color text-sm focus:ring-2 focus:ring-purple-500"
                                     rows="3"
                                     placeholder="Ex: O servidor caiu e a equipe precisa analisar os logs para achar o erro de memória..."
                                     value={config.narrativeGoal}
@@ -323,7 +323,7 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                                 <div>
                                     <label className="block font-bold text-sm mb-2 text-secondary-text">Gênero / Tom</label>
                                     <select
-                                        className="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-700 border dark:border-gray-600"
+                                        className="w-full p-3 rounded-xl bg-gray-50 dark:bg-hover-bg-color0 border dark:border-[var(--border-color)]"
                                         value={config.tone}
                                         onChange={e => setConfig({ ...config, tone: e.target.value })}
                                     >
@@ -337,7 +337,7 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                                 <div>
                                     <label className="block font-bold text-sm mb-2 text-secondary-text">Personalidade da Historia</label>
                                     <select
-                                        className="w-full p-3 rounded-xl bg-gray-50 dark:bg-gray-700 border dark:border-gray-600"
+                                        className="w-full p-3 rounded-xl bg-gray-50 dark:bg-hover-bg-color0 border dark:border-[var(--border-color)]"
                                         value={config.personality}
                                         onChange={e => setConfig({ ...config, personality: e.target.value })}
                                     >
@@ -363,18 +363,18 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                                 <div className="space-y-3">
                                     {config.charactersList.map((char, index) => (
                                         <div key={index} className="flex gap-2 items-center">
-                                            <div className="bg-gray-200 dark:bg-gray-700 w-8 h-8 rounded-full flex items-center justify-center font-bold text-gray-500">
+                                            <div className="bg-gray-200 dark:bg-hover-bg-color0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-gray-500">
                                                 {index + 1}
                                             </div>
                                             <input
                                                 type="text"
                                                 placeholder="Nome (ex: Ana)"
-                                                className="flex-1 p-2 rounded-lg border bg-gray-50 dark:bg-gray-700 dark:border-gray-600"
+                                                className="flex-1 p-2 rounded-lg border bg-gray-50 dark:bg-hover-bg-color0 dark:border-[var(--border-color)]"
                                                 value={char.role}
                                                 onChange={(e) => updateCharacter(index, 'role', e.target.value)}
                                             />
                                             <select
-                                                className="p-2 rounded-lg border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 text-sm"
+                                                className="p-2 rounded-lg border bg-gray-50 dark:bg-hover-bg-color0 dark:border-[var(--border-color)] text-sm"
                                                 value={char.type}
                                                 onChange={(e) => updateCharacter(index, 'type', e.target.value)}
                                             >

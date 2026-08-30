@@ -100,7 +100,7 @@ const ChatTab = ({ onReturn }) => {
   };
 
   return (
-    <div className="relative flex flex-col h-full bg-gray-900 p-6 pt-16 text-gray-200 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.8)] border border-white/10 overflow-hidden" style={{ height: '80vh', maxHeight: '700px' }}>
+    <div className="relative flex flex-col h-full bg-primary-bg p-6 pt-16 text-gray-200 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.8)] border border-white/10 overflow-hidden" style={{ height: '80vh', maxHeight: '700px' }}>
       {/* Efeitos de luz ao fundo */}
       <div className="absolute top-1/4 left-0 w-[400px] h-[400px] bg-teal-600/20 rounded-full blur-[100px] pointer-events-none z-0"></div>
       <div className="absolute bottom-0 right-0 w-[500px] h-[300px] bg-purple-600/20 rounded-full blur-[120px] pointer-events-none z-0"></div>
@@ -108,7 +108,7 @@ const ChatTab = ({ onReturn }) => {
       <div className='flex-shrink-0 relative z-20'>
         <button onClick={onReturn} 
           className="absolute top-0 left-0 flex items-center gap-2 py-2 px-4 
-                     bg-black/50 text-gray-300 font-bold backdrop-blur-md 
+                     bg-black/50 text-secondary-text font-bold backdrop-blur-md 
                      border border-white/10 rounded-full shadow-lg 
                      hover:bg-white/10 hover:text-white hover:scale-105 transition-all">
           <FaArrowLeft /> Voltar ao Tabuleiro
@@ -117,14 +117,14 @@ const ChatTab = ({ onReturn }) => {
       
       <header className="mb-6 relative z-10 flex flex-col items-center">
         <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-500 drop-shadow-[0_0_10px_rgba(45,212,191,0.5)] flex-shrink-0">Chat Global da Atividade</h2>
-        <p className="text-sm text-gray-400 mt-1">Converse com outros alunos e tire dúvidas.</p>
+        <p className="text-sm text-secondary-text mt-1">Converse com outros alunos e tire dúvidas.</p>
       </header>
 
       <div className="flex-grow overflow-y-auto mb-4 pr-2 space-y-4 custom-scrollbar relative z-10 bg-black/30 backdrop-blur-md p-4 rounded-2xl border border-white/5 shadow-inner">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <FaSpinner className="animate-spin text-4xl text-teal-400 mb-4 drop-shadow-[0_0_10px_rgba(45,212,191,0.8)]" />
-            <p className="text-gray-400 font-medium tracking-wide">Carregando histórico holográfico...</p>
+            <p className="text-secondary-text font-medium tracking-wide">Carregando histórico holográfico...</p>
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center h-full text-center text-red-400 bg-red-900/10 p-6 rounded-xl border border-red-500/20">
@@ -135,7 +135,7 @@ const ChatTab = ({ onReturn }) => {
           <>
             {messages.length === 0 && (
                 <div className="flex items-center justify-center h-full opacity-50">
-                    <p className="text-gray-400 italic text-center max-w-sm">Nenhuma mensagem ainda. Que tal ser o primeiro a dar um oi?</p>
+                    <p className="text-secondary-text italic text-center max-w-sm">Nenhuma mensagem ainda. Que tal ser o primeiro a dar um oi?</p>
                 </div>
             )}
             {messages.map((msg) => {

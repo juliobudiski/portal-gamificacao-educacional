@@ -127,7 +127,7 @@ const RouletteTab = ({ onReturn, onSpin }) => {
 
 
   return (
-    <div className="w-full max-w-6xl mx-auto relative pt-16 flex flex-col lg:flex-row items-center lg:items-start justify-center gap-12 p-8 bg-gray-900 rounded-3xl shadow-[0_0_60px_rgba(0,0,0,0.8)] border border-white/10 min-h-[70vh] mt-8 mb-8 overflow-hidden">
+    <div className="w-full max-w-6xl mx-auto relative pt-16 flex flex-col lg:flex-row items-center lg:items-start justify-center gap-12 p-8 bg-primary-bg rounded-3xl shadow-[0_0_60px_rgba(0,0,0,0.8)] border border-white/10 min-h-[70vh] mt-8 mb-8 overflow-hidden">
       {/* Luz de fundo estilo Neon */}
       <div className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-yellow-500/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
       <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[100px] pointer-events-none z-0"></div>
@@ -137,7 +137,7 @@ const RouletteTab = ({ onReturn, onSpin }) => {
       <button
         onClick={onReturn}
         className="absolute top-6 left-6 z-20 flex items-center gap-2 py-2.5 px-5 
-                    bg-black/50 text-gray-300 font-bold backdrop-blur-md
+                    bg-black/50 text-secondary-text font-bold backdrop-blur-md
                     border border-white/10 rounded-full shadow-lg 
                     hover:bg-white/10 hover:text-white hover:scale-105 transition-all"
       >
@@ -151,7 +151,7 @@ const RouletteTab = ({ onReturn, onSpin }) => {
           
           {/* Texto dinâmico de status */}
           {!retryAvailable ? (
-            <p className="text-gray-300 font-medium text-lg bg-black/30 px-6 py-2 rounded-full border border-white/5 inline-block">Teste sua sorte uma vez por dia!</p>
+            <p className="text-secondary-text font-medium text-lg bg-black/30 px-6 py-2 rounded-full border border-white/5 inline-block">Teste sua sorte uma vez por dia!</p>
           ) : (
             <p className="text-yellow-400 font-bold text-lg animate-pulse flex items-center gap-3 bg-yellow-900/30 px-6 py-2 rounded-full border border-yellow-500/50 inline-flex">
               <FaRedo className="text-2xl" /> Ops! Item repetido. Gire novamente GRÁTIS!
@@ -219,7 +219,7 @@ const RouletteTab = ({ onReturn, onSpin }) => {
                 </div>
               ))}
             </div>
-          ) : (<p className="text-gray-400 text-center italic py-12">Seja o primeiro a ganhar!</p>)}
+          ) : (<p className="text-secondary-text text-center italic py-12">Seja o primeiro a ganhar!</p>)}
         </div>
       </div>
 

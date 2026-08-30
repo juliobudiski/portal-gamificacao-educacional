@@ -48,7 +48,7 @@ const ActivityCreationStepper = ({ currentStep, maxReachedStep, onStepClick, isE
                         {/* --- LINHAS DE FUNDO --- */}
 
                         {/* Linha Cinza (Total) */}
-                        <div className="absolute top-5 left-0 w-full h-1 bg-gray-200 dark:bg-gray-700 rounded z-0" />
+                        <div className="absolute top-5 left-0 w-full h-1 bg-gray-200 dark:bg-hover-bg-color0 rounded z-0" />
 
                         {/* Linha Colorida (Progresso) */}
                         <div
@@ -83,7 +83,7 @@ const ActivityCreationStepper = ({ currentStep, maxReachedStep, onStepClick, isE
                                                     ? 'bg-teal-500 border-teal-500 text-white hover:bg-teal-600'
                                                     : isClickable
                                                         ? 'bg-secondary-bg border-border-color text-gray-500 hover:border-teal-400 dark:hover:border-teal-400'
-                                                        : 'bg-secondary-bg border-border-color text-gray-300 dark:text-gray-600'}
+                                                        : 'bg-secondary-bg border-border-color text-secondary-text dark:text-gray-600'}
                     `}
                                     >
                                         {isCompleted ? (
@@ -102,7 +102,7 @@ const ActivityCreationStepper = ({ currentStep, maxReachedStep, onStepClick, isE
                                             ? 'text-teal-700 dark:text-teal-400 font-bold'
                                             : isCompleted
                                                 ? 'text-teal-600/80 dark:text-teal-500/80'
-                                                : 'text-gray-400 dark:text-gray-600'}
+                                                : 'text-secondary-text dark:text-gray-600'}
                   `}>
                                         <span className="hidden md:block">{step.label}</span>
                                         <span className="md:hidden">{step.short}</span>

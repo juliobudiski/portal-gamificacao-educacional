@@ -55,7 +55,7 @@ const LearningMaterialViewer = ({ content, onComplete }) => {
     const safeMaterialLink = formatExternalUrl(material_link);
 
     return (
-        <div className="flex flex-col h-full w-full max-w-6xl mx-auto bg-gray-900 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden border border-white/10 animate-fade-in transition-all duration-300 relative mt-8 mb-8">
+        <div className="flex flex-col h-full w-full max-w-6xl mx-auto bg-primary-bg rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden border border-white/10 animate-fade-in transition-all duration-300 relative mt-8 mb-8">
             {/* Efeito de luz de fundo */}
             <div className="absolute top-0 right-1/4 w-[500px] h-[300px] bg-blue-600/20 rounded-full blur-[100px] pointer-events-none"></div>
 
@@ -89,13 +89,13 @@ const LearningMaterialViewer = ({ content, onComplete }) => {
                             prose-p:my-4
                             text-gray-200 prose-p:leading-relaxed prose-p:mb-6 prose-p:text-lg
                             prose-headings:text-white prose-headings:font-bold prose-headings:mt-8 prose-headings:mb-4
-                            prose-ul:my-6 prose-li:my-2 prose-li:text-gray-300
+                            prose-ul:my-6 prose-li:my-2 prose-li:text-secondary-text
                             prose-strong:text-cyan-400 
                             prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline hover:prose-a:text-cyan-300
                             prose-blockquote:border-l-4 prose-blockquote:border-cyan-500 
-                            prose-blockquote:bg-white/5 prose-blockquote:text-gray-300
+                            prose-blockquote:bg-white/5 prose-blockquote:text-secondary-text
                             prose-blockquote:px-6 prose-blockquote:py-3 prose-blockquote:rounded-r-lg prose-blockquote:not-italic prose-blockquote:shadow-md
-                            prose-pre:bg-gray-900 prose-pre:border prose-pre:border-white/10 prose-pre:text-gray-200 prose-pre:rounded-xl prose-pre:shadow-lg
+                            prose-pre:bg-primary-bg prose-pre:border prose-pre:border-white/10 prose-pre:text-gray-200 prose-pre:rounded-xl prose-pre:shadow-lg
                             prose-code:text-pink-400 prose-code:bg-white/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md
                         ">
                             <ReactMarkdown
@@ -122,7 +122,7 @@ const LearningMaterialViewer = ({ content, onComplete }) => {
                         href={safeMaterialLink}
                         target="_blank"
                         rel="noreferrer"
-                        className="px-6 py-3 border border-cyan-500/50 text-cyan-400 bg-cyan-900/20 hover:bg-cyan-500 hover:text-gray-900 font-bold rounded-xl transition-all duration-300 flex items-center gap-3 shadow-lg hover:shadow-[0_0_20px_rgba(6,182,212,0.6)]"
+                        className="px-6 py-3 border border-cyan-500/50 text-cyan-400 bg-cyan-900/20 hover:bg-cyan-500 hover:text-primary-text font-bold rounded-xl transition-all duration-300 flex items-center gap-3 shadow-lg hover:shadow-[0_0_20px_rgba(6,182,212,0.6)]"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />

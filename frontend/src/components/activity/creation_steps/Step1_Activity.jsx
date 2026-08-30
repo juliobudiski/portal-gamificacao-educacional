@@ -130,7 +130,7 @@ function Step1_InitialDetails({ activityData, handleInputChange, setActivityData
         <div className={isComputingArea ? "md:col-span-1" : "md:col-span-2"}>
           <label className="block text-sm font-medium text-secondary-text mb-1">Área de Conhecimento *</label>
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-secondary-text">
               <FaGlobeAmericas />
             </div>
             <select
@@ -175,7 +175,7 @@ function Step1_InitialDetails({ activityData, handleInputChange, setActivityData
         )}
       </div>
 
-      <div className="pt-4 border-t dark:border-gray-700">
+      <div className="pt-4 border-t dark:border-[var(--border-color)]">
         <h3 className="text-lg font-semibold text-primary-text">
           Quais desafios seus alunos enfrentam?
         </h3>
@@ -196,7 +196,7 @@ function Step1_InitialDetails({ activityData, handleInputChange, setActivityData
                   }
                 `}
               >
-                <div className={`text-3xl ${isSelected ? 'text-teal-500' : 'text-gray-400 group-hover:text-teal-500'}`}>
+                <div className={`text-3xl ${isSelected ? 'text-teal-500' : 'text-secondary-text group-hover:text-teal-500'}`}>
                   {problem.icon}
                 </div>
                 <p className={`text-sm font-medium ${isSelected ? 'text-teal-800 dark:text-teal-100' : 'text-secondary-text'}`}>

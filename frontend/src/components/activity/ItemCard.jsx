@@ -31,7 +31,7 @@ const ItemCard = ({ item, userRole, userPoints, onPurchaseRequest, onDeleteReque
       </div>
 
       {/* Descrição */}
-      <p className="text-gray-300 text-sm text-center flex-grow relative z-10 leading-relaxed">{item.description}</p>
+      <p className="text-secondary-text text-sm text-center flex-grow relative z-10 leading-relaxed">{item.description}</p>
 
       {/* Preço */}
       <div className="flex items-center justify-center gap-2 my-6 text-3xl font-bold text-yellow-400 relative z-10 bg-black/30 py-3 rounded-2xl border border-white/5">
@@ -48,7 +48,7 @@ const ItemCard = ({ item, userRole, userPoints, onPurchaseRequest, onDeleteReque
             className={`w-full flex items-center justify-center gap-3 py-4 px-4 rounded-xl font-bold transition-all duration-300 uppercase tracking-wide text-sm
                         ${isAffordable
                 ? 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.5)] hover:shadow-[0_0_25px_rgba(16,185,129,0.8)] transform hover:scale-105'
-                : 'bg-gray-800 text-gray-500 cursor-not-allowed border border-gray-700'}`}
+                : 'bg-secondary-bg text-gray-500 cursor-not-allowed border border-[var(--border-color)]'}`}
           >
             <FaShoppingCart className="text-lg" />
             {isAffordable ? 'Comprar Item' : 'Saldo Insuficiente'}

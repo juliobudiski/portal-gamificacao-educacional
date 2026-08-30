@@ -9,7 +9,7 @@ const SYMBOL_MAP = {
   "bell": { icon: "🔔", color: "bg-yellow-500/20 border-yellow-500" },
   "diamond": { icon: "💎", color: "bg-cyan-500/20 border-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.5)]" },
   "wild": { icon: "🐯", color: "bg-red-600/30 border-red-500 shadow-[0_0_25px_rgba(220,38,38,0.8)] scale-110" },
-  "bomb": { icon: "💣", color: "bg-gray-800/50 border-gray-600 grayscale opacity-80" },
+  "bomb": { icon: "💣", color: "bg-gray-800/50 border-[var(--border-color)] grayscale opacity-80" },
 };
 
 // Altura de cada célula para cálculo da animação (em rem ou px)
@@ -88,7 +88,7 @@ const SlotMachineTab = ({ userCoins, onReturn, onPlay }) => {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-900 via-gray-900 to-black -z-10" />
 
       {/* BOTÃO VOLTAR */}
-      <button onClick={onReturn} className="absolute top-4 left-4 z-20 flex items-center gap-2 py-2 px-4 bg-gray-800/80 text-white rounded-full hover:bg-gray-700 transition-all border border-gray-600">
+      <button onClick={onReturn} className="absolute top-4 left-4 z-20 flex items-center gap-2 py-2 px-4 bg-gray-800/80 text-white rounded-full hover:bg-hover-bg-color0 transition-all border border-[var(--border-color)]">
         <FaArrowLeft /> Sair
       </button>
 
@@ -194,7 +194,7 @@ const SlotMachineTab = ({ userCoins, onReturn, onPlay }) => {
       </div>
 
       {/* INFO / PAYTABLE */}
-      <div className="mt-8 text-gray-400 text-sm flex gap-4">
+      <div className="mt-8 text-secondary-text text-sm flex gap-4">
         <div className="flex items-center gap-2"><span className="text-2xl">🍊</span> x2</div>
         <div className="flex items-center gap-2"><span className="text-2xl">🔔</span> x5</div>
         <div className="flex items-center gap-2"><span className="text-2xl">💎</span> x10</div>

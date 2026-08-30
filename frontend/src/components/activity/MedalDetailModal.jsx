@@ -34,13 +34,13 @@ const MedalDetailModal = ({ medal, isUnlocked, onClose }) => {
                     />
                 </div>
 
-                <h2 className={`text-3xl font-bold mb-2 ${isUnlocked ? 'text-yellow-400 drop-shadow-md' : 'text-gray-400'}`}>
+                <h2 className={`text-3xl font-bold mb-2 ${isUnlocked ? 'text-yellow-400 drop-shadow-md' : 'text-secondary-text'}`}>
                     {medal.name}
                 </h2>
 
                 {/* Badge de Status */}
                 <div className="mb-6">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${isUnlocked ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/50' : 'bg-gray-700 text-gray-400 border border-gray-600'}`}>
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${isUnlocked ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/50' : 'bg-hover-bg-color0 text-secondary-text border border-[var(--border-color)]'}`}>
                         {isUnlocked ? 'Desbloqueada' : 'Bloqueada'}
                     </span>
                 </div>

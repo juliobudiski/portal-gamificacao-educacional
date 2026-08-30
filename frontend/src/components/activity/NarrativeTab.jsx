@@ -117,11 +117,11 @@ const NarrativeTab = ({ content, onComplete }) => {
       </div>
 
       {/* Controles de Navegação */}
-      <div className="bg-gray-900 border-t border-white/10 p-4 sm:p-6 flex justify-between items-center z-40 relative">
+      <div className="bg-primary-bg border-t border-white/10 p-4 sm:p-6 flex justify-between items-center z-40 relative">
         <button
           onClick={goToPreviousLine}
           disabled={currentLineIndex === 0}
-          className="py-3 px-6 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full flex items-center transition-all disabled:opacity-30 disabled:cursor-not-allowed text-gray-300 font-medium"
+          className="py-3 px-6 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full flex items-center transition-all disabled:opacity-30 disabled:cursor-not-allowed text-secondary-text font-medium"
         >
           <FaArrowLeft className="mr-3" /> Anterior
         </button>

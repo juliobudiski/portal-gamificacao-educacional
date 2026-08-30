@@ -301,8 +301,8 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
                                         disabled={isDisabled}
                                         className={`relative flex items-center pl-3 pr-4 py-2 text-sm border rounded-lg transition-all shadow-sm group
                                             ${isDisabled
-                                                ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed opacity-60'
-                                                : 'bg-secondary-bg border-blue-200 dark:border-blue-900 hover:bg-blue-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200'
+                                                ? 'bg-gray-100 border-gray-200 text-secondary-text cursor-not-allowed opacity-60'
+                                                : 'bg-secondary-bg border-blue-200 dark:border-blue-900 hover:bg-blue-50 dark:hover:bg-hover-bg-color0 text-gray-700 dark:text-gray-200'
                                             }
                                         `}
                                         title={isDisabled ? "Adicione uma Narrativa antes de incluir um Quiz." : config.name}
@@ -340,7 +340,7 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
                                                 : 'bg-secondary-bg dark:bg-primary-bg border-transparent hover:border-blue-300'
                                             }`}
                                     >
-                                        <span className="font-bold text-secondary-text mr-3 bg-gray-200 dark:bg-gray-700 w-6 h-6 flex items-center justify-center rounded-full text-xs">{index + 1}</span>
+                                        <span className="font-bold text-secondary-text mr-3 bg-gray-200 dark:bg-hover-bg-color0 w-6 h-6 flex items-center justify-center rounded-full text-xs">{index + 1}</span>
                                         <img src={elementConfig.path[step.type]?.icon} alt="" className="w-8 h-8 mr-3" />
 
                                         <div className="flex-grow">
@@ -376,7 +376,7 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
                                         </div>
 
                                         <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                                            <button onClick={() => toggleMandatory(step.id)} className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg text-gray-500">
+                                            <button onClick={() => toggleMandatory(step.id)} className="p-2 hover:bg-gray-200 dark:hover:bg-hover-bg-color0 rounded-lg text-gray-500">
                                                 {step.isMandatory ? <FaToggleOn className="text-green-500" /> : <FaToggleOff />}
                                             </button>
 
@@ -400,7 +400,7 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
                                 );
                             })}
                             {(!gamificationDesign.progression_path || gamificationDesign.progression_path.length === 0) && (
-                                <div className="text-center py-10 text-gray-400 border-2 border-dashed border-border-color rounded-lg">
+                                <div className="text-center py-10 text-secondary-text border-2 border-dashed border-border-color rounded-lg">
                                     <p>A trilha está vazia.</p>
                                     <p className="text-xs mt-1">Adicione passos acima para começar.</p>
                                 </div>
@@ -423,10 +423,10 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
                                     const config = elementConfig.hub[element.type];
                                     if (!config) return null;
                                     return (
-                                        <div key={element.id} onClick={() => toggleHubElement(element.type)} className="flex items-center p-3 bg-secondary-bg dark:bg-primary-bg rounded-lg shadow-sm cursor-pointer hover:bg-white dark:hover:bg-gray-700 transition-colors">
+                                        <div key={element.id} onClick={() => toggleHubElement(element.type)} className="flex items-center p-3 bg-secondary-bg dark:bg-primary-bg rounded-lg shadow-sm cursor-pointer hover:bg-primary-bg dark:hover:bg-hover-bg-color0 transition-colors">
                                             <img src={config.icon} alt={config.name} className="w-8 h-8 mr-3" />
                                             <span className="flex-grow font-medium text-primary-text text-sm">{config.name}</span>
-                                            {element.enabled ? <FaToggleOn className="text-green-500 h-6 w-6" /> : <FaToggleOff className="text-gray-400 h-6 w-6" />}
+                                            {element.enabled ? <FaToggleOn className="text-green-500 h-6 w-6" /> : <FaToggleOff className="text-secondary-text h-6 w-6" />}
                                         </div>
                                     );
                                 })}

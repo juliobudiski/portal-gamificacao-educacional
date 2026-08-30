@@ -115,7 +115,7 @@ const CreateTopicForm = ({ onSubmit, onCancel, isSubmitting }) => {
 
             <div className="flex justify-end gap-4 mt-auto pt-4 border-t border-border-color">
                 <button type="button" onClick={onCancel} className="py-2 px-6 bg-primary-bg text-secondary-text font-bold border border-border-color rounded-lg hover:bg-hover-bg-color transition-colors">Cancelar</button>
-                <button type="submit" disabled={isSubmitting || !title.trim() || !body.trim()} className="py-2 px-8 bg-accent-teal text-gray-900 font-bold rounded-lg disabled:opacity-50 hover:bg-teal-400 transition-colors shadow-md">{isSubmitting ? 'Publicando...' : 'Publicar Tópico'}</button>
+                <button type="submit" disabled={isSubmitting || !title.trim() || !body.trim()} className="py-2 px-8 bg-accent-teal text-primary-text font-bold rounded-lg disabled:opacity-50 hover:bg-teal-400 transition-colors shadow-md">{isSubmitting ? 'Publicando...' : 'Publicar Tópico'}</button>
             </div>
         </form>
     );
@@ -330,7 +330,7 @@ const ForumTab = ({ onReturn }) => {
                                     <span className="text-xs font-bold text-secondary-text">{newPostBody.length}/5000</span>
                                     <button
                                         onClick={handleCreatePost} disabled={isSubmitting || !newPostBody.trim()}
-                                        className="bg-accent-teal text-gray-900 py-2 px-6 rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-teal-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="bg-accent-teal text-primary-text py-2 px-6 rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-teal-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {isSubmitting ? <FaSpinner className="animate-spin" /> : <FaPaperPlane />}
                                         {isSubmitting ? 'Enviando...' : 'Publicar'}
@@ -353,7 +353,7 @@ const ForumTab = ({ onReturn }) => {
                                     <h2 className="text-2xl md:text-3xl font-bold text-accent-teal mb-1">{selectedCategory?.title}</h2>
                                     <p className="text-sm text-secondary-text">{selectedCategory?.description}</p>
                                 </div>
-                                <button onClick={() => setView('create_topic')} className="bg-accent-teal text-gray-900 py-3 px-6 rounded-xl flex items-center gap-2 font-bold hover:bg-teal-400 transition-all shadow-lg transform hover:-translate-y-1 w-full md:w-auto justify-center">
+                                <button onClick={() => setView('create_topic')} className="bg-accent-teal text-primary-text py-3 px-6 rounded-xl flex items-center gap-2 font-bold hover:bg-teal-400 transition-all shadow-lg transform hover:-translate-y-1 w-full md:w-auto justify-center">
                                     <FaPlus /> <span>Novo Tópico</span>
                                 </button>
                             </div>
@@ -398,7 +398,7 @@ const ForumTab = ({ onReturn }) => {
 
     return (
         // PADRONIZAÇÃO DO CONTAINER PARA FICAR IGUAL AO STORE_TAB
-        <div className="w-full max-w-6xl mx-auto p-8 relative mt-8 mb-8 text-primary-text bg-gray-900 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.8)] border border-white/10 min-h-[80vh] flex flex-col overflow-hidden">
+        <div className="w-full max-w-6xl mx-auto p-8 relative mt-8 mb-8 text-primary-text bg-primary-bg rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.8)] border border-white/10 min-h-[80vh] flex flex-col overflow-hidden">
             {/* Efeito de luz de fundo */}
             <div className="absolute top-0 right-0 w-[600px] h-[300px] bg-teal-500/10 rounded-full blur-[100px] pointer-events-none"></div>
             <div className="absolute bottom-0 left-0 w-[500px] h-[400px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none"></div>
@@ -408,7 +408,7 @@ const ForumTab = ({ onReturn }) => {
                 <button
                     onClick={onReturn}
                     className="absolute top-6 left-6 z-20 flex items-center gap-2 py-2.5 px-5 
-                           bg-black/50 text-gray-300 font-bold backdrop-blur-md
+                           bg-black/50 text-secondary-text font-bold backdrop-blur-md
                            border border-white/10 rounded-full shadow-lg 
                            hover:bg-white/10 hover:text-white hover:scale-105 transition-all"
                 >

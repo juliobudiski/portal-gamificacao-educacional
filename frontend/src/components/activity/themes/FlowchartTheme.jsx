@@ -19,7 +19,7 @@ const THEME_COLORS = {
         locked: {
             fill: "fill-gray-200 dark:fill-gray-800",
             stroke: "stroke-gray-400 dark:stroke-gray-600",
-            icon: "text-gray-400 dark:text-gray-600"
+            icon: "text-secondary-text dark:text-gray-600"
         },
         active: {
             fill: "fill-white dark:fill-gray-900",

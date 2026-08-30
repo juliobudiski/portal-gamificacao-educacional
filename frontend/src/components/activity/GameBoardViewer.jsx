@@ -35,7 +35,7 @@ function GameBoardViewer({ children }) {
                 <h3 className="text-xl font-bold text-white mb-2">Preparando o Tabuleiro...</h3>
 
                 {/* Barra de Progresso Real */}
-                <div className="w-64 h-2 bg-gray-700 rounded-full overflow-hidden mb-2">
+                <div className="w-64 h-2 bg-hover-bg-color0 rounded-full overflow-hidden mb-2">
                     <div
                         className="h-full bg-blue-500 transition-all duration-300 ease-out"
                         style={{ width: `${assetsProgress || 0}%` }}
@@ -43,7 +43,7 @@ function GameBoardViewer({ children }) {
                 </div>
 
                 {/* Texto de Status */}
-                <p className="text-sm text-gray-400">
+                <p className="text-sm text-secondary-text">
                     {assetsProgress}% carregado
                     {estimatedTimeRemaining && ` • ${estimatedTimeRemaining}`}
                 </p>
