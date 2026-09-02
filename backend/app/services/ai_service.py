@@ -59,11 +59,13 @@ class AIService:
             genai.configure(api_key=self.default_api_key, transport="rest")
         
         # Lista de prioridade de modelos, do mais preferível ao fallback.
+        # ATENÇÃO: gemini-2.0-flash foi descontinuado (404 em produção em 2026-08-30).
+        # Substituído por gemini-3.6-flash conforme mensagem oficial da API.
         self.MODEL_HIERARCHY = [
-            'models/gemini-2.5-flash',             # 1. Qualidade e Velocidade (Novo)
-            'models/gemini-2.0-flash',             # 2. Estável e confiável
-            'models/gemini-2.5-flash-lite',        # 3. Lite (Novo) - Rápido e barato
-            'models/gemini-2.0-flash-lite',        # 4. Lite (Estável)
+            'models/gemini-2.5-flash',             # 1. Qualidade e Velocidade
+            'models/gemini-3.6-flash',             # 2. Substituto oficial do 2.0-flash
+            'models/gemini-2.5-flash-lite',        # 3. Lite - Rápido e barato
+            'models/gemini-2.5-flash-lite-preview-06-17', # 4. Preview lite
             'models/gemini-flash-latest',          # 5. Fallback genérico
             'models/gemini-2.5-pro'                # 6. Alta inteligência (se necessário)
         ]
@@ -177,9 +179,12 @@ class AIService:
                     logger.debug(f"[DEBUG] Resposta raw do LLM (primeiros 300 chars): {response.text[:300]}...")
                     
                     if step_type == 'content':
+                        # FIX: O modelo retorna Markdown puro para 'content' (JSON mode desativado).
+                        # Não tentar parsear como JSON — encapsular diretamente no schema esperado.
+                        raw_text = response.text.strip()
                         valid_content = {
                             "type": "content",
-                            "text_content": response.text.strip(),
+                            "text_content": raw_text,
                             "video_url": "",
                             "material_link": ""
                         }
@@ -214,12 +219,23 @@ class AIService:
                         current_model_idx += 1
                         current_retry = 0
                 except google_exceptions.InvalidArgument as e:
-                    logger.error(f"Erro não transitório (InvalidArgument - API Key inválida) no modelo {model_name}: {str(e)}")
-                    fallback_reason = "Chave de API inválida ou sem permissão"
-                    break # Sai do loop while e usa fallback imediato
+                    # FIX: API_KEY_INVALID (400) — não adianta tentar outros modelos ou outros passos.
+                    # A chave é inválida para toda a sessão. Abortar TODA a orquestração agora.
+                    error_msg = "Chave de API inválida. Verifique sua chave no perfil ou aguarde a cota do sistema ser restaurada."
+                    logger.error(f"❌ ABORT: {error_msg} | Detalhe: {str(e)}")
+                    if room_id:
+                        socketio.emit('ai_error', {'message': error_msg, 'room_id': room_id}, namespace='/')
+                    # Restaurar chave padrão antes de sair
+                    if user_api_key and self.default_api_key:
+                        genai.configure(api_key=self.default_api_key, transport="rest")
+                    return {}  # Aborta toda a orquestração
                 except Exception as e:
                     logger.error(f"Erro no modelo {model_name}: {str(e)}")
                     if "429" in str(e) or "Quota" in str(e) or "503" in str(e):
+                        current_model_idx += 1
+                    elif "404" in str(e) or "no longer available" in str(e).lower():
+                        # Modelo deprecado — pular para o próximo na hierarquia
+                        logger.warning(f"⚠️ Modelo {model_name} descontinuado (404). Pulando para o próximo.")
                         current_model_idx += 1
                     else:
                         fallback_reason = str(e)
@@ -326,6 +342,7 @@ class AIService:
 
         # Se o loop terminou, todos os modelos falharam.
         logger.error("❌ Todos os modelos de fallback falharam.")
+        # pyrefly: ignore [bad-raise]
         raise last_error
     
     def _validate_content_integrity(self, step_type: str, content: Dict) -> bool:
