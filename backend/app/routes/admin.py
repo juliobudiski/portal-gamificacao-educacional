@@ -758,6 +758,58 @@ def toggle_activity_visibility(activity_id):
         db.session.rollback()
         return jsonify({"success": False, "message": f"Erro ao alterar visibilidade: {str(e)}"}), 500
 
+@admin_bp.route('/activities/mass', methods=['DELETE'])
+@jwt_required()
+def delete_activities_mass():
+    if not check_admin(): return jsonify({"message": "Acesso negado."}), 403
+    
+    data = request.get_json()
+    activity_ids = data.get('activity_ids', [])
+    
+    if not activity_ids or not isinstance(activity_ids, list):
+        return jsonify({"message": "Lista de IDs inválida."}), 400
+        
+    try:
+        from ..models import Conversation, ChatMessage, ActivityRating, Purchase, StoreItem, SlotWin, RouletteWin, StudentResponse, QuizContent, NarrativeContent, UserUnlockedTitle, ActivityProgress, EventLog, ActivityRevision, UserUnlockedMedal, LearningContent
+        
+        # Limpar items da loja para remover dependências (equipados)
+        item_ids = [item.id for item in StoreItem.query.filter(StoreItem.activity_id.in_(activity_ids)).all()]
+        if item_ids:
+            ActivityProgress.query.filter(ActivityProgress.equipped_name_cosmetic_id.in_(item_ids)).update({'equipped_name_cosmetic_id': None}, synchronize_session=False)
+            ActivityProgress.query.filter(ActivityProgress.equipped_title_cosmetic_id.in_(item_ids)).update({'equipped_title_cosmetic_id': None}, synchronize_session=False)
+        
+        # Limpar conversas (fórum)
+        conversations = Conversation.query.filter(Conversation.activity_id.in_(activity_ids)).all()
+        if conversations:
+            conv_ids = [c.id for c in conversations]
+            ChatMessage.query.filter(ChatMessage.conversation_id.in_(conv_ids)).delete(synchronize_session=False)
+            Conversation.query.filter(Conversation.id.in_(conv_ids)).delete(synchronize_session=False)
+
+        # Deletar dependências diretas
+        ActivityRating.query.filter(ActivityRating.activity_id.in_(activity_ids)).delete(synchronize_session=False)
+        Purchase.query.filter(Purchase.activity_id.in_(activity_ids)).delete(synchronize_session=False)
+        StoreItem.query.filter(StoreItem.activity_id.in_(activity_ids)).delete(synchronize_session=False)
+        SlotWin.query.filter(SlotWin.activity_id.in_(activity_ids)).delete(synchronize_session=False)
+        RouletteWin.query.filter(RouletteWin.activity_id.in_(activity_ids)).delete(synchronize_session=False)
+        StudentResponse.query.filter(StudentResponse.activity_id.in_(activity_ids)).delete(synchronize_session=False)
+        QuizContent.query.filter(QuizContent.activity_id.in_(activity_ids)).delete(synchronize_session=False)
+        NarrativeContent.query.filter(NarrativeContent.activity_id.in_(activity_ids)).delete(synchronize_session=False)
+        LearningContent.query.filter(LearningContent.activity_id.in_(activity_ids)).delete(synchronize_session=False)
+        UserUnlockedTitle.query.filter(UserUnlockedTitle.activity_id.in_(activity_ids)).delete(synchronize_session=False)
+        ActivityProgress.query.filter(ActivityProgress.activity_id.in_(activity_ids)).delete(synchronize_session=False)
+        EventLog.query.filter(EventLog.activity_id.in_(activity_ids)).delete(synchronize_session=False)
+        ActivityRevision.query.filter(ActivityRevision.activity_id.in_(activity_ids)).delete(synchronize_session=False)
+        UserUnlockedMedal.query.filter(UserUnlockedMedal.activity_id.in_(activity_ids)).delete(synchronize_session=False)
+
+        Activity.query.filter(Activity.id.in_(activity_ids)).delete(synchronize_session=False)
+        db.session.commit()
+        return jsonify({"success": True, "message": f"{len(activity_ids)} atividades deletadas com sucesso."})
+    except Exception as e:
+        db.session.rollback()
+        import traceback
+        logger.error(f"[delete_activities_mass] Erro crítico ao deletar em massa: {str(e)}\n{traceback.format_exc()}")
+        return jsonify({"message": f"Erro interno ao deletar atividades em massa: {str(e)}"}), 500
+
 @admin_bp.route('/activities/<int:activity_id>', methods=['DELETE'])
 @jwt_required()
 def delete_activity(activity_id):
