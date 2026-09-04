@@ -185,3 +185,32 @@ def send_teacher_code_email(to_email, access_code, name):
     except Exception as e:
         current_app.logger.error(f"Erro ao enviar email de código via SMTP: {str(e)}")
         return False
+
+def send_html_email(to_email, subject, html_content):
+    """
+    Método genérico para disparar um e-mail HTML (Strategy base para o Gmail SMTP).
+    No futuro, pode ser substituído por uma chamada à API do Resend/SendGrid.
+    """
+    smtp_server = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
+    smtp_port = int(os.environ.get("MAIL_PORT", 587))
+    smtp_user = os.environ.get("MAIL_USERNAME")
+    smtp_password = os.environ.get("MAIL_PASSWORD")
+
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = f"GamificaEdu <{smtp_user}>"
+        msg['To'] = to_email
+        msg['Subject'] = subject
+        msg.attach(MIMEText(html_content, 'html'))
+
+        server = smtplib.SMTP(smtp_server, smtp_port)
+        server.starttls()
+        server.login(smtp_user, smtp_password)
+        text = msg.as_string()
+        server.sendmail(smtp_user, to_email, text)
+        server.quit()
+        current_app.logger.info(f"Notificação HTML enviada com sucesso para {to_email}.")
+        return True
+    except Exception as e:
+        current_app.logger.error(f"Erro ao enviar notificação HTML via SMTP para {to_email}: {str(e)}")
+        return False

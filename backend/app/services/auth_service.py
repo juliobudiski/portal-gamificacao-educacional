@@ -14,6 +14,7 @@ from ..models import db, User, EventLog
 from ..utils.geo import update_user_location_data  
 from ..utils.email_sender import send_reset_email
 from ..utils.text_sanitizer import clean_text, detect_strict_sql_injection, detect_prompt_injection
+from .notification_service import notification_service
 
 DEFAULT_AVATARS = [
     {"url": "/avatars/avatar1.webp", "name": "Avatar Básico 1", "type": "normal"},
@@ -114,6 +115,10 @@ class AuthService:
             db.session.add(new_user)
             db.session.commit()
             AuthService._log_auth_event(new_user.id, 'register_success', {'email': new_user.email, 'method': 'email'}, True, remote_addr, user_agent)
+
+            # Dispara Notificação Assíncrona de Boas Vindas
+            frontend_url = request.headers.get('Origin') or 'http://localhost:5173'
+            notification_service.dispatch_welcome_email(new_user, frontend_url)
 
             additional_claims = AuthService._generate_jwt_claims(new_user)
             access_token = create_access_token(identity=str(new_user.id), additional_claims=additional_claims)
@@ -361,10 +366,16 @@ class AuthService:
                 return {"message": "Se o e-mail existir, um link foi enviado."}, None, 200
 
             s = get_serializer()
-            token = s.dumps(user.email, salt='password-reset')
+            # Injeta parte do hash atual da senha. Se a senha mudar, o token invalida (Proteção Replay Attack)
+            token_payload = {
+                'email': user.email,
+                'pwd_fragment': user.password_hash[-10:] if user.password_hash else ''
+            }
+            token = s.dumps(token_payload, salt='password-reset')
             
+            # Fallback dinâmico seguro caso a variável de ambiente falhe
             if not frontend_url:
-                frontend_url = 'http://localhost:5173'
+                frontend_url = request.headers.get('Origin') or 'http://localhost:5173'
 
             reset_url = f"{frontend_url}/reset-password/{token}"
             email_sent = send_reset_email(user.email, reset_url)
@@ -380,19 +391,37 @@ class AuthService:
     def reset_password(token, password):
         s = get_serializer()
         try:
-            email = s.loads(token, salt='password-reset', max_age=3600)
+            payload = s.loads(token, salt='password-reset', max_age=3600)
         except SignatureExpired:
             return None, {"error": "O link expirou."}, 400
         except BadSignature:
-            return None, {"error": "Link inválido."}, 400
+            return None, {"error": "Link inválido ou já utilizado."}, 400
+
+        # Suporte a tokens legados (apenas string) ou novo formato (dict)
+        if isinstance(payload, dict):
+            email = payload.get('email')
+            pwd_fragment = payload.get('pwd_fragment', '')
+        else:
+            email = payload
+            pwd_fragment = None
 
         user = User.query.filter_by(email=email).first()
         if not user:
             return None, {"error": "Usuário não encontrado."}, 404
 
-        user.password_hash = generate_password_hash(password)
-        db.session.commit()
-        return {"message": "Senha atualizada com sucesso!"}, None, 200
+        # Validação contra Replay Attack
+        if pwd_fragment is not None:
+            current_fragment = user.password_hash[-10:] if user.password_hash else ''
+            if pwd_fragment != current_fragment:
+                return None, {"error": "Este link já foi utilizado ou é inválido."}, 400
+
+        try:
+            user.password_hash = generate_password_hash(password)
+            db.session.commit()
+            return {"message": "Senha atualizada com sucesso!"}, None, 200
+        except Exception as e:
+            db.session.rollback()
+            return None, {"error": "Erro interno ao atualizar a senha."}, 500
 
     @staticmethod
     def get_api_keys(user_id):
