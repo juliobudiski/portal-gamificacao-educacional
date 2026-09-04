@@ -7,7 +7,9 @@ import {
   FaUsers,
   FaBookOpen,
   FaAward,
-  FaComments
+  FaComments,
+  FaCheckCircle,
+  FaInfoCircle
 } from 'react-icons/fa';
 import { useHelpModal } from "../../../context/HelpModalContext";
 

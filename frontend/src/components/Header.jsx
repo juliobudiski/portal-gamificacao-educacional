@@ -29,7 +29,7 @@ function Header({ handleTeacherTour, handleStudentTour, isActivityPage }) {
   };
 
   return (
-    <header className={`flex-shrink-0 w-full max-w-full mx-auto bg-primary-bg/70 backdrop-blur-md text-primary-text p-4 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border-b border-border-color z-50 transition-all duration-300 ${isActivityPage ? 'mt-0 mb-2 rounded-t-none' : 'mt-4 mb-4'}`}>
+    <header className={`flex-shrink-0 w-full max-w-full mx-auto bg-secondary-bg text-primary-text p-4 rounded-xl shadow-xl border-b-2 border-border-color z-50 transition-all duration-300 ${isActivityPage ? 'mt-0 mb-2 rounded-t-none' : 'mt-4 mb-4'}`}>
       <nav className="flex flex-col sm:flex-row justify-between items-center">
         <Link
           to="/"
@@ -117,7 +117,7 @@ function Header({ handleTeacherTour, handleStudentTour, isActivityPage }) {
                 </button>
                 {isProfileMenuOpen && (
                   <ul
-                    className="absolute right-0 mt-3 w-56 bg-primary-bg/90 backdrop-blur-xl rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.2)] z-10 border border-border-color animate-fade-in overflow-hidden"
+                    className="absolute right-0 mt-3 w-56 bg-secondary-bg rounded-2xl shadow-2xl z-10 border border-border-color animate-fade-in overflow-hidden"
                     onMouseLeave={() => setIsProfileMenuOpen(false)}
                   >
                     <li>
@@ -201,7 +201,7 @@ function Header({ handleTeacherTour, handleStudentTour, isActivityPage }) {
                   </button>
                   {isTeacherMenuOpen && (
                     <ul
-                      className="absolute right-0 mt-3 w-64 bg-primary-bg/90 backdrop-blur-xl rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.2)] z-10 border border-border-color animate-fade-in overflow-hidden"
+                      className="absolute right-0 mt-3 w-64 bg-secondary-bg rounded-2xl shadow-2xl z-10 border border-border-color animate-fade-in overflow-hidden"
                       onMouseLeave={() => setIsTeacherMenuOpen(false)}
                     >
                       <li><Link to="/professor/dashboard" className="flex items-center px-5 py-4 text-secondary-text hover:bg-secondary-bg hover:text-primary-text transition-colors" onClick={closeAllMenus}><LayoutDashboard size={18} className="mr-3 text-accent-yellow" /><span className="font-medium">Dashboard</span></Link></li>
@@ -232,7 +232,7 @@ function Header({ handleTeacherTour, handleStudentTour, isActivityPage }) {
                   </button>
                   {isStudentMenuOpen && (
                     <ul
-                      className="absolute right-0 mt-3 w-56 bg-primary-bg/90 backdrop-blur-xl rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.2)] z-10 border border-border-color animate-fade-in overflow-hidden"
+                      className="absolute right-0 mt-3 w-56 bg-secondary-bg rounded-2xl shadow-2xl z-10 border border-border-color animate-fade-in overflow-hidden"
                       onMouseLeave={() => setIsStudentMenuOpen(false)}
                     >
                       <li><Link to="/aluno/dashboard" className="flex items-center px-5 py-4 text-secondary-text hover:bg-secondary-bg hover:text-primary-text transition-colors" onClick={closeAllMenus}><LayoutDashboard size={18} className="mr-3 text-accent-yellow" /><span className="font-medium">Dashboard</span></Link></li>

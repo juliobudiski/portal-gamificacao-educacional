@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import {
   FaGamepad, FaBullseye, FaBrain, FaLightbulb, FaUsers,
   FaProjectDiagram, FaRocket, FaWrench, FaCubes, FaShieldAlt,
-  FaSearch, FaCheckDouble, FaBriefcase, FaHandshake
+  FaSearch, FaCheckDouble, FaBriefcase, FaHandshake, FaCheckCircle, FaInfoCircle
 } from 'react-icons/fa';
 import { useHelpModal } from "../../../context/HelpModalContext";
 

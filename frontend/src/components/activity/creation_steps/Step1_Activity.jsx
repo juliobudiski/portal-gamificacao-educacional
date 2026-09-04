@@ -4,7 +4,7 @@ import {
   FaCode, FaTools, FaUsers, FaFrown, FaTasks, FaHeadSideVirus, FaProjectDiagram,
   FaComments, FaBriefcase, FaGlobeAmericas, FaInfoCircle, FaBrain, FaSearch,
   FaGhost, FaGamepad, FaBalanceScale, FaCalendarTimes, FaShieldAlt, FaEyeSlash,
-  FaBookReader, FaHeartbeat
+  FaBookReader, FaHeartbeat, FaCheckCircle
 } from 'react-icons/fa';
 import { useHelpModal } from "../../../context/HelpModalContext";
 
