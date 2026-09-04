@@ -1,4 +1,6 @@
 import os
+import json
+import urllib.request
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -36,12 +38,61 @@ def _get_smtp_connection(smtp_server, smtp_port, smtp_user, smtp_password):
                 current_app.logger.error(f"Fallback na porta 465 também falhou: {e2}")
             raise e2
 
-def send_reset_email(to_email, reset_url):
+def _dispatch_email(to_email, subject, html_content):
+    """
+    Despacha o e-mail verificando primeiro se há a configuração do Google Apps Script.
+    Caso contrário, tenta o fallback pelo SMTP tradicional.
+    Isso burla o bloqueio de portas SMTP do Render Free (usa porta 443 HTTPS).
+    """
+    apps_script_url = os.environ.get("GOOGLE_APPS_SCRIPT_URL")
+
+    if apps_script_url:
+        try:
+            payload = json.dumps({
+                "to_email": to_email,
+                "subject": subject,
+                "html_content": html_content
+            }).encode('utf-8')
+            
+            req = urllib.request.Request(apps_script_url, data=payload, headers={'Content-Type': 'application/json'}, method='POST')
+            with urllib.request.urlopen(req, timeout=10) as response:
+                res_body = response.read().decode('utf-8')
+                if current_app:
+                    current_app.logger.info(f"E-mail disparado via Google Apps Script (HTTP). Resposta: {res_body}")
+                return True
+        except Exception as e:
+            if current_app:
+                current_app.logger.error(f"Erro ao disparar via Google Apps Script: {str(e)}")
+            return False
+
+    # Fallback SMTP tradicional (útil para desenvolvimento local)
     smtp_server = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
     smtp_port = int(os.environ.get("MAIL_PORT", 587))
     smtp_user = os.environ.get("MAIL_USERNAME")
     smtp_password = os.environ.get("MAIL_PASSWORD")
 
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = f"Gamefica.Edu <{smtp_user}>"
+        msg['To'] = to_email
+        msg['Subject'] = subject
+        msg.attach(MIMEText(html_content, 'html'))
+
+        server = _get_smtp_connection(smtp_server, smtp_port, smtp_user, smtp_password)
+        text = msg.as_string()
+        server.sendmail(smtp_user, to_email, text)
+        server.quit()
+
+        if current_app:
+            current_app.logger.info(f"E-mail disparado com sucesso via SMTP tradicional para {to_email}.")
+        return True
+    except Exception as e:
+        if current_app:
+            current_app.logger.error(f"Erro no disparo SMTP para {to_email}: {str(e)}")
+        return False
+
+
+def send_reset_email(to_email, reset_url):
     subject = "Recuperação de Senha - Gamefica.Edu"
         
     html_content = f"""
@@ -116,33 +167,10 @@ def send_reset_email(to_email, reset_url):
     </html>
     """
 
-    try:
-        msg = MIMEMultipart()
-        msg['From'] = f"Gamefica.Edu <{smtp_user}>"
-        msg['To'] = to_email
-        msg['Subject'] = subject
-        msg.attach(MIMEText(html_content, 'html'))
+    return _dispatch_email(to_email, subject, html_content)
 
-        server = _get_smtp_connection(smtp_server, smtp_port, smtp_user, smtp_password)
-        text = msg.as_string()
-        server.sendmail(smtp_user, to_email, text)
-        server.quit()
-
-        if current_app:
-            current_app.logger.info(f"E-mail enviado com sucesso para {to_email} via Gmail SMTP.")
-        return True
-
-    except Exception as e:
-        if current_app:
-            current_app.logger.error(f"Erro ao enviar email via SMTP: {str(e)}")
-        return False
 
 def send_teacher_code_email(to_email, access_code, name):
-    smtp_server = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
-    smtp_port = int(os.environ.get("MAIL_PORT", 587))
-    smtp_user = os.environ.get("MAIL_USERNAME")
-    smtp_password = os.environ.get("MAIL_PASSWORD")
-
     subject = "Código de Acesso Institucional - Portal GamificaEdu"
         
     html_content = f"""
@@ -188,50 +216,11 @@ def send_teacher_code_email(to_email, access_code, name):
     </html>
     """
 
-    try:
-        msg = MIMEMultipart()
-        msg['From'] = f"Gamefica.Edu <{smtp_user}>"
-        msg['To'] = to_email
-        msg['Subject'] = subject
-        msg.attach(MIMEText(html_content, 'html'))
+    return _dispatch_email(to_email, subject, html_content)
 
-        server = _get_smtp_connection(smtp_server, smtp_port, smtp_user, smtp_password)
-        text = msg.as_string()
-        server.sendmail(smtp_user, to_email, text)
-        server.quit()
-        if current_app:
-            current_app.logger.info(f"E-mail de código enviado para {to_email}.")
-        return True
-    except Exception as e:
-        if current_app:
-            current_app.logger.error(f"Erro ao enviar email de código via SMTP: {str(e)}")
-        return False
 
 def send_html_email(to_email, subject, html_content):
     """
-    Método genérico para disparar um e-mail HTML (Strategy base para o Gmail SMTP).
-    No futuro, pode ser substituído por uma chamada à API do Resend/SendGrid.
+    Método genérico para disparar um e-mail HTML (Strategy base para o Gmail SMTP ou API Relay).
     """
-    smtp_server = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
-    smtp_port = int(os.environ.get("MAIL_PORT", 587))
-    smtp_user = os.environ.get("MAIL_USERNAME")
-    smtp_password = os.environ.get("MAIL_PASSWORD")
-
-    try:
-        msg = MIMEMultipart()
-        msg['From'] = f"GamificaEdu <{smtp_user}>"
-        msg['To'] = to_email
-        msg['Subject'] = subject
-        msg.attach(MIMEText(html_content, 'html'))
-
-        server = _get_smtp_connection(smtp_server, smtp_port, smtp_user, smtp_password)
-        text = msg.as_string()
-        server.sendmail(smtp_user, to_email, text)
-        server.quit()
-        if current_app:
-            current_app.logger.info(f"Notificação HTML enviada com sucesso para {to_email}.")
-        return True
-    except Exception as e:
-        if current_app:
-            current_app.logger.error(f"Erro ao enviar notificação HTML via SMTP para {to_email}: {str(e)}")
-        return False
+    return _dispatch_email(to_email, subject, html_content)
