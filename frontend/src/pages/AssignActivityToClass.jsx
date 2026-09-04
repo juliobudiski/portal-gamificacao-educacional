@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { AuthContext } from '../context/AuthContext';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaHatWizard, FaDice, FaBalanceScale, FaUsers, FaPen, FaRandom } from 'react-icons/fa';
+import { FaHatWizard, FaDice, FaBalanceScale, FaUsers, FaPen, FaRandom, FaArrowLeft } from 'react-icons/fa';
 
 // Debug mode control
 const isDebugMode = import.meta.env.VITE_DEBUG_MODE === 'true';
@@ -261,6 +261,13 @@ function AssignActivityToClass({ onAssignSuccess }) {
 
     return (
         <div className="relative bg-primary-bg rounded-2xl shadow-2xl p-6 border border-[#4a525a] overflow-hidden">
+            <button 
+                onClick={() => navigate(-1)} 
+                className="group mb-6 flex items-center gap-2 text-secondary-text hover:text-accent-teal transition-colors font-bold uppercase tracking-widest text-sm"
+            >
+                <FaArrowLeft className="group-hover:-translate-x-1 transition-transform" />
+                Voltar
+            </button>
             {/* ... (Cabeçalho igual ao anterior) ... */}
             <div className="flex items-center mb-4">
                 <h3 className="text-xl font-bold bg-gradient-to-r from-accent-yellow to-accent-teal bg-clip-text text-transparent">

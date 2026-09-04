@@ -11,7 +11,7 @@ import {
     FaUserGraduate,
     FaChevronDown,
     FaChevronUp,
-    FaUsers, FaClock, FaCheckCircle, FaTimesCircle, FaHourglassStart, FaShieldAlt
+    FaUsers, FaClock, FaCheckCircle, FaTimesCircle, FaHourglassStart, FaShieldAlt, FaArrowLeft
 } from "react-icons/fa";
 
 // --- COMPONENTE INTERNO PARA O CARD DA ATIVIDADE ---
@@ -265,6 +265,14 @@ function ClassDetailsPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br bg-primary-bg to-[#1a1e22] p-4">
             <div className="max-w-6xl mx-auto">
+                <button 
+                    onClick={() => navigate(-1)} 
+                    className="group mb-6 flex items-center gap-2 text-secondary-text hover:text-accent-teal transition-colors font-bold uppercase tracking-widest text-sm"
+                >
+                    <FaArrowLeft className="group-hover:-translate-x-1 transition-transform" />
+                    Voltar
+                </button>
+
                 <div className="bg-gradient-to-r from-accent-yellow to-[#ff9d00] p-5 rounded-2xl shadow-2xl mb-8">
                     <h1 className="text-3xl md:text-4xl font-bold text-center text-gray-900">
                         Detalhes da Turma: {classDetails.name}

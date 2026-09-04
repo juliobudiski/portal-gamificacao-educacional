@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import TeacherRankingList from '../components/TeacherRankingList'; // Corrigido para o caminho correto
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { FaArrowLeft } from 'react-icons/fa';
 
 /**
  * Componente TeacherRankingPage
@@ -14,6 +16,7 @@ const TeacherRankingPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const { getToken } = useAuth(); // Usando o hook useAuth para pegar a função getToken
+  const navigate = useNavigate();
 
   // Define a URL base da API a partir das variáveis de ambiente
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -59,6 +62,13 @@ const TeacherRankingPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br bg-primary-bg  p-4 md:p-8">
       <div className="max-w-full mx-auto">
+        <button 
+            onClick={() => navigate(-1)} 
+            className="group mb-6 flex items-center gap-2 text-secondary-text hover:text-accent-teal transition-colors font-bold uppercase tracking-widest text-sm"
+        >
+            <FaArrowLeft className="group-hover:-translate-x-1 transition-transform" />
+            Voltar
+        </button>
         <header className="mb-8 text-center">
           <h1 className="text-3xl md:text-4xl font-extrabold text-primary-text">
             Quadro de Honra dos Professores

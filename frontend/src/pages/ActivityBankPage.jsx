@@ -5,7 +5,7 @@ import {
   FaTimes, FaCheckCircle, FaPencilAlt, FaUserEdit, 
   FaGlobeAmericas, FaPlusCircle, FaSearch, FaFilter, 
   FaTrash, FaInbox, FaFolderOpen, FaRocket, FaSpinner,
-  FaFileAlt
+  FaFileAlt, FaArrowLeft
 } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import ConfirmationModal from '../components/ConfirmationModal';
@@ -247,6 +247,16 @@ function ActivityBankPage() {
   return (
     <div className="min-h-screen bg-primary-bg p-4 sm:p-6 lg:p-8 text-primary-text transition-colors duration-300">
       <div className="max-w-7xl mx-auto space-y-8">
+        
+        <button 
+            onClick={() => navigate(-1)} 
+            className="group mb-2 flex items-center gap-2 text-secondary-text hover:text-accent-teal transition-colors font-bold uppercase tracking-widest text-sm"
+        >
+            <FaArrowLeft className="group-hover:-translate-x-1 transition-transform" />
+            Voltar
+        </button>
+
+        {/* Hero Section */}
 
         {/* Hero Header Section */}
         <div className="relative bg-gradient-to-r from-teal-900/40 via-secondary-bg to-purple-900/30 border border-border-color p-6 md:p-8 rounded-3xl shadow-xl overflow-hidden">

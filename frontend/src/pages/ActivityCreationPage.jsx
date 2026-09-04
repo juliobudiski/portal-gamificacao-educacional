@@ -21,7 +21,7 @@ import { useToast } from '../context/ToastContext';
 import ActivityCreationStepper from '../components/activity/ActivityCreationStepper';
 import InitialSelectionPanel from './ActivityCreation/components/InitialSelectionPanel';
 import ActivityCreationHeader from './ActivityCreation/components/ActivityCreationHeader';
-import { FaCheckCircle, FaTimesCircle, FaSync } from 'react-icons/fa';
+import { FaCheckCircle, FaTimesCircle, FaSync, FaArrowLeft } from 'react-icons/fa';
 
 import {
   ACTIVITY_SELECTION_STEPS,
@@ -717,6 +717,13 @@ function ActivityCreationPage({ existingActivity }) {
   return (
     <div className="min-h-screen bg-primary-bg">
       <div className="container mx-auto px-4 py-8">
+        <button 
+            onClick={() => navigate(-1)} 
+            className="group mb-6 flex items-center gap-2 text-secondary-text hover:text-accent-teal transition-colors font-bold uppercase tracking-widest text-sm"
+        >
+            <FaArrowLeft className="group-hover:-translate-x-1 transition-transform" />
+            Sair e Voltar
+        </button>
         {/* Cabeçalho */}
         <ActivityCreationHeader 
           isEditMode={isEditMode}

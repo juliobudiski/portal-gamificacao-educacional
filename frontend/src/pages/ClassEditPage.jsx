@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { FaUserPlus, FaBook, FaTrash, FaSave, FaUsers, FaTasks, FaPlusCircle } from 'react-icons/fa';
+import { FaUserPlus, FaBook, FaTrash, FaSave, FaUsers, FaTasks, FaPlusCircle, FaArrowLeft } from 'react-icons/fa';
 import ConfirmationModal from '../components/ConfirmationModal';
 /**
  * Componente ClassEditPage
@@ -220,6 +220,14 @@ function ClassEditPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br bg-primary-bg  p-4 text-primary-text">
             <div className="max-w-4xl mx-auto">
+                <button 
+                    onClick={() => navigate(-1)} 
+                    className="group mb-6 flex items-center gap-2 text-secondary-text hover:text-accent-teal transition-colors font-bold uppercase tracking-widest text-sm"
+                >
+                    <FaArrowLeft className="group-hover:-translate-x-1 transition-transform" />
+                    Voltar
+                </button>
+
                 <header className="mb-8 text-center bg-gradient-to-r from-[#ffbd30] to-[#ffa000] p-6 rounded-2xl shadow-2xl border-b-4 border-[#ffcc5c]">
                     <h1 className="text-2xl md:text-3xl font-extrabold text-[#2c3135]">
                         Gerenciar Turma

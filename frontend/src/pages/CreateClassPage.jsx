@@ -1,6 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { FaArrowLeft } from 'react-icons/fa';
 
 /**
  * Componente CreateClassPage
@@ -96,6 +97,14 @@ function CreateClassPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#1e2226] to-[#2c3135] py-10 px-4 sm:px-6">
             <div className="max-w-md mx-auto">
+                <button 
+                    onClick={() => navigate(-1)} 
+                    className="group mb-6 flex items-center gap-2 text-secondary-text hover:text-accent-teal transition-colors font-bold uppercase tracking-widest text-sm"
+                >
+                    <FaArrowLeft className="group-hover:-translate-x-1 transition-transform" />
+                    Voltar
+                </button>
+
                 <div className="flex items-center justify-center mb-8">
                     <div className="bg-gradient-to-r from-accent-yellow to-accent-teal p-1 rounded-full">
                         <div className="bg-primary-bg rounded-full p-2">
