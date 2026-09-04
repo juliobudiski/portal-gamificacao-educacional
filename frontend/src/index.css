@@ -1,7 +1,12 @@
-/* frontend/src/index.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  input[type="text"], input[type="email"], input[type="password"], input[type="number"], textarea, select {
+    @apply dark:bg-primary-bg dark:border-border-color dark:text-primary-text dark:focus:ring-accent-teal dark:focus:border-transparent;
+  }
+}
 
 /* Definição de variáveis de cor para o tema claro (padrão).
 */

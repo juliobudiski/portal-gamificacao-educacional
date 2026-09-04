@@ -219,8 +219,7 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
     };
 
     return (
-        <div className="mt-8 p-6 border border-teal-300 dark:border-teal-800 rounded-lg bg-teal-50 dark:bg-teal-900/20">
-
+        <div className="mt-10 bg-secondary-bg/80 backdrop-blur-xl border border-border-color rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] overflow-hidden transition-all duration-300">
             <AIConfigModal
                 isOpen={isAIModalOpen}
                 onClose={() => setIsAIModalOpen(false)}
@@ -241,21 +240,23 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
             />
 
             {/* --- CABEÇALHO COM SELETOR DE TEMA --- */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+            <div className="p-6 md:p-8 border-b border-border-color bg-gradient-to-r from-secondary-bg to-primary-bg/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                 <div>
-                    <h3 className="text-xl font-bold text-teal-800 dark:text-teal-200 mb-1">Editor do Tabuleiro</h3>
-                    <p className="text-sm text-secondary-text">
+                    <h3 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-accent-teal to-accent-yellow mb-2">
+                        Editor do Tabuleiro
+                    </h3>
+                    <p className="text-sm text-secondary-text leading-relaxed max-w-xl">
                         Construa a jornada. Use a IA para conectar a história, mas lembre-se de <strong>validar o conteúdo</strong>.
                     </p>
                 </div>
 
                 {/* Dropdown de Seleção de Tema */}
-                <div className="flex items-center gap-2 bg-secondary-bg p-2 rounded-lg border border-border-color shadow-sm">
-                    <span className="text-xs font-bold text-gray-500 uppercase">Tema:</span>
+                <div className="flex items-center gap-3 bg-primary-bg/80 px-4 py-2.5 rounded-xl border border-border-color shadow-inner">
+                    <span className="text-xs font-bold text-secondary-text uppercase tracking-wider">Tema:</span>
                     <select
                         value={currentThemeId}
                         onChange={(e) => handleThemeChange(e.target.value)}
-                        className="text-sm bg-transparent font-semibold text-primary-text outline-none cursor-pointer min-w-[140px]"
+                        className="text-sm bg-transparent font-extrabold text-primary-text outline-none cursor-pointer min-w-[140px] focus:ring-0"
                     >
                         {Object.values(BOARD_THEMES).map(theme => (
                             <option key={theme.id} value={theme.id}>{theme.name}</option>
@@ -264,18 +265,18 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="p-6 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-10">
                 {/* Coluna da Esquerda: Trilha */}
-                <div>
-                    <div className="flex justify-between items-center mb-4">
-                        <h4 className="flex items-center text-lg font-semibold text-primary-text dark:text-secondary-text">
-                            <FaRoute className="mr-3 text-blue-500" /> Trilha de Progressão
+                <div className="lg:col-span-7 space-y-8">
+                    <div className="flex justify-between items-center">
+                        <h4 className="flex items-center text-xl font-bold text-primary-text">
+                            <FaRoute className="mr-3 text-accent-teal text-2xl" /> Trilha de Progressão
                         </h4>
 
                         {(gamificationDesign.progression_path?.length > 1) && (
                             <button id="tour-editor-ai-assist"
                                 onClick={() => setIsAIModalOpen(true)}
-                                className="flex items-center gap-2 text-xs font-bold bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg shadow-md transition-transform hover:scale-105"
+                                className="flex items-center gap-2 text-xs font-bold bg-gradient-to-r from-accent-purple to-purple-600 hover:from-purple-500 hover:to-purple-700 text-white px-4 py-2.5 rounded-xl shadow-[0_4px_15px_rgba(157,78,221,0.4)] transition-transform hover:-translate-y-0.5"
                                 title="Assistente de Criação Inteligente"
                             >
                                 <FaMagic /> Assistente de Conteúdo
@@ -283,10 +284,9 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
                         )}
                     </div>
 
-                    <div className="p-4 bg-secondary-bg/50 dark:bg-primary-bg/30 rounded-lg min-h-[300px]">
-
+                    <div className="p-5 bg-primary-bg/50 rounded-2xl border border-border-color shadow-inner">
                         {/* --- BOTÕES DE ADICIONAR --- */}
-                        <div className="flex flex-wrap gap-3 mb-6">
+                        <div className="flex flex-wrap gap-3 mb-8">
                             {Object.entries(elementConfig.path).map(([type, config]) => {
                                 const currentPath = gamificationDesign?.progression_path || [];
                                 const count = currentPath.filter(s => s.type === type).length;
@@ -299,24 +299,24 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
                                         id={`tour-editor-add-${type}`}
                                         onClick={() => !isDisabled && addPathStep(type)}
                                         disabled={isDisabled}
-                                        className={`relative flex items-center pl-3 pr-4 py-2 text-sm border rounded-lg transition-all shadow-sm group
+                                        className={`relative flex items-center px-4 py-2.5 text-sm border rounded-xl transition-all shadow-sm group
                                             ${isDisabled
-                                                ? 'bg-gray-100 border-gray-200 text-secondary-text cursor-not-allowed opacity-60'
-                                                : 'bg-secondary-bg border-blue-200 dark:border-blue-900 hover:bg-blue-50 dark:hover:bg-hover-bg-color0 text-gray-700 dark:text-gray-200'
+                                                ? 'bg-secondary-bg/50 border-border-color/50 text-secondary-text cursor-not-allowed opacity-50'
+                                                : 'bg-secondary-bg border-border-color hover:border-accent-teal/50 hover:bg-hover-bg-color hover:-translate-y-0.5 hover:shadow-md text-primary-text'
                                             }
                                         `}
                                         title={isDisabled ? "Adicione uma Narrativa antes de incluir um Quiz." : config.name}
                                     >
                                         <img src={config.icon} alt="" className={`w-5 h-5 mr-2 ${isDisabled ? 'grayscale opacity-50' : ''}`} />
-                                        <span className="font-medium">{config.name}</span>
+                                        <span className="font-bold tracking-wide">{config.name}</span>
                                         {count > 0 && (
-                                            <span className={`ml-2 text-xs font-bold px-2 py-0.5 rounded-full ${isDisabled ? 'bg-gray-200 text-gray-500' : 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'}`}>
+                                            <span className={`ml-3 text-xs font-extrabold px-2 py-0.5 rounded-lg ${isDisabled ? 'bg-primary-bg text-secondary-text' : 'bg-accent-teal/20 text-accent-teal'}`}>
                                                 {count}
                                             </span>
                                         )}
                                         {!isDisabled && (
-                                            <span className="ml-2 text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <FaPlus size={10} />
+                                            <span className="ml-2 text-accent-teal opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <FaPlus size={12} />
                                             </span>
                                         )}
                                     </button>
@@ -324,85 +324,91 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
                             })}
                         </div>
 
-                        {/* --- LISTA DE PASSOS (TRILHA) --- */}
-                        <div className="space-y-3" id="tour-editor-canvas">
+                        {/* --- LISTA DE PASSOS (TRILHA EM TIMELINE) --- */}
+                        <div className="relative pl-6 space-y-8 before:content-[''] before:absolute before:left-[43px] before:top-6 before:bottom-6 before:w-0.5 before:bg-border-color" id="tour-editor-canvas">
                             {(gamificationDesign.progression_path || []).map((step, index) => {
-                                // Verifica se é um rascunho da IA
                                 const isDraft = step.isDraft === true;
                                 const hasContent = step.content && Object.keys(step.content).length > 0;
 
                                 return (
-                                    <div
-                                        key={step.id}
-                                        className={`flex items-center p-3 rounded-md shadow-sm border transition-all group
-                                            ${isDraft
-                                                ? 'bg-yellow-50 dark:bg-yellow-900/10 border-yellow-300 dark:border-yellow-700'
-                                                : 'bg-secondary-bg dark:bg-primary-bg border-transparent hover:border-blue-300'
-                                            }`}
-                                    >
-                                        <span className="font-bold text-secondary-text mr-3 bg-gray-200 dark:bg-hover-bg-color0 w-6 h-6 flex items-center justify-center rounded-full text-xs">{index + 1}</span>
-                                        <img src={elementConfig.path[step.type]?.icon} alt="" className="w-8 h-8 mr-3" />
-
-                                        <div className="flex-grow">
-                                            <div className="flex items-center gap-2">
-                                                <p className="font-semibold text-primary-text text-sm">{elementConfig.path[step.type]?.name}</p>
-
-                                                {/* --- BADGES DE STATUS --- */}
-                                                {isDraft ? (
-                                                    <span className="flex items-center gap-1 text-[10px] bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 px-2 py-0.5 rounded font-bold border border-yellow-200 dark:border-yellow-800">
-                                                        <FaRobot size={10} /> Rascunho Automático
-                                                    </span>
-                                                ) : (
-                                                    hasContent && (
-                                                        <span className="flex items-center gap-1 text-[10px] bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 px-2 py-0.5 rounded font-bold border border-green-200 dark:border-green-800">
-                                                            <FaCheckDouble size={10} /> Validado
-                                                        </span>
-                                                    )
-                                                )}
-                                            </div>
-
-                                            <div className="flex gap-2 text-[10px] uppercase font-bold tracking-wide mt-1">
-                                                <span className={`${step.isMandatory ? 'text-green-600' : 'text-yellow-600'}`}>
-                                                    {step.isMandatory ? 'Obrigatório' : 'Opcional'}
-                                                </span>
-
-                                                {/* Mensagem de ação necessária se for Draft */}
-                                                {isDraft && (
-                                                    <span className="text-yellow-600 dark:text-yellow-400 flex items-center gap-1 animate-pulse">
-                                                        <FaExclamationTriangle size={10} /> Requer Revisão
-                                                    </span>
-                                                )}
-                                            </div>
+                                    <div key={step.id} className="relative flex items-start group">
+                                        {/* Número (Timeline Dot) */}
+                                        <div className={`absolute -left-6 w-10 h-10 rounded-xl flex items-center justify-center border-4 border-primary-bg z-10 transition-colors shadow-sm
+                                            ${isDraft ? 'bg-accent-yellow text-gray-900' : 'bg-accent-teal text-gray-900'}`}
+                                        >
+                                            <span className="font-extrabold text-sm">{index + 1}</span>
                                         </div>
 
-                                        <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                                            <button onClick={() => toggleMandatory(step.id)} className="p-2 hover:bg-gray-200 dark:hover:bg-hover-bg-color0 rounded-lg text-gray-500">
-                                                {step.isMandatory ? <FaToggleOn className="text-green-500" /> : <FaToggleOff />}
-                                            </button>
+                                        {/* Card do Passo */}
+                                        <div className={`ml-10 flex-grow p-5 rounded-2xl border transition-all hover:shadow-lg
+                                            ${isDraft
+                                                ? 'bg-accent-yellow/5 border-accent-yellow/30 hover:border-accent-yellow/60'
+                                                : 'bg-secondary-bg border-border-color hover:border-accent-teal/50'
+                                            }`}
+                                        >
+                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                                <div className="flex items-center">
+                                                    <div className="w-12 h-12 rounded-xl bg-primary-bg flex items-center justify-center mr-4 shadow-inner border border-border-color">
+                                                        <img src={elementConfig.path[step.type]?.icon} alt="" className="w-7 h-7" />
+                                                    </div>
+                                                    <div>
+                                                        <h5 className="font-extrabold text-primary-text text-base mb-1">{elementConfig.path[step.type]?.name}</h5>
+                                                        
+                                                        {/* --- BADGES E STATUS --- */}
+                                                        <div className="flex flex-wrap items-center gap-2 mt-1">
+                                                            {isDraft ? (
+                                                                <span className="flex items-center gap-1 text-[10px] bg-accent-yellow/20 text-accent-yellow px-2 py-1 rounded-md font-bold uppercase tracking-wider">
+                                                                    <FaRobot size={10} /> Rascunho
+                                                                </span>
+                                                            ) : (
+                                                                hasContent && (
+                                                                    <span className="flex items-center gap-1 text-[10px] bg-success/20 text-success px-2 py-1 rounded-md font-bold uppercase tracking-wider">
+                                                                        <FaCheckDouble size={10} /> Validado
+                                                                    </span>
+                                                                )
+                                                            )}
+                                                            <span className={`text-[10px] uppercase font-bold tracking-wider ${step.isMandatory ? 'text-success' : 'text-accent-yellow'}`}>
+                                                                {step.isMandatory ? 'Obrigatório' : 'Opcional'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
 
-                                            {/* Botão de Edição/Validação */}
-                                            <button
-                                                onClick={() => handleHumanValidation(step)}
-                                                className={`p-2 rounded-lg transition-colors ${isDraft
-                                                    ? 'bg-yellow-100 hover:bg-yellow-200 text-yellow-700 animate-bounce'
-                                                    : 'hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-500'
-                                                    }`}
-                                                title={isDraft ? "Revisar e Validar Conteúdo" : "Editar Conteúdo"}
-                                            >
-                                                <FaPen />
-                                            </button>
-
-                                            <button onClick={() => removePathStep(step.id)} className="p-2 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg text-red-500" title="Remover">
-                                                <FaTrash />
-                                            </button>
+                                                {/* Ações */}
+                                                <div className="flex items-center gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                                    <button onClick={() => toggleMandatory(step.id)} className="p-2.5 bg-primary-bg hover:bg-hover-bg-color rounded-xl text-secondary-text transition-colors border border-transparent hover:border-border-color" title="Alternar Obrigatoriedade">
+                                                        {step.isMandatory ? <FaToggleOn className="text-success text-xl" /> : <FaToggleOff className="text-xl" />}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleHumanValidation(step)}
+                                                        className={`p-2.5 rounded-xl transition-all border
+                                                            ${isDraft
+                                                            ? 'bg-accent-yellow/20 border-accent-yellow/40 hover:bg-accent-yellow/30 text-accent-yellow animate-pulse'
+                                                            : 'bg-accent-teal/10 border-accent-teal/20 hover:bg-accent-teal/20 text-accent-teal'
+                                                            }`}
+                                                        title={isDraft ? "Revisar e Validar" : "Editar Conteúdo"}
+                                                    >
+                                                        <FaPen />
+                                                    </button>
+                                                    <button onClick={() => removePathStep(step.id)} className="p-2.5 bg-danger/10 hover:bg-danger/20 border border-danger/20 hover:border-danger/40 rounded-xl text-danger transition-colors" title="Remover Passo">
+                                                        <FaTrash />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            
+                                            {isDraft && (
+                                                <div className="mt-3 text-xs text-accent-yellow font-medium flex items-center gap-1">
+                                                    <FaExclamationTriangle size={12} /> Clique no lápis para revisar o conteúdo sugerido.
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 );
                             })}
                             {(!gamificationDesign.progression_path || gamificationDesign.progression_path.length === 0) && (
-                                <div className="text-center py-10 text-secondary-text border-2 border-dashed border-border-color rounded-lg">
-                                    <p>A trilha está vazia.</p>
-                                    <p className="text-xs mt-1">Adicione passos acima para começar.</p>
+                                <div className="text-center py-12 bg-secondary-bg border-2 border-dashed border-border-color rounded-2xl">
+                                    <p className="text-secondary-text font-bold text-lg mb-2">Sua trilha está vazia.</p>
+                                    <p className="text-sm text-secondary-text/70">Clique nos botões acima para iniciar a jornada.</p>
                                 </div>
                             )}
                         </div>
@@ -410,28 +416,49 @@ function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditConte
                 </div>
 
                 {/* Coluna da Direita: Hub */}
-                <div>
-                    <h4 className="flex items-center text-lg font-semibold mb-4 text-primary-text dark:text-secondary-text">
-                        <FaCity className="mr-3 text-yellow-500" /> Hub e Elementos
+                <div className="lg:col-span-5 space-y-6">
+                    <h4 className="flex items-center text-xl font-bold text-primary-text mb-2">
+                        <FaCity className="mr-3 text-accent-yellow text-2xl" /> Elementos do Hub
                     </h4>
-                    <div className="p-4 bg-secondary-bg/50 dark:bg-primary-bg/30 rounded-lg">
-                        <p className="text-xs text-secondary-text mb-4">Ative os pontos de interesse da vila.</p>
-                        <div className="space-y-3">
-                            {(gamificationDesign.hub_elements || [])
-                                .filter(el => el.type !== 'mission')
-                                .map((element) => {
-                                    const config = elementConfig.hub[element.type];
-                                    if (!config) return null;
-                                    return (
-                                        <div key={element.id} onClick={() => toggleHubElement(element.type)} className="flex items-center p-3 bg-secondary-bg dark:bg-primary-bg rounded-lg shadow-sm cursor-pointer hover:bg-primary-bg dark:hover:bg-hover-bg-color0 transition-colors">
-                                            <img src={config.icon} alt={config.name} className="w-8 h-8 mr-3" />
-                                            <span className="flex-grow font-medium text-primary-text text-sm">{config.name}</span>
-                                            {element.enabled ? <FaToggleOn className="text-green-500 h-6 w-6" /> : <FaToggleOff className="text-secondary-text h-6 w-6" />}
+                    <p className="text-sm text-secondary-text leading-relaxed">
+                        Ative pontos de interesse na vila (como Loja ou Ranking) para os jogadores interagirem entre os passos da trilha.
+                    </p>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+                        {(gamificationDesign.hub_elements || [])
+                            .filter(el => el.type !== 'mission')
+                            .map((element) => {
+                                const config = elementConfig.hub[element.type];
+                                if (!config) return null;
+                                return (
+                                    <div 
+                                        key={element.id} 
+                                        onClick={() => toggleHubElement(element.type)} 
+                                        className={`flex flex-col items-center justify-center p-6 rounded-2xl border cursor-pointer transition-all duration-300 transform hover:-translate-y-1 text-center
+                                            ${element.enabled 
+                                                ? 'bg-gradient-to-br from-accent-teal/10 to-primary-bg border-accent-teal/50 shadow-[0_4px_20px_rgba(20,184,166,0.15)]' 
+                                                : 'bg-primary-bg border-border-color hover:border-accent-teal/30 hover:shadow-md'
+                                            }`}
+                                    >
+                                        <div className="relative mb-3">
+                                            <img src={config.icon} alt={config.name} className={`w-12 h-12 transition-all ${element.enabled ? 'scale-110 drop-shadow-md' : 'opacity-70 grayscale'}`} />
+                                            {element.enabled && (
+                                                <div className="absolute -top-1 -right-1 bg-success text-white rounded-full p-0.5 border-2 border-primary-bg">
+                                                    <FaToggleOn size={12} />
+                                                </div>
+                                            )}
                                         </div>
-                                    );
-                                })}
-                            {(!gamificationDesign.hub_elements || gamificationDesign.hub_elements.length === 0) && <p className="text-center text-sm text-secondary-text py-4">Nenhum elemento selecionado na Etapa 5.</p>}
-                        </div>
+                                        <span className={`font-extrabold text-sm ${element.enabled ? 'text-accent-teal' : 'text-secondary-text'}`}>
+                                            {config.name}
+                                        </span>
+                                    </div>
+                                );
+                            })}
+                        {(!gamificationDesign.hub_elements || gamificationDesign.hub_elements.length === 0) && (
+                            <div className="col-span-1 sm:col-span-2 text-center py-8 text-sm text-secondary-text border border-dashed border-border-color rounded-2xl bg-primary-bg/50">
+                                Nenhum elemento extra selecionado na Etapa 5.
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

@@ -41,7 +41,7 @@ const ActivityCreationStepper = ({ currentStep, maxReachedStep, onStepClick, isE
                 {/* Área Scrollável */}
                 <div
                     ref={scrollRef}
-                    className="overflow-x-auto pb-6 hide-scrollbar px-4"
+                    className="overflow-x-auto pb-12 hide-scrollbar px-4"
                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                 >
                     <div className="relative flex items-center justify-between min-w-[700px] lg:min-w-0 mt-4">
