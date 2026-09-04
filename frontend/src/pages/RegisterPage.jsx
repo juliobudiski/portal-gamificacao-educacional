@@ -248,219 +248,250 @@ Professora Orientadora: Prof.ª Dr.ª Aline Maria Malachini Miotto Amaral - ammm
         />
       )}
 
-      <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br bg-primary-bg p-4">
-        {/* --- CORREÇÃO: Borda ciente do tema --- */}
-        <div className="w-full max-w-md bg-secondary-bg rounded-2xl shadow-2xl overflow-hidden border border-border-color">
-          <div className="bg-gradient-to-r from-[#69e8cb] to-[#9570d9] p-6 text-center">
-            <div className="bg-secondary-bg/20 backdrop-blur-sm rounded-full p-3 inline-block mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-            </div>
-            {/* --- CORREÇÃO: Título com texto escuro fixo --- */}
-            <h2 className="text-3xl font-extrabold text-gray-900">Crie Sua Conta</h2>
-            <p className="text-gray-800/90 mt-2">Transforme sua experiência de aprendizado</p>
-          </div>
+      <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-primary-bg p-4 py-12 transition-colors duration-300">
+        
+        {/* Background Animado (Blobs) */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+          <div className="absolute top-[-10%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-accent-yellow/20 blur-[100px] animate-blob"></div>
+          <div className="absolute bottom-[-10%] left-[-10%] w-[40vw] h-[40vw] rounded-full bg-accent-teal/20 blur-[100px] animate-blob animation-delay-2000"></div>
+          <div className="absolute top-[40%] left-[20%] w-[30vw] h-[30vw] rounded-full bg-accent-purple/10 blur-[80px] animate-blob animation-delay-4000"></div>
+        </div>
 
-          <div className="p-8">
-            {/* --- CORREÇÃO: Mensagens de feedback cientes do tema --- */}
-            {error && (
-              <div className="bg-danger-bg border border-danger text-danger px-4 py-3 rounded-xl mb-6 flex items-start" role="alert">
-                <svg className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
-                <div><strong className="font-bold">Erro!</strong><span className="block"> {error}</span></div>
+        <div className="w-full max-w-xl relative z-10">
+          <div className="bg-secondary-bg/80 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-border-color/50 transform transition-all hover:border-accent-yellow/30">
+            
+            {/* Cabeçalho */}
+            <div className="p-8 text-center border-b border-border-color/30">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-accent-teal to-accent-purple mb-6 shadow-lg transform hover:scale-110 transition-transform duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-primary-bg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                </svg>
               </div>
-            )}
-            {success && (
-              <div className="bg-success-bg border border-success text-success px-4 py-3 rounded-xl mb-6 flex items-start" role="alert">
-                <svg className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-                <div><strong className="font-bold">Sucesso!</strong><span className="block"> {success}</span></div>
-              </div>
-            )}
-
-            {/* ===== NOVA SEÇÃO SUPERIOR AGRUPADA ===== */}
-            <div className="space-y-6 mb-6">
-              {/* 1. Seleção de Perfil */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-secondary-text mb-3">Eu sou um...</label>
-                <div className="grid grid-cols-2 gap-4">
-                  <div
-                    // --- CORREÇÃO: Borda ciente do tema ---
-                    className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 ${selectedRole === 'aluno' ? 'border-accent-teal bg-accent-teal/10 shadow-lg' : 'border-border-color hover:border-accent-teal/50'}`}
-                    onClick={() => setSelectedRole('aluno')}
-                  >
-                    <div className="flex items-center">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${selectedRole === 'aluno' ? 'bg-accent-teal text-gray-900' : 'bg-primary-bg text-accent-teal'}`}>
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5zm0 0v6" /></svg>
-                      </div>
-                      <span className="font-medium text-secondary-text">Aluno</span>
-                    </div>
-                    {selectedRole === 'aluno' && (<div className="absolute top-2 right-2"><svg className="w-5 h-5 text-accent-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>)}
-                  </div>
-                  <div
-                    // --- CORREÇÃO: Borda ciente do tema ---
-                    className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 ${selectedRole === 'professor' ? 'border-accent-yellow bg-accent-yellow/10 shadow-lg' : 'border-border-color hover:border-accent-yellow/50'}`}
-                    onClick={() => setSelectedRole('professor')}
-                  >
-                    <div className="flex items-center">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${selectedRole === 'professor' ? 'bg-accent-yellow text-gray-900' : 'bg-primary-bg text-accent-yellow'}`}>
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14v6m0 0v6m0-6h6m-6 0H6" /></svg>
-                      </div>
-                      <span className="font-medium text-secondary-text">Professor</span>
-                    </div>
-                    {selectedRole === 'professor' && (<div className="absolute top-2 right-2"><svg className="w-5 h-5 text-accent-yellow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>)}
-                  </div>
-                </div>
-              </div>
-
-              {/* 2. Termos de Uso */}
-              {!termsAccepted ? (
-                <button
-                  type="button"
-                  onClick={() => setIsTermsModalOpen(true)}
-                  // --- CORREÇÃO: Botão de termos ciente do tema ---
-                  className="w-full text-center py-3 px-4 rounded-xl border-2 border-solid border-accent-teal/60 bg-accent-teal/10 text-accent-teal hover:border-accent-teal hover:bg-accent-teal/20 transition-all duration-300 flex items-center justify-center font-semibold"
-                >
-                  Clique para ler e aceitar os Termos de Uso
-                </button>
-              ) : (
-                <div
-                  // --- CORREÇÃO: Botão de termos aceitos ciente do tema ---
-                  className="w-full text-center py-3 px-4 rounded-xl border-2 border-success bg-success-bg text-success flex items-center justify-center cursor-pointer"
-                  onClick={() => setIsTermsModalOpen(true)} // Permite reler os termos
-                >
-                  <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-                  Termos de Uso aceitos!
-                </div>
-              )}
-
-              {/* 3. Botão do Google 
-              <div className="text-center">
-                <p className="text-secondary-text text-sm mb-2">Ou cadastre-se rapidamente com o Google:</p>
-                <div ref={googleButtonRef} className="w-full flex justify-center bg-secondary-bg rounded-xl overflow-hidden hover:shadow-lg transition-shadow duration-300" />
-                {!googleLoaded && (<button className="w-full py-3 px-4 bg-gray-200 rounded-xl animate-pulse"><div className="h-6 bg-gray-300 rounded w-3/4 mx-auto"></div></button>)}
-              </div>*/}
-            </div>
-            {/*
-            <div className="relative my-8">
-              {/* --- CORREÇÃO: Borda ciente do tema --- *
-              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border-color"></div></div>
-              <div className="relative flex justify-center"><span className="px-3 bg-secondary-bg text-secondary-text text-sm">Preencha seus dados</span></div>
-            </div>
-*/}
-            <form onSubmit={handleRegister} className="space-y-6">
-              <div className="space-y-2">
-                <label htmlFor="name" className="block text-sm font-medium text-secondary-text">Nome Completo</label>
-                {/* --- CORREÇÃO: Borda ciente do tema --- */}
-                <div className="relative"><input type="text" id="name" name="name" required value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-3 bg-primary-bg border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-yellow text-primary-text placeholder-gray-500 transition-all duration-200" placeholder="Seu nome completo" /><div className="absolute inset-y-0 right-0 flex items-center pr-3"><svg className="w-5 h-5 text-secondary-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg></div></div>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="email" className="block text-sm font-medium text-secondary-text">Email</label>
-                {/* --- CORREÇÃO: Borda ciente do tema --- */}
-                <div className="relative"><input type="email" id="email" name="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-3 bg-primary-bg border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-yellow text-primary-text placeholder-gray-500 transition-all duration-200" placeholder="seu@email.com" /><div className="absolute inset-y-0 right-0 flex items-center pr-3"><svg className="w-5 h-5 text-secondary-text" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" /><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" /></svg></div></div>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="password" className="block text-sm font-medium text-secondary-text">Senha</label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    id="password"
-                    name="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    // --- CORREÇÃO: Borda ciente do tema ---
-                    className="w-full px-4 py-3 bg-primary-bg border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-yellow text-primary-text placeholder-gray-500"
-                    placeholder="********"
-                  />
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-secondary-text focus:outline-none">
-                      {showPassword ? <FaEyeSlash /> : <FaEye />}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="confirm-password" className="block text-sm font-medium text-secondary-text">Confirme a Senha</label>
-                <div className="relative">
-                  <input
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    id="confirm-password"
-                    name="confirm-password"
-                    required
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    // --- CORREÇÃO: Borda ciente do tema ---
-                    className="w-full px-4 py-3 bg-primary-bg border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-yellow text-primary-text placeholder-gray-500"
-                    placeholder="********"
-                  />
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                    <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="text-secondary-text focus:outline-none">
-                      {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Campo Código Institucional para Professores */}
-              {selectedRole === 'professor' && (
-                <div className="space-y-2 animate-fade-in">
-                  <label htmlFor="accessCode" className="block text-sm font-bold text-accent-yellow">
-                    Código de Acesso Institucional
-                  </label>
-                  <p className="text-xs text-secondary-text mb-1">
-                    Insira o código fornecido pela coordenação para validar seu perfil de professor.
-                  </p>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      id="accessCode"
-                      name="accessCode"
-                      required
-                      value={accessCode}
-                      onChange={(e) => setAccessCode(e.target.value)}
-                      className="w-full px-4 py-3 bg-accent-yellow/10 border-2 border-accent-yellow/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-yellow text-primary-text placeholder-gray-500 transition-all duration-200"
-                      placeholder="Ex: GAMIFICA_PROF_2026"
-                    />
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                      <svg className="w-5 h-5 text-accent-yellow" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <Link
-                      to={`/contact?subject=${encodeURIComponent("Solicitação de Código Institucional - Professor")}&body=${encodeURIComponent("Olá,\n\nGostaria de solicitar o código de acesso institucional para criar minha conta como professor no Portal GamificaEdu.\n\n**Dados do Professor:**\nNome Completo: \nInstituição de Ensino: \nDisciplina Ministrada: \n\nAguardo retorno. Obrigado!")}`}
-                      className="text-xs font-semibold text-accent-yellow hover:text-yellow-600 hover:underline transition-colors"
-                    >
-                      Não tem o código? Solicite aqui.
-                    </Link>
-                  </div>
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={!termsAccepted}
-                // --- CORREÇÃO: Texto do botão escuro ---
-                className="w-full flex justify-center items-center py-3 px-4 rounded-xl shadow-lg text-lg font-bold text-gray-900 bg-gradient-to-r from-accent-yellow to-[#ffa000] hover:from-[#ffcc5c] hover:to-[#ffb140] transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-yellow disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Cadastrar
-                <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-              </button>
-            </form>
-
-            <div className="mt-8 text-center">
-              <p className="text-sm text-secondary-text">
-                Já tem uma conta?{' '}
-                {/* --- CORREÇÃO: Link ciente do tema --- */}
-                <Link to="/login" className="font-medium text-accent-teal hover:text-accent-yellow transition-colors duration-200">Faça login aqui</Link>
+              <h2 className="text-3xl font-extrabold text-primary-text tracking-tight mb-2">
+                Crie Sua Conta
+              </h2>
+              <p className="text-secondary-text text-sm">
+                Junte-se a nós e transforme a experiência de aprendizado
               </p>
             </div>
+
+            <div className="p-8">
+              {/* Mensagens de feedback */}
+              {error && (
+                <div className="bg-danger-bg/50 border border-danger/50 text-danger px-4 py-3 rounded-xl mb-6 flex items-start animate-fade-in backdrop-blur-sm" role="alert">
+                  <svg className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                  <div className="text-sm">
+                    <strong className="font-bold block mb-0.5">Erro no Cadastro</strong>
+                    <span>{error}</span>
+                  </div>
+                </div>
+              )}
+              {success && (
+                <div className="bg-success-bg/50 border border-success/50 text-success px-4 py-3 rounded-xl mb-6 flex items-start animate-fade-in backdrop-blur-sm" role="alert">
+                  <svg className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <div className="text-sm">
+                    <strong className="font-bold block mb-0.5">Sucesso!</strong>
+                    <span>{success}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* SELEÇÃO DE PERFIL */}
+              <div className="space-y-6 mb-8">
+                <div className="space-y-3">
+                  <label className="block text-sm font-semibold text-secondary-text">Eu sou um...</label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div
+                      className={`relative p-5 rounded-2xl border-2 cursor-pointer transition-all duration-300 group overflow-hidden ${selectedRole === 'aluno' ? 'border-accent-teal bg-accent-teal/10 shadow-[0_0_15px_rgba(105,232,203,0.15)]' : 'border-border-color bg-primary-bg/30 hover:border-accent-teal/50'}`}
+                      onClick={() => setSelectedRole('aluno')}
+                    >
+                      {selectedRole === 'aluno' && <div className="absolute top-0 right-0 w-16 h-16 bg-accent-teal/20 rounded-bl-full -mr-2 -mt-2 blur-md"></div>}
+                      <div className="flex flex-col items-center text-center relative z-10">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-colors ${selectedRole === 'aluno' ? 'bg-accent-teal text-primary-bg' : 'bg-secondary-bg text-accent-teal group-hover:bg-accent-teal/20'}`}>
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 14l9-5-9-5-9 5 9 5z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 14l9-5-9-5-9 5 9 5zm0 0v6" /></svg>
+                        </div>
+                        <span className={`font-bold text-lg ${selectedRole === 'aluno' ? 'text-accent-teal' : 'text-primary-text'}`}>Aluno</span>
+                      </div>
+                      {selectedRole === 'aluno' && (<div className="absolute top-3 right-3"><svg className="w-5 h-5 text-accent-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg></div>)}
+                    </div>
+
+                    <div
+                      className={`relative p-5 rounded-2xl border-2 cursor-pointer transition-all duration-300 group overflow-hidden ${selectedRole === 'professor' ? 'border-accent-yellow bg-accent-yellow/10 shadow-[0_0_15px_rgba(255,189,48,0.15)]' : 'border-border-color bg-primary-bg/30 hover:border-accent-yellow/50'}`}
+                      onClick={() => setSelectedRole('professor')}
+                    >
+                      {selectedRole === 'professor' && <div className="absolute top-0 right-0 w-16 h-16 bg-accent-yellow/20 rounded-bl-full -mr-2 -mt-2 blur-md"></div>}
+                      <div className="flex flex-col items-center text-center relative z-10">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-colors ${selectedRole === 'professor' ? 'bg-accent-yellow text-primary-bg' : 'bg-secondary-bg text-accent-yellow group-hover:bg-accent-yellow/20'}`}>
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 14l9-5-9-5-9 5 9 5z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 14v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                        </div>
+                        <span className={`font-bold text-lg ${selectedRole === 'professor' ? 'text-accent-yellow' : 'text-primary-text'}`}>Professor</span>
+                      </div>
+                      {selectedRole === 'professor' && (<div className="absolute top-3 right-3"><svg className="w-5 h-5 text-accent-yellow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg></div>)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Termos de Uso */}
+                {!termsAccepted ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsTermsModalOpen(true)}
+                    className="w-full text-center py-3.5 px-4 rounded-xl border-2 border-dashed border-accent-purple/50 bg-accent-purple/5 text-accent-purple hover:border-accent-purple hover:bg-accent-purple/10 transition-all duration-300 flex items-center justify-center font-semibold group"
+                  >
+                    <svg className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    Ler e aceitar os Termos de Uso
+                  </button>
+                ) : (
+                  <div
+                    className="w-full text-center py-3.5 px-4 rounded-xl border-2 border-success bg-success-bg/30 text-success flex items-center justify-center cursor-pointer hover:bg-success-bg/50 transition-colors"
+                    onClick={() => setIsTermsModalOpen(true)}
+                  >
+                    <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                    <span className="font-bold">Termos de Uso aceitos!</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Formulário Principal */}
+              <form onSubmit={handleRegister} className="space-y-5">
+                <div className="grid grid-cols-1 gap-5">
+                  <div className="space-y-1.5 group">
+                    <label htmlFor="name" className="block text-sm font-semibold text-secondary-text group-focus-within:text-accent-teal transition-colors">Nome Completo</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                        <svg className="w-5 h-5 text-gray-500 group-focus-within:text-accent-teal transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                      </div>
+                      <input type="text" id="name" name="name" required value={name} onChange={(e) => setName(e.target.value)} className="w-full pl-11 pr-4 py-3.5 bg-primary-bg/50 border border-border-color rounded-xl focus:outline-none focus:border-accent-teal focus:ring-1 focus:ring-accent-teal text-primary-text placeholder-gray-500 transition-all duration-300 shadow-sm" placeholder="Seu nome completo" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5 group">
+                    <label htmlFor="email" className="block text-sm font-semibold text-secondary-text group-focus-within:text-accent-teal transition-colors">Email Institucional/Pessoal</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                        <svg className="w-5 h-5 text-gray-500 group-focus-within:text-accent-teal transition-colors" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" /><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" /></svg>
+                      </div>
+                      <input type="email" id="email" name="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full pl-11 pr-4 py-3.5 bg-primary-bg/50 border border-border-color rounded-xl focus:outline-none focus:border-accent-teal focus:ring-1 focus:ring-accent-teal text-primary-text placeholder-gray-500 transition-all duration-300 shadow-sm" placeholder="seu@email.com" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="space-y-1.5 group">
+                    <label htmlFor="password" className="block text-sm font-semibold text-secondary-text group-focus-within:text-accent-teal transition-colors">Senha</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                        <svg className="w-5 h-5 text-gray-500 group-focus-within:text-accent-teal transition-colors" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" /></svg>
+                      </div>
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        id="password"
+                        name="password"
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full pl-11 pr-12 py-3.5 bg-primary-bg/50 border border-border-color rounded-xl focus:outline-none focus:border-accent-teal focus:ring-1 focus:ring-accent-teal text-primary-text placeholder-gray-500 transition-all duration-300 shadow-sm"
+                        placeholder="********"
+                      />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-gray-500 hover:text-accent-teal transition-colors focus:outline-none p-2 rounded-lg hover:bg-secondary-bg">
+                          {showPassword ? <FaEyeSlash className="w-4 h-4"/> : <FaEye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5 group">
+                    <label htmlFor="confirm-password" className="block text-sm font-semibold text-secondary-text group-focus-within:text-accent-teal transition-colors">Confirmar</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                        <svg className="w-5 h-5 text-gray-500 group-focus-within:text-accent-teal transition-colors" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" /></svg>
+                      </div>
+                      <input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        id="confirm-password"
+                        name="confirm-password"
+                        required
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="w-full pl-11 pr-12 py-3.5 bg-primary-bg/50 border border-border-color rounded-xl focus:outline-none focus:border-accent-teal focus:ring-1 focus:ring-accent-teal text-primary-text placeholder-gray-500 transition-all duration-300 shadow-sm"
+                        placeholder="********"
+                      />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                        <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="text-gray-500 hover:text-accent-teal transition-colors focus:outline-none p-2 rounded-lg hover:bg-secondary-bg">
+                          {showConfirmPassword ? <FaEyeSlash className="w-4 h-4"/> : <FaEye className="w-4 h-4"/>}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Código Institucional - Apenas Professor */}
+                {selectedRole === 'professor' && (
+                  <div className="space-y-2 pt-2 animate-fade-in">
+                    <div className="bg-accent-yellow/5 border border-accent-yellow/30 p-4 rounded-xl">
+                      <label htmlFor="accessCode" className="block text-sm font-bold text-accent-yellow mb-1">
+                        Código Institucional (Obrigatório)
+                      </label>
+                      <p className="text-xs text-secondary-text mb-3">
+                        Para criar uma conta de educador, é necessário o código fornecido pela coordenação.
+                      </p>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                          <svg className="w-5 h-5 text-accent-yellow" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <input
+                          type="text"
+                          id="accessCode"
+                          name="accessCode"
+                          required
+                          value={accessCode}
+                          onChange={(e) => setAccessCode(e.target.value)}
+                          className="w-full pl-11 pr-4 py-3 bg-secondary-bg border-2 border-accent-yellow/40 rounded-lg focus:outline-none focus:border-accent-yellow focus:ring-1 focus:ring-accent-yellow text-primary-text placeholder-gray-500 font-mono tracking-wider transition-all shadow-inner"
+                          placeholder="EX: GAMIFICA2026"
+                        />
+                      </div>
+                      <div className="mt-3 text-right">
+                        <Link
+                          to={`/contact?subject=${encodeURIComponent("Solicitação de Código Institucional - Professor")}`}
+                          className="text-xs font-semibold text-accent-yellow hover:text-[#ffcc5c] hover:underline transition-colors"
+                        >
+                          Solicitar um código
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="pt-4">
+                  <button
+                    type="submit"
+                    disabled={!termsAccepted}
+                    className="w-full flex justify-center items-center py-4 px-4 rounded-xl shadow-lg text-lg font-bold text-primary-bg bg-gradient-to-r from-accent-teal to-accent-purple hover:brightness-110 transition-all duration-300 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-teal disabled:opacity-50 disabled:cursor-not-allowed group"
+                  >
+                    <span>Finalizar Cadastro</span>
+                    <svg className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                  </button>
+                </div>
+              </form>
+
+              <div className="mt-8 pt-6 border-t border-border-color/30 text-center">
+                <p className="text-sm text-secondary-text">
+                  Já tem uma conta?{' '}
+                  <Link to="/login" className="font-bold text-accent-yellow hover:text-accent-teal transition-colors duration-200">Faça login aqui</Link>
+                </p>
+              </div>
+            </div>
           </div>
 
-          <div className="bg-primary-bg p-4 text-center border-t border-border-color">
-            <p className="text-xs text-secondary-text">© {new Date().getFullYear()} Portal de Gamificação Educacional. Todos os direitos reservados.</p>
+          <div className="mt-6 text-center">
+            <p className="text-xs text-secondary-text/70">© {new Date().getFullYear()} Portal de Gamificação Educacional.</p>
           </div>
         </div>
       </div>
