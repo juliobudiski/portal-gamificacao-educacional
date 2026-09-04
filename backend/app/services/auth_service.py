@@ -378,13 +378,12 @@ class AuthService:
                 frontend_url = request.headers.get('Origin') or 'http://localhost:5173'
 
             reset_url = f"{frontend_url}/reset-password/{token}"
-            email_sent = send_reset_email(user.email, reset_url)
+            notification_service.dispatch_reset_password_email(user.email, reset_url)
             
-            if email_sent:
-                return {"message": "Se o e-mail existir, um link foi enviado."}, None, 200
-            else:
-                return None, {"error": "Erro interno ao enviar e-mail."}, 500
+            # Sempre retorna 200 imediato para evitar 500 no frontend e bloquear enumeração
+            return {"message": "Se o e-mail existir, um link foi enviado."}, None, 200
         except Exception as e:
+            current_app.logger.error(f"Erro em forgot_password: {str(e)}")
             return None, {"error": "Erro interno do servidor."}, 500
 
     @staticmethod

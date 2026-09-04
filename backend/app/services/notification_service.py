@@ -33,4 +33,26 @@ class NotificationService:
         except Exception as e:
             current_app.logger.error(f"Erro ao agendar e-mail de boas vindas para {user.email}: {str(e)}")
 
+    @staticmethod
+    def dispatch_reset_password_email(user_email, reset_url):
+        """
+        Gera e dispara o e-mail de recuperação de senha.
+        """
+        try:
+            from ..utils.email_sender import send_reset_email
+            
+            # Captura a instância real do app para usar dentro da Thread
+            app = current_app._get_current_object()
+            
+            def send_async(app_context, email, url):
+                with app_context.app_context():
+                    send_reset_email(email, url)
+            
+            # Dispara a Thread
+            thread = threading.Thread(target=send_async, args=(app, user_email, reset_url))
+            thread.start()
+            
+        except Exception as e:
+            current_app.logger.error(f"Erro ao agendar e-mail de recuperação para {user_email}: {str(e)}")
+
 notification_service = NotificationService()
