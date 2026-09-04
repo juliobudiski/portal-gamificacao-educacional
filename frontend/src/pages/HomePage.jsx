@@ -2,159 +2,154 @@
 import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { Target, Users, Zap, Award, ArrowRight, Sparkles } from 'lucide-react';
 
-/**
- * Componente HomePage
- * 
- * Landing page principal do portal, apresentando a proposta de valor, funcionalidades e atalhos de login/cadastro.
- */
-
-
-function Homepage() {
+export default function Homepage() {
   const { user } = useContext(AuthContext);
-  // Função auxiliar para decidir para onde o botão "Dashboard" leva
+
   const getDashboardPath = () => {
     if (user?.role === 'professor') return '/professor/dashboard';
     if (user?.role === 'admin') return '/admin/dashboard';
     return '/aluno/dashboard';
   };
 
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-primary-bg text-primary-text p-6 relative overflow-hidden">
-      {/* Elementos decorativos */}
-      <div className="absolute -top-20 -right-20 w-96 h-96 rounded-full bg-[#ffbd30]/10 blur-3xl"></div>
-      <div className="absolute bottom-10 left-0 w-80 h-80 rounded-full bg-[#69e8cb]/10 blur-3xl"></div>
+  const benefits = [
+    {
+      title: 'Engajamento Profundo',
+      description: 'Elementos de jogos motivam alunos organicamente, elevando drasticamente a participação nas aulas.',
+      icon: Target,
+      color: 'text-accent-yellow',
+      bg: 'bg-accent-yellow/10'
+    },
+    {
+      title: 'Colaboração Ativa',
+      description: 'Ambientes gamificados incentivam o trabalho em equipe e uma competição saudável entre os alunos.',
+      icon: Users,
+      color: 'text-accent-teal',
+      bg: 'bg-accent-teal/10'
+    },
+    {
+      title: 'Feedback Imediato',
+      description: 'Sistemas de pontos e conquistas fornecem respostas contínuas sobre o progresso e as vitórias.',
+      icon: Zap,
+      color: 'text-accent-purple',
+      bg: 'bg-accent-purple/10'
+    },
+    {
+      title: 'Retenção Acelerada',
+      description: 'A curva de aprendizado através de jogos resulta em maior fixação a longo prazo dos conteúdos.',
+      icon: Award,
+      color: 'text-[#ffcc5c]',
+      bg: 'bg-[#ffcc5c]/10'
+    }
+  ];
 
-      {/* Conteúdo principal */}
-      <div className="z-10 max-w-full w-full space-y-12">
-        {/* Cabeçalho */}
-        <div className="text-center mb-8 animate-fade-in">
-          <h1 className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">
-            <span className="bg-gradient-to-r from-[#ffbd30] via-[#69e8cb] to-[#9570d9] text-transparent bg-clip-text">
-              Portal de Gamificação Educacional
+  return (
+    <div className="flex flex-col items-center min-h-screen bg-primary-bg text-primary-text relative overflow-hidden font-sans selection:bg-accent-purple/30">
+      
+      {/* Background Decorativo Glassmorphism */}
+      <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-accent-purple/15 rounded-full blur-[150px] pointer-events-none mix-blend-screen animate-pulse duration-1000"></div>
+      <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-accent-teal/15 rounded-full blur-[150px] pointer-events-none mix-blend-screen"></div>
+
+      {/* Main Container */}
+      <div className="z-10 w-full max-w-7xl px-6 md:px-12 py-16 md:py-24 space-y-24">
+        
+        {/* Hero Section */}
+        <section className="text-center flex flex-col items-center mt-10 md:mt-20">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary-bg/50 border border-border-color/50 mb-8 backdrop-blur-md shadow-lg">
+            <Sparkles className="w-4 h-4 text-accent-yellow" />
+            <span className="text-sm font-semibold uppercase tracking-widest text-secondary-text">O Futuro do Aprendizado</span>
+          </div>
+          
+          <h1 className="text-5xl md:text-7xl font-black mb-8 leading-tight tracking-tighter">
+            Educação Movida a<br />
+            <span className="bg-gradient-to-r from-accent-yellow via-accent-teal to-accent-purple text-transparent bg-clip-text drop-shadow-sm">
+              Experiências Épicas
             </span>
           </h1>
 
-          <p className="text-xl md:text-2xl max-w-full mx-auto text-secondary-text leading-relaxed">
-            Transforme a educação em uma jornada envolvente e interativa. Crie, compartilhe e participe de atividades gamificadas que <span className="text-[#ffbd30]">inspiram o aprendizado</span> e o <span className="text-[#69e8cb]">engajamento</span>.
+          <p className="text-lg md:text-2xl max-w-3xl text-secondary-text font-light leading-relaxed mb-12">
+            Crie, compartilhe e participe de jornadas gamificadas. Transformamos a sala de aula em uma aventura inesquecível para professores e alunos.
           </p>
-        </div>
 
-        {/* Botões de ação com Lógica de Autenticação */}
-        <div className="flex flex-col sm:flex-row justify-center gap-6 mb-16">
-          {user ? (
-            /* --- VISÃO PARA USUÁRIO LOGADO --- */
-            <Link
-              to={getDashboardPath()}
-              className="relative bg-gradient-to-r from-accent-teal to-green-600 px-10 py-5 rounded-xl shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 group"
-            >
-              <span className="text-xl font-bold text-white flex items-center gap-3">
-                Ir para o Dashboard
-                <svg className="w-6 h-6 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
-              </span>
-            </Link>
-          ) : (
-            /* --- VISÃO PARA VISITANTE (Código Original) --- */
-            <>
+          {/* Botões CTA */}
+          <div className="flex flex-col sm:flex-row justify-center gap-6 w-full max-w-md mx-auto sm:max-w-none">
+            {user ? (
               <Link
-                to="/login"
-                className="relative group bg-secondary-bg px-8 py-4 rounded-xl shadow-lg border border-accent-teal transition-all duration-300 hover:border-accent-teal/60"
+                to={getDashboardPath()}
+                className="group relative px-10 py-5 bg-gradient-to-r from-accent-teal to-green-600 rounded-2xl shadow-[0_0_30px_rgba(105,232,203,0.3)] hover:shadow-[0_0_40px_rgba(105,232,203,0.5)] hover:-translate-y-1 transition-all duration-300"
               >
-                <span className="text-lg font-bold text-accent-teal transition-colors">
-                  Entrar
-                </span>
-                <div className="absolute inset-0 bg-accent-teal/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </Link>
-
-              <Link
-                to="/cadastro"
-                className="relative bg-accent-yellow px-8 py-4 rounded-xl shadow-lg hover:shadow-xl hover:bg-accent-yellow/90 transition-all duration-300"
-              >
-                <span className="text-lg font-bold text-white dark:text-gray-900 transition-colors">
-                  Cadastre-se
+                <span className="flex items-center justify-center gap-3 text-lg font-bold text-white uppercase tracking-wider">
+                  Ir para o Dashboard
+                  <ArrowRight className="w-6 h-6 group-hover:translate-x-1.5 transition-transform" />
                 </span>
               </Link>
-            </>
-          )}
-        </div>
+            ) : (
+              <>
+                <Link
+                  to="/cadastro"
+                  className="relative group px-10 py-5 bg-gradient-to-r from-accent-yellow to-[#ffa000] rounded-2xl shadow-[0_0_30px_rgba(255,189,48,0.3)] hover:shadow-[0_0_40px_rgba(255,189,48,0.5)] hover:-translate-y-1 transition-all duration-300"
+                >
+                  <span className="flex items-center justify-center text-lg font-black text-[#2c3135] uppercase tracking-wider">
+                    Comece Agora
+                  </span>
+                </Link>
+                <Link
+                  to="/login"
+                  className="relative px-10 py-5 bg-secondary-bg/40 backdrop-blur-md rounded-2xl border border-border-color/50 hover:bg-secondary-bg hover:border-accent-teal/50 hover:-translate-y-1 transition-all duration-300 shadow-lg"
+                >
+                  <span className="flex items-center justify-center text-lg font-bold text-primary-text uppercase tracking-wider">
+                    Fazer Login
+                  </span>
+                </Link>
+              </>
+            )}
+          </div>
+        </section>
 
-        {/* Seção de benefícios interativa */}
-        <div className="bg-secondary-bg p-8 rounded-2xl shadow-2xl border-t-4 border-accent-yellow transform transition-transform duration-500 hover:scale-[1.02]">
-          <h3 className="text-3xl font-bold mb-8 text-center text-accent-yellow">
-            Por que Gamificar a Educação?
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="flex items-start space-x-4 p-4 bg-secondary-bg/50 rounded-xl hover:bg-secondary-bg transition-colors">
-              <div className="bg-accent-yellow/10 p-3 rounded-full">
-                <svg className="w-6 h-6 text-accent-yellow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <h4 className="font-bold text-lg mb-2 text-primary-text">Motivação</h4>
-                <p className="text-secondary-text">Elementos de jogos motivam alunos, aumentando a participação e o interesse.</p>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-4 p-4 bg-secondary-bg/50 rounded-xl hover:bg-secondary-bg transition-colors">
-              <div className="bg-accent-teal/10 p-3 rounded-full">
-                <svg className="w-6 h-6 text-accent-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              </div>
-              <div>
-                <h4 className="font-bold text-lg mb-2 text-primary-text">Colaboração</h4>
-                <p className="text-secondary-text">Ambientes gamificados incentivam trabalho em equipe e competição saudável.</p>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-4 p-4 bg-secondary-bg/50 rounded-xl hover:bg-secondary-bg transition-colors">
-              <div className="bg-accent-purple/10 p-3 rounded-full">
-                <svg className="w-6 h-6 text-accent-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                </svg>
-              </div>
-              <div>
-                <h4 className="font-bold text-lg mb-2 text-primary-text">Feedback Imediato</h4>
-                <p className="text-secondary-text">Sistemas de pontos e conquistas fornecem feedback contínuo sobre o progresso.</p>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-4 p-4 bg-secondary-bg/50 rounded-xl hover:bg-secondary-bg transition-colors">
-              <div className="bg-gradient-to-br from-accent-yellow/10 to-accent-purple/10 p-3 rounded-full">
-                <svg className="w-6 h-6 text-accent-yellow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
-              <div>
-                <h4 className="font-bold text-lg mb-2 text-primary-text">Retenção</h4>
-                <p className="text-secondary-text">Conceitos aprendidos através de jogos têm maior taxa de retenção a longo prazo.</p>
-              </div>
-            </div>
+        {/* Features / Benefícios */}
+        <section className="relative z-10 pt-10">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-extrabold text-primary-text mb-4">
+              Por que Gamificar a Educação?
+            </h2>
+            <p className="text-secondary-text text-lg">Elementos cientificamente comprovados que transformam o estudo.</p>
           </div>
 
-          <div className="mt-10 text-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {benefits.map((benefit, idx) => (
+              <div 
+                key={idx}
+                className="group p-8 rounded-3xl bg-secondary-bg/60 backdrop-blur-xl border border-border-color/40 hover:-translate-y-2 hover:shadow-2xl hover:border-accent-yellow/40 transition-all duration-500 flex flex-col"
+              >
+                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${benefit.bg} mb-6 group-hover:scale-110 transition-transform duration-500`}>
+                  <benefit.icon className={`w-8 h-8 ${benefit.color}`} strokeWidth={1.5} />
+                </div>
+                <h3 className="text-xl font-bold text-primary-text mb-3 tracking-tight">
+                  {benefit.title}
+                </h3>
+                <p className="text-secondary-text leading-relaxed font-medium">
+                  {benefit.description}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-16 text-center">
             <Link
               to="/sobre-nos"
-              className="inline-flex items-center text-accent-teal hover:text-accent-yellow transition-colors font-semibold"
+              className="group inline-flex items-center gap-2 text-lg font-bold text-accent-teal hover:text-accent-yellow transition-colors"
             >
-              Saiba mais sobre gamificação
-              <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-              </svg>
+              Conheça mais sobre a metodologia
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
-        </div>
+        </section>
       </div>
 
-      <div className="mt-16 text-center text-secondary-text text-sm">
-        <p>Transformando a educação através da gamificação • Para professores e alunos</p>
-      </div>
+      <footer className="w-full mt-auto py-8 border-t border-border-color/20 text-center text-secondary-text">
+        <p className="font-medium tracking-wide">Transformando a educação através da gamificação • © 2026</p>
+      </footer>
     </div>
   );
 }
-
-export default Homepage;

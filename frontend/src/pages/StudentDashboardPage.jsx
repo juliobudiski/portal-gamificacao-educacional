@@ -341,7 +341,6 @@ export default function StudentDashboardPage() {
                            className="h-full bg-gradient-to-r from-accent-teal to-green-400 rounded-full shadow-[0_0_10px_rgba(105,232,203,0.8)] relative"
                            style={{ width: `${progressPercent}%` }}
                         >
-                           <div className="absolute inset-0 bg-white/20 w-full animate-[shimmer_2s_infinite]"></div>
                         </div>
                       </div>
                     </div>
@@ -375,13 +374,6 @@ export default function StudentDashboardPage() {
           </aside>
         </main>
       </div>
-
-      <style>{`
-        @keyframes shimmer {
-           0% { transform: translateX(-100%); }
-           100% { transform: translateX(100%); }
-        }
-      `}</style>
     </div>
   );
 }
