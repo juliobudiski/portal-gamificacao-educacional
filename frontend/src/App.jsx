@@ -11,6 +11,8 @@ import ScrollToTop from './components/ScrollToTop';
 import Footer from './components/Footer';
 import Header from './components/Header';
 import ThemeToggleButton from './components/ThemeToggleButton'; // <-- IMPORTAR O BOTÃO
+import { ActivityCreationProvider } from './context/ActivityCreationContext';
+
 // --- IMPORTAÇÃO DAS PÁGINAS ---
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';

@@ -661,7 +661,7 @@ function ActivityCreationPage({ existingActivity }) {
         };
       } else {
         const [section, field] = nameParts;
-        const sectionData = prevData[section];
+        const sectionData = prevData[section] || {};
 
         if (type === 'checkbox') {
           const currentValues = sectionData[field] || [];

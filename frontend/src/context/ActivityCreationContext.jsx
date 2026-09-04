@@ -43,7 +43,31 @@ export const ActivityCreationProvider = ({ children }) => {
 
     // Função para resetar tudo ao iniciar uma nova criação
     const startNewActivity = (template = null) => {
-        setActivityData(template || initialState);
+        let newData;
+        if (template) {
+            let parsedTemplate = template;
+            if (typeof template === 'string') {
+                try { parsedTemplate = JSON.parse(template); } catch(e) { console.error("Erro parse template", e); }
+            }
+            // Realiza um deep merge defensivo para evitar propriedades undefined
+            newData = {
+                ...initialState,
+                ...parsedTemplate,
+                currentScenario: { ...initialState.currentScenario, ...(parsedTemplate.currentScenario || {}) },
+                desiredScenario: { ...initialState.desiredScenario, ...(parsedTemplate.desiredScenario || {}) },
+                activityPlanning: { ...initialState.activityPlanning, ...(parsedTemplate.activityPlanning || {}) },
+                playerProfile: { ...initialState.playerProfile, ...(parsedTemplate.playerProfile || {}) },
+                gameElements: { ...initialState.gameElements, ...(parsedTemplate.gameElements || {}) },
+                gamificationDesign: { ...initialState.gamificationDesign, ...(parsedTemplate.gamificationDesign || {}) },
+                rewardsOffered: { ...initialState.rewardsOffered, ...(parsedTemplate.rewardsOffered || {}) },
+                rewardedActions: { ...initialState.rewardedActions, ...(parsedTemplate.rewardedActions || {}) },
+                gamificationRules: { ...initialState.gamificationRules, ...(parsedTemplate.gamificationRules || {}) },
+            };
+        } else {
+            // Em branco: Cópia profunda para prevenir mutação acidental da constante initialState
+            newData = JSON.parse(JSON.stringify(initialState));
+        }
+        setActivityData(newData);
         setCurrentStep(1);
         setShowInitialSelection(false);
     };
