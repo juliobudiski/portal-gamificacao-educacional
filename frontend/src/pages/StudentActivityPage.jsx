@@ -42,7 +42,7 @@ const StudentActivityPage = () => {
   const { user } = useContext(AuthContext);
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filterStatus, setFilterStatus] = useState('pending'); // pending, completed, expired, all
+  const [filterStatus, setFilterStatus] = useState('all'); // pending, completed, expired, all
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
@@ -83,8 +83,9 @@ const StudentActivityPage = () => {
   const getFilteredActivities = () => {
     return activities.filter(activity => {
       // 1. Filtro de Busca (Texto)
-      const matchesSearch = activity.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        activity.class_name.toLowerCase().includes(searchTerm.toLowerCase());
+      const titleMatch = activity.title ? activity.title.toLowerCase().includes(searchTerm.toLowerCase()) : false;
+      const classMatch = activity.class_name ? activity.class_name.toLowerCase().includes(searchTerm.toLowerCase()) : false;
+      const matchesSearch = titleMatch || classMatch;
 
       if (!matchesSearch) return false;
 

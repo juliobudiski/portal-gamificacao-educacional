@@ -18,7 +18,7 @@ class User(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     google_id = db.Column(db.String(120), unique=True, nullable=True)
     name = db.Column(db.String(100), nullable=True)
-    profile_picture = db.Column(db.String(255), nullable=True) # Este é o Avatar Global EQUIPADO
+    profile_picture = db.Column(db.String(255), default='/avatars/default_avatar.webp', nullable=True) # Este é o Avatar Global EQUIPADO
     role = db.Column(db.String(50), default='aluno', nullable=False)
     age = db.Column(db.Integer, nullable=True)
     gender = db.Column(db.String(50), nullable=True)

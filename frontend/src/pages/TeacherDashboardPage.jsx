@@ -1,19 +1,14 @@
 // frontend/src/pages/TeacherDashboardPage.jsx
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useLocation } from 'react-router-dom'; // <--- Importante
 import { TEACHER_DASHBOARD_STEPS } from '../data/tutorialSteps';
 import { useTutorial } from '../context/TutorialContext';
 import { useAuthOperations } from '../hooks/useAuthOperations';
 import FeedbackModal from '../components/FeedbackModal';
+import { Users, PlusCircle, BookOpen, BarChart2, Award, Settings, ChevronRight } from 'lucide-react';
 
-/**
- * Componente TeacherDashboardPage
- * 
- * Painel principal do Professor, consolidando métricas, engajamento e atalhos rápidos de criação.
- */
-function TeacherDashboardPage() {
+export default function TeacherDashboardPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -22,19 +17,13 @@ function TeacherDashboardPage() {
   const { performAuthRequest } = useAuthOperations();
 
   useEffect(() => {
-    // Verifica se veio do botão "Ver Tutorial" com ordem de força
     const shouldForce = location.state?.forceTour === true;
-
-    // Se forçar OU se o usuário nunca viu (a lógica interna do startTour cuida do 'nunca viu')
-    // Adicionamos um pequeno delay para garantir que os elementos carregaram
     const timer = setTimeout(() => {
       startTour(TEACHER_DASHBOARD_STEPS, 'teacher_dashboard_v1', shouldForce);
     }, 500);
-
     return () => clearTimeout(timer);
   }, [startTour, location.state]);
 
-  // Se o usuário não estiver logado ou não for professor, redireciona
   if (!user || user.role !== 'professor') {
     navigate('/login');
     return null;
@@ -42,167 +31,163 @@ function TeacherDashboardPage() {
 
   useEffect(() => {
     const checkFeedback = async () => {
-      // Adicione um pequeno delay para não impactar o LCP (Largest Contentful Paint)
       setTimeout(async () => {
         const response = await performAuthRequest('/api/analytics/feedback/check-eligibility', 'GET');
         if (response.success && response.data.show_modal) {
           setShowFeedback(true);
         }
-      }, 2000); // Aparece 2 segundos após carregar o dashboard
+      }, 2000);
     };
     checkFeedback();
   }, []);
 
+  const dashboardCards = [
+    {
+      id: "tour-dash-classes",
+      title: "Gerenciar Turmas",
+      description: "Crie, visualize e edite suas turmas.",
+      icon: Users,
+      link: "/professor/gerenciar-turmas",
+      color: "text-[#69e8cb]",
+      bg: "bg-[#69e8cb]/10",
+      borderHover: "hover:border-[#69e8cb]/50",
+      shadowHover: "hover:shadow-[#69e8cb]/20"
+    },
+    {
+      id: "tour-dash-create-btn",
+      title: "Criar Atividade",
+      description: "Elabore novas atividades para seus alunos.",
+      icon: PlusCircle,
+      link: "/professor/criar-atividade",
+      color: "text-[#ffbd30]",
+      bg: "bg-[#ffbd30]/10",
+      borderHover: "hover:border-[#ffbd30]/50",
+      shadowHover: "hover:shadow-[#ffbd30]/20"
+    },
+    {
+      id: "tour-dash-bank",
+      title: "Banco de Atividades",
+      description: "Reutilize e gerencie suas atividades criadas.",
+      icon: BookOpen,
+      link: "/professor/banco-atividades",
+      color: "text-[#9570d9]",
+      bg: "bg-[#9570d9]/10",
+      borderHover: "hover:border-[#9570d9]/50",
+      shadowHover: "hover:shadow-[#9570d9]/20"
+    },
+    {
+      id: "tour-dash-performance",
+      title: "Desempenho Alunos",
+      description: "Acompanhe o progresso dos seus alunos.",
+      icon: BarChart2,
+      link: "/professor/desempenho-alunos",
+      color: "text-[#69e8cb]",
+      bg: "bg-[#69e8cb]/10",
+      borderHover: "hover:border-[#69e8cb]/50",
+      shadowHover: "hover:shadow-[#69e8cb]/20"
+    },
+    {
+      id: "tour-dash-ranking",
+      title: "Ranking de Professores",
+      description: "Veja sua posição e a dos seus colegas.",
+      icon: Award,
+      link: "/professor/ranking",
+      color: "text-[#ffbd30]",
+      bg: "bg-[#ffbd30]/10",
+      borderHover: "hover:border-[#ffbd30]/50",
+      shadowHover: "hover:shadow-[#ffbd30]/20"
+    },
+    {
+      id: "tour-dash-settings",
+      title: "Minhas Configurações",
+      description: "Personalize sua conta e preferências.",
+      icon: Settings,
+      link: "/perfil",
+      color: "text-[#9570d9]",
+      bg: "bg-[#9570d9]/10",
+      borderHover: "hover:border-[#9570d9]/50",
+      shadowHover: "hover:shadow-[#9570d9]/20"
+    }
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br bg-primary-bg  p-4 md:p-8">
-      <FeedbackModal isOpen={showFeedback} onClose={() => setShowFeedback(false)} userRole="professor" />
-      <div className="max-w-full mx-auto">
-        {/* Cabeçalho com gradiente */}
-        <header className="mb-12 text-center bg-gradient-to-r from-[#ffbd30] to-[#ffa000] p-6 rounded-2xl shadow-2xl border-b-4 border-[#ffcc5c]">
-          <h1 className="text-3xl md:text-4xl font-extrabold text-[#2c3135]">
-            Painel do Professor
-          </h1>
-          <p className="mt-2 text-xl text-[#2c3135]">
-            Olá, <span className="font-semibold bg-secondary-bg/30 px-2 py-1 rounded-md">{user.name}</span>! Gerencie suas atividades e turmas.
-          </p>
+    <div className="min-h-screen bg-primary-bg relative overflow-hidden transition-colors duration-500">
+      {/* Background Decorativo Glassmorphism */}
+      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-[#9570d9]/10 rounded-full blur-[120px] pointer-events-none mix-blend-screen"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-[#69e8cb]/10 rounded-full blur-[120px] pointer-events-none mix-blend-screen"></div>
+      
+      <div className="p-4 md:p-8 relative z-10 max-w-7xl mx-auto">
+        <FeedbackModal isOpen={showFeedback} onClose={() => setShowFeedback(false)} userRole="professor" />
+        
+        {/* Header Profissional */}
+        <header className="mb-12 pt-8 pb-4 text-center md:text-left flex flex-col md:flex-row md:items-end md:justify-between gap-6 border-b border-border-color/30">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-2">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ffbd30] via-[#ffcc5c] to-[#ffa000]">
+                Painel do Professor
+              </span>
+            </h1>
+            <p className="text-lg md:text-xl text-secondary-text font-light">
+              Bem-vindo de volta, <span className="font-semibold text-primary-text">{user.name}</span>!
+            </p>
+          </div>
+          <div className="hidden md:block">
+             <div className="px-6 py-3 bg-secondary-bg/40 backdrop-blur-md rounded-2xl border border-border-color/50 shadow-inner">
+               <span className="text-sm font-medium text-secondary-text uppercase tracking-wider block mb-1">Status</span>
+               <div className="flex items-center gap-2">
+                 <span className="relative flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                 </span>
+                 <span className="font-bold text-primary-text">Sistema Operacional</span>
+               </div>
+             </div>
+          </div>
         </header>
 
-        <main id="tour-professor-dashboard" >
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-            {/* Card para Gerenciar Turmas */}
-            <Link id="tour-dash-classes"
-              to="/professor/gerenciar-turmas"
-              className="group block p-6 bg-secondary-bg rounded-2xl shadow-xl hover:shadow-2xl border-l-4 border-[#69e8cb] hover:border-[#ffbd30] transition-all duration-300 transform hover:-translate-y-1"
-            >
-              <div className="flex items-center justify-center h-20 w-20 rounded-full bg-gradient-to-br from-[#69e8cb]/20 to-[#69e8cb]/50 mb-6 group-hover:from-[#ffbd30]/20 group-hover:to-[#ffbd30]/50 transition-all">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-[#69e8cb] group-hover:text-[#ffbd30] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </div>
-              <h3 className="text-xl md:text-2xl font-bold text-primary-text">Gerenciar Turmas</h3>
-              <p className="mt-2 text-secondary-text">Crie, visualize e edite suas turmas.</p>
-              <div className="mt-4 flex items-center text-[#69e8cb] group-hover:text-[#ffbd30] transition-colors">
-                <span>Acessar</span>
-                <svg xmlns="http://www.w3.org/2000/svg" className="ml-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-              </div>
-            </Link>
-
-            {/* Card para Criar Atividade */}
-            <Link id="tour-dash-create-btn"
-              to="/professor/criar-atividade"
-              className="group block p-6 bg-secondary-bg rounded-2xl shadow-xl hover:shadow-2xl border-l-4 border-[#ffbd30] hover:border-[#9570d9] transition-all duration-300 transform hover:-translate-y-1"
-            >
-              <div className="flex items-center justify-center h-20 w-20 rounded-full bg-gradient-to-br from-[#ffbd30]/20 to-[#ffbd30]/50 mb-6 group-hover:from-[#9570d9]/20 group-hover:to-[#9570d9]/50 transition-all">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-[#ffbd30] group-hover:text-[#9570d9] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6M6 6h12v12H6V6z" />
-                </svg>
-              </div>
-              <h3 className="text-xl md:text-2xl font-bold text-primary-text">Criar Atividade</h3>
-              <p className="mt-2 text-secondary-text">Elabore novas atividades para seus alunos.</p>
-              <div className="mt-4 flex items-center text-[#ffbd30] group-hover:text-[#9570d9] transition-colors">
-                <span>Acessar</span>
-                <svg xmlns="http://www.w3.org/2000/svg" className="ml-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-              </div>
-            </Link>
-
-            {/* Card para Banco de Atividades */}
-            <Link id="tour-dash-bank"
-              to="/professor/banco-atividades"
-              className="group block p-6 bg-secondary-bg rounded-2xl shadow-xl hover:shadow-2xl border-l-4 border-[#9570d9] hover:border-[#69e8cb] transition-all duration-300 transform hover:-translate-y-1"
-            >
-              <div className="flex items-center justify-center h-20 w-20 rounded-full bg-gradient-to-br from-[#9570d9]/20 to-[#9570d9]/50 mb-6 group-hover:from-[#69e8cb]/20 group-hover:to-[#69e8cb]/50 transition-all">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-[#9570d9] group-hover:text-[#69e8cb] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-              </div>
-              <h3 className="text-xl md:text-2xl font-bold text-primary-text">Banco de Atividades</h3>
-              <p className="mt-2 text-secondary-text">Reutilize e gerencie suas atividades criadas.</p>
-              <div className="mt-4 flex items-center text-[#9570d9] group-hover:text-[#69e8cb] transition-colors">
-                <span>Acessar</span>
-                <svg xmlns="http://www.w3.org/2000/svg" className="ml-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-              </div>
-            </Link>
-
-            {/* Card para Desempenho de Alunos */}
-            <Link id="tour-dash-performance"
-              to="/professor/desempenho-alunos"
-              className="group block p-6 bg-secondary-bg rounded-2xl shadow-xl hover:shadow-2xl border-l-4 border-[#69e8cb] hover:border-[#ffbd30] transition-all duration-300 transform hover:-translate-y-1"
-            >
-              <div className="flex items-center justify-center h-20 w-20 rounded-full bg-gradient-to-br from-[#69e8cb]/20 to-[#69e8cb]/50 mb-6 group-hover:from-[#ffbd30]/20 group-hover:to-[#ffbd30]/50 transition-all">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-[#69e8cb] group-hover:text-[#ffbd30] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <h3 className="text-xl md:text-2xl font-bold text-primary-text">Desempenho Alunos</h3>
-              <p className="mt-2 text-secondary-text">Acompanhe o progresso dos seus alunos.</p>
-              <div className="mt-4 flex items-center text-[#69e8cb] group-hover:text-[#ffbd30] transition-colors">
-                <span>Acessar</span>
-                <svg xmlns="http://www.w3.org/2000/svg" className="ml-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-              </div>
-            </Link>
-
-            {/* Card para Dashboard */}
-            <Link id="tour-dash-ranking"
-              to="/professor/ranking"
-              className="group block p-6 bg-secondary-bg rounded-2xl shadow-xl hover:shadow-2xl border-l-4 border-[#ffbd30] hover:border-[#9570d9] transition-all duration-300 transform hover:-translate-y-1"
-            >
-              <div className="flex items-center justify-center h-20 w-20 rounded-full bg-gradient-to-br from-[#ffbd30]/20 to-[#ffbd30]/50 mb-6 group-hover:from-[#9570d9]/20 group-hover:to-[#9570d9]/50 transition-all">
-                {/* Ícone de Troféu */}
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-[#ffbd30] group-hover:text-[#9570d9] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 11l3-3m0 0l3 3m-3-3v8m0-13a9 9 0 110 18 9 9 0 010-18z" transform="rotate(180 12 12)" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" transform="scale(0.8) translate(3, 3)" />
-                </svg>
-              </div>
-              <h3 className="text-xl md:text-2xl font-bold text-primary-text">Ranking de Professores</h3>
-              <p className="mt-2 text-secondary-text">Veja sua posição e a dos seus colegas.</p>
-              <div className="mt-4 flex items-center text-[#ffbd30] group-hover:text-[#9570d9] transition-colors">
-                <span>Acessar</span>
-                <svg xmlns="http://www.w3.org/2000/svg" className="ml-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-              </div>
-            </Link>
-
-            {/* Card para Configurações */}
-            <Link
-              to="/perfil"
-              className="group block p-6 bg-secondary-bg rounded-2xl shadow-xl hover:shadow-2xl border-l-4 border-[#9570d9] hover:border-[#69e8cb] transition-all duration-300 transform hover:-translate-y-1"
-            >
-              <div className="flex items-center justify-center h-20 w-20 rounded-full bg-gradient-to-br from-[#9570d9]/20 to-[#9570d9]/50 mb-6 group-hover:from-[#69e8cb]/20 group-hover:to-[#69e8cb]/50 transition-all">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-[#9570d9] group-hover:text-[#69e8cb] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              </div>
-              <h3 className="text-xl md:text-2xl font-bold text-primary-text">Minhas Configurações</h3>
-              <p className="mt-2 text-secondary-text">Personalize sua conta e preferências.</p>
-              <div className="mt-4 flex items-center text-[#9570d9] group-hover:text-[#69e8cb] transition-colors">
-                <span>Acessar</span>
-                <svg xmlns="http://www.w3.org/2000/svg" className="ml-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-              </div>
-            </Link>
+        {/* Grid Principal */}
+        <main id="tour-professor-dashboard">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+            {dashboardCards.map((card, idx) => (
+              <Link 
+                key={idx}
+                id={card.id}
+                to={card.link}
+                className={`group relative p-8 rounded-3xl bg-secondary-bg/60 backdrop-blur-xl border border-border-color/40 shadow-lg transition-all duration-500 transform hover:-translate-y-2 hover:shadow-2xl ${card.shadowHover} ${card.borderHover} overflow-hidden`}
+              >
+                {/* Efeito Hover Glow Radial no background do card */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+                
+                <div className="relative z-10 flex flex-col h-full">
+                  <div className={`flex items-center justify-center h-16 w-16 rounded-2xl ${card.bg} mb-6 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3 shadow-inner`}>
+                    <card.icon className={`h-8 w-8 ${card.color}`} strokeWidth={1.5} />
+                  </div>
+                  
+                  <h3 className="text-2xl font-bold text-primary-text mb-3 tracking-tight group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-primary-text group-hover:to-secondary-text transition-all duration-300">
+                    {card.title}
+                  </h3>
+                  
+                  <p className="text-secondary-text font-medium leading-relaxed flex-grow">
+                    {card.description}
+                  </p>
+                  
+                  <div className={`mt-6 flex items-center text-sm font-bold uppercase tracking-widest ${card.color} opacity-80 group-hover:opacity-100 transition-opacity`}>
+                    <span className="group-hover:mr-2 transition-all duration-300">Acessar Painel</span>
+                    <ChevronRight className="h-4 w-4 opacity-0 -ml-2 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300" strokeWidth={3} />
+                  </div>
+                </div>
+              </Link>
+            ))}
           </div>
         </main>
 
-        {/* Rodapé com informações */}
-        <footer className="mt-16 text-center text-secondary-text text-sm border-t border-[#3e4a52] pt-6">
-          <p>Portal de Gamificação Educacional • Painel do Professor</p>
-          <p className="mt-1">Acessado como: {user.email}</p>
+        <footer className="mt-20 pt-8 border-t border-border-color/30 flex flex-col md:flex-row items-center justify-between text-secondary-text text-sm">
+          <p className="font-medium">Portal de Gamificação Educacional</p>
+          <p className="mt-2 md:mt-0 px-4 py-1.5 bg-secondary-bg/40 backdrop-blur-sm rounded-full border border-border-color/30">
+            Acessado como: <span className="text-primary-text font-semibold">{user.email}</span>
+          </p>
         </footer>
       </div>
     </div>
   );
 }
-
-export default TeacherDashboardPage;

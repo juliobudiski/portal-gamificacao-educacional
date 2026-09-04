@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { Search, Award, Clock, CheckCircle, BookOpen, Target, TrendingUp, XCircle } from 'lucide-react';
+import { Navigate } from 'react-router-dom';
 
 
 // Componente de Badge Refatorado para usar cores semânticas
@@ -101,7 +102,7 @@ const StudentPerformancePage = () => {
 
   // 1. Carregar Filtros (Turmas e Atividades)
   useEffect(() => {
-    if (!user) return;
+    if (!user || user.role === 'aluno') return;
 
     const fetchFilters = async () => {
       try {
@@ -159,6 +160,10 @@ const StudentPerformancePage = () => {
 
     return () => clearTimeout(timeoutId);
   }, [selectedClass, selectedActivity, searchTerm, user, logout]);
+
+  if (user?.role === 'aluno') {
+    return <Navigate to="/aluno/dashboard" />;
+  }
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 min-h-screen bg-primary-bg text-primary-text transition-colors duration-300 relative overflow-hidden">

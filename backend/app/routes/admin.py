@@ -766,9 +766,42 @@ def delete_activity(activity_id):
     activity = Activity.query.get_or_404(activity_id)
     
     try:
+        from ..models import Conversation, ChatMessage, ActivityRating, Purchase, StoreItem, SlotWin, RouletteWin, StudentResponse, QuizContent, NarrativeContent, UserUnlockedTitle, ActivityProgress, EventLog, ActivityRevision, UserUnlockedMedal, LearningContent
+        
+        # Limpar items da loja para remover dependências (equipados)
+        item_ids = [item.id for item in StoreItem.query.filter_by(activity_id=activity_id).all()]
+        if item_ids:
+            ActivityProgress.query.filter(ActivityProgress.equipped_name_cosmetic_id.in_(item_ids)).update({'equipped_name_cosmetic_id': None}, synchronize_session=False)
+            ActivityProgress.query.filter(ActivityProgress.equipped_title_cosmetic_id.in_(item_ids)).update({'equipped_title_cosmetic_id': None}, synchronize_session=False)
+        
+        # Limpar conversas (fórum)
+        conversations = Conversation.query.filter_by(activity_id=activity_id).all()
+        if conversations:
+            conv_ids = [c.id for c in conversations]
+            ChatMessage.query.filter(ChatMessage.conversation_id.in_(conv_ids)).delete(synchronize_session=False)
+            Conversation.query.filter(Conversation.id.in_(conv_ids)).delete(synchronize_session=False)
+
+        # Deletar dependências diretas
+        ActivityRating.query.filter_by(activity_id=activity_id).delete(synchronize_session=False)
+        Purchase.query.filter_by(activity_id=activity_id).delete(synchronize_session=False)
+        StoreItem.query.filter_by(activity_id=activity_id).delete(synchronize_session=False)
+        SlotWin.query.filter_by(activity_id=activity_id).delete(synchronize_session=False)
+        RouletteWin.query.filter_by(activity_id=activity_id).delete(synchronize_session=False)
+        StudentResponse.query.filter_by(activity_id=activity_id).delete(synchronize_session=False)
+        QuizContent.query.filter_by(activity_id=activity_id).delete(synchronize_session=False)
+        NarrativeContent.query.filter_by(activity_id=activity_id).delete(synchronize_session=False)
+        LearningContent.query.filter_by(activity_id=activity_id).delete(synchronize_session=False)
+        UserUnlockedTitle.query.filter_by(activity_id=activity_id).delete(synchronize_session=False)
+        ActivityProgress.query.filter_by(activity_id=activity_id).delete(synchronize_session=False)
+        EventLog.query.filter_by(activity_id=activity_id).delete(synchronize_session=False)
+        ActivityRevision.query.filter_by(activity_id=activity_id).delete(synchronize_session=False)
+        UserUnlockedMedal.query.filter_by(activity_id=activity_id).delete(synchronize_session=False)
+
         db.session.delete(activity)
         db.session.commit()
         return jsonify({"success": True, "message": "Atividade deletada com sucesso."})
     except Exception as e:
         db.session.rollback()
+        import traceback
+        traceback.print_exc()
         return jsonify({"success": False, "message": f"Erro ao deletar atividade: {str(e)}"}), 500

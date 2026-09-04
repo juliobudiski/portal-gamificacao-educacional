@@ -55,7 +55,7 @@ export const getThemeAssets = (themeId = 'default') => {
             mission: { icon: `${path}/mission_character_board.webp`, name: 'Missão' },
             final_reward: { icon: `${path}/end_board.webp`, name: 'Recompensa Final' },
             roulette: { icon: `${path}/roleta_board.webp`, name: 'Roleta' },
-            slot_machine: { icon: `${path}/slotmachine_board.webp`, name: 'Caça-níquel' },
+            slot_machine: { icon: `${path}/slotmachine_board.webp`, name: 'Máquina da Sorte' },
             ranking: { icon: `${path}/ranking_board.webp`, name: 'Ranking' },
             badges: { icon: `${path}/badges_board.webp`, name: 'Medalhas' },
             chat: { icon: `${path}/chat_board.webp`, name: 'Chat' },

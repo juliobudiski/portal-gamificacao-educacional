@@ -250,7 +250,7 @@ function UserProfilePage() {
   const serverUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   const displayAvatar = user?.profile_picture
     ? (user.profile_picture.startsWith('/avatars/') ? user.profile_picture : `${serverUrl}${user.profile_picture}`)
-    : `https://ui-avatars.com/api/?name=${user?.name}&background=random`;
+    : '/avatars/default_avatar.webp';
 
   const normalAvatars = user?.unlocked_global_avatars?.filter(a => a.type !== 'special') || [];
   const specialAvatars = user?.unlocked_global_avatars?.filter(a => a.type === 'special') || [];

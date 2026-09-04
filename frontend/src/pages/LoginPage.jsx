@@ -4,6 +4,7 @@
 import React, { useState, useEffect, useCallback, useContext, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { FaEye, FaEyeSlash } from 'react-icons/fa'; // Import adicionado
 
 // --- 2. DEFINIÇÃO DO COMPONENTE ---
 /**
@@ -15,10 +16,12 @@ function LoginPage() {
   // --- 3. ESTADOS DO COMPONENTE (State Hooks) ---
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // Estado para o olho da senha
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [googleLoaded, setGoogleLoaded] = useState(false);
   const googleButtonRef = useRef(null);
+
 
 
   // --- 4. HOOKS DE NAVEGAÇÃO E CONTEXTO ---
@@ -277,7 +280,7 @@ function LoginPage() {
               </label>
               <div className="relative">
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   id="password"
                   name="password"
                   required
@@ -288,9 +291,14 @@ function LoginPage() {
                   placeholder="********"
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                  <svg className="w-5 h-5 text-secondary-text" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-                  </svg>
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-secondary-text hover:text-primary-text transition-colors focus:outline-none p-1"
+                    title={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                  >
+                    {showPassword ? <FaEyeSlash className="w-5 h-5" /> : <FaEye className="w-5 h-5" />}
+                  </button>
                 </div>
               </div>
             </div>

@@ -51,7 +51,7 @@ const RecentActivityFeed = () => {
             {isOpen && (
                 <div className="absolute top-12 right-0 w-80 max-h-96 bg-gray-900/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col z-50">
                     <div className="p-4 border-b border-white/10 flex justify-between items-center bg-black/50">
-                        <h3 className="text-white font-bold tracking-wider uppercase text-sm">Novidades da Turma</h3>
+                        <h3 className="text-white font-bold tracking-wider uppercase text-sm">Feed de Gamificação</h3>
                         <button onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-white">
                             <FaTimes />
                         </button>
@@ -63,7 +63,7 @@ const RecentActivityFeed = () => {
                                 <FaSpinner className="animate-spin text-2xl" />
                             </div>
                         ) : events.length === 0 ? (
-                            <p className="text-gray-400 text-sm text-center italic">Nenhuma novidade recente.</p>
+                            <p className="text-gray-400 text-sm text-center italic">Ainda não há atividades (compras ou medalhas) nesta turma.</p>
                         ) : (
                             <ul className="space-y-4">
                                 {events.map((ev, idx) => (
