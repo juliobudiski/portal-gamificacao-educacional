@@ -4,21 +4,46 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from flask import current_app
 
+def _get_smtp_connection(smtp_server, smtp_port, smtp_user, smtp_password):
+    """
+    Tenta conectar ao servidor SMTP com timeout e fallback inteligente de portas:
+    1. Tenta a porta configurada no env (padrão 587 STARTTLS com timeout=10s)
+    2. Se a porta configurada for 465, usa SMTP_SSL com timeout=10s
+    3. Se 587 falhar ou der timeout (comum na infraestrutura de nuvem como Render),
+       tenta automaticamente a porta 465 (SMTP_SSL).
+    """
+    timeout = 10
+
+    if smtp_port == 465:
+        server = smtplib.SMTP_SSL(smtp_server, 465, timeout=timeout)
+        server.login(smtp_user, smtp_password)
+        return server
+
+    try:
+        server = smtplib.SMTP(smtp_server, smtp_port, timeout=timeout)
+        server.starttls()
+        server.login(smtp_user, smtp_password)
+        return server
+    except Exception as e:
+        if current_app:
+            current_app.logger.warning(f"Falha/Timeout na porta SMTP {smtp_port} ({e}). Tentando fallback para Porta 465 (SSL)...")
+        try:
+            server = smtplib.SMTP_SSL(smtp_server, 465, timeout=timeout)
+            server.login(smtp_user, smtp_password)
+            return server
+        except Exception as e2:
+            if current_app:
+                current_app.logger.error(f"Fallback na porta 465 também falhou: {e2}")
+            raise e2
+
 def send_reset_email(to_email, reset_url):
-    # Pega configurações do .env
     smtp_server = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
     smtp_port = int(os.environ.get("MAIL_PORT", 587))
     smtp_user = os.environ.get("MAIL_USERNAME")
     smtp_password = os.environ.get("MAIL_PASSWORD")
 
-    # Define a URL pública do logo (WebP ou PNG)
-    # Importante: O Gmail não acessa 'localhost'. Apontamos para sua produção na Vercel.
-    logo_url = "https://github.com/juliobudiski/portal-gamificacao-educacional/blob/main/frontend/images/logotipo-dark.webp?raw=true"
-
-    # Assunto
     subject = "Recuperação de Senha - Gamefica.Edu"
         
-    # HTML Profissional (Versão Texto Estilizado)
     html_content = f"""
     <!DOCTYPE html>
     <html>
@@ -92,28 +117,24 @@ def send_reset_email(to_email, reset_url):
     """
 
     try:
-        # Configura a mensagem
         msg = MIMEMultipart()
         msg['From'] = f"Gamefica.Edu <{smtp_user}>"
         msg['To'] = to_email
         msg['Subject'] = subject
         msg.attach(MIMEText(html_content, 'html'))
 
-        # Conecta ao servidor SMTP do Gmail
-        server = smtplib.SMTP(smtp_server, smtp_port)
-        server.starttls()
-        server.login(smtp_user, smtp_password)
-        
-        # Envia
+        server = _get_smtp_connection(smtp_server, smtp_port, smtp_user, smtp_password)
         text = msg.as_string()
         server.sendmail(smtp_user, to_email, text)
         server.quit()
 
-        current_app.logger.info(f"E-mail enviado com sucesso para {to_email} via Gmail SMTP.")
+        if current_app:
+            current_app.logger.info(f"E-mail enviado com sucesso para {to_email} via Gmail SMTP.")
         return True
 
     except Exception as e:
-        current_app.logger.error(f"Erro ao enviar email via SMTP: {str(e)}")
+        if current_app:
+            current_app.logger.error(f"Erro ao enviar email via SMTP: {str(e)}")
         return False
 
 def send_teacher_code_email(to_email, access_code, name):
@@ -174,16 +195,16 @@ def send_teacher_code_email(to_email, access_code, name):
         msg['Subject'] = subject
         msg.attach(MIMEText(html_content, 'html'))
 
-        server = smtplib.SMTP(smtp_server, smtp_port)
-        server.starttls()
-        server.login(smtp_user, smtp_password)
+        server = _get_smtp_connection(smtp_server, smtp_port, smtp_user, smtp_password)
         text = msg.as_string()
         server.sendmail(smtp_user, to_email, text)
         server.quit()
-        current_app.logger.info(f"E-mail de código enviado para {to_email}.")
+        if current_app:
+            current_app.logger.info(f"E-mail de código enviado para {to_email}.")
         return True
     except Exception as e:
-        current_app.logger.error(f"Erro ao enviar email de código via SMTP: {str(e)}")
+        if current_app:
+            current_app.logger.error(f"Erro ao enviar email de código via SMTP: {str(e)}")
         return False
 
 def send_html_email(to_email, subject, html_content):
@@ -203,14 +224,14 @@ def send_html_email(to_email, subject, html_content):
         msg['Subject'] = subject
         msg.attach(MIMEText(html_content, 'html'))
 
-        server = smtplib.SMTP(smtp_server, smtp_port)
-        server.starttls()
-        server.login(smtp_user, smtp_password)
+        server = _get_smtp_connection(smtp_server, smtp_port, smtp_user, smtp_password)
         text = msg.as_string()
         server.sendmail(smtp_user, to_email, text)
         server.quit()
-        current_app.logger.info(f"Notificação HTML enviada com sucesso para {to_email}.")
+        if current_app:
+            current_app.logger.info(f"Notificação HTML enviada com sucesso para {to_email}.")
         return True
     except Exception as e:
-        current_app.logger.error(f"Erro ao enviar notificação HTML via SMTP para {to_email}: {str(e)}")
+        if current_app:
+            current_app.logger.error(f"Erro ao enviar notificação HTML via SMTP para {to_email}: {str(e)}")
         return False
