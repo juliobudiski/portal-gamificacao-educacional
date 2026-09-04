@@ -1,22 +1,16 @@
-import socketio
-import time
+from flask import Flask
+from flask_socketio import SocketIO
 
-sio = socketio.Client()
+app = Flask(__name__)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
-@sio.event
-def connect():
-    print("Connected!")
-    sio.emit('join', 'user_ai_test')
+@socketio.on('connect')
+def on_connect():
+    print("TEST SERVER CONNECTED!")
 
-@sio.on('ai_progress')
-def on_progress(data):
-    print("PROGRESS:", data)
-
-@sio.on('ai_complete')
-def on_complete(data):
-    print("COMPLETE:", data)
+@socketio.on('join')
+def on_join(data):
+    print(f"TEST SERVER JOIN: {data}")
 
 if __name__ == '__main__':
-    sio.connect('http://localhost:5000')
-    time.sleep(2)
-    sio.disconnect()
+    socketio.run(app, port=5002)

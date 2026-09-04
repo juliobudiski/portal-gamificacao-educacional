@@ -1,34 +1,45 @@
 import os
 import re
 
-replacements = [
-    (r'bg-gray-900(?![/\w-])', 'bg-primary-bg'),
-    (r'bg-gray-800(?![/\w-])', 'bg-secondary-bg'),
-    (r'text-gray-300(?![/\w-])', 'text-secondary-text'),
-    (r'text-gray-400(?![/\w-])', 'text-secondary-text'),
-    (r'border-gray-700(?![/\w-])', 'border-[var(--border-color)]'),
-    (r'border-gray-600(?![/\w-])', 'border-[var(--border-color)]'),
-    (r'bg-gray-700(?![/\w-])', 'bg-hover-bg-color0'),
-    (r'text-gray-900(?![/\w-])', 'text-primary-text'),
-    (r'bg-white(?![/\w-])', 'bg-primary-bg'),
+files = [
+    "frontend/src/pages/NarrativeEditorPage.jsx",
+    "frontend/src/pages/QuizEditorPage.jsx",
+    "frontend/src/pages/LearningContentEditorPage.jsx"
 ]
 
-# Specifically look in the components/activity directory
-activity_dir = 'frontend/src/components/activity'
+replacements = {
+    r'\bbg-gray-900\b(?!/)': 'bg-gray-50 dark:bg-gray-900',
+    r'\btext-gray-200\b': 'text-gray-800 dark:text-gray-200',
+    r'\bbg-black/40\b': 'bg-white/80 dark:bg-black/40',
+    r'\bbg-black/30\b': 'bg-white/80 dark:bg-black/30',
+    r'\bbg-black/50\b': 'bg-gray-100 dark:bg-black/50',
+    r'\bbg-black/60\b': 'bg-white dark:bg-black/60',
+    r'\bbg-gray-900/60\b': 'bg-white dark:bg-gray-900/60',
+    r'\bbg-gray-900/50\b': 'bg-gray-100 dark:bg-gray-900/50',
+    r'\bbg-gray-900/70\b': 'bg-gray-50 dark:bg-gray-900/70',
+    r'\bborder-white/10\b': 'border-gray-300 dark:border-white/10',
+    r'\bborder-white/5\b': 'border-gray-200 dark:border-white/5',
+    r'\btext-white\b': 'text-gray-900 dark:text-white',
+    r'\bplaceholder-gray-600\b': 'placeholder-gray-400 dark:placeholder-gray-600',
+    r'\bplaceholder-gray-500\b': 'placeholder-gray-400 dark:placeholder-gray-500',
+    r'\btext-gray-300\b': 'text-gray-700 dark:text-gray-300',
+    r'\bbg-gray-800\b(?!/)': 'bg-gray-200 dark:bg-gray-800',
+}
 
-for root, _, files in os.walk(activity_dir):
-    for file in files:
-        if file.endswith('.jsx'):
-            filepath = os.path.join(root, file)
-            with open(filepath, 'r', encoding='utf-8') as f:
-                content = f.read()
-            
-            new_content = content
-            for old, new in replacements:
-                new_content = re.sub(old, new, new_content)
-                
-            if new_content != content:
-                with open(filepath, 'w', encoding='utf-8') as f:
-                    f.write(new_content)
-                print(f"Updated {filepath}")
+for filepath in files:
+    if not os.path.exists(filepath):
+        print(f"Skipping {filepath}")
+        continue
+    with open(filepath, 'r') as f:
+        content = f.read()
+    
+    for pattern, replacement in replacements.items():
+        # Avoid double replacing if it's already there
+        if "dark:" + pattern.replace(r'\b', '').replace('(?!/)', '') in content:
+            continue
+        content = re.sub(pattern, replacement, content)
+        
+    with open(filepath, 'w') as f:
+        f.write(content)
+    print(f"Updated {filepath}")
 
