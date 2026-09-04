@@ -17,6 +17,8 @@ export default {
         'header-bg': 'var(--header-background)',
         'card-bg': 'var(--card-background)',
         'secondary-text': 'var(--text-secondary)',
+        'border-color': 'var(--border-color)',
+        'hover-bg-color': 'var(--hover-bg-color)',
 
         // --- CORES DE DESTAQUE ATUALIZADAS ---
         // Em vez de um valor fixo, agora usam as variáveis do index.css
