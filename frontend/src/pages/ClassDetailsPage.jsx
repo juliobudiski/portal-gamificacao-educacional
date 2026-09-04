@@ -263,107 +263,106 @@ function ClassDetailsPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br bg-primary-bg to-[#1a1e22] p-4">
-            <div className="max-w-6xl mx-auto">
+        <div className="min-h-screen relative overflow-hidden bg-primary-bg p-4 sm:p-6 lg:p-8 transition-colors duration-300">
+            {/* Background Animado (Blobs) */}
+            <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+                <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] rounded-full bg-accent-teal/10 blur-[120px] animate-blob"></div>
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-accent-purple/10 blur-[120px] animate-blob animation-delay-2000"></div>
+            </div>
+
+            <div className="max-w-7xl mx-auto relative z-10 animate-fade-in">
                 <button 
                     onClick={() => navigate(-1)} 
-                    className="group mb-6 flex items-center gap-2 text-secondary-text hover:text-accent-teal transition-colors font-bold uppercase tracking-widest text-sm"
+                    className="group mb-6 flex items-center gap-2 text-secondary-text hover:text-accent-teal transition-colors font-bold uppercase tracking-widest text-sm bg-secondary-bg/50 px-4 py-2 rounded-full border border-border-color backdrop-blur-sm w-fit"
                 >
                     <FaArrowLeft className="group-hover:-translate-x-1 transition-transform" />
                     Voltar
                 </button>
 
-                <div className="bg-gradient-to-r from-accent-yellow to-[#ff9d00] p-5 rounded-2xl shadow-2xl mb-8">
-                    <h1 className="text-3xl md:text-4xl font-bold text-center text-gray-900">
-                        Detalhes da Turma: {classDetails.name}
+                {/* Cabeçalho da Turma */}
+                <div className="bg-gradient-to-r from-accent-teal/20 via-accent-purple/20 to-accent-yellow/20 p-8 rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] mb-8 border border-border-color backdrop-blur-md relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-[80px] -mt-20 -mr-20"></div>
+                    <h1 className="text-3xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-accent-teal to-accent-yellow mb-2 relative z-10">
+                        {classDetails.name}
                     </h1>
+                    <p className="text-secondary-text font-medium text-lg relative z-10 max-w-2xl">
+                        {classDetails.description}
+                    </p>
                 </div>
 
-                {/* --- CORREÇÃO: Borda ciente do tema --- */}
-                <div className="bg-secondary-bg p-6 rounded-2xl shadow-2xl border border-border-color mb-8">
-                    <div className="flex flex-col md:flex-row gap-6">
-                        <div className="flex-1">
-                            <div className="flex items-center mb-4">
-                                <div className="w-10 h-10 rounded-full bg-accent-yellow/20 flex items-center justify-center mr-3">
-                                    <FaInfoCircle className="text-accent-yellow" />
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                    {/* Painel de Informações */}
+                    <div className="bg-secondary-bg/80 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-border-color lg:col-span-2">
+                        <div className="flex items-center mb-6">
+                            <div className="w-12 h-12 rounded-xl bg-accent-teal/20 flex items-center justify-center mr-4 shadow-inner">
+                                <FaInfoCircle className="text-accent-teal text-xl" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-primary-text">
+                                Detalhes
+                            </h2>
+                        </div>
+
+                        <div className="space-y-6">
+                            <div className="flex items-start gap-4 p-4 rounded-xl bg-primary-bg/50 border border-border-color/50 transition-colors hover:border-accent-purple/50">
+                                <div className="w-10 h-10 rounded-full bg-accent-purple/20 flex items-center justify-center flex-shrink-0">
+                                    <FaChalkboardTeacher className="text-accent-purple" />
                                 </div>
-                                <h2 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-accent-teal to-accent-purple">
-                                    Informações da Turma
-                                </h2>
+                                <div>
+                                    <p className="text-sm text-secondary-text font-semibold uppercase tracking-wider mb-1">Professor Responsável</p>
+                                    <p className="text-lg font-bold text-primary-text">{classDetails.professor_name}</p>
+                                </div>
                             </div>
 
-                            <p className="text-secondary-text mb-4 flex items-start">
-                                <span className="w-8 h-8 rounded-full bg-accent-teal/20 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">
-                                    <FaBook className="text-accent-teal text-sm" />
-                                </span>
-                                <strong className="text-accent-teal mr-2">Descrição:</strong>
-                                <span className="text-secondary-text">{classDetails.description}</span>
-                            </p>
-
-                            <p className="text-secondary-text mb-4 flex items-start">
-                                <span className="w-8 h-8 rounded-full bg-accent-purple/20 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">
-                                    <FaChalkboardTeacher className="text-accent-purple text-sm" />
-                                </span>
-                                <strong className="text-accent-yellow mr-2">Professor:</strong>
-                                <span className="text-secondary-text">{classDetails.professor_name}</span>
-                            </p>
-                            {user?.role === 'aluno' && classDetails.enrollment_code && (
-                                <div className="bg-primary-bg/50 p-4 rounded-xl border border-border-color mt-5">
-                                    <p className="text-secondary-text flex items-center">
-                                        <span className="w-8 h-8 rounded-full bg-accent-yellow/20 flex items-center justify-center mr-3 flex-shrink-0">
-                                            <FaUserGraduate className="text-accent-yellow" />
-                                        </span>
-                                        <strong className="text-accent-yellow mr-2">Código de Inscrição:</strong>
-                                    </p>
-                                    <div className="mt-2 bg-primary-bg p-3 rounded-xl border border-border-color">
-                                        {/* --- CORREÇÃO: Código ciente do tema --- */}
-                                        <code className="font-mono text-lg text-accent-teal tracking-wider">
-                                            {classDetails.enrollment_code}
-                                        </code>
+                            {classDetails.enrollment_code && (
+                                <div className="flex items-start gap-4 p-4 rounded-xl bg-primary-bg/50 border border-border-color/50 transition-colors hover:border-accent-yellow/50">
+                                    <div className="w-10 h-10 rounded-full bg-accent-yellow/20 flex items-center justify-center flex-shrink-0">
+                                        <FaUserGraduate className="text-accent-yellow" />
                                     </div>
-                                </div>
-                            )}
-
-                            {user?.role === 'professor' && (
-                                <div className="bg-primary-bg/50 p-4 rounded-xl border border-border-color mt-5">
-                                    <p className="text-secondary-text flex items-center">
-                                        <span className="w-8 h-8 rounded-full bg-accent-yellow/20 flex items-center justify-center mr-3 flex-shrink-0">
-                                            <FaUserGraduate className="text-accent-yellow" />
-                                        </span>
-                                        <strong className="text-accent-yellow mr-2">Código de Inscrição:</strong>
-                                    </p>
-                                    <div className="mt-2 bg-primary-bg p-3 rounded-xl border border-border-color">
-                                        {/* --- CORREÇÃO: Código ciente do tema --- */}
-                                        <code className="font-mono text-lg text-accent-teal tracking-wider">
-                                            {classDetails.enrollment_code}
-                                        </code>
+                                    <div className="w-full">
+                                        <p className="text-sm text-secondary-text font-semibold uppercase tracking-wider mb-1">Código de Inscrição</p>
+                                        <div className="flex items-center justify-between bg-secondary-bg p-3 rounded-lg border border-border-color mt-2">
+                                            <code className="font-mono text-xl font-bold text-accent-yellow tracking-widest">
+                                                {classDetails.enrollment_code}
+                                            </code>
+                                        </div>
                                     </div>
                                 </div>
                             )}
                         </div>
+                    </div>
 
-                        <div className="flex-1 flex items-center justify-center">
-                            <div className="relative w-full max-w-xs">
-                                <div className="absolute inset-0 bg-gradient-to-br from-accent-yellow/20 to-accent-purple/20 rounded-2xl blur-xl opacity-70"></div>
-                                <div className="relative bg-primary-bg/50 border border-border-color rounded-2xl p-6 text-center">
-                                    <div className="w-20 h-20 mx-auto bg-gradient-to-br from-accent-yellow to-[#ff9d00] rounded-full flex items-center justify-center mb-4">
-                                        <FaBook className="text-3xl text-gray-900" />
-                                    </div>
-                                    <h3 className="text-xl font-bold text-accent-teal mb-2">Atividades</h3>
-                                    <p className="text-4xl font-bold text-primary-text">{activities.length}</p>
-                                    <p className="text-secondary-text mt-2">atividades nesta turma</p>
+                    {/* Estatísticas Rápidas */}
+                    <div className="bg-secondary-bg/80 backdrop-blur-md border border-border-color rounded-2xl p-6 shadow-xl flex flex-col justify-center items-center text-center relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-gradient-to-br from-accent-yellow/10 to-accent-purple/10 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div className="relative z-10 w-full space-y-6">
+                            <div className="bg-primary-bg/80 p-6 rounded-2xl border border-border-color/50 shadow-inner">
+                                <div className="w-16 h-16 mx-auto bg-gradient-to-br from-accent-yellow to-[#ff9d00] rounded-full flex items-center justify-center mb-4 shadow-lg transform group-hover:scale-110 transition-transform duration-300">
+                                    <FaBook className="text-2xl text-gray-900" />
+                                </div>
+                                <h3 className="text-lg font-bold text-secondary-text mb-1 uppercase tracking-wider">Atividades</h3>
+                                <p className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-accent-teal to-accent-yellow">{activities.length}</p>
+                            </div>
+                            <div className="bg-primary-bg/80 p-4 rounded-xl border border-border-color/50 shadow-inner flex justify-around items-center">
+                                <div>
+                                    <p className="text-xs text-secondary-text uppercase font-bold">Alunos</p>
+                                    <p className="text-xl font-bold text-primary-text">{students.length}</p>
+                                </div>
+                                <div className="w-px h-8 bg-border-color"></div>
+                                <div>
+                                    <p className="text-xs text-secondary-text uppercase font-bold">Equipes</p>
+                                    <p className="text-xl font-bold text-primary-text">{teams.length}</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* --- SEÇÃO NOVA: CASAS DA TURMA (EQUIPES) --- */}
+                {/* --- SEÇÃO: CASAS DA TURMA (EQUIPES) --- */}
                 {teams.length > 0 && (
-                    <div className="mb-8 animate-fade-in">
+                    <div className="mb-12 animate-fade-in">
                         <div className="flex items-center mb-6">
-                            <div className="w-10 h-10 rounded-full bg-accent-purple/20 flex items-center justify-center mr-3">
-                                <FaShieldAlt className="text-accent-purple" />
+                            <div className="w-12 h-12 rounded-xl bg-accent-purple/20 flex items-center justify-center mr-4 shadow-inner">
+                                <FaShieldAlt className="text-accent-purple text-xl" />
                             </div>
                             <h2 className="text-2xl font-bold text-primary-text">
                                 Casas da Turma
@@ -374,35 +373,37 @@ function ClassDetailsPage() {
                             {teams.map((team, index) => (
                                 <div
                                     key={team.id}
-                                    className="bg-secondary-bg rounded-xl border border-border-color shadow-lg overflow-hidden hover:border-accent-purple transition-all duration-300"
+                                    className="bg-secondary-bg/80 backdrop-blur-sm rounded-2xl border border-border-color shadow-lg overflow-hidden hover:shadow-[0_8px_30px_rgba(157,78,221,0.15)] hover:border-accent-purple/50 transition-all duration-300 transform hover:-translate-y-1"
                                 >
-                                    {/* Header da Casa */}
-                                    <div className={`p-4 border-b border-border-color bg-gradient-to-r ${index % 2 === 0 ? 'from-purple-900/40 to-blue-900/40' : 'from-blue-900/40 to-teal-900/40'}`}>
-                                        <h3 className="font-bold text-lg text-white flex items-center justify-center gap-2">
-                                            <FaShieldAlt className="opacity-50" />
+                                    <div className={`p-5 border-b border-border-color bg-gradient-to-r ${index % 2 === 0 ? 'from-purple-900/40 to-blue-900/40' : 'from-blue-900/40 to-teal-900/40'}`}>
+                                        <h3 className="font-extrabold text-lg text-white flex items-center justify-center gap-3">
+                                            <FaShieldAlt className="text-accent-purple/80" />
                                             {team.name}
                                         </h3>
                                     </div>
-
-                                    {/* Lista de Membros */}
-                                    <div className="p-4">
-                                        <p className="text-xs text-secondary-text mb-3 font-bold uppercase tracking-wider">
-                                            Membros ({team.members.length})
-                                        </p>
-                                        <div className="flex flex-col gap-2 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
+                                    <div className="p-5">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <p className="text-xs text-secondary-text font-bold uppercase tracking-wider">
+                                                Membros
+                                            </p>
+                                            <span className="bg-primary-bg px-2 py-1 rounded-full text-xs font-bold text-accent-purple border border-border-color">
+                                                {team.members.length}
+                                            </span>
+                                        </div>
+                                        <div className="flex flex-col gap-3 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
                                             {team.members.length > 0 ? (
                                                 team.members.map(member => (
-                                                    <div key={member.id} className="flex items-center gap-2 bg-primary-bg/50 p-2 rounded-lg">
+                                                    <div key={member.id} className="flex items-center gap-3 bg-primary-bg/60 p-2.5 rounded-xl border border-transparent hover:border-border-color transition-colors">
                                                         <img
                                                             src={member.avatar}
                                                             alt={member.name}
-                                                            className="w-6 h-6 rounded-full border border-border-color object-cover"
+                                                            className="w-8 h-8 rounded-full border border-border-color object-cover shadow-sm"
                                                         />
-                                                        <span className="text-sm text-primary-text truncate">{member.name}</span>
+                                                        <span className="text-sm font-medium text-primary-text truncate">{member.name}</span>
                                                     </div>
                                                 ))
                                             ) : (
-                                                <p className="text-sm text-gray-500 italic text-center py-2">Casa vazia</p>
+                                                <p className="text-sm text-secondary-text italic text-center py-4 bg-primary-bg/30 rounded-xl border border-dashed border-border-color">Casa vazia no momento</p>
                                             )}
                                         </div>
                                     </div>
@@ -412,61 +413,75 @@ function ClassDetailsPage() {
                     </div>
                 )}
 
-
-                {/* --- SEÇÃO NOVA PARA LISTA DE ALUNOS --- */}
-                <div className="mb-8">
+                {/* --- SEÇÃO: ALUNOS --- */}
+                <div className="mb-12">
                     <div className="flex items-center mb-6">
-                        <div className="w-10 h-10 rounded-full bg-accent-purple/20 flex items-center justify-center mr-3">
-                            <FaUsers className="text-accent-purple" />
+                        <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center mr-4 shadow-inner">
+                            <FaUsers className="text-blue-400 text-xl" />
                         </div>
-                        <h2 className="text-2xl font-bold text-primary-text">
-                            Colegas de Turma ({students.length})
+                        <h2 className="text-2xl font-bold text-primary-text flex items-center gap-3">
+                            Colegas de Turma
+                            <span className="text-sm bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full font-bold">
+                                {students.length}
+                            </span>
                         </h2>
                     </div>
+                    
                     {students.length > 0 ? (
-                        <div className="bg-secondary-bg p-6 rounded-2xl shadow-2xl border border-border-color">
-                            <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        <div className="bg-secondary-bg/80 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-border-color">
+                            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                                 {students.map((student) => (
-                                    <li key={student.id} className="bg-primary-bg p-3 rounded-lg flex items-center">
-                                        <FaUserGraduate className="text-secondary-text mr-3" />
-                                        <span className="text-secondary-text">{student.name}</span>
+                                    <li key={student.id} className="bg-primary-bg p-4 rounded-xl flex items-center border border-border-color/50 hover:border-blue-400/30 transition-colors group">
+                                        <div className="w-10 h-10 rounded-full bg-secondary-bg flex items-center justify-center mr-3 border border-border-color group-hover:bg-blue-500/10 transition-colors">
+                                            <FaUserGraduate className="text-secondary-text group-hover:text-blue-400 transition-colors" />
+                                        </div>
+                                        <span className="text-primary-text font-medium">{student.name}</span>
                                     </li>
                                 ))}
                             </ul>
                         </div>
                     ) : (
-                        <p className="text-secondary-text">Nenhum aluno matriculado ainda.</p>
+                        <div className="bg-secondary-bg/50 backdrop-blur-sm p-8 rounded-2xl border border-dashed border-border-color text-center">
+                            <p className="text-secondary-text font-medium">Nenhum aluno matriculado ainda.</p>
+                        </div>
                     )}
                 </div>
 
-                {/* Seção de Atividades */}
+                {/* --- SEÇÃO: ATIVIDADES --- */}
                 <div className="mb-8">
-                    <div className="flex items-center mb-6">
-                        <div className="w-10 h-10 rounded-full bg-accent-teal/20 flex items-center justify-center mr-3">
-                            <FaMedal className="text-accent-teal" />
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center">
+                            <div className="w-12 h-12 rounded-xl bg-accent-teal/20 flex items-center justify-center mr-4 shadow-inner">
+                                <FaMedal className="text-accent-teal text-xl" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-accent-teal to-accent-yellow">
+                                Atividades da Turma
+                            </h2>
                         </div>
-                        <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-accent-yellow to-[#ff9d00]">
-                            Atividades da Turma
-                        </h2>
+                        {activities.length > 0 && (
+                            <span className="text-sm bg-accent-teal/20 text-accent-teal px-3 py-1 rounded-full font-bold">
+                                {activities.length} no total
+                            </span>
+                        )}
                     </div>
 
                     {activities.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
                             {activities.map((activity) => (
                                 <ActivityCard key={activity.id} activity={activity} />
                             ))}
                         </div>
                     ) : (
-                        <div className="bg-secondary-bg p-10 rounded-2xl shadow-2xl border border-border-color text-center">
+                        <div className="bg-secondary-bg/60 backdrop-blur-md py-16 px-6 rounded-3xl shadow-xl border border-border-color text-center">
                             <div className="max-w-md mx-auto">
-                                <div className="w-20 h-20 mx-auto bg-gradient-to-br from-accent-purple to-[#7a55c4] rounded-full flex items-center justify-center mb-5">
-                                    <FaBook className="text-3xl text-primary-text" />
+                                <div className="w-24 h-24 mx-auto bg-primary-bg rounded-full flex items-center justify-center mb-6 shadow-inner border border-border-color/50">
+                                    <FaBook className="text-4xl text-secondary-text/50" />
                                 </div>
-                                <h3 className="text-xl font-bold text-accent-teal mb-2">
+                                <h3 className="text-2xl font-bold text-primary-text mb-3">
                                     Nenhuma atividade encontrada
-                                </h3>
+                               </h3>
                                 <p className="text-secondary-text">
-                                    Esta turma ainda não tem atividades atribuídas.
+                                    Esta turma ainda não tem atividades atribuídas. Assim que o professor criar novas missões, elas aparecerão aqui!
                                 </p>
                             </div>
                         </div>
@@ -474,7 +489,7 @@ function ClassDetailsPage() {
                 </div>
 
                 {message && (
-                    <div className={`p-4 rounded-2xl text-center mb-8 ${message.includes('Erro') ? 'bg-danger-bg border border-danger text-danger' : 'bg-info-bg border border-info text-info'
+                    <div className={`p-4 rounded-xl text-center mb-8 backdrop-blur-sm border font-medium ${message.includes('Erro') ? 'bg-danger-bg/80 border-danger text-danger' : 'bg-info-bg/80 border-info text-info'
                         }`}>
                         {message}
                     </div>

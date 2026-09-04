@@ -83,68 +83,71 @@ function Step3_ActivityPlanning({ activityData, handleInputChange, setActivityDa
   };
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      <div>
-        <h2 className="text-2xl font-bold text-primary-text">
-          Planejamento da Atividade
-        </h2>
-        <p className="mt-2 text-secondary-text">
-          Descreva as características e a logística da atividade. Essas informações são cruciais para um bom planejamento.
-        </p>
+    <div className="space-y-10 animate-fade-in relative">
+      {/* CABEÇALHO DO PASSO */}
+      <div className="flex items-center justify-between border-b border-border-color pb-6">
+        <div>
+          <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-accent-teal to-accent-yellow">
+            Planejamento da Atividade
+          </h2>
+          <p className="mt-2 text-secondary-text text-lg">
+            Descreva as características e a logística da atividade. Essas informações são cruciais para um bom planejamento.
+          </p>
+        </div>
       </div>
 
       <div
         id="tour-step-dynamics-options"
-        className={`bg-primary-bg border p-6 rounded-xl transition-all duration-300 ${typeof activityData.activityPlanning.isTeamActivity !== 'boolean' ? 'border-red-500 shadow-lg shadow-red-500/10' : 'border-border-color'
+        className={`bg-primary-bg/50 backdrop-blur-sm border p-8 rounded-3xl transition-all duration-300 shadow-inner group ${typeof activityData.activityPlanning.isTeamActivity !== 'boolean' ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : 'border-border-color hover:border-accent-teal/30'
           }`}
       >
-        <h3 className="text-lg font-semibold text-primary-text mb-4 flex items-center gap-2">
-          Dinâmica de Participação <span className="text-xs font-normal text-secondary-text bg-secondary-bg px-2 py-1 rounded-full border border-border-color">Obrigatório (Escolha Única)</span>
+        <h3 className="text-xl font-bold text-primary-text mb-6 flex items-center gap-3 uppercase tracking-wider">
+          Dinâmica de Participação <span className="text-xs font-bold text-accent-yellow bg-accent-yellow/10 px-3 py-1 rounded-full border border-accent-yellow/20">Obrigatório</span>
         </h3>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div
             onClick={() => handleModeSelection(false)}
-            className={`cursor-pointer p-4 rounded-xl border-2 transition-all flex items-center gap-4
+            className={`cursor-pointer p-6 rounded-2xl border-2 transition-all duration-300 flex items-center gap-6 transform hover:-translate-y-1
               ${activityData.activityPlanning.isTeamActivity === false
-                ? 'border-accent-teal bg-accent-teal/10'
-                : 'border-border-color hover:border-gray-400 bg-secondary-bg opacity-70 hover:opacity-100'}
+                ? 'border-accent-teal bg-gradient-to-br from-accent-teal/20 to-transparent shadow-[0_8px_20px_rgba(20,184,166,0.2)]'
+                : 'border-border-color hover:border-accent-teal/50 bg-secondary-bg/50 backdrop-blur-sm opacity-80 hover:opacity-100 hover:shadow-lg'}
             `}
           >
-            <div className={`p-3 rounded-full ${activityData.activityPlanning.isTeamActivity === false ? 'bg-accent-teal text-white' : 'bg-hover-bg-color0 text-secondary-text'}`}>
-              <FaUser size={24} />
+            <div className={`p-4 rounded-2xl shadow-inner transition-transform duration-300 ${activityData.activityPlanning.isTeamActivity === false ? 'bg-accent-teal text-gray-900 scale-110' : 'bg-primary-bg text-secondary-text'}`}>
+              <FaUser className="text-3xl" />
             </div>
             <div>
-              <h4 className="font-bold text-primary-text">Jornada Individual</h4>
-              <p className="text-sm text-secondary-text">Cada aluno progride sozinho e vê apenas seu próprio avatar.</p>
+              <h4 className="font-extrabold text-lg text-primary-text mb-1">Jornada Individual</h4>
+              <p className="text-sm text-secondary-text leading-relaxed">Cada aluno progride sozinho e vê apenas seu próprio avatar.</p>
             </div>
           </div>
 
           <div
             onClick={() => handleModeSelection(true)}
-            className={`cursor-pointer p-4 rounded-xl border-2 transition-all flex items-center gap-4
+            className={`cursor-pointer p-6 rounded-2xl border-2 transition-all duration-300 flex items-center gap-6 transform hover:-translate-y-1
               ${activityData.activityPlanning.isTeamActivity === true
-                ? 'border-accent-purple bg-accent-purple/10'
-                : 'border-border-color hover:border-gray-400 bg-secondary-bg opacity-70 hover:opacity-100'}
+                ? 'border-accent-purple bg-gradient-to-br from-accent-purple/20 to-transparent shadow-[0_8px_20px_rgba(157,78,221,0.2)]'
+                : 'border-border-color hover:border-accent-purple/50 bg-secondary-bg/50 backdrop-blur-sm opacity-80 hover:opacity-100 hover:shadow-lg'}
             `}
           >
-            <div className={`p-3 rounded-full ${activityData.activityPlanning.isTeamActivity === true ? 'bg-accent-purple text-white' : 'bg-hover-bg-color0 text-secondary-text'}`}>
-              <FaUsers size={24} />
+            <div className={`p-4 rounded-2xl shadow-inner transition-transform duration-300 ${activityData.activityPlanning.isTeamActivity === true ? 'bg-accent-purple text-white scale-110' : 'bg-primary-bg text-secondary-text'}`}>
+              <FaUsers className="text-3xl" />
             </div>
             <div>
-              <h4 className="font-bold text-primary-text">Expedição em Equipe</h4>
-              <p className="text-sm text-secondary-text">Alunos veem o progresso dos colegas no tabuleiro em tempo real.</p>
+              <h4 className="font-extrabold text-lg text-primary-text mb-1">Expedição em Equipe</h4>
+              <p className="text-sm text-secondary-text leading-relaxed">Alunos veem o progresso dos colegas no tabuleiro em tempo real.</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* NOVO: SEÇÃO DE AMBIENTE EXCLUDENTE */}
-      <div>
-        <h3 className="text-lg font-semibold text-primary-text flex items-center gap-2 mb-4">
-          Ambiente de Aplicação <span className="text-xs font-normal text-secondary-text bg-secondary-bg px-2 py-1 rounded-full border border-border-color">Obrigatório (Escolha Única)</span>
+      <div className="pt-4">
+        <h3 className="text-xl font-bold text-primary-text flex items-center gap-3 mb-6 uppercase tracking-wider">
+          Ambiente de Aplicação <span className="text-xs font-bold text-accent-yellow bg-accent-yellow/10 px-3 py-1 rounded-full border border-accent-yellow/20">Obrigatório</span>
         </h3>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
           {LOGISTIC_ENVIRONMENTS.map((env) => {
             const isSelected = activityData.activityPlanning.characteristics.includes(env.text);
             return (
@@ -152,30 +155,35 @@ function Step3_ActivityPlanning({ activityData, handleInputChange, setActivityDa
                 key={env.text}
                 onClick={() => handleEnvironmentSelection(env.text)}
                 className={`
-                  group relative flex h-full cursor-pointer flex-col items-center justify-start space-y-3 rounded-xl border p-5 text-center transition-all duration-200
+                  group relative flex h-full cursor-pointer flex-col items-center justify-start rounded-2xl p-6 text-center transition-all duration-300 transform hover:-translate-y-1
                   ${isSelected
-                    ? 'border-2 border-accent-yellow bg-accent-yellow/10 shadow-[0_0_15px_rgba(var(--accent-yellow),0.2)]'
-                    : 'border-border-color bg-secondary-bg hover:border-accent-yellow/50 hover:shadow-lg'
+                    ? 'border-2 border-accent-yellow bg-gradient-to-br from-accent-yellow/20 to-primary-bg shadow-[0_8px_20px_rgba(255,189,48,0.2)]'
+                    : 'border border-border-color bg-primary-bg/50 backdrop-blur-sm hover:border-accent-yellow/50 hover:shadow-xl'
                   }
                 `}
               >
-                <div className={`text-4xl transition-transform group-hover:scale-110 ${isSelected ? 'text-accent-yellow' : 'text-secondary-text group-hover:text-accent-yellow/80'}`}>
+                <div className={`text-5xl mb-4 transition-transform duration-500 group-hover:scale-110 ${isSelected ? 'text-accent-yellow' : 'text-secondary-text/80 group-hover:text-accent-yellow'}`}>
                   {env.icon}
                 </div>
-                <p className={`text-sm font-medium ${isSelected ? 'text-accent-yellow font-bold' : 'text-secondary-text'}`}>
+                <p className={`text-sm leading-relaxed ${isSelected ? 'text-accent-yellow font-extrabold' : 'text-secondary-text font-medium group-hover:text-primary-text'}`}>
                   {env.text}
                 </p>
+                {isSelected && (
+                  <div className="absolute top-3 right-3 text-accent-yellow animate-bounce-in">
+                    <FaClipboardCheck />
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
       </div>
 
-      <div>
-        <h3 className="text-lg font-semibold text-primary-text">
-          Outras Características (Múltipla Escolha)
+      <div className="pt-4 border-t border-border-color">
+        <h3 className="text-xl font-bold text-primary-text mb-6 uppercase tracking-wider">
+          Outras Características (Opcional)
         </h3>
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {ACTIVITY_CHARACTERISTICS.map((char) => {
             const isSelected = activityData.activityPlanning.characteristics.includes(char.text);
             return (
@@ -183,17 +191,17 @@ function Step3_ActivityPlanning({ activityData, handleInputChange, setActivityDa
                 key={char.text}
                 onClick={() => handleCharacteristicSelection(char.text)}
                 className={`
-                  group relative flex h-full cursor-pointer flex-col items-center justify-start space-y-3 rounded-xl border p-5 text-center transition-all duration-200
+                  group relative flex h-full cursor-pointer flex-col items-center justify-start rounded-2xl p-6 text-center transition-all duration-300 transform hover:-translate-y-1
                   ${isSelected
-                    ? 'border-2 border-accent-teal bg-accent-teal/10 shadow-[0_0_15px_rgba(var(--accent-teal),0.2)]'
-                    : 'border-border-color bg-secondary-bg hover:border-accent-teal/50 hover:shadow-lg'
+                    ? 'border-2 border-accent-teal bg-gradient-to-br from-accent-teal/20 to-primary-bg shadow-[0_8px_20px_rgba(20,184,166,0.2)]'
+                    : 'border border-border-color bg-primary-bg/50 backdrop-blur-sm hover:border-accent-teal/50 hover:shadow-xl'
                   }
                 `}
               >
-                <div className={`text-4xl transition-transform group-hover:scale-110 ${isSelected ? 'text-accent-teal' : 'text-secondary-text group-hover:text-accent-teal'}`}>
+                <div className={`text-4xl mb-4 transition-transform duration-500 group-hover:scale-110 ${isSelected ? 'text-accent-teal' : 'text-secondary-text/80 group-hover:text-accent-teal'}`}>
                   {char.icon}
                 </div>
-                <p className={`text-sm font-medium ${isSelected ? 'text-accent-teal font-bold' : 'text-secondary-text'}`}>
+                <p className={`text-sm leading-relaxed ${isSelected ? 'text-accent-teal font-extrabold' : 'text-secondary-text font-medium group-hover:text-primary-text'}`}>
                   {char.text}
                 </p>
               </div>
@@ -202,26 +210,26 @@ function Step3_ActivityPlanning({ activityData, handleInputChange, setActivityDa
         </div>
       </div>
 
-      <div className="pt-4">
-        <h3 className="text-lg font-semibold text-primary-text">
+      <div className="pt-8 border-t border-border-color">
+        <h3 className="text-xl font-bold text-primary-text mb-6 uppercase tracking-wider">
           Detalhes Logísticos
         </h3>
-        <div className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-2">
-          <div>
-            <label className="block text-sm font-medium text-secondary-text">Quantidade de participantes</label>
-            <input type="text" name="activityPlanning.participantsQuantity" value={activityData.activityPlanning.participantsQuantity} onChange={handleInputChange} className="mt-1 block w-full px-4 py-2 bg-primary-bg border border-border-color rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-accent-teal text-primary-text sm:text-sm" placeholder="Ex: 25 alunos" />
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+          <div className="group">
+            <label className="block text-sm font-bold text-secondary-text uppercase tracking-wider mb-2">Quantidade de participantes</label>
+            <input type="text" name="activityPlanning.participantsQuantity" value={activityData.activityPlanning.participantsQuantity} onChange={handleInputChange} className="block w-full px-6 py-4 bg-primary-bg/50 backdrop-blur-sm border border-border-color rounded-2xl shadow-inner focus:ring-2 focus:ring-accent-teal focus:border-transparent text-primary-text text-lg transition-all duration-300 group-hover:border-accent-teal/50" placeholder="Ex: 25 alunos" />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-secondary-text">Duração prevista</label>
-            <input type="text" name="activityPlanning.expectedDuration" value={activityData.activityPlanning.expectedDuration} onChange={handleInputChange} className="mt-1 block w-full px-4 py-2 bg-primary-bg border border-border-color rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-accent-teal text-primary-text sm:text-sm" placeholder="Ex: 90 minutos" />
+          <div className="group">
+            <label className="block text-sm font-bold text-secondary-text uppercase tracking-wider mb-2">Duração prevista</label>
+            <input type="text" name="activityPlanning.expectedDuration" value={activityData.activityPlanning.expectedDuration} onChange={handleInputChange} className="block w-full px-6 py-4 bg-primary-bg/50 backdrop-blur-sm border border-border-color rounded-2xl shadow-inner focus:ring-2 focus:ring-accent-teal focus:border-transparent text-primary-text text-lg transition-all duration-300 group-hover:border-accent-teal/50" placeholder="Ex: 90 minutos" />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-secondary-text">Localização</label>
-            <input type="text" name="activityPlanning.location" value={activityData.activityPlanning.location} onChange={handleInputChange} className="mt-1 block w-full px-4 py-2 bg-primary-bg border border-border-color rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-accent-teal text-primary-text sm:text-sm" placeholder="Ex: Laboratório 5, Online (Discord)" />
+          <div className="md:col-span-2 group">
+            <label className="block text-sm font-bold text-secondary-text uppercase tracking-wider mb-2">Localização</label>
+            <input type="text" name="activityPlanning.location" value={activityData.activityPlanning.location} onChange={handleInputChange} className="block w-full px-6 py-4 bg-primary-bg/50 backdrop-blur-sm border border-border-color rounded-2xl shadow-inner focus:ring-2 focus:ring-accent-teal focus:border-transparent text-primary-text text-lg transition-all duration-300 group-hover:border-accent-teal/50" placeholder="Ex: Laboratório 5, Online (Discord)" />
           </div>
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-secondary-text">Outras informações relevantes (Opcional)</label>
-            <textarea name="activityPlanning.otherInfo" value={activityData.activityPlanning.otherInfo} onChange={handleInputChange} rows="3" className="mt-1 block w-full px-4 py-2 bg-primary-bg border border-border-color rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-accent-teal text-primary-text sm:text-sm" placeholder="Ex: Os alunos precisam trazer notebook."></textarea>
+          <div className="md:col-span-2 group">
+            <label className="block text-sm font-bold text-secondary-text uppercase tracking-wider mb-2">Outras informações relevantes (Opcional)</label>
+            <textarea name="activityPlanning.otherInfo" value={activityData.activityPlanning.otherInfo} onChange={handleInputChange} rows="4" className="block w-full px-6 py-4 bg-primary-bg/50 backdrop-blur-sm border border-border-color rounded-2xl shadow-inner focus:ring-2 focus:ring-accent-teal focus:border-transparent text-primary-text text-lg transition-all duration-300 group-hover:border-accent-teal/50" placeholder="Ex: Os alunos precisam trazer notebook."></textarea>
           </div>
         </div>
       </div>

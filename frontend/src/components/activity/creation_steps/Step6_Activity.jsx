@@ -1,7 +1,7 @@
 import React from 'react';
 import GameBoardEditor from '../../activity/GameBoardEditor';
 import { useHelpModal } from "../../../context/HelpModalContext";
-import { FaRoute, FaLightbulb, FaRobot } from 'react-icons/fa';
+import { FaRoute, FaLightbulb, FaRobot, FaInfoCircle } from 'react-icons/fa';
 
 /**
  * Criação de Atividade - Passo 6 (Revisão e Publicação)
@@ -15,39 +15,47 @@ function Step6_GameBoard({ activityData, setActivityData, onEditContent, onStruc
   const { openHelp } = useHelpModal();
 
   return (
-    <div id="tour-gameboard-intro" className="space-y-8 animate-fade-in pb-10">
-      <div>
-        <h2 className="text-2xl font-bold text-primary-text">
-          Configuração do Tabuleiro
-        </h2>
-        <p className="mt-2 text-secondary-text">
-          A trilha de progressão é o coração da sua atividade gamificada. É aqui que você define a jornada que os alunos farão.
-        </p>
+    <div id="tour-gameboard-intro" className="space-y-10 animate-fade-in relative pb-10">
+      {/* CABEÇALHO DO PASSO */}
+      <div className="flex items-center justify-between border-b border-border-color pb-6">
+        <div>
+          <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-accent-teal to-accent-yellow">
+            Configuração do Tabuleiro
+          </h2>
+          <p className="mt-2 text-secondary-text text-lg">
+            A trilha de progressão é o coração da sua atividade. Defina a jornada que os alunos farão.
+          </p>
+        </div>
+        <button
+          onClick={() => openHelp('tabuleiro_progressao')}
+          className="group flex items-center justify-center w-12 h-12 rounded-full bg-primary-bg border border-border-color hover:border-accent-teal/50 hover:bg-accent-teal/10 transition-all duration-300 shadow-sm"
+          title="Ajuda sobre este passo"
+        >
+          <FaInfoCircle className="text-xl text-secondary-text group-hover:text-accent-teal transition-colors" />
+        </button>
       </div>
 
-      <div className="bg-info-bg/30 border-l-4 border-info p-4 rounded-r-lg shadow-sm">
-        <h4 className="flex items-center text-lg font-bold text-info mb-2">
-          <FaLightbulb className="mr-2" /> Dicas para um bom tabuleiro:
+      <div className="bg-info-bg/30 backdrop-blur-sm border border-info/50 p-6 rounded-2xl animate-fade-in shadow-inner">
+        <h4 className="flex items-center text-xl font-bold text-info mb-4 uppercase tracking-wider">
+          <FaLightbulb className="mr-3 text-2xl" /> Dicas para um bom tabuleiro:
         </h4>
-        <ul className="list-disc list-inside text-sm text-secondary-text space-y-1">
-          <li>Alterne entre <strong>Narrativa</strong> (para engajar), <strong>Conteúdo</strong> (para ensinar) e <strong>Quiz</strong> (para avaliar).</li>
-          <li>Evite colocar um <strong>Quiz</strong> como o primeiro passo da trilha; prepare o aluno antes!</li>
-          <li>Aproveite o <strong className="text-accent-purple"><FaRobot className="inline mr-1" />Assistente de IA</strong> para gerar ideias, mas <strong>lembre-se de revisar e validar</strong> cada rascunho gerado.</li>
+        <ul className="list-disc list-inside text-base text-primary-text space-y-2 leading-relaxed ml-2">
+          <li>Alterne entre <strong className="text-accent-teal">Narrativa</strong> (para engajar), <strong className="text-accent-yellow">Conteúdo</strong> (para ensinar) e <strong className="text-accent-purple">Quiz</strong> (para avaliar).</li>
+          <li>Evite colocar um <strong className="text-accent-purple">Quiz</strong> como o primeiro passo da trilha; prepare o aluno antes!</li>
+          <li>Aproveite o <strong className="text-accent-purple font-extrabold"><FaRobot className="inline mr-2 text-xl" />Assistente de IA</strong> para gerar ideias, mas <strong className="text-info">lembre-se de revisar e validar</strong> cada rascunho gerado.</li>
         </ul>
       </div>
 
-      <GameBoardEditor
-        gamificationDesign={activityData.gamificationDesign}
-        setActivityData={setActivityData}
-        onEditContent={onEditContent}
-        onStructureChange={onStructureChange}
-        activityId={activityData.id}
-        fullActivityData={activityData}
-      />
-
-      <button onClick={() => openHelp('tabuleiro_progressao')} className="bg-info text-white px-4 py-2 rounded-lg font-bold hover:bg-info/90 transition-colors">
-        Ajuda
-      </button>
+      <div className="pt-4">
+          <GameBoardEditor
+            gamificationDesign={activityData.gamificationDesign}
+            setActivityData={setActivityData}
+            onEditContent={onEditContent}
+            onStructureChange={onStructureChange}
+            activityId={activityData.id}
+            fullActivityData={activityData}
+          />
+      </div>
     </div>
   );
 }

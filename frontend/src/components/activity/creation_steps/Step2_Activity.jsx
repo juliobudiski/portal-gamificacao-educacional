@@ -75,67 +75,81 @@ function Step2_DesiredScenario({ activityData, handleInputChange, setActivityDat
   };
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      <div>
-        <h2 className="text-2xl font-bold text-primary-text">
-          Cenário Desejado
-        </h2>
-        <p className="mt-2 text-secondary-text">
-          {activityData.subdomain
-            ? <span>Considerando o foco em <span className="text-teal-600 font-semibold">{activityData.subdomain}</span>, quais são suas metas?</span>
-            : "Selecione os principais objetivos que você deseja alcançar com esta atividade."
-          }
-        </p>
-        <p className="text-sm text-secondary-text mt-1">Selecione pelo menos uma meta para continuar.</p>
+    <div className="space-y-10 animate-fade-in relative">
+      {/* CABEÇALHO DO PASSO */}
+      <div className="flex items-center justify-between border-b border-border-color pb-6">
+        <div>
+          <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-accent-teal to-accent-yellow">
+            Cenário Desejado
+          </h2>
+          <p className="mt-2 text-secondary-text text-lg">
+            {activityData.subdomain
+              ? <span>Considerando o foco em <span className="text-accent-teal font-extrabold">{activityData.subdomain}</span>, quais são suas metas?</span>
+              : "Selecione os principais objetivos que você deseja alcançar com esta atividade."
+            }
+          </p>
+        </div>
+        <button
+          onClick={() => openHelp('cenario_desejado')}
+          className="group flex items-center justify-center w-12 h-12 rounded-full bg-primary-bg border border-border-color hover:border-accent-teal/50 hover:bg-accent-teal/10 transition-all duration-300 shadow-sm"
+          title="Ajuda sobre este passo"
+        >
+          <FaInfoCircle className="text-xl text-secondary-text group-hover:text-accent-teal transition-colors" />
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {displayedObjectives.map((objective) => {
-          const isSelected = activityData.desiredScenario.objectives.includes(objective.text);
-          return (
-            <div
-              key={objective.text}
-              onClick={() => handleObjectiveSelection(objective.text)}
-              className={`
-                group relative flex h-full cursor-pointer flex-col items-center justify-start space-y-3 rounded-xl border p-5 text-center transition-all duration-200
-                ${isSelected
-                  ? 'border-2 border-accent-teal bg-accent-teal/10 shadow-[0_0_15px_rgba(var(--accent-teal),0.2)]'
-                  : 'border-border-color bg-secondary-bg hover:border-accent-teal/50 hover:shadow-lg'
-                }
-              `}
-            >
-              <div className={`text-4xl transition-transform group-hover:scale-110 ${isSelected ? 'text-accent-teal' : 'text-secondary-text group-hover:text-accent-teal'}`}>
-                {objective.icon}
+      <div className="pt-2">
+        <p className="text-base text-secondary-text mb-8">Selecione pelo menos uma meta para continuarmos a moldar a atividade.</p>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {displayedObjectives.map((objective) => {
+            const isSelected = activityData.desiredScenario.objectives.includes(objective.text);
+            return (
+              <div
+                key={objective.text}
+                onClick={() => handleObjectiveSelection(objective.text)}
+                className={`
+                  group relative flex h-full cursor-pointer flex-col items-center justify-start rounded-2xl p-6 text-center transition-all duration-300 transform hover:-translate-y-1
+                  ${isSelected
+                    ? 'border-2 border-accent-teal bg-gradient-to-br from-accent-teal/20 to-primary-bg shadow-[0_8px_20px_rgba(20,184,166,0.3)]'
+                    : 'border border-border-color bg-primary-bg/50 backdrop-blur-sm hover:border-accent-teal/50 hover:shadow-xl'
+                  }
+                `}
+              >
+                <div className={`text-4xl mb-4 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6 ${isSelected ? 'text-accent-teal' : 'text-secondary-text/80 group-hover:text-accent-teal'}`}>
+                  {objective.icon}
+                </div>
+                <p className={`text-sm leading-relaxed ${isSelected ? 'text-accent-teal font-extrabold' : 'text-secondary-text font-medium group-hover:text-primary-text'}`}>
+                  {objective.text}
+                </p>
+                {/* Check animado no canto quando selecionado */}
+                {isSelected && (
+                  <div className="absolute top-3 right-3 text-accent-teal animate-bounce-in">
+                    <FaCheckCircle />
+                  </div>
+                )}
               </div>
-              <p className={`text-sm font-medium ${isSelected ? 'text-accent-teal font-bold' : 'text-secondary-text'}`}>
-                {objective.text}
-              </p>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
-      <div className="pt-4 border-t dark:border-[var(--border-color)]">
-        <label htmlFor="desiredScenario.otherObjective" className="block text-sm font-medium text-secondary-text">
+      <div className="pt-8 border-t border-border-color group">
+        <label htmlFor="desiredScenario.otherObjective" className="block text-sm font-bold text-secondary-text uppercase tracking-wider mb-3">
           Outro objetivo em mente? (Opcional)
         </label>
-        <input
-          type="text"
-          id="desiredScenario.otherObjective"
-          name="desiredScenario.otherObjective"
-          value={activityData.desiredScenario.otherObjective || ''}
-          onChange={handleInputChange}
-          className="mt-1 block w-full px-4 py-2 bg-primary-bg border border-border-color rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-accent-teal sm:text-sm text-primary-text"
-          placeholder="Ex: Preparar alunos para a maratona de programação..."
-        />
+        <div className="relative">
+            <input
+            type="text"
+            id="desiredScenario.otherObjective"
+            name="desiredScenario.otherObjective"
+            value={activityData.desiredScenario.otherObjective || ''}
+            onChange={handleInputChange}
+            className="block w-full px-6 py-4 bg-primary-bg/50 backdrop-blur-sm border border-border-color rounded-2xl shadow-inner focus:ring-2 focus:ring-accent-teal focus:border-transparent text-primary-text text-lg transition-all duration-300 group-hover:border-accent-teal/50"
+            placeholder="Ex: Preparar alunos para a maratona de programação..."
+            />
+        </div>
       </div>
-
-      <button
-        onClick={() => openHelp('cenario_desejado')}
-        className="bg-info text-white px-4 py-2 rounded-lg font-bold hover:bg-info/90 transition-colors"
-      >
-        Ajuda
-      </button>
     </div>
   );
 }

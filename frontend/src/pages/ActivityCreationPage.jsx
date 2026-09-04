@@ -715,15 +715,23 @@ function ActivityCreationPage({ existingActivity }) {
   };
 
   return (
-    <div className="min-h-screen bg-primary-bg">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen relative overflow-hidden bg-primary-bg transition-colors duration-300">
+      {/* Background Animado (Blobs) */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] rounded-full bg-accent-teal/10 blur-[120px] animate-blob"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-accent-purple/10 blur-[120px] animate-blob animation-delay-2000"></div>
+        <div className="absolute top-[40%] left-[60%] w-[30vw] h-[30vw] rounded-full bg-accent-yellow/5 blur-[100px] animate-blob animation-delay-4000"></div>
+      </div>
+
+      <div className="container mx-auto px-4 py-8 relative z-10 animate-fade-in">
         <button 
             onClick={() => navigate(-1)} 
-            className="group mb-6 flex items-center gap-2 text-secondary-text hover:text-accent-teal transition-colors font-bold uppercase tracking-widest text-sm"
+            className="group mb-8 flex items-center gap-2 text-secondary-text hover:text-accent-teal transition-colors font-bold uppercase tracking-widest text-sm bg-secondary-bg/50 px-4 py-2 rounded-full border border-border-color backdrop-blur-sm w-fit"
         >
             <FaArrowLeft className="group-hover:-translate-x-1 transition-transform" />
             Sair e Voltar
         </button>
+
         {/* Cabeçalho */}
         <ActivityCreationHeader 
           isEditMode={isEditMode}
@@ -745,7 +753,7 @@ function ActivityCreationPage({ existingActivity }) {
             templates={templates}
           />
         ) : (
-          <>
+          <div className="max-w-6xl mx-auto">
             {/* Barra de Progresso */}
             <ActivityCreationStepper
               currentStep={currentStep}
@@ -755,20 +763,22 @@ function ActivityCreationPage({ existingActivity }) {
             />
 
             {/* Contêiner do Formulário */}
-            <div id="tour-form-container" className="bg-secondary-bg dark:bg-primary-bg p-8 rounded-lg shadow-md">
-              {renderStep()}
+            <div id="tour-form-container" className="bg-secondary-bg/80 backdrop-blur-xl p-8 rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-border-color">
+              <div className="min-h-[400px]">
+                {renderStep()}
+              </div>
 
               {/* Botões de Navegação */}
-              <div className="flex justify-between mt-8 pt-6 border-t border-border-color dark:border-border-color">
+              <div className="flex justify-between mt-10 pt-6 border-t border-border-color/50">
                 {currentStep > 1 ? (
                   <button
                     onClick={handlePrevious}
                     disabled={isNavigating} // Trava visualmente
-                    className={`py-2 px-4 border border-border-color rounded-md shadow-sm text-sm font-medium text-secondary-text transition-colors
-                      ${isNavigating ? 'bg-gray-300 cursor-not-allowed opacity-50' : 'bg-secondary-bg hover:bg-hover-bg-color'}
-                    `}
+                    className={`py-3 px-6 rounded-xl font-bold uppercase tracking-wide text-sm transition-all duration-300 transform hover:-translate-y-0.5
+                      ${isNavigating ? 'bg-primary-bg cursor-not-allowed opacity-50 text-secondary-text border border-border-color' 
+                      : 'bg-primary-bg hover:bg-hover-bg-color text-secondary-text border border-border-color hover:border-accent-teal/50 hover:shadow-lg'}`}
                   >
-                    Anterior
+                    Voltar
                   </button>
                 ) : (
                   <div></div>
@@ -777,26 +787,32 @@ function ActivityCreationPage({ existingActivity }) {
                   id={currentStep === totalSteps ? "tour-final-save" : "tour-next-button"}
                   onClick={handleNext}
                   disabled={isSaving || isNavigating} // Bloqueia cliques duplos!
-                  className={`py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-text transition-colors
-                  ${(isSaving || isNavigating) ? 'bg-gray-500 cursor-wait opacity-70' : 'bg-teal-600 hover:bg-teal-700'}`}
+                  className={`py-3 px-8 rounded-xl font-bold uppercase tracking-wide text-sm transition-all duration-300 transform hover:-translate-y-0.5 shadow-lg
+                  ${(isSaving || isNavigating) ? 'bg-gray-500 cursor-wait opacity-70 text-white' 
+                  : 'bg-gradient-to-r from-accent-teal to-teal-600 hover:from-teal-500 hover:to-teal-700 text-gray-900 hover:shadow-[0_0_15px_rgba(20,184,166,0.5)]'}`}
                 >
-                  {isSaving ? 'Salvando...' : (currentStep === totalSteps ? 'Concluir e Salvar' : 'Próximo')}
+                  {isSaving ? 'Salvando...' : (currentStep === totalSteps ? 'Concluir e Salvar' : 'Próximo Passo')}
                 </button>
               </div>
             </div>
-          </>
+          </div>
         )}
 
         {/* Modal de Ajuda */}
         {showHelpModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-            <div className="bg-secondary-bg dark:bg-primary-bg rounded-lg shadow-xl max-w-lg w-full p-6">
-              <h3 className="text-lg font-medium leading-6 text-primary-text">{helpContent.title}</h3>
-              <div className="mt-2">
-                <p className="text-sm text-secondary-text">{helpContent.text}</p>
+          <div className="fixed inset-0 bg-primary-bg/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+            <div className="bg-secondary-bg border border-border-color rounded-2xl shadow-2xl max-w-lg w-full p-8 transform transition-all">
+              <div className="flex items-center justify-between mb-4 border-b border-border-color pb-4">
+                <h3 className="text-xl font-bold text-accent-teal">{helpContent.title}</h3>
+                <button onClick={closeHelpModal} className="text-secondary-text hover:text-danger transition-colors">
+                  <FaTimesCircle className="text-2xl" />
+                </button>
               </div>
-              <div className="mt-4">
-                <button type="button" className="inline-flex justify-center rounded-md border border-transparent bg-teal-100 px-4 py-2 text-sm font-medium text-teal-900 hover:bg-teal-200" onClick={closeHelpModal}>
+              <div className="mt-2">
+                <p className="text-primary-text leading-relaxed">{helpContent.text}</p>
+              </div>
+              <div className="mt-8 text-right">
+                <button type="button" className="inline-flex justify-center rounded-xl bg-accent-teal px-6 py-2.5 text-sm font-bold text-gray-900 hover:bg-teal-500 transition-colors shadow-lg" onClick={closeHelpModal}>
                   Entendi
                 </button>
               </div>

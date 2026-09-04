@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import {
   FaGavel, FaUserShield, FaMobileAlt, FaUniversity, FaUsers, FaBook,
   FaGraduationCap, FaComments, FaSyncAlt, FaUserTie, FaGlobeAmericas, FaLock,
-  FaPrint // NOVO ÍCONE IMPORTADO
+  FaPrint, FaInfoCircle, FaCheckCircle
 } from 'react-icons/fa';
 import { useHelpModal } from "../../../context/HelpModalContext";
 
@@ -62,23 +62,32 @@ function Step8_RulesAndSharing({ activityData, handleInputChange, setActivityDat
   );
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* SEÇÃO 1: Título e Descrição */}
-      <div>
-        <h2 className="text-2xl font-bold text-primary-text">
-          Regras da Gamificação e Compartilhamento
-        </h2>
-        <p className="mt-2 text-secondary-text">
-          Defina as regras que guiarão a atividade. Boas regras criam um ambiente justo, divertido e produtivo para todos.
-        </p>
+    <div className="space-y-10 animate-fade-in relative pb-10">
+      {/* CABEÇALHO DO PASSO */}
+      <div className="flex items-center justify-between border-b border-border-color pb-6">
+        <div>
+          <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-accent-teal to-accent-yellow">
+            Regras e Compartilhamento
+          </h2>
+          <p className="mt-2 text-secondary-text text-lg">
+            Defina as regras que guiarão a atividade. Boas regras criam um ambiente justo, divertido e produtivo para todos.
+          </p>
+        </div>
+        <button
+          onClick={() => openHelp('regras_gamificacao')}
+          className="group flex items-center justify-center w-12 h-12 rounded-full bg-primary-bg border border-border-color hover:border-accent-teal/50 hover:bg-accent-teal/10 transition-all duration-300 shadow-sm"
+          title="Ajuda sobre este passo"
+        >
+          <FaInfoCircle className="text-xl text-secondary-text group-hover:text-accent-teal transition-colors" />
+        </button>
       </div>
 
       {/* SEÇÃO 2: Seleção de Regras Gerais com Cards */}
-      <div>
-        <h3 className="text-lg font-semibold text-primary-text">
+      <div className="pt-2">
+        <h3 className="text-xl font-bold text-primary-text mb-6 uppercase tracking-wider">
           Regras Gerais Sugeridas
         </h3>
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {generalRules.map((rule) => {
             const isSelected = activityData.gamificationRules.generalRules.includes(rule.text);
             return (
@@ -86,19 +95,25 @@ function Step8_RulesAndSharing({ activityData, handleInputChange, setActivityDat
                 key={rule.text}
                 onClick={() => handleRuleSelection(rule.text)}
                 className={`
-                  group relative flex h-full cursor-pointer flex-col items-center justify-start space-y-3 rounded-xl border p-5 text-center transition-all duration-200
+                  group relative flex h-full cursor-pointer flex-col items-center justify-start rounded-2xl p-6 text-center transition-all duration-300 transform hover:-translate-y-1
                   ${isSelected
-                    ? 'border-2 border-accent-teal bg-accent-teal/10 shadow-[0_0_15px_rgba(var(--accent-teal),0.2)]'
-                    : 'border-border-color bg-secondary-bg hover:border-accent-teal/50 hover:shadow-lg'
+                    ? 'border-2 border-accent-teal bg-gradient-to-br from-accent-teal/20 to-primary-bg shadow-[0_8px_20px_rgba(20,184,166,0.3)]'
+                    : 'border border-border-color bg-primary-bg/50 backdrop-blur-sm hover:border-accent-teal/50 hover:shadow-xl'
                   }
                 `}
               >
-                <div className={`text-4xl transition-transform group-hover:scale-110 ${isSelected ? 'text-accent-teal' : 'text-secondary-text group-hover:text-accent-teal'}`}>
+                <div className={`text-4xl mb-4 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6 ${isSelected ? 'text-accent-teal' : 'text-secondary-text/80 group-hover:text-accent-teal'}`}>
                   {rule.icon}
                 </div>
-                <p className={`text-sm font-medium ${isSelected ? 'text-accent-teal font-bold' : 'text-secondary-text'}`}>
+                <p className={`text-sm leading-relaxed ${isSelected ? 'text-accent-teal font-extrabold' : 'text-secondary-text font-medium group-hover:text-primary-text'}`}>
                   {rule.text}
                 </p>
+                {/* Check animado no canto quando selecionado */}
+                {isSelected && (
+                  <div className="absolute top-3 right-3 text-accent-teal animate-bounce-in">
+                    <FaCheckCircle className="text-xl" />
+                  </div>
+                )}
               </div>
             );
           })}
@@ -106,62 +121,67 @@ function Step8_RulesAndSharing({ activityData, handleInputChange, setActivityDat
       </div>
 
       {/* SEÇÃO 3: Regras Específicas e Compartilhamento */}
-      <div className="pt-4 space-y-6">
-        <div>
-          <label htmlFor="gamificationRules.specificRules" className="block text-sm font-medium text-secondary-text">
+      <div className="pt-8 border-t border-border-color space-y-8">
+        <div className="group">
+          <label htmlFor="gamificationRules.specificRules" className="block text-sm font-bold text-secondary-text uppercase tracking-wider mb-3">
             Regras específicas da sua atividade (Opcional)
           </label>
-          <textarea
-            id="gamificationRules.specificRules"
-            name="gamificationRules.specificRules"
-            value={activityData.gamificationRules.specificRules}
-            onChange={handleInputChange}
-            rows="4"
-            className="mt-1 block w-full px-4 py-2 bg-primary-bg border border-border-color rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-accent-teal text-primary-text sm:text-sm"
-            placeholder="Ex: Não é permitido usar o celular durante o desafio. A entrega do projeto deve conter no mínimo 3 commits."
-          ></textarea>
+          <div className="relative">
+              <textarea
+                id="gamificationRules.specificRules"
+                name="gamificationRules.specificRules"
+                value={activityData.gamificationRules.specificRules}
+                onChange={handleInputChange}
+                rows="4"
+                className="block w-full px-6 py-4 bg-primary-bg/50 backdrop-blur-sm border border-border-color rounded-2xl shadow-inner focus:ring-2 focus:ring-accent-teal focus:border-transparent text-primary-text text-lg transition-all duration-300 group-hover:border-accent-teal/50"
+                placeholder="Ex: Não é permitido usar o celular durante o desafio. A entrega do projeto deve conter no mínimo 3 commits."
+              ></textarea>
+          </div>
         </div>
 
         {/* --- NOVA SEÇÃO: IMPRESSÃO DESPLUGADA --- */}
-        <div className="pt-4 pb-2 border-t border-border-color">
-          <div className="flex flex-col md:flex-row items-center justify-between bg-info-bg/20 p-4 rounded-xl border border-info">
+        <div className="pt-6 pb-2">
+          <div className="flex flex-col md:flex-row items-center justify-between bg-info-bg/30 backdrop-blur-sm border border-info/50 p-6 rounded-2xl shadow-inner">
             <div className="mb-4 md:mb-0">
-              <h4 className="text-lg font-bold text-info">Roteiro Desplugado</h4>
-              <p className="text-sm text-info opacity-90">
-                Gere um documento para impressão com todo o conteúdo e perguntas da trilha para aplicar em sala de aula.
+              <h4 className="text-xl font-bold text-info flex items-center gap-2 uppercase tracking-wider mb-2">
+                  <FaPrint /> Roteiro Desplugado
+              </h4>
+              <p className="text-base text-primary-text leading-relaxed">
+                Gere um documento formatado para impressão com todo o conteúdo e perguntas da trilha para aplicar em sala de aula sem depender de internet.
               </p>
             </div>
             <button
               onClick={() => setShowPrintView(true)}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold shadow transition-all
+              className={`flex items-center gap-3 px-8 py-4 rounded-2xl font-bold shadow-lg transition-all duration-300 whitespace-nowrap group
                 ${isDesplugada
-                  ? 'bg-info text-white hover:bg-info/90 hover:scale-105'
-                  : 'bg-secondary-bg border border-border-color text-secondary-text hover:bg-hover-bg-color0'
+                  ? 'bg-gradient-to-r from-info to-blue-500 text-white hover:scale-105 hover:shadow-[0_0_20px_rgba(59,130,246,0.5)]'
+                  : 'bg-primary-bg border-2 border-border-color text-primary-text hover:border-info hover:text-info'
                 }`}
             >
-              <FaPrint /> Imprimir Caderno de Aula
+              <FaPrint className="text-xl group-hover:scale-110 transition-transform" />
+              <span>Imprimir Caderno</span>
             </button>
           </div>
         </div>
 
         {/* SEÇÃO: Toggle de Compartilhamento Moderno */}
-        <div className="pt-2">
+        <div className="pt-6 border-t border-border-color">
           <label
             htmlFor="isPublic"
             className={`
-              relative flex cursor-pointer items-center justify-between rounded-xl border p-6 transition-all duration-300
+              relative flex cursor-pointer items-center justify-between rounded-3xl border p-8 transition-all duration-500 hover:-translate-y-1 shadow-lg
               ${activityData.isPublic
-                ? 'border-[#69e8cb] bg-[#69e8cb]/10 shadow-[0_0_15px_rgba(105,232,203,0.15)]'
-                : 'border-[var(--border-color)] bg-secondary-bg hover:border-gray-500 dark:bg-[#2c3135]'
+                ? 'border-accent-teal bg-gradient-to-br from-accent-teal/20 to-primary-bg shadow-[0_8px_30px_rgba(20,184,166,0.2)]'
+                : 'border-border-color bg-primary-bg/50 backdrop-blur-sm hover:border-accent-teal/30'
               }
             `}
           >
-            <div id="tour-final-privacy" className="flex items-center gap-4 pr-4">
+            <div id="tour-final-privacy" className="flex items-center gap-6 pr-4">
               <div
-                className={`flex h-12 w-12 items-center justify-center rounded-full text-2xl transition-colors duration-300
+                className={`flex h-16 w-16 items-center justify-center rounded-2xl text-3xl shadow-inner transition-all duration-500
                   ${activityData.isPublic
-                    ? 'bg-[#69e8cb] text-[#2c3135]'
-                    : 'bg-hover-bg-color0 text-secondary-text'
+                    ? 'bg-accent-teal text-gray-900 scale-110 rotate-12'
+                    : 'bg-secondary-bg text-secondary-text'
                   }
                 `}
               >
@@ -169,18 +189,18 @@ function Step8_RulesAndSharing({ activityData, handleInputChange, setActivityDat
               </div>
 
               <div className="flex flex-col">
-                <span className={`text-lg font-bold transition-colors duration-300 ${activityData.isPublic ? 'text-[#69e8cb]' : 'text-primary-text'}`}>
-                  {activityData.isPublic ? 'Atividade Pública' : 'Atividade Privada'}
+                <span className={`text-2xl font-extrabold mb-1 transition-colors duration-500 ${activityData.isPublic ? 'text-accent-teal' : 'text-primary-text'}`}>
+                  {activityData.isPublic ? 'Atividade Pública (Compartilhada)' : 'Atividade Privada (Fechada)'}
                 </span>
-                <span className="text-sm text-secondary-text dark:text-secondary-text">
+                <span className="text-base text-secondary-text leading-relaxed">
                   {activityData.isPublic
-                    ? 'Sua atividade ficará visível para outros professores usarem como inspiração.'
-                    : 'Apenas você e seus alunos terão acesso a esta atividade.'}
+                    ? 'Sua atividade ficará na galeria para inspirar outros professores, enriquecendo nossa comunidade!'
+                    : 'Apenas você e seus alunos terão acesso a esta atividade. Tudo ficará trancado a sete chaves.'}
                 </span>
               </div>
             </div>
 
-            <div className="relative">
+            <div className="relative flex-shrink-0">
               <input
                 id="isPublic"
                 name="isPublic"
@@ -189,19 +209,12 @@ function Step8_RulesAndSharing({ activityData, handleInputChange, setActivityDat
                 onChange={handleInputChange}
                 className="peer sr-only"
               />
-              <div className="h-8 w-14 rounded-full bg-hover-bg-color0 transition-colors duration-300 peer-focus:ring-4 peer-focus:ring-[#69e8cb]/40 peer-checked:bg-[#69e8cb]"></div>
-              <div className="absolute left-1 top-1 h-6 w-6 rounded-full bg-primary-bg transition-all duration-300 peer-checked:translate-x-6 peer-checked:bg-[#2c3135]"></div>
+              <div className="h-10 w-20 rounded-full bg-secondary-bg border border-border-color shadow-inner transition-all duration-500 peer-focus:ring-4 peer-focus:ring-accent-teal/40 peer-checked:bg-accent-teal peer-checked:border-accent-teal"></div>
+              <div className="absolute left-1 top-1 h-8 w-8 rounded-full bg-primary-text shadow-md transition-all duration-500 peer-checked:translate-x-10 peer-checked:bg-gray-900"></div>
             </div>
           </label>
         </div>
       </div>
-
-      <button
-        onClick={() => openHelp('regras_gamificacao')}
-        className="bg-info text-white px-4 py-2 rounded-lg font-bold hover:bg-info/90 transition-colors"
-      >
-        Ajuda
-      </button>
     </div>
   );
 }

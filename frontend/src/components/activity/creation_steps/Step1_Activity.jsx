@@ -103,42 +103,57 @@ function Step1_InitialDetails({ activityData, handleInputChange, setActivityData
   };
 
   return (
-    <div id="tour-step-scenario-inputs" className="space-y-8 animate-fade-in">
-      <div>
-        <h2 className="text-2xl font-bold text-primary-text">
-          Definindo o Cenário
-        </h2>
-        <p className="mt-2 text-secondary-text">
-          Comece definindo o escopo e os desafios da sua atividade.
-        </p>
+    <div id="tour-step-scenario-inputs" className="space-y-10 animate-fade-in relative">
+      
+      {/* CABEÇALHO DO PASSO */}
+      <div className="flex items-center justify-between border-b border-border-color pb-6">
+        <div>
+          <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-accent-teal to-accent-yellow">
+            Definindo o Cenário
+          </h2>
+          <p className="mt-2 text-secondary-text text-lg">
+            Comece definindo o escopo e os desafios da sua atividade.
+          </p>
+        </div>
+        <button
+          onClick={() => openHelp('analise_preliminar')}
+          className="group flex items-center justify-center w-12 h-12 rounded-full bg-primary-bg border border-border-color hover:border-accent-teal/50 hover:bg-accent-teal/10 transition-all duration-300 shadow-sm"
+          title="Ajuda sobre este passo"
+        >
+          <FaInfoCircle className="text-xl text-secondary-text group-hover:text-accent-teal transition-colors" />
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-secondary-text">Título da Atividade *</label>
-          <input
-            type="text"
-            name="title"
-            value={activityData.title}
-            onChange={handleInputChange}
-            className="mt-1 block w-full px-4 py-2 bg-secondary-bg dark:bg-primary-bg border border-border-color rounded-md shadow-sm focus:ring-teal-500 sm:text-sm"
-            placeholder="Ex: A Jornada do Herói em Java"
-            required
-          />
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+        {/* TÍTULO DA ATIVIDADE */}
+        <div className="md:col-span-2 group">
+          <label className="block text-sm font-bold text-secondary-text uppercase tracking-wider mb-2">Título da Atividade *</label>
+          <div className="relative">
+            <input
+              type="text"
+              name="title"
+              value={activityData.title}
+              onChange={handleInputChange}
+              className="block w-full px-6 py-4 bg-primary-bg/50 backdrop-blur-sm border border-border-color rounded-2xl shadow-inner focus:ring-2 focus:ring-accent-teal focus:border-transparent text-primary-text text-lg transition-all duration-300 group-hover:border-accent-teal/50"
+              placeholder="Ex: A Jornada do Herói em Java"
+              required
+            />
+          </div>
         </div>
 
-        <div className={isComputingArea ? "md:col-span-1" : "md:col-span-2"}>
-          <label className="block text-sm font-medium text-secondary-text mb-1">Área de Conhecimento *</label>
+        {/* ÁREA DE CONHECIMENTO */}
+        <div className={isComputingArea ? "md:col-span-1 group" : "md:col-span-2 group"}>
+          <label className="block text-sm font-bold text-secondary-text uppercase tracking-wider mb-2">Área de Conhecimento *</label>
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-secondary-text">
-              <FaGlobeAmericas />
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-accent-teal">
+              <FaGlobeAmericas className="text-xl" />
             </div>
             <select
               required
               name="areaKnowledge"
               value={currentArea}
               onChange={handleAreaChange}
-              className="pl-10 block w-full px-4 py-2 bg-secondary-bg dark:bg-primary-bg border border-border-color rounded-md focus:ring-teal-500 sm:text-sm"
+              className="pl-12 block w-full px-4 py-4 bg-primary-bg/50 backdrop-blur-sm border border-border-color rounded-2xl focus:ring-2 focus:ring-accent-teal focus:border-transparent text-primary-text text-lg transition-all duration-300 appearance-none group-hover:border-accent-teal/50"
             >
               <option value="Computação e Engenharia de Software">Computação e Engenharia de Software</option>
               <option value="Outras Áreas">Outras Áreas (Modo Genérico)</option>
@@ -146,40 +161,48 @@ function Step1_InitialDetails({ activityData, handleInputChange, setActivityData
           </div>
         </div>
 
+        {/* FOCO DA DISCIPLINA */}
         {isComputingArea && (
-          <div className="md:col-span-1 animate-fade-in">
-            <label className="block text-sm font-medium text-teal-600 dark:text-teal-400 mb-1">Foco da Disciplina (Opcional)</label>
-            <select
-              name="subdomain"
-              value={activityData.subdomain || ""}
-              onChange={handleInputChange}
-              className="block w-full px-4 py-2 bg-primary-bg border border-border-color rounded-md focus:ring-accent-teal sm:text-sm text-primary-text"
-            >
-              <option value="">Geral / Sem foco específico</option>
-              {SUBDOMAINS_COMPUTING.map(sub => (
-                <option key={sub} value={sub}>{sub}</option>
-              ))}
-            </select>
+          <div className="md:col-span-1 animate-fade-in group">
+            <label className="block text-sm font-bold text-accent-teal uppercase tracking-wider mb-2">Foco da Disciplina (Opcional)</label>
+            <div className="relative">
+              <select
+                name="subdomain"
+                value={activityData.subdomain || ""}
+                onChange={handleInputChange}
+                className="block w-full px-6 py-4 bg-primary-bg/50 backdrop-blur-sm border border-border-color rounded-2xl focus:ring-2 focus:ring-accent-teal focus:border-transparent text-primary-text text-lg transition-all duration-300 appearance-none group-hover:border-accent-teal/50"
+              >
+                <option value="">Geral / Sem foco específico</option>
+                {SUBDOMAINS_COMPUTING.map(sub => (
+                  <option key={sub} value={sub}>{sub}</option>
+                ))}
+              </select>
+            </div>
           </div>
         )}
 
+        {/* MENSAGEM MODO EXPLORATÓRIO */}
         {!isComputingArea && (
-          <div className="md:col-span-2 bg-info-bg/20 border-l-4 border-info p-4 rounded-md animate-fade-in">
-            <div className="flex items-start">
-              <FaInfoCircle className="text-info mt-0.5 mr-3 flex-shrink-0" />
-              <p className="text-sm text-info dark:text-info">
-                <strong>Modo Exploratório:</strong> O motor de evidências científicas desta versão foca em disciplinas de Computação e Engenharia de Software. Para a sua área, o sistema operará de forma genérica.
+          <div className="md:col-span-2 bg-info-bg/30 backdrop-blur-sm border border-info/50 p-6 rounded-2xl animate-fade-in shadow-inner">
+            <div className="flex items-start gap-4">
+              <div className="bg-info/20 p-2 rounded-xl">
+                <FaInfoCircle className="text-info text-2xl flex-shrink-0" />
+              </div>
+              <p className="text-base text-primary-text leading-relaxed">
+                <strong className="text-info tracking-wider uppercase text-sm block mb-1">Modo Exploratório</strong>
+                O motor de evidências científicas desta versão foca em disciplinas de Computação e Engenharia de Software. Para a sua área, o sistema operará de forma genérica.
               </p>
             </div>
           </div>
         )}
       </div>
 
-      <div className="pt-4 border-t dark:border-[var(--border-color)]">
-        <h3 className="text-lg font-semibold text-primary-text">
+      {/* SELEÇÃO DE PROBLEMAS */}
+      <div className="pt-8 border-t border-border-color">
+        <h3 className="text-2xl font-bold text-primary-text mb-2">
           Quais desafios seus alunos enfrentam?
         </h3>
-        <p className="text-sm text-secondary-text mb-4">Selecione pelo menos um desafio para continuar.</p>
+        <p className="text-base text-secondary-text mb-8">Selecione pelo menos um desafio enfrentado pela turma para continuarmos a moldar a atividade.</p>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {displayedProblems.map((problem) => {
@@ -189,31 +212,30 @@ function Step1_InitialDetails({ activityData, handleInputChange, setActivityData
                 key={problem.text}
                 onClick={() => handleProblemSelection(problem.text)}
                 className={`
-                  group relative flex cursor-pointer flex-col items-center justify-start space-y-3 rounded-xl border p-4 text-center transition-all duration-200
+                  group relative flex cursor-pointer flex-col items-center justify-start rounded-2xl p-6 text-center transition-all duration-300 transform hover:-translate-y-1
                   ${isSelected
-                    ? 'border-2 border-accent-teal bg-accent-teal/10 shadow-[0_0_15px_rgba(var(--accent-teal),0.2)]'
-                    : 'border-border-color bg-secondary-bg hover:border-accent-teal/50 hover:shadow-lg'
+                    ? 'border-2 border-accent-teal bg-gradient-to-br from-accent-teal/20 to-primary-bg shadow-[0_8px_20px_rgba(20,184,166,0.3)]'
+                    : 'border border-border-color bg-primary-bg/50 backdrop-blur-sm hover:border-accent-teal/50 hover:shadow-xl'
                   }
                 `}
               >
-                <div className={`text-3xl transition-transform group-hover:scale-110 ${isSelected ? 'text-accent-teal' : 'text-secondary-text group-hover:text-accent-teal'}`}>
+                <div className={`text-4xl mb-4 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6 ${isSelected ? 'text-accent-teal' : 'text-secondary-text/80 group-hover:text-accent-teal'}`}>
                   {problem.icon}
                 </div>
-                <p className={`text-sm font-medium ${isSelected ? 'text-accent-teal font-bold' : 'text-secondary-text'}`}>
+                <p className={`text-sm leading-relaxed ${isSelected ? 'text-accent-teal font-extrabold' : 'text-secondary-text font-medium group-hover:text-primary-text'}`}>
                   {problem.text}
                 </p>
+                {/* Check animado no canto quando selecionado */}
+                {isSelected && (
+                  <div className="absolute top-3 right-3 text-accent-teal animate-bounce-in">
+                    <FaCheckCircle />
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
       </div>
-
-      <button
-        onClick={() => openHelp('analise_preliminar')}
-        className="bg-blue-500 text-white px-4 py-2 rounded mt-4"
-      >
-        Ajuda
-      </button>
     </div>
   );
 }

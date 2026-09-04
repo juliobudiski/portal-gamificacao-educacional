@@ -5,7 +5,7 @@ import {
   FaHandshake, FaVrCardboard, FaPuzzlePiece, FaSyncAlt, FaBook, FaUserEdit,
   FaShieldAlt, FaShareAlt, FaCheckCircle, FaChartLine, FaListOl, FaGift,
   FaBookOpen, FaAward, FaTrophy, FaGamepad, FaBullseye, FaBrain, FaLightbulb,
-  FaStar, FaProjectDiagram, FaCodeBranch, FaUsers, FaComments, FaExclamationTriangle
+  FaStar, FaProjectDiagram, FaCodeBranch, FaUsers, FaComments, FaExclamationTriangle, FaInfoCircle
 } from 'react-icons/fa';
 import { useHelpModal } from "../../../context/HelpModalContext";
 import api from '../../../services/api';
@@ -164,39 +164,39 @@ function Step5_GameElements({ activityData, handleInputChange, setActivityData }
       <div
         key={item.name}
         onClick={() => handleSelectionAttempt(item, category)}
-        className={`group relative flex flex-col items-center justify-start p-4 rounded-xl border transition-all duration-200 cursor-pointer hover:-translate-y-1 ${baseBorder} ${baseBg}`}
+        className={`group relative flex flex-col items-center justify-start p-6 rounded-2xl border transition-all duration-300 cursor-pointer hover:-translate-y-1 ${baseBorder} ${baseBg} backdrop-blur-sm`}
       >
-        {/* CHECKMARK GIGANTE SE ESTIVER SELECIONADO (Muda a Forma, não só a cor) */}
+        {/* CHECKMARK GIGANTE SE ESTIVER SELECIONADO */}
         {isSelected && (
-          <div className={`absolute top-2 left-2 ${category === 'forbidden' ? 'text-danger' : 'text-accent-teal'}`}>
-            <FaCheckCircle size={20} />
+          <div className={`absolute top-3 left-3 animate-bounce-in ${category === 'forbidden' ? 'text-danger' : 'text-accent-teal'}`}>
+            <FaCheckCircle size={24} />
           </div>
         )}
 
-        {/* ESTRELA SE FOR RECOMENDADO (Apenas se não estiver selecionado) */}
+        {/* ESTRELA SE FOR RECOMENDADO */}
         {category === 'recommended' && !isSelected && (
-          <div className="absolute top-2 right-2 text-success animate-pulse" title="Recomendado pelo Motor">
-            <FaStar size={16} />
+          <div className="absolute top-3 right-3 text-success animate-pulse" title="Recomendado pelo Motor">
+            <FaStar size={20} />
           </div>
         )}
 
-        {/* ALERTA SE FOR PROIBIDO (Apenas se não estiver selecionado) */}
+        {/* ALERTA SE FOR PROIBIDO */}
         {category === 'forbidden' && !isSelected && (
-          <div className="absolute top-2 right-2 text-danger opacity-70" title="Não Recomendado">
-            <FaExclamationTriangle size={16} />
+          <div className="absolute top-3 right-3 text-danger opacity-70" title="Não Recomendado">
+            <FaExclamationTriangle size={20} />
           </div>
         )}
 
-        <div className={`text-4xl mb-3 mt-2 transition-transform group-hover:scale-110 ${iconColor}`}>
+        <div className={`text-5xl mb-4 mt-2 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6 ${iconColor}`}>
           {ICON_MAP[item.name] || <FaGamepad />}
         </div>
 
-        <p className={`text-sm font-bold text-center leading-tight ${isSelected ? 'text-primary-text' : 'text-secondary-text'}`}>
+        <p className={`text-sm font-extrabold text-center leading-relaxed ${isSelected ? 'text-primary-text' : 'text-secondary-text group-hover:text-primary-text'}`}>
           {item.name}
         </p>
 
         {item.reason && category === 'recommended' && (
-          <span className="mt-2 text-[10px] text-success font-semibold text-center px-1 leading-tight">
+          <span className="mt-3 text-xs text-success font-bold text-center leading-tight bg-success/10 px-2 py-1 rounded-lg">
             {item.reason}
           </span>
         )}
@@ -204,63 +204,82 @@ function Step5_GameElements({ activityData, handleInputChange, setActivityData }
     );
   };
 
-  if (loading) return <div className="p-8 text-center">Carregando sugestões do Motor Contextual...</div>;
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 space-y-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent-teal"></div>
+        <p className="text-secondary-text font-medium animate-pulse">O Motor Contextual está analisando sua turma...</p>
+      </div>
+    );
+  }
 
   return (
-    <div id="tour-step-elements" className="space-y-8 animate-fade-in pb-10">
-      <div>
-        <h2 className="text-2xl font-bold text-primary-text">
-          Design Guiado: Elementos de Jogo
-        </h2>
-        <p className="mt-2 text-secondary-text">
-          O sistema analisou o perfil da sua turma e organizou os elementos abaixo.
-        </p>
+    <div id="tour-step-elements" className="space-y-10 animate-fade-in relative pb-10">
+      {/* CABEÇALHO DO PASSO */}
+      <div className="flex items-center justify-between border-b border-border-color pb-6">
+        <div>
+          <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-accent-teal to-accent-yellow">
+            Design Guiado: Elementos de Jogo
+          </h2>
+          <p className="mt-2 text-secondary-text text-lg">
+            O sistema analisou o perfil da sua turma e organizou os elementos abaixo para potencializar o engajamento.
+          </p>
+        </div>
+        <button
+          onClick={() => openHelp('elementos_jogos')}
+          className="group flex items-center justify-center w-12 h-12 rounded-full bg-primary-bg border border-border-color hover:border-accent-teal/50 hover:bg-accent-teal/10 transition-all duration-300 shadow-sm"
+          title="Ajuda sobre este passo"
+        >
+          <FaInfoCircle className="text-xl text-secondary-text group-hover:text-accent-teal transition-colors" />
+        </button>
       </div>
 
       {clusters.recommended.length > 0 && (
-        <div className="space-y-4">
-          <h3 className="flex items-center text-lg font-semibold text-success">
-            <FaStar className="mr-2" /> Altamente Recomendados
+        <div className="space-y-6 pt-2">
+          <h3 className="flex items-center text-2xl font-bold text-success uppercase tracking-wider">
+            <FaStar className="mr-3 text-3xl" /> Altamente Recomendados
           </h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
             {clusters.recommended.map(item => renderCard(item, 'recommended'))}
           </div>
         </div>
       )}
 
-      <div className="space-y-4">
-        <h3 className="flex items-center text-lg font-semibold text-primary-text">
-          <FaLayerGroup className="mr-2" /> Disponíveis (Neutros)
+      <div className="space-y-6 pt-6 border-t border-border-color">
+        <h3 className="flex items-center text-xl font-bold text-primary-text uppercase tracking-wider">
+          <FaLayerGroup className="mr-3" /> Disponíveis (Neutros)
         </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
           {clusters.neutral.map(item => renderCard(item, 'neutral'))}
         </div>
       </div>
 
       {clusters.forbidden.length > 0 && (
-        <div className="space-y-4 pt-4 border-t border-border-color">
-          <h3 className="flex items-center text-lg font-semibold text-danger">
-            <FaExclamationTriangle className="mr-2" /> Requer Cuidado (Potenciais Conflitos)
+        <div className="space-y-6 pt-6 border-t border-border-color">
+          <h3 className="flex items-center text-xl font-bold text-danger uppercase tracking-wider">
+            <FaExclamationTriangle className="mr-3" /> Requer Cuidado (Potenciais Conflitos)
           </h3>
-          <p className="text-sm text-secondary-text">Estes elementos podem conflitar com o perfil da turma ou a logística definida.</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          <p className="text-base text-secondary-text">Estes elementos podem conflitar com o perfil da turma ou a logística definida anteriormente.</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
             {clusters.forbidden.map(item => renderCard(item, 'forbidden'))}
           </div>
         </div>
       )}
 
-      <div className="pt-6">
-        <label className="block text-sm font-medium text-secondary-text mb-1">
+      <div className="pt-8 border-t border-border-color group">
+        <label className="block text-sm font-bold text-secondary-text uppercase tracking-wider mb-3">
           Outro elemento (Personalizado)
         </label>
-        <input
-          type="text"
-          value={activityData.gameElements.otherElement || ''}
-          onChange={handleInputChange}
-          name="gameElements.otherElement"
-          className="w-full px-4 py-3 bg-primary-bg border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-teal text-primary-text"
-          placeholder="Ex: Cartas Colecionáveis Físicas..."
-        />
+        <div className="relative">
+            <input
+            type="text"
+            value={activityData.gameElements.otherElement || ''}
+            onChange={handleInputChange}
+            name="gameElements.otherElement"
+            className="block w-full px-6 py-4 bg-primary-bg/50 backdrop-blur-sm border border-border-color rounded-2xl shadow-inner focus:ring-2 focus:ring-accent-teal focus:border-transparent text-primary-text text-lg transition-all duration-300 group-hover:border-accent-teal/50"
+            placeholder="Ex: Cartas Colecionáveis Físicas..."
+            />
+        </div>
       </div>
 
       {conflictModal.isOpen && (
@@ -294,9 +313,7 @@ function Step5_GameElements({ activityData, handleInputChange, setActivityData }
         </div>
       )}
 
-      <button onClick={() => openHelp('elementos_jogos')} className="bg-info text-white px-4 py-2 rounded-lg font-bold">
-        Ajuda
-      </button>
+
     </div>
   );
 }

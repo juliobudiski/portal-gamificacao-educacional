@@ -68,56 +68,63 @@ function Step4_PlayerProfile({ activityData, setActivityData, openHelpModal }) {
   };
 
   return (
-    <div id="tour-step-profiles" className="space-y-8 animate-fade-in">
-      {/* SEÇÃO 1: Título e Descrição */}
-      <div>
-        <h2 className="text-2xl font-bold text-primary-text">
-          Qual perfil de jogador você quer engajar?
-        </h2>
-        <p className="mt-2 text-secondary-text">
-          Selecionar os perfis corretos ajuda a definir os elementos de gamificação mais eficazes para a sua atividade.
-        </p>
+    <div id="tour-step-profiles" className="space-y-10 animate-fade-in relative">
+      {/* CABEÇALHO DO PASSO */}
+      <div className="flex items-center justify-between border-b border-border-color pb-6">
+        <div>
+          <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-accent-teal to-accent-yellow">
+            Perfil do Jogador
+          </h2>
+          <p className="mt-2 text-secondary-text text-lg">
+            Quais perfis você quer engajar? Isso ajuda a definir os elementos gamificados.
+          </p>
+        </div>
+        <button
+          onClick={() => openHelp('perfil_jogador')}
+          className="group flex items-center justify-center w-12 h-12 rounded-full bg-primary-bg border border-border-color hover:border-accent-teal/50 hover:bg-accent-teal/10 transition-all duration-300 shadow-sm"
+          title="Ajuda sobre este passo"
+        >
+          <FaInfoCircle className="text-xl text-secondary-text group-hover:text-accent-teal transition-colors" />
+        </button>
       </div>
 
       {/* SEÇÃO 2: Seleção de Perfis com Cards */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {playerProfiles.map((profile) => {
-          const isSelected = activityData.playerProfile.selectedProfiles.includes(profile.name);
-          return (
-            <div
-              key={profile.name}
-              onClick={() => handleProfileSelection(profile.name)}
-              className={`
-                group relative flex h-full cursor-pointer flex-col items-center justify-start space-y-3 rounded-xl border p-6 text-center transition-all duration-200
-                ${isSelected
-                  ? 'border-2 border-accent-teal bg-accent-teal/10 shadow-[0_0_15px_rgba(var(--accent-teal),0.2)]'
-                  : 'border-border-color bg-secondary-bg hover:border-accent-teal/50 hover:shadow-lg'
-                }
-              `}
-            >
-              <div className={`text-5xl mb-2 transition-transform group-hover:scale-110 ${isSelected ? 'text-accent-teal' : 'text-secondary-text group-hover:text-accent-teal'}`}>
-                {profile.icon}
+      <div className="pt-2">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {playerProfiles.map((profile) => {
+            const isSelected = activityData.playerProfile.selectedProfiles.includes(profile.name);
+            return (
+              <div
+                key={profile.name}
+                onClick={() => handleProfileSelection(profile.name)}
+                className={`
+                  group relative flex h-full cursor-pointer flex-col items-center justify-start rounded-2xl p-8 text-center transition-all duration-300 transform hover:-translate-y-1
+                  ${isSelected
+                    ? 'border-2 border-accent-teal bg-gradient-to-br from-accent-teal/20 to-primary-bg shadow-[0_8px_20px_rgba(20,184,166,0.3)]'
+                    : 'border border-border-color bg-primary-bg/50 backdrop-blur-sm hover:border-accent-teal/50 hover:shadow-xl'
+                  }
+                `}
+              >
+                <div className={`text-6xl mb-6 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6 ${isSelected ? 'text-accent-teal' : 'text-secondary-text/80 group-hover:text-accent-teal'}`}>
+                  {profile.icon}
+                </div>
+                <h4 className={`text-xl font-extrabold mb-3 ${isSelected ? 'text-accent-teal' : 'text-primary-text'}`}>
+                  {profile.name}
+                </h4>
+                <p className={`text-sm leading-relaxed ${isSelected ? 'text-primary-text font-medium' : 'text-secondary-text'}`}>
+                  {profile.description}
+                </p>
+                {/* Check animado no canto quando selecionado */}
+                {isSelected && (
+                  <div className="absolute top-4 right-4 text-accent-teal animate-bounce-in">
+                    <FaCheckCircle className="text-xl" />
+                  </div>
+                )}
               </div>
-              <h4 className={`text-base font-bold ${isSelected ? 'text-accent-teal' : 'text-primary-text'}`}>
-                {profile.name}
-              </h4>
-              <p className={`text-xs ${isSelected ? 'text-primary-text' : 'text-secondary-text'}`}>
-                {profile.description}
-              </p>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
-
-      {/* SEÇÃO 3: Botão de Ajuda */}
-
-      <button
-        onClick={() => openHelp('perfil_jogador')}
-        className="bg-info text-white px-4 py-2 rounded-lg font-bold hover:bg-info/90 transition-colors"
-      >
-        Ajuda
-      </button>
-
     </div>
   );
 }

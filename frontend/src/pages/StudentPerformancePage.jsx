@@ -106,7 +106,7 @@ const StudentPerformancePage = () => {
 
     const fetchFilters = async () => {
       try {
-        const response = await fetch(`/api/analytics/professor/filters`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/analytics/professor/filters`, {
           headers: { 'Authorization': `Bearer ${user.token}` }
         });
 
@@ -134,7 +134,7 @@ const StudentPerformancePage = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        let url = `/api/analytics/professor/performance?class_id=${selectedClass}`;
+        let url = `${import.meta.env.VITE_API_URL}/api/analytics/professor/performance?class_id=${selectedClass}`;
         if (selectedActivity) url += `&activity_id=${selectedActivity}`;
         if (searchTerm) url += `&search=${searchTerm}`;
 
