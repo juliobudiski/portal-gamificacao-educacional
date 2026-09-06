@@ -4,6 +4,16 @@ import { FaArrowLeft, FaTimes, FaComments, FaPlus, FaTrophy, FaPaperPlane, FaThu
 import { useAuth } from '../../context/AuthContext';
 import { useParams } from 'react-router-dom';
 
+/**
+ * @component ForumTab
+ * @description
+ * Complex interface for a multi-category discussion forum specific to an activity.
+ * 
+ * Architectural Decisions:
+ * - View State Machine: Manages navigation between categories, topics, and post creation entirely client-side using a `view` state string.
+ * - Optimistic Updates: The `handleToggleLike` function updates the local state immediately for perceived performance.
+ * - Sub-component Extraction: Breaks down the UI into `CategoryListItem`, `TopicListItem`, etc., to keep the main component manageable.
+ */
 // --- Sub-componentes para manter o código organizado ---
 const formatDate = (isoString) => {
     if (!isoString) return '';

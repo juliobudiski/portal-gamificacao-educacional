@@ -5,9 +5,11 @@ import { FaKey, FaSignInAlt, FaUserGraduate } from 'react-icons/fa';
 import { useConfetti } from '../context/ConfettiContext';
 
 /**
- * Componente JoinClassPage
+ * JoinClassPage
  * 
- * Página para alunos ingressarem em turmas usando o código de convite fornecido pelo professor.
+ * Architectural intent: Manages the student workflow for enrolling in a class. It operates as a Controller
+ * linking the UI input (enrollment code) with the backend enrollment mutation, abstracting the complexity
+ * of the domain logic from the presentation layer.
  */
 function JoinClassPage() {
     const { user } = useContext(AuthContext);

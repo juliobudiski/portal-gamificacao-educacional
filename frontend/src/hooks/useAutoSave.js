@@ -4,10 +4,11 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import activityService from '../services/activityService';
 
 /**
- * Hook de Auto-Salvamento
+ * useAutoSave
  * 
- * Gerencia timers (debouncing) para salvar automaticamente o progresso em rascunhos
- * enquanto o professor cria ou edita uma atividade.
+ * Architectural intent: Implements a debounced auto-save mechanism for draft data.
+ * Decouples the timing and API synchronization logic from form components, ensuring
+ * that UI state management and backend persistence remain independent (Low Coupling).
  */
 
 

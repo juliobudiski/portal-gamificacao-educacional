@@ -3,10 +3,11 @@ import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 /**
- * Gráfico de Top Atividades
+ * TopActivitiesChart
  * 
- * Componente analítico do painel de administração que exibe um gráfico de barras
- * com as atividades mais populares/engajadoras do sistema.
+ * Architectural intent: Serves as a specialized presentation component for rendering the Top Activities metric.
+ * It encapsulates the Recharts bar chart configuration, keeping the parent analytics view clean and decoupled
+ * from specific charting library implementations.
  */
 
 

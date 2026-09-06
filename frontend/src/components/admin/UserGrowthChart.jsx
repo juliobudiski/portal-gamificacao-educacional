@@ -3,10 +3,11 @@ import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 /**
- * Gráfico de Crescimento de Usuários
+ * UserGrowthChart
  * 
- * Componente analítico do painel de administração focado em demonstrar a evolução
- * do número de novos registros (professores e alunos) ao longo do tempo.
+ * Architectural intent: Serves as a specialized presentation component for rendering the User Growth trend line.
+ * It encapsulates the Recharts line chart configuration, decoupling the complex SVG rendering logic
+ * from the parent dashboard component.
  */
 
 

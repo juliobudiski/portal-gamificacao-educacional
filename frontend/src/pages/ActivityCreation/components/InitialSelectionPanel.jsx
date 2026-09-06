@@ -1,10 +1,11 @@
 import React from 'react';
 
 /**
- * Painel de Seleção Inicial (Criação)
+ * InitialSelectionPanel
  * 
- * Oferece ao professor a escolha entre criar uma atividade do zero ou usar um dos
- * templates pré-definidos (presets).
+ * Architectural intent: Manages the initial branching logic for creating a new activity (scratch vs templates).
+ * Isolated as a presentational component, it receives its behavior and state via Dependency Injection (props),
+ * keeping the UI stateless and completely decoupled from the activity creation context logic.
  */
 
 

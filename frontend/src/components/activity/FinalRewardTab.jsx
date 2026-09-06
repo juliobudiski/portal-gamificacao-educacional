@@ -3,7 +3,15 @@ import React, { useState, useContext } from 'react';
 import { FaTrophy, FaCheckCircle, FaSpinner, FaStar } from 'react-icons/fa';
 import { AuthContext } from '../../context/AuthContext'; // Importe para ter o token
 
-const FinalRewardTab = ({ activityId, reward, onCollect, onReturnToBoard }) => {
+/**
+ * @component FinalRewardTab
+ * @description
+ * End-of-activity interface allowing users to rate the activity and collect their final rewards.
+ * 
+ * Architectural Decisions:
+ * - Decoupled Submission: Rating submission (`submitRating`) is separated from reward collection (`handleCollect`), ensuring users still get rewards even if the rating API fails.
+ * - UX Feedback loop: Uses visual `hover` and `rating` state to provide immediate star-rating feedback before submission.
+ */
     const [isCollecting, setIsCollecting] = useState(false);
     const [rating, setRating] = useState(0); // Estado para a nota (0 a 5)
     const [hover, setHover] = useState(null); // Estado para o efeito visual de passar o mouse

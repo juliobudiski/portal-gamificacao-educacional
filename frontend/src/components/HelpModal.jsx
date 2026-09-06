@@ -2,6 +2,15 @@ import React, { useEffect } from 'react';
 import { FaTimes, FaLightbulb } from 'react-icons/fa'; // Ícones para fechar e ilustrar ajuda
 import { helpContent } from '../data/helpContent';
 
+/**
+ * @component HelpModal
+ * @description
+ * Contextual help modal rendering dynamic content based on a provided key.
+ * 
+ * Architectural Decisions:
+ * - Content Decoupling: Imports `helpContent` dictionary statically, separating large text blocks from the UI layout structure.
+ * - Side Effects Management: Uses `useEffect` strictly for DOM/Window manipulation, cleaning up on unmount to prevent memory leaks.
+ */
 const HelpModal = ({ isOpen, contentKey, onClose }) => {
     // Se não estiver aberto ou não tiver chave válida, não renderiza nada no DOM
     const data = contentKey ? helpContent[contentKey] : null;

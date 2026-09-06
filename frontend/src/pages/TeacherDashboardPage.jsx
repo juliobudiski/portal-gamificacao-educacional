@@ -8,6 +8,13 @@ import { useAuthOperations } from '../hooks/useAuthOperations';
 import FeedbackModal from '../components/FeedbackModal';
 import { Users, PlusCircle, BookOpen, BarChart2, Award, Settings, ChevronRight } from 'lucide-react';
 
+/**
+ * TeacherDashboardPage
+ * 
+ * Architectural intent: Serves as the primary authenticated entry point for teachers, providing a centralized
+ * routing hub for administrative and content creation tasks. It orchestrates the presentation of action cards
+ * and manages access control, ensuring students cannot access educator-specific routes.
+ */
 export default function TeacherDashboardPage() {
   const { user } = useAuth();
   const navigate = useNavigate();

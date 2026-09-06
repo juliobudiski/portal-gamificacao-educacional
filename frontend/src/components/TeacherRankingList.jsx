@@ -2,16 +2,17 @@
 
 import React, { useState, useContext, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { useAuth } from '../context/AuthContext'; // Importando o hook de autenticação
+import { useAuth } from '../context/AuthContext';
 
 /**
- * Lista de Ranking de Professores
+ * @component TeacherRankingList
+ * @description
+ * Renders the leaderboard of educators based on gamified platform engagement.
  * 
- * Renderiza a tabela de classificação (leaderboard) dos educadores com base em suas
- * contribuições (criações, engajamento e clones) na plataforma.
+ * Architectural Decisions:
+ * - Dependency Injection: Receives `rankingData`, `isLoading`, and `error` as props rather than fetching them directly. This makes it a highly reusable and testable presentational component.
+ * - Context Usage: Only connects to `useAuth` to identify the current user and highlight them in the list.
  */
-
-
 const TeacherRankingList = ({ title, rankingData, isLoading, error }) => {
   const { user } = useAuth(); // Pegando o usuário logado do contexto
 

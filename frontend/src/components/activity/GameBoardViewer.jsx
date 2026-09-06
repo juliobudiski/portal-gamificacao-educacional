@@ -6,6 +6,16 @@ import { FaSpinner } from 'react-icons/fa'; // Certifique-se de ter react-icons 
 const VilaDaAventuraTheme = lazy(() => import('./themes/VilaDaAventuraTheme'));
 const FlowchartTheme = lazy(() => import('./themes/FlowchartTheme'));
 
+/**
+ * @component GameBoardViewer
+ * @description
+ * Container component responsible for rendering the correct visual theme for the game board.
+ * 
+ * Architectural Decisions:
+ * - Lazy Loading: Uses React `lazy` and `Suspense` to dynamically load the specific theme component, reducing the initial bundle size.
+ * - Context-Driven Loading: Consumes `useActivity` context to display a progress bar while heavy image assets are pre-loaded.
+ * - Factory Pattern: Uses a `themeMap` dictionary to dynamically resolve the React component to render based on the `themeName` string.
+ */
 const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === 'true';
 
 const themeMap = {

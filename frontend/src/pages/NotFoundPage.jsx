@@ -12,9 +12,11 @@ import {
 } from 'react-icons/fa';
 
 /**
- * Componente NotFoundPage
+ * NotFoundPage
  * 
- * Página de erro 404 para exibir ao usuário quando acessar uma rota inexistente.
+ * Architectural intent: Acts as the fallback UI for unresolved routes (404 error boundary). It ensures
+ * the application degrades gracefully when navigating to non-existent paths, maintaining the gamified
+ * theme and providing navigation recovery options without coupling to specific domains.
  */
 function NotFoundPage() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });

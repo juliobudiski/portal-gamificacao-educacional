@@ -71,10 +71,12 @@ const ScoreDistributionChart = ({ students, maxScore }) => {
 };
 
 /**
- * Componente StudentPerformancePage
+ * StudentPerformancePage
  * 
- * Página analítica focada no desempenho do aluno, exibindo histórico de notas, XP e uso de mecânicas.
- * Adaptada para suporte completo aos modos Claro (Light) e Escuro (Dark).
+ * Architectural intent: Orchestrates the analytical view for teachers to monitor student performance
+ * and engagement. It acts as a Container component, managing complex filter states, handling cascading
+ * API requests, and decoupling the presentation of metric dashboards and data tables from the underlying
+ * analytics engine.
  */
 const StudentPerformancePage = () => {
   const { user, logout } = useContext(AuthContext); // Pegamos o logout do contexto

@@ -4,9 +4,11 @@ import { NavLink } from 'react-router-dom';
 import { MessageSquare, MapPin, LayoutDashboard, Users, BookCopy, BarChart4, LogOut, GraduationCap } from 'lucide-react';
 
 /**
- * Componente Sidebar
- * * Barra de navegação lateral para a área de administração.
- * Utiliza NavLink do react-router-dom para destacar o link da página ativa.
+ * Sidebar
+ * 
+ * Architectural intent: Provides the primary navigational structure for the administrative interface.
+ * It functions as a pure presentation component (dumb component), receiving no complex state, simply
+ * mapping out the routing links and maintaining high cohesion for the admin layout.
  */
 function Sidebar() {
   // Estilos base para os links de navegação

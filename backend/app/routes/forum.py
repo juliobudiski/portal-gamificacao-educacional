@@ -140,34 +140,19 @@ def create_post(topic_id):
 @jwt_required()
 def set_best_answer(topic_id):
     """
-    Define (ou remove) uma resposta como a "Melhor Resposta" do tópico.
-    Apenas o próprio autor do tópico possui permissão para executar esta ação.
-    - Payload JSON esperado: { "post_id": int_or_null }
+    [Arquitetura]
+    Por que: Regras de validação de autoridade e alteração de estado no banco devem pertencer 
+    ao ForumService para evitar repetição e garantir consistência na lógica da melhor resposta.
     """
     if request.method == 'OPTIONS': return jsonify({'message': 'CORS preflight'}), 200
     user_id = get_jwt_identity()
     data = request.get_json()
     post_id = data.get('post_id')
-    topic = ForumTopic.query.get_or_404(topic_id)
     
-    # Validação de Autoridade
-    if int(topic.author_id) != int(user_id):
-        return jsonify({"message": "Apenas o autor do tópico pode marcar a melhor resposta."}), 403
-        
-    # Se enviar None ou vazio, "desmarca" a melhor resposta atual
-    if post_id is None:
-        topic.best_answer_id = None
-        db.session.commit()
-        return jsonify({"message": "Melhor resposta desmarcada."}), 200
-        
-    post = ForumPost.query.get_or_404(post_id)
-    # Garante que a resposta pertence a este tópico específico
-    if post.topic_id != topic.id:
-        return jsonify({"message": "Esta resposta não pertence a este tópico."}), 400
-        
-    topic.best_answer_id = post.id
-    db.session.commit()
-    return jsonify({"message": "Melhor resposta definida com sucesso!", "best_answer_id": post.id}), 200
+    result, error, status_code = ForumService.set_best_answer_service(user_id, topic_id, post_id)
+    if error:
+        return jsonify(error), status_code
+    return jsonify(result), status_code
 
 @forum_bp.route('/posts/<int:post_id>/like', methods=['POST', 'OPTIONS'])
 @jwt_required()

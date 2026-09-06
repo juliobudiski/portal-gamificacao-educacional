@@ -100,9 +100,11 @@ GeolocationPrompt.propTypes = {
 };
 
 /**
- * @component AppContent
- * @desc Componente principal que gerencia o estado da aplicação, rotas e lógica de navegação/autenticação.
- * @returns {JSX.Element} Estrutura principal da UI (Header, Main, Footer).
+ * AppContent
+ * 
+ * Architectural intent: Serves as the root routing and orchestration component for the React application.
+ * It acts as the primary Container, composing global providers, managing the main routing switch,
+ * and enforcing high-level layout consistency and route protection rules.
  */
 function AppContent() {
   const { user, isAuthenticated, logout } = useAuth();

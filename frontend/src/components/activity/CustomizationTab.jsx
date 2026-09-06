@@ -3,6 +3,16 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { FaArrowLeft, FaSpinner, FaCrown, FaPaintBrush, FaUserCircle } from 'react-icons/fa';
 
+/**
+ * @component CustomizationTab
+ * @description
+ * Interface for users to preview and equip unlocked cosmetic items (avatars, titles, visual effects).
+ * 
+ * Architectural Decisions:
+ * - Optimistic UI Updates: Updates the local `equipped` state immediately after successful API calls to provide instant visual feedback.
+ * - Request Batching: Uses `Promise.all` to fetch progress, titles, and cosmetics concurrently, reducing the total loading time on mount.
+ * - Centralized API Handler: Extracts repetitive API update logic into a memoized `handleEquip` callback, improving maintainability.
+ */
 // Componente de preview reutilizável para aplicar estilos cosméticos
 const CosmeticPreview = ({ text, cosmetic, defaultText, className }) => {
     const style = {};

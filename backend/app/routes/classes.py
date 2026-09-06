@@ -231,53 +231,17 @@ def update_class(class_id):
 @jwt_required()
 def delete_class(class_id):
     """
-    Deleta permanentemente uma turma e limpa todas as suas dependências (Matrículas e Times/Casas).
-    - As atividades vinculadas NÃO são deletadas, mas são desassociadas (class_id = None).
-    - Acesso: Apenas o professor dono da turma.
+    [Arquitetura]
+    Por que: Rotas não devem gerenciar exclusões em cascata. Delegamos ao 'ClassService'
+    para garantir coesão e manter o gerenciamento transacional em uma única camada.
     """
     current_user_id = get_jwt_identity()
-    current_app.logger.info(f"Professor ID {current_user_id} tentando deletar a turma ID {class_id}.")
-
     user = User.query.get(current_user_id)
-    class_to_delete = Class.query.get(class_id)
 
-    # Verificações de Permissão
     if not user or user.role != 'professor':
-        current_app.logger.warning(f"Acesso negado para ID {current_user_id} ao tentar deletar turma ID {class_id}. Role: {user.role if user else 'N/A'}")
         return jsonify({"message": "Acesso negado. Apenas professores podem deletar turmas."}), 403
 
-    if not class_to_delete:
-        current_app.logger.error(f"Professor ID {current_user_id} tentou deletar uma turma inexistente: ID {class_id}")
-        return jsonify({"message": "Turma não encontrada."}), 404
-
-    if class_to_delete.professor_id != user.id:
-        current_app.logger.warning(f"Acesso negado para professor ID {current_user_id} ao tentar deletar turma ID {class_id}. Não é o criador.")
-        return jsonify({"message": "Acesso negado. Você não é o professor responsável por esta turma."}), 403
-
-    try:
-        # 1. Remove Alunos da Turma (Matrículas)
-        # Necessário limpar matrículas antes de limpar a turma
-        Enrollment.query.filter_by(class_id=class_id).delete()
-
-        # 2. Remove Times da Turma (CORREÇÃO CRÍTICA)
-        # Necessário limpar os times, pois eles dependem da turma (Foreign Key)
-        Team.query.filter_by(class_id=class_id).delete()
-
-        # 3. Desassocia atividades desta turma
-        # Não deletamos a atividade, apenas removemos o vínculo com a turma (class_id = None)
-        Activity.query.filter_by(class_id=class_id).update({"class_id": None})
-        
-        # 4. Finalmente, deleta a Turma
-        db.session.delete(class_to_delete)
-        db.session.commit()
-        
-        current_app.logger.info(f"Turma ID {class_id} e suas dependências (Alunos, Times) deletadas com sucesso pelo professor ID {current_user_id}.")
-        return jsonify({"message": "Turma deletada com sucesso!"}), 200
-
-    except Exception as e:
-        db.session.rollback()
-        current_app.logger.error(f"Erro ao deletar turma ID {class_id}: {str(e)}", exc_info=True)
-        return jsonify({"message": f"Erro interno do servidor durante a deleção da turma: {str(e)}"}), 500
+    return ClassService.delete_class_service(user, class_id)
 
 @class_bp.route('/join', methods=['POST'])
 @cross_origin()

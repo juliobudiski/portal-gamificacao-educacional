@@ -84,11 +84,14 @@ const useAchievements = (token, activityId) => {
 };
 
 /**
- * @desc Componente para exibir o mural de conquistas (medalhas) de uma atividade.
- * Gerencia a visualização de medalhas bloqueadas/desbloqueadas e modal de detalhes.
- * * @param {Object} props - Props do componente
- * @param {Function} props.onReturn - Função de callback para retornar à tela anterior
- * @param {string|number} props.activityId - ID da atividade para filtrar conquistas
+ * @component AchievementsTab
+ * @description
+ * Displays the user's unlocked medals/achievements for a specific activity.
+ * 
+ * Architectural Decisions:
+ * - Custom Hook Pattern: Extracts data fetching logic into `useAchievements`, keeping the component focused purely on presentation.
+ * - Performance Optimization: Uses `useMemo` to convert the `unlockedMedalIds` array into a `Set` for O(1) lookups during rendering.
+ * - Parallel Requests: `Promise.all` is used within the hook to fetch all medals and unlocked IDs concurrently, minimizing loading times.
  */
 const AchievementsTab = ({ onReturn, activityId }) => {
     const { user } = useAuth();

@@ -25,6 +25,14 @@ import {
 import AvatarSelectionModal from '../components/AvatarSelectionModal';
 import { useToast } from '../context/ToastContext';
 
+/**
+ * UserProfilePage
+ * 
+ * Architectural intent: Serves as the centralized user configuration hub, aggregating distinct domain
+ * concerns (profile settings, API integrations, location rewards, security) into a unified interface.
+ * It acts as a Container component managing complex local state for tabs and forms, while delegating
+ * API interactions to decouple presentation from network logic.
+ */
 function UserProfilePage() {
   const { user, logout, updateUserData, getToken } = useAuth();
   const navigate = useNavigate();

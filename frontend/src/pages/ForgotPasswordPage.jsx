@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom';
 import { FaEnvelope, FaArrowLeft, FaLock } from 'react-icons/fa';
 
 /**
- * Componente ForgotPasswordPage
+ * ForgotPasswordPage
  * 
- * Página inicial do fluxo de recuperação de senha, solicitando o e-mail do usuário para envio de token.
+ * Architectural intent: Encapsulates the UI and network logic for initiating the password recovery flow.
+ * It acts as an isolated boundary for unauthenticated state, ensuring separation from the core application
+ * logic and authenticated routes.
  */
 function ForgotPasswordPage() {
   const [email, setEmail] = useState('');

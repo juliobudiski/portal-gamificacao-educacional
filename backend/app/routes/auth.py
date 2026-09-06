@@ -26,6 +26,10 @@ auth_bp = Blueprint('auth', __name__)
 @auth_bp.route('/register', methods=['POST'])
 def register_user():
     """
+    [Arquitetura]
+    Por que: O Controller de Autenticação delega toda a complexidade de cadastro (validação, hash, regras BYOK) 
+    ao AuthService. Isso assegura que o endpoint fique coeso e isolado na camada HTTP.
+    
     Cadastra um novo usuário no sistema.
     - Acesso: Público.
     - Payload esperado: { "email", "password", "name", "role", "accessCode" (se professor) }.

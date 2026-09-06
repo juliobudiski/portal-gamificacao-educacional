@@ -90,8 +90,14 @@ const CustomPieChart = ({ data, title, icon, dataKey, nameKey }) => {
     );
 };
 
-// --- Componente Principal Refatorado ---
-
+/**
+ * SystemAnalyticsPage
+ * 
+ * Architectural intent: Serves as the comprehensive analytics hub for the platform.
+ * It orchestrates multiple specialized telemetry views (Overview, Trends, Funnel, Engagement) via a tabbed
+ * interface, acting as a high-level Container that defers data fetching and rendering to domain-specific
+ * child charts to enforce Separation of Concerns.
+ */
 function SystemAnalyticsPage() {
     const { user } = useContext(AuthContext);
     const navigate = useNavigate();

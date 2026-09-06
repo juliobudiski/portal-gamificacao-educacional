@@ -4,10 +4,11 @@ import NarrativeEditor from '../../NarrativeEditorPage';
 import LearningContentEditor from '../../LearningContentEditorPage';
 
 /**
- * Modais de Apoio à Criação
+ * ActivityCreationModals
  * 
- * Conjunto de modais contextuais utilizados durante o fluxo de criação para
- * confirmar descartes, validar passos ou dar dicas de design gamificado.
+ * Architectural intent: Centralizes the conditional rendering of complex modal editors (Quiz, Narrative, Content)
+ * during the activity creation flow. By abstracting these modals into a separate component, it prevents the main
+ * wizard component from becoming bloated, ensuring High Cohesion and cleaner composition.
  */
 
 

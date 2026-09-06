@@ -21,12 +21,11 @@ import {
 } from 'react-icons/fa';
 import { useHelpModal } from "../../../context/HelpModalContext";
 /**
- * Componente para a Etapa 7 do formulário de criação de atividades.
- * Focado na seleção das ações dos alunos que serão elegíveis para recompensas.
- * @param {object} props - As propriedades passadas do componente pai.
- * @param {object} props.activityData - O objeto de estado que contém todos os dados do formulário.
- * @param {function} props.handleInputChange - A função para manipular mudanças em inputs de texto.
- * @param {function} props.setActivityData - A função para definir o estado da atividade, ideal para manipular arrays.
+ * Step7_RewardedActions
+ * 
+ * Architectural intent: Orchestrates the 'Rewarded Actions' step of the activity creation wizard.
+ * It functions as a Container component that abstracts the domain logic of selecting gamification actions,
+ * managing an internal predefined catalog of actions while synchronizing with the parent's centralized form state.
  */
 function Step7_RewardedActions({ activityData, handleInputChange, setActivityData }) {
   // Array de objetos para as ações recompensadas, facilitando a renderização dos cards.

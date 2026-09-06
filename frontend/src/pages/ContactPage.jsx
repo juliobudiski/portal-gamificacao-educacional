@@ -3,9 +3,11 @@ import { AuthContext } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 /**
- * Componente ContactPage
+ * ContactPage
  * 
- * Formulário de contato para os usuários enviarem dúvidas, sugestões ou solicitações de chave de acesso.
+ * Architectural intent: Provides a decoupled, generic form interface for user feedback and support requests.
+ * It encapsulates its own form state and submission logic, keeping it completely isolated from the core
+ * gamification engine and maintaining a strict Separation of Concerns.
  */
 const ContactPage = () => {
     const { user } = useContext(AuthContext); // Pegar dados se logado

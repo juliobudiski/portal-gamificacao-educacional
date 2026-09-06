@@ -55,9 +55,12 @@ const hubElementCardMap = {
 };
 
 /**
- * Componente ActivityCreationPage
+ * ActivityCreationPage
  * 
- * Página principal de criação de atividades gamificadas, gerenciando metadados, conteúdo e mecânicas.
+ * Architectural intent: Orchestrates the multi-step wizard for creating gamified activities.
+ * It acts as a State Manager and Controller, decoupling step navigation, auto-saving, and global
+ * validation from the individual form steps (pure components). This ensures High Cohesion of the 
+ * creation workflow and Low Coupling with specific UI form elements.
  */
 function ActivityCreationPage({ existingActivity }) {
   const navigate = useNavigate();

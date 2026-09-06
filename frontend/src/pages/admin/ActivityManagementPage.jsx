@@ -5,9 +5,11 @@ import { ChevronDown, ChevronUp, Search, Trash2, Eye, EyeOff } from 'lucide-reac
 import ConfirmationModal from '../../components/ConfirmationModal';
 
 /**
- * Componente ActivityManagementPage
- * * Página para listar e visualizar todas as atividades criadas na plataforma.
- * No futuro, terá filtros, busca e ações de moderação.
+ * ActivityManagementPage
+ * 
+ * Architectural intent: Orchestrates the administrative view for system-wide activity moderation.
+ * It functions as a Container component, handling batch operations (mass deletion) and visibility toggles,
+ * abstracting the complex data grid and API synchronization away from the presentational rendering.
  */
 function ActivityManagementPage() {
     const [activitiesList, setActivitiesList] = useState([]);

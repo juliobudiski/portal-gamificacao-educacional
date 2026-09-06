@@ -117,6 +117,14 @@ ActivityCard.propTypes = {
   }).isRequired
 };
 
+/**
+ * StudentDashboardPage
+ * 
+ * Architectural intent: Serves as the primary authenticated entry point for students, aggregating data
+ * from multiple domains (classes, pending activities, performance metrics). It acts as a Facade and
+ * Container, orchestrating concurrent data fetching and delegating rendering to specialized presentation
+ * components (ClassCard, ActivityCard).
+ */
 export default function StudentDashboardPage() {
   const { user } = useContext(AuthContext);
   const [dashboardData, setDashboardData] = useState(null);

@@ -36,7 +36,12 @@ const StatusBadge = ({ status }) => {
 };
 
 /**
- * Página Principal de Atividades do Estudante
+ * StudentActivityPage
+ * 
+ * Architectural intent: Orchestrates the display and filtering of a student's assigned activities.
+ * It acts as a Container component, fetching activity data, computing real-time status (pending, completed,
+ * expired), and managing local state for search and status filters, decoupling the complex business logic
+ * from the UI presentation.
  */
 const StudentActivityPage = () => {
   const { user } = useContext(AuthContext);

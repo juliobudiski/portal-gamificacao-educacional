@@ -23,12 +23,11 @@ import {
 } from 'react-icons/fa';
 import { useHelpModal } from "../../../context/HelpModalContext";
 /**
- * Componente para a Etapa 6 do formulário de criação de atividades.
- * Focado na seleção das recompensas que serão oferecidas aos alunos.
- * @param {object} props - As propriedades passadas do componente pai.
- * @param {object} props.activityData - O objeto de estado que contém todos os dados do formulário.
- * @param {function} props.handleInputChange - A função para manipular mudanças em inputs de texto.
- * @param {function} props.setActivityData - A função para definir o estado da atividade, ideal para manipular arrays.
+ * Step6_RewardsOffered
+ * 
+ * Architectural intent: Orchestrates the 'Rewards Offered' step of the activity creation wizard.
+ * It encapsulates the domain data for predefined rewards and manages the interaction logic for selecting them,
+ * ensuring the parent form state is updated immutably in adherence to React best practices.
  */
 function Step6_RewardsOffered({ activityData, handleInputChange, setActivityData }) {
   // Array de objetos para as recompensas, facilitando a renderização dos cards com ícones.

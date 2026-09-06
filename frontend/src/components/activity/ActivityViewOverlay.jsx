@@ -2,6 +2,15 @@ import React, { useEffect, useRef } from 'react';
 import { FaTimes, FaRegLightbulb } from 'react-icons/fa';
 import boardBackground from '/board/background_board.webp';
 
+/**
+ * @component ActivityViewOverlay
+ * @description
+ * High-z-index overlay container for displaying full-screen activity content.
+ * 
+ * Architectural Decisions:
+ * - Accessibility (a11y): Implements `role="dialog"`, ARIA labels, focus trapping, and ESC key dismissal to comply with web accessibility standards.
+ * - Composition Pattern: Acts as a generic, styled wrapper (Layout Component) that accepts `children`, decoupling the presentation frame from the specific activity content.
+ */
 const ActivityViewOverlay = ({ isOpen, onClose, title, backgroundImage, children }) => {
   const closeBtnRef = useRef(null);
   const titleId = 'activity-overlay-title';

@@ -1,7 +1,16 @@
 // frontend/src/components/activity/GameBoardConfig.js
 // Este arquivo centraliza todas as configurações visuais do tabuleiro para fácil manutenção.
 
-// frontend/src/components/activity/GameBoardConfig.js
+/**
+ * @module GameBoardConfig
+ * @description
+ * Centralized configuration file for the game board's visual assets, themes, and layout coordinates.
+ * 
+ * Architectural Decisions:
+ * - Theme Dictionary: Uses a `BOARD_THEMES` constant to map theme IDs to their respective metadata, simplifying theme switching.
+ * - Dynamic Asset Loading: Provides a `getThemeAssets(themeId)` factory function that dynamically resolves image paths based on the active theme.
+ * - Coordinate Grid Strategy: Pre-defines a static array of `decorationSpawnPoints` to ensure scattered placement of decorations without complex runtime collision detection.
+ */
 
 // 1. Definição dos Temas Disponíveis
 export const BOARD_THEMES = {

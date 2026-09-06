@@ -4,9 +4,11 @@ import { Link } from 'react-router-dom';
 import ConfirmationModal from '../components/ConfirmationModal';
 
 /**
- * Componente ClassManagementPage
+ * ClassListPage
  * 
- * Dashboard de gerenciamento de turmas do professor, listando as turmas ativas e atalhos de criação.
+ * Architectural intent: Acts as the primary listing and high-level control panel for a professor's classes.
+ * It orchestrates fetching, displaying, and executing destructive actions (leave, delete), decoupling the
+ * overarching class index from the granular details and mutative operations of individual classes.
  */
 
 function ClassListPage() {

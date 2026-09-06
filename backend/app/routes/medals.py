@@ -44,27 +44,16 @@ def get_all_medals():
 @jwt_required()
 def get_my_unlocked_medals():
     """
-    Retorna uma lista de IDs das medalhas que o utilizador atual desbloqueou.
-    - Acesso: Autenticado.
-    - Params URL: 
-        - activity_id (opcional): Filtra as medalhas desbloqueadas apenas numa atividade específica.
-    - Retorno: Array de inteiros (IDs das medalhas).
+    [Arquitetura]
+    Por que: As queries de medalhas desbloqueadas misturavam lógica de banco e HTTP.
+    O MedalService agora encapsula as regras de persistência e filtros condicionais (activity_id).
     """
     user_id = get_jwt_identity()
-    activity_id = request.args.get('activity_id', type=int) # Pega o ID da atividade da URL
-
-    # Começa a query base para buscar todas as medalhas deste usuário
-    query = UserUnlockedMedal.query.filter_by(user_id=user_id)
-
-    # Se um activity_id foi fornecido na URL, adiciona o filtro à query
-    if activity_id:
-        query = query.filter_by(activity_id=activity_id)
-
-    unlocked_medals = query.all()
-    # Retorna apenas a lista de IDs para facilitar a comparação no frontend
-    unlocked_ids = [unlocked.medal_id for unlocked in unlocked_medals]
+    activity_id = request.args.get('activity_id', type=int)
     
-    return jsonify(unlocked_ids), 200
+    # Importação local temporária para evitar quebra caso falte importação no topo
+    from ..services.medal_service import MedalService
+    return jsonify(MedalService.get_my_unlocked_medals_service(user_id, activity_id)), 200
 
 # ==============================================================================
 # MAPA DE VERIFICAÇÃO DE MEDALHAS

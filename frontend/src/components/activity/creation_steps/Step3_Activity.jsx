@@ -14,6 +14,15 @@ import {
 } from 'react-icons/fa';
 import { useHelpModal } from "../../../context/HelpModalContext";
 
+/**
+ * @component Step3_Activity
+ * @description
+ * Third step of the activity creation wizard, configuring the logistics, environment, and participant dynamics.
+ * 
+ * Architectural Decisions:
+ * - Mutually Exclusive State: Modifies state explicitly in `handleEnvironmentSelection` to ensure only one environment is selected at a time.
+ * - Cumulative State: Uses a standard array toggle (`handleCharacteristicSelection`) for secondary options that can coexist.
+ */
 // Separamos as opções excludentes das opções cumulativas
 const LOGISTIC_ENVIRONMENTS = [
   { text: "Presencial em Laboratório (Com PC/Internet)", icon: <FaLaptop /> },

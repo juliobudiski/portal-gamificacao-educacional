@@ -746,17 +746,13 @@ def delete_user(user_id):
 @admin_bp.route('/activities/<int:activity_id>/visibility', methods=['PATCH'])
 @jwt_required()
 def toggle_activity_visibility(activity_id):
+    """
+    [Arquitetura]
+    Por que: Regras de negócio sobre visibilidade e persistência devem morar no Service.
+    O Controller Admin deve apenas checar permissões de acesso (check_admin).
+    """
     if not check_admin(): return jsonify({"message": "Acesso negado."}), 403
-    
-    activity = Activity.query.get_or_404(activity_id)
-    activity.is_public = not activity.is_public
-    
-    try:
-        db.session.commit()
-        return jsonify({"success": True, "message": f"Visibilidade alterada para {'Pública' if activity.is_public else 'Privada'}."})
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"success": False, "message": f"Erro ao alterar visibilidade: {str(e)}"}), 500
+    return AdminService.toggle_activity_visibility(activity_id)
 
 @admin_bp.route('/activities/mass', methods=['DELETE'])
 @jwt_required()

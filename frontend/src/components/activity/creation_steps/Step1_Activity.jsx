@@ -9,9 +9,13 @@ import {
 import { useHelpModal } from "../../../context/HelpModalContext";
 
 /**
- * Criação de Atividade - Passo 1 (Informações Básicas)
+ * @component Step1_Activity
+ * @description
+ * First step of the activity creation wizard, responsible for gathering basic details (title, area, subdomain) and identifying student problems.
  * 
- * Coleta o título, descrição, tipo e visibilidade (pública/privada) da nova atividade.
+ * Architectural Decisions:
+ * - Dynamic Problem List: Uses `useEffect` to merge generic pedagogical problems with specific subdomain problems based on the selected area.
+ * - Shared State Management: Mutates the global `activityData` object via the passed `setActivityData` function, adhering to the wizard's lifted state architecture.
  */
 
 

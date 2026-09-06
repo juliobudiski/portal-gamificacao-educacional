@@ -4,9 +4,11 @@ import { AuthContext } from '../../context/AuthContext';
 import { ChevronUp, ChevronDown, Pencil, Trash2, Save, X, Search } from 'lucide-react';
 import ConfirmationModal from '../../components/ConfirmationModal';
 /**
- * Componente UserManagementPage
- * * Página dedicada para listar, buscar, ordenar e gerenciar todos os usuários da plataforma.
- * Contém a lógica de busca, edição em linha e exclusão de usuários.
+ * UserManagementPage
+ * 
+ * Architectural intent: Orchestrates the administrative view for system-wide user moderation.
+ * It functions as a Container component, handling inline editing, client-side sorting and filtering,
+ * and secure deletion, abstracting the complex data grid and API synchronization away from the presentational rendering.
  */
 function UserManagementPage() {
   const [usersList, setUsersList] = useState([]);

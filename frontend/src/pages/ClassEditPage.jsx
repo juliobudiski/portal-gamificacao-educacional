@@ -4,9 +4,11 @@ import { AuthContext } from '../context/AuthContext';
 import { FaUserPlus, FaBook, FaTrash, FaSave, FaUsers, FaTasks, FaPlusCircle, FaArrowLeft } from 'react-icons/fa';
 import ConfirmationModal from '../components/ConfirmationModal';
 /**
- * Componente ClassEditPage
+ * ClassEditPage
  * 
- * Página para edição das configurações de uma turma (nome, descrição, visibilidade).
+ * Architectural intent: Centralizes the mutative operations (Update, Delete, Unlink) for a class entity
+ * and its relationships (students, activities). By concentrating all class management forms in a dedicated
+ * container, it maintains the Single Responsibility Principle and separates read-only view logic from management logic.
  */
 function ClassEditPage() {
     const { class_id } = useParams();

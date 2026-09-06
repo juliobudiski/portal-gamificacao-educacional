@@ -2,6 +2,15 @@
 import React from 'react';
 import { FaMedal } from 'react-icons/fa';
 
+/**
+ * @component RankingItem
+ * @description
+ * Individual list item for the leaderboard, rendering player stats, avatars, and visual cosmetics.
+ * 
+ * Architectural Decisions:
+ * - Dynamic Styling Factory: Extracts `generateVisuals` and `applyCosmetic` to dynamically construct inline styles (like neon text-shadows) based on backend data.
+ * - Podium Abstraction: Uses `getPodiumStyle` switch case to return specific icons and CSS classes for the top 3 ranks, keeping the render method clean.
+ */
 // Componente para um único jogador no ranking
 const RankingItem = ({ player, isCurrentUser }) => {
   console.log(`[RankingItem] Renderizando para: ${player.name}`, {

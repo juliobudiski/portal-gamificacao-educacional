@@ -2,6 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { BookOpen, Users, Award, BarChart2, Heart, Shield, Star, ChevronDown, ChevronUp, UserCheck, Smile, Grid, Activity } from 'react-feather';
 import { Link } from 'react-router-dom';
 
+/**
+ * AboutUsPage
+ * 
+ * Architectural intent: Provides a presentational view of the platform's vision, team, and public statistics.
+ * By isolating this content into a dedicated page component, we maintain Separation of Concerns,
+ * keeping marketing and informational content decoupled from the core gamification application logic.
+ */
+
 const LattesIcon = () => (
   <svg width="24" height="24" viewBox="0 0 512 512" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
     <path d="M43.25 216.744h65.378V502H43.25zM76.213 43.25c27.56,0 49.333,21.773 49.333,48.553 0,27.56 -21.773,48.553 -49.333,48.553 -26.78,0 -48.553,-20.993 -48.553,-48.553 0,-26.78 21.773,-48.553 48.553,-48.553zM153.29 216.744h65.378v29.313h.818c9.692,-17.447 32.843,-35.813 65.378,-35.813 69.873,0 82.888,45.858 82.888,104.513v122.245h-65.378v-109c0,-26.78 -1.637,-52.74 -39.29,-52.74 -40.108,0 -45.858,30.95 -45.858,51.1v110.64h-65.378V216.744zM364.57 216.744h67.013v29.313h.818c9.692,-17.447 32.843,-35.813 65.378,-35.813 69.873,0 82.888,45.858 82.888,104.513v122.245h-65.378v-109c0,-26.78 -1.637,-52.74 -39.29,-52.74 -40.108,0 -45.858,30.95 -45.858,51.1v110.64h-65.378V216.744z" transform="scale(0.8) translate(40, -30)" />

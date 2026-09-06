@@ -4,6 +4,13 @@ import { AuthContext } from '../../context/AuthContext';
 import { ChevronLeft, ChevronRight, Search, Download } from 'lucide-react';
 import { useDebounce } from 'use-debounce';
 
+/**
+ * LogExplorerPage
+ * 
+ * Architectural intent: Provides an administrative interface for querying and exporting system telemetry.
+ * It functions as a Container component, managing complex state for debounced search, server-side pagination,
+ * and API interactions for CSV generation, keeping these concerns separate from presentation.
+ */
 function LogExplorerPage() {
     const { user } = useContext(AuthContext);
     const [logs, setLogs] = useState([]);

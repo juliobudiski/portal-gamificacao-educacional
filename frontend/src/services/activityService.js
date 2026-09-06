@@ -1,6 +1,13 @@
 // frontend/src/services/activityService.js
 import api from './api';
 
+/**
+ * activityService
+ * 
+ * Architectural intent: Encapsulates API interactions specific to activity management (autosave, drafts, publishing).
+ * By extracting these network calls into a dedicated service module, it decouples the UI components from the
+ * underlying HTTP client, adhering to the Single Responsibility Principle.
+ */
 const activityService = {
     /**
      * Salva o rascunho automaticamente (Autosave).

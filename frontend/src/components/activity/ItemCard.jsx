@@ -2,6 +2,15 @@
 import React from 'react';
 import { FaShoppingCart, FaTrash, FaCoins } from 'react-icons/fa';
 
+/**
+ * @component ItemCard
+ * @description
+ * Reusable card displaying an individual item in the virtual store.
+ * 
+ * Architectural Decisions:
+ * - Dumb Component: Receives all data and interaction callbacks via props, keeping it unaware of API context.
+ * - Role-Based Actions: Conditionally renders purchase vs. delete buttons depending on `userRole`.
+ */
 // Ícones pré-definidos que o professor pode escolher. Adicione mais conforme necessário.
 const iconMap = {
   '🌟': <span className="text-4xl">🌟</span>,

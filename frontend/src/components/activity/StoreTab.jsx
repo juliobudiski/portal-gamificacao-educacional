@@ -8,6 +8,16 @@ import { useParams } from 'react-router-dom'; // <-- IMPORTADO
 import { useToast } from '../../context/ToastContext';
 import { useConfetti } from '../../context/ConfettiContext';
 
+/**
+ * @component StoreTab
+ * @description
+ * In-game virtual store allowing users to purchase avatars, titles, and cosmetics using earned points.
+ * 
+ * Architectural Decisions:
+ * - Role-Based Rendering: Conditionally renders teacher controls (add/delete) or student views (buy, balance) based on the `userRole` prop.
+ * - Presets Pattern: Uses hardcoded arrays to offer quick-add templates for teachers, lowering the setup friction.
+ * - Centralized Modals: Manages a single `ConfirmationModal` instance via local state, adapting callbacks dynamically.
+ */
 // --- LISTA DE ITENS PRÉ-DEFINIDOS (sem alterações) ---
 const PREDEFINED_COSMETICS = [
     {

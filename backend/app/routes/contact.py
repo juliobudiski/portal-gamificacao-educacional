@@ -13,6 +13,10 @@ contact_bp = Blueprint('contact', __name__)
 @contact_bp.route('/', methods=['POST'])
 def send_message():
     """
+    [Arquitetura]
+    Por que: O Controller intercepta a autorização híbrida (anônima ou autenticada) sem quebrar o fluxo.
+    A lógica de persistência e validação da mensagem real vai para o ContactService, garantindo coesão.
+    
     Rota para envio de mensagem de contato.
     - Acesso: Público (se o usuário estiver deslogado) ou Autenticado (se logado).
     - Payload JSON esperado: { "name": "str", "email": "str", "subject": "str", "message": "str" }

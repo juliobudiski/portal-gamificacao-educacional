@@ -22,14 +22,11 @@ const CHARACTERS = [
 ];
 
 /**
- * @component
- * @desc Página de edição de narrativa para atividades gamificadas
- * Permite configurar cenários, personagens e diálogos para atividades
- */
-/**
- * Componente NarrativeEditorPage
+ * NarrativeEditorPage
  * 
- * Página focada na configuração da camada narrativa/storytelling de uma atividade gamificada.
+ * Architectural intent: Provides a specialized editor view for configuring the storytelling and narrative
+ * layer of a gamified activity. It decouples the visual scenario and dialogue configuration from the core
+ * activity state machine, allowing content creators to focus solely on narrative elements.
  */
 function NarrativeEditorPage({ initialData, onSave, onCancel, isOfflineMode = false }) {
     const { activityId, stepId } = useParams();

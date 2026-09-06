@@ -6,6 +6,16 @@ import { io } from 'socket.io-client';
 import { FaArrowLeft, FaSpinner, FaExclamationCircle, FaFlag } from 'react-icons/fa';
 import { useToast } from '../../context/ToastContext';
 
+/**
+ * @component ChatTab
+ * @description
+ * Real-time global chat interface for a specific activity.
+ * 
+ * Architectural Decisions:
+ * - Real-time Data Flow: Integrates Socket.io for bidirectional communication, handling incoming messages, censorship events, and error broadcasts.
+ * - UX & Side Effects: Uses a `useRef` pointing to the bottom of the message list (`messagesEndRef`) inside a `useEffect` to auto-scroll when new messages arrive.
+ * - Security/Moderation: Incorporates a reporting mechanism, updating local state instantly when the server emits a `message_censored` event.
+ */
 const ChatTab = ({ onReturn }) => {
   const { user } = useAuth();
   const { activityId } = useParams();

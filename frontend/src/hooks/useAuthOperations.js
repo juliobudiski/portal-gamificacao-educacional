@@ -2,6 +2,13 @@ import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
+/**
+ * useAuthOperations
+ * 
+ * Architectural intent: Encapsulates authentication-related API calls and subsequent routing side-effects.
+ * This prevents the AuthContext from becoming bloated with routing logic and HTTP request handling,
+ * promoting Separation of Concerns and keeping the context focused purely on state.
+ */
 export function useAuthOperations() {
   const navigate = useNavigate();
   const { login, token } = useAuth();

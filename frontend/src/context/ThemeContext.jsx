@@ -1,5 +1,13 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 
+/**
+ * ThemeContext
+ * 
+ * Architectural intent: Encapsulates theme preference (light/dark) state and side-effects
+ * (DOM manipulation, localStorage persistence). Adheres to the Single Responsibility Principle
+ * by isolating theme logic from UI components, allowing components to consume and toggle
+ * the theme without knowing how it is applied to the document.
+ */
 // Cria o contexto
 const ThemeContext = createContext();
 

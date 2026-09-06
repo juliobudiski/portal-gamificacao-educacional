@@ -235,9 +235,12 @@ const ActivityPageContent = () => {
 // COMPONENTE EXPORTADO (ENTRY POINT) (Sem alterações)
 // ========================================================================
 /**
- * Componente ActivityPage
+ * ActivityPage
  * 
- * Página de visualização detalhada de uma atividade e seus metadados, frequentemente usada como hub antes de iniciar.
+ * Architectural intent: Acts as the main container for viewing and interacting with a gamified activity.
+ * It relies on the Context API and dynamically renders different views (Quiz, Narrative, Store, etc.) based
+ * on the current state, ensuring Low Coupling between the core activity routing logic and the specific UI 
+ * tabs, maintaining a Single Responsibility of orchestrating the player's experience.
  */
 function ActivityPage() {
   const { activityId } = useParams();

@@ -3,10 +3,11 @@ import { useAuth } from '../context/AuthContext';
 import useAnalytics from './useAnalytics';
 
 /**
- * Hook de Gerenciamento de Perfil
+ * useProfileManagement
  * 
- * Centraliza a lógica para atualizar dados do usuário, trocar avatar e sincronizar
- * configurações locais com a API.
+ * Architectural intent: Manages profile domain operations (updates, avatar changes, account deletion)
+ * and coordinates between the AuthContext and external APIs. This ensures High Cohesion for
+ * profile-related actions while abstracting HTTP requests away from the view layer.
  */
 
 

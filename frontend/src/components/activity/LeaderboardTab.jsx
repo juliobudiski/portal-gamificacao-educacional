@@ -4,7 +4,15 @@ import { FaSpinner, FaTrophy, FaExclamationCircle, FaArrowLeft } from 'react-ico
 import { useAuth } from '../../context/AuthContext';
 import RankingItem from './RankingItem'; // Importa o novo componente de item
 
-const LeaderboardTab = ({ leaderboardData, isLoading, onReturn }) => {
+/**
+ * @component LeaderboardTab
+ * @description
+ * Displays the ranking of players (Hall of Fame) based on their score/points for the activity.
+ * 
+ * Architectural Decisions:
+ * - List Semantics: Uses an ordered list (`<ol>`) and delegates rendering to `RankingItem` components to ensure semantic HTML for rankings.
+ * - Current User Highlighting: Injects an `isCurrentUser` prop into the child items by comparing the user ID from the global auth context.
+ */
     // Pega o usuário logado do contexto para poder destacá-lo
     const { user } = useAuth();
     React.useEffect(() => {

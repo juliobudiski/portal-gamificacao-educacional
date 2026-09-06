@@ -5,11 +5,11 @@ import { AuthContext } from '../context/AuthContext';
 import Sidebar from '../components/admin/Sidebar'; // Importando o novo componente Sidebar
 
 /**
- * Componente AdminPage (Layout Principal)
- * * Esta é a nova estrutura principal para toda a seção de administração.
- * Ele verifica a autorização do usuário e renderiza um layout consistente 
- * com uma barra de navegação lateral (Sidebar) e uma área de conteúdo principal 
- * onde as páginas aninhadas (Dashboard, Usuários, etc.) serão exibidas através do <Outlet>.
+ * AdminPage (Layout Principal)
+ * 
+ * Architectural intent: Defines the layout and routing boundary for the administrative dashboard.
+ * It encapsulates route protection (authorization checks) and structural layout elements (Sidebar, Outlet),
+ * ensuring that administrative views remain completely decoupled from the main user-facing application architecture.
  */
 function AdminPage() {
   const { user, isAuthenticated } = useContext(AuthContext);

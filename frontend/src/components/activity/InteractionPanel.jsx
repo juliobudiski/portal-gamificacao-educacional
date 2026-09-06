@@ -3,10 +3,13 @@ import React from 'react';
 import { FaTimes } from 'react-icons/fa';
 
 /**
- * Painel de Interação da Atividade
+ * @component InteractionPanel
+ * @description
+ * Slide-out side panel for displaying interactive content (e.g., quizzes, forms) alongside the game board.
  * 
- * Responsável por gerenciar a submissão de respostas, cálculos de feedback imediato
- * e requisições para a API de validação durante a execução de uma atividade.
+ * Architectural Decisions:
+ * - Layout Abstraction: Acts as a pure wrapper component, rendering `children` to keep the layout concern separate from the specific interaction logic (SRP).
+ * - Responsive Transitions: Uses CSS transforms (`translate-x-full`) and transitions for smooth sliding animations, falling back to a fixed overlay on mobile while remaining relative on desktop.
  */
 
 const InteractionPanel = ({ isOpen, onClose, title, children }) => {

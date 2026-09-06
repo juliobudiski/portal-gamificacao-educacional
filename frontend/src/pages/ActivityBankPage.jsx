@@ -12,10 +12,12 @@ import ConfirmationModal from '../components/ConfirmationModal';
 import activityService from '../services/activityService';
 
 /**
- * Componente ActivityBankPage
+ * ActivityBankPage
  * 
- * Banco de Atividades Gamificadas para professores.
- * Permite buscar, filtrar, gerenciar rascunhos e clonar atividades públicas com UI/UX de alto nível.
+ * Architectural intent: Orchestrates the display, filtering, and management of activities (drafts, public, and personal).
+ * It acts as a Container Component that handles data fetching, state management, and bulk actions, delegating the actual
+ * presentation of individual activities to pure components (ActivityCard). This ensures High Cohesion in activity
+ * management and Low Coupling between business state and UI rendering.
  */
 function ActivityBankPage() {
   const { user } = useContext(AuthContext);

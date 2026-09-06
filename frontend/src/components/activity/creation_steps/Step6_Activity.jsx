@@ -4,10 +4,11 @@ import { useHelpModal } from "../../../context/HelpModalContext";
 import { FaRoute, FaLightbulb, FaRobot, FaInfoCircle } from 'react-icons/fa';
 
 /**
- * Criação de Atividade - Passo 6 (Revisão e Publicação)
+ * Step6_GameBoard
  * 
- * Consolida todos os dados configurados nos passos anteriores para revisão final
- * e realiza o envio (POST) para salvar a atividade no banco de dados.
+ * Architectural intent: Acts as a structural wrapper for the complex GameBoardEditor within the
+ * activity creation wizard. It isolates the contextual layout (headers, help buttons, tips) from
+ * the heavy business logic of the visual node editor, maintaining high cohesion in presentation.
  */
 
 

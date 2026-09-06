@@ -5,6 +5,16 @@ import { useAuth } from '../../context/AuthContext';
 import { useParams } from 'react-router-dom';
 import useAnalytics from '../../hooks/useAnalytics';
 
+/**
+ * @component NarrativeTab
+ * @description
+ * Visual novel style interface for displaying story dialogue between characters over a background scenario.
+ * 
+ * Architectural Decisions:
+ * - Data-Driven UI: Renders the scene dynamically based on the `dialogue` array prop, tracking progress via `currentLineIndex`.
+ * - Analytics Integration: Calls `logEvent` (from `useAnalytics`) on every line progression to track student engagement with the narrative.
+ * - Visual Focus: Uses conditional CSS filtering (brightness vs grayscale) to highlight the currently speaking character based on `characterRole`.
+ */
 const isDebugMode = import.meta.env.VITE_DEBUG_MODE === 'true';
 
 const NarrativeTab = ({ content, onComplete }) => {

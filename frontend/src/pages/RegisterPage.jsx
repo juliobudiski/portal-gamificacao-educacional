@@ -8,14 +8,12 @@ import TermsOfUseModal from '../components/TermsOfUseModal';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useLocation } from 'react-router-dom';
 
-/**}
-
 /**
- * Componente RegisterPage
- * Esta página renderiza um formulário de cadastro para novos usuários.
- * Permite o cadastro via email/senha e também via Google Sign-In.
- * Gerencia o estado do formulário, a validação, a comunicação com a API de registro
- * e o feedback para o usuário (sucesso ou erro).
+ * RegisterPage
+ * 
+ * Architectural intent: Encapsulates the UI, validation, and network logic for creating new user accounts.
+ * It orchestrates the onboarding flow for different user roles (students vs. teachers) and handles the
+ * delegation of terms of use acceptance and Google OAuth integration.
  */
 function RegisterPage() {
   // --- Hooks de Estado ---

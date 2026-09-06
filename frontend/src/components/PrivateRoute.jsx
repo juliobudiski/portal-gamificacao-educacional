@@ -1,8 +1,17 @@
 // frontend/src/components/PrivateRoute.jsx
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; // Ajuste o caminho se necessário
+import { useAuth } from '../context/AuthContext';
 
+/**
+ * @component PrivateRoute
+ * @description
+ * Route guard component protecting authenticated and role-specific paths.
+ * 
+ * Architectural Decisions:
+ * - Route Level Security: Wraps react-router routes to enforce auth rules before mounting protected components.
+ * - Centralized Authorization: Evaluates `allowedRoles` against the global `user.role` from AuthContext, enforcing RBAC (Role-Based Access Control) in a single place.
+ */
 const PrivateRoute = ({ allowedRoles }) => {
   const { user, loading } = useAuth(); // Assumindo que useAuth também pode retornar um estado de carregamento
 

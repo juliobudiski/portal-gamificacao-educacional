@@ -2,6 +2,14 @@ import React, { createContext, useContext, useState, useCallback, useEffect } fr
 import Confetti from 'react-confetti';
 import { useWindowSize } from 'react-use';
 
+/**
+ * ConfettiContext
+ * 
+ * Architectural intent: Provides a globally accessible mechanism to trigger gamified feedback.
+ * By moving the Confetti component and its state to the root level, we decouple UI components
+ * from the presentation logic of the confetti library. This maintains High Cohesion for feedback
+ * actions and Low Coupling between disparate UI components.
+ */
 const ConfettiContext = createContext();
 
 export const ConfettiProvider = ({ children }) => {

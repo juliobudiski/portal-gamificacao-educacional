@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 
 /**
- * Hook de Autenticação Google
+ * useGoogleSignIn
  * 
- * Gerencia a injeção do script do Google Identity Services (GSI) e o fluxo do
- * OAuth 2.0 para login/cadastro unificado.
+ * Architectural intent: Manages the integration with the Google Identity Services API.
+ * Encapsulates the side-effects of script injection and third-party library initialization,
+ * preventing UI components from being tightly coupled to external authentication providers.
  */
 
 

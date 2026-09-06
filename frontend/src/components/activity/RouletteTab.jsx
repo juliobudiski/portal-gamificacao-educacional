@@ -6,6 +6,16 @@ import { useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useConfetti } from "../../context/ConfettiContext";
 
+/**
+ * @component RouletteTab
+ * @description
+ * Interactive roulette game allowing users to spend chances to win random cosmetic or score-based prizes.
+ * 
+ * Architectural Decisions:
+ * - API-Driven RNG: The random outcome is determined entirely by the backend API. The frontend maps the result to the correct visual slice.
+ * - Retry State Machine: Handles "duplicate item" scenarios by setting `retryAvailable`, allowing a free spin without intrusive modal interruptions.
+ * - Visual Feedback: Triggers global confetti context for high-tier prizes, improving the gamified experience.
+ */
 // Estilo para animações e layout
 const style = `
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }

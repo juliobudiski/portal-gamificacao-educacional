@@ -8,6 +8,16 @@ import backgroundImage from '../../assets/quiz-background.webp';
 import useAnalytics from '../../hooks/useAnalytics';
 import { useActivity } from '../../context/ActivityContext';
 
+/**
+ * @component QuizTab
+ * @description
+ * Interactive multiple-choice quiz interface with anti-spam protection, timer logic, and analytics tracking.
+ * 
+ * Architectural Decisions:
+ * - Anti-Spam State: Uses `isSubmitting` state to block UI interactions and timer countdowns while waiting for API response/visual feedback.
+ * - Time-Hesitation Tracking: Uses `useRef` to calculate how long a student hesitates before answering, sending this to the analytics hook.
+ * - Role-Based API Calls: Conditionally executes the backend call only if the user is a student, preventing teachers from affecting stats.
+ */
 const isDebugMode = import.meta.env.VITE_DEBUG_MODE === 'true';
 
 const QuizTab = ({ content, gameElements, onAnswerCorrect, onComplete, isReplay }) => {

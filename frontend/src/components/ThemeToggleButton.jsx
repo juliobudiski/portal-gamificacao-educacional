@@ -1,12 +1,14 @@
 import React from 'react';
 import { useTheme } from '../context/ThemeContext'; // Importa nosso hook customizado
-import { Sun, Moon } from 'lucide-react'; // Importa os ícones que já estão no projeto
+import { Sun, Moon } from 'lucide-react';
 
 /**
- * Botão de Alternância de Tema
+ * @component ThemeToggleButton
+ * @description
+ * Floating UI component allowing global toggle between Light and Dark modes.
  * 
- * Componente de UI flutuante que permite ao usuário alternar globalmente entre o 
- * Modo Claro (Light) e o Modo Escuro (Dark).
+ * Architectural Decisions:
+ * - Decoupled State Management: Relies entirely on `useTheme` context hook, remaining stateless itself and focusing solely on presentation and action triggering.
  */
 
 

@@ -5,9 +5,11 @@ import { useAuth } from '../context/AuthContext';
 import ActivityCreationPage from './ActivityCreationPage'; // Vamos reutilizar a página de criação
 
 /**
- * Componente ActivityEditPage
+ * ActivityEditPage
  * 
- * Página para edição de uma atividade existente, permitindo alterar regras, conteúdo e gamificação.
+ * Architectural intent: Reuses the ActivityCreationPage as a unified interface for editing existing activities.
+ * By simply fetching the existing activity data and passing it as props, it avoids duplicating the complex
+ * wizard logic, adhering strictly to the DRY principle and ensuring High Cohesion of the editing workflow.
  */
 function ActivityEditPage() {
     const { activityId } = useParams();

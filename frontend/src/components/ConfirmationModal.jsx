@@ -1,6 +1,15 @@
-// src/components/ConfirmationModal.jsx (ou no mesmo arquivo se preferir)
+// src/components/ConfirmationModal.jsx
 import React from 'react';
 
+/**
+ * @component ConfirmationModal
+ * @description
+ * Generic modal for user action confirmation.
+ * 
+ * Architectural Decisions:
+ * - Single Responsibility Principle: Handles only the presentation of the confirmation dialog.
+ * - Dependency Injection: Receives all configuration (callbacks, labels, styles) via props, ensuring low coupling and high reusability across different modules.
+ */
 const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message, confirmText = "Confirmar", cancelText = "Cancelar", isDangerous = false }) => {
     if (!isOpen) return null;
 

@@ -3,9 +3,11 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { FaLock, FaCheckCircle, FaExclamationCircle, FaArrowLeft } from 'react-icons/fa';
 
 /**
- * Componente ResetPasswordPage
+ * ResetPasswordPage
  * 
- * Página final do fluxo de recuperação de senha, permitindo inserir a nova senha validada pelo token.
+ * Architectural intent: Encapsulates the UI and network logic for finalizing the password recovery flow.
+ * It acts as an isolation boundary for the unauthenticated state, verifying the reset token and handling
+ * the secure submission of the new password.
  */
 function ResetPasswordPage() {
     // Captura o token da URL (definido na rota /reset-password/:token)

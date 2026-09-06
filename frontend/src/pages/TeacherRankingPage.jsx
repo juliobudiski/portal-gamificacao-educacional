@@ -7,9 +7,11 @@ import { useNavigate } from 'react-router-dom';
 import { FaArrowLeft } from 'react-icons/fa';
 
 /**
- * Componente TeacherRankingPage
+ * TeacherRankingPage
  * 
- * Página de ranking da comunidade de professores, possivelmente baseada no número de criações e clones.
+ * Architectural intent: Acts as the presentation layer for the educator community ranking system.
+ * It fetches and displays the leaderboard of top activity creators, delegating the actual rendering
+ * of the list to the TeacherRankingList component to maintain high cohesion.
  */
 const TeacherRankingPage = () => {
   const [creatorsRanking, setCreatorsRanking] = useState([]);

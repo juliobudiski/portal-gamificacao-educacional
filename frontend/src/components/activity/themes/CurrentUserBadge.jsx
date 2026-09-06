@@ -1,6 +1,12 @@
 import React from 'react';
 
-const CurrentUserBadge = ({ avatar }) => (
+/**
+ * CurrentUserBadge
+ * 
+ * Architectural intent: Serves as a purely presentational component (dumb component) for rendering
+ * the user's avatar indicator on the game board. It encapsulates the styling and layout for the 
+ * 'You are here' badge, completely decoupled from the game board's complex state logic.
+ */const CurrentUserBadge = ({ avatar }) => (
     <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none">
         <div className="relative flex flex-col items-center">
             <div className="relative">

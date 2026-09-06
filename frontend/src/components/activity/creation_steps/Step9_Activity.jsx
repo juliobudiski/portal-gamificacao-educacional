@@ -10,6 +10,13 @@ import { useHelpModal } from "../../../context/HelpModalContext";
 // Importe o componente que criamos para a folha A4
 import PrintableActivity from '../../PrintableActivity';
 
+/**
+ * Step8_RulesAndSharing
+ * 
+ * Architectural intent: Orchestrates the 'Rules and Sharing' step of the activity creation wizard.
+ * It acts as a Container component, managing the local state for rule selection and print view toggling,
+ * while propagating changes up to the parent form state, adhering to unidirectional data flow.
+ */
 function Step8_RulesAndSharing({ activityData, handleInputChange, setActivityData }) {
   const { openHelp } = useHelpModal();
 

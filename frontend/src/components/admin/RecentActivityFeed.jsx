@@ -70,6 +70,13 @@ const formatActionText = (item) => {
   }
 }
 
+/**
+ * RecentActivityFeed
+ * 
+ * Architectural intent: Acts as a specialized presentation component for the system telemetry feed.
+ * It encapsulates the domain logic for translating raw technical event codes into human-readable 
+ * localized strings and mapping them to visual icons, isolating this mapping logic from the main dashboard.
+ */
 function RecentActivityFeed({ feedItems }) {
   if (!feedItems || feedItems.length === 0) {
     return <div className="h-full flex items-center justify-center text-secondary-text">Nenhuma atividade de usuário para exibir.</div>;

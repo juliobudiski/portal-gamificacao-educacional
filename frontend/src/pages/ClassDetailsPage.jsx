@@ -188,9 +188,11 @@ function ActivityCard({ activity }) {
 
 
 /**
- * Componente ClassDetailsPage
+ * ClassDetailsPage
  * 
- * Visualização detalhada de uma turma específica, mostrando métricas, ranking e atividades associadas.
+ * Architectural intent: Serves as the primary Dashboard/View for a specific class, aggregating data
+ * from multiple domains (Activities, Students, Teams). It acts as an integration point, focusing purely
+ * on data presentation and navigation routing for a single class entity, ensuring High Cohesion around class monitoring.
  */
 function ClassDetailsPage() {
     const { class_id } = useParams();

@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Server, X, Clock } from 'lucide-react';
 
+/**
+ * @component ServerWakeupNotice
+ * @description
+ * User experience (UX) enhancement component alerting users to potential cold-start delays.
+ * 
+ * Architectural Decisions:
+ * - Local State Persistence: Uses `localStorage` to ensure the notice is shown only once per browser, preventing notification fatigue.
+ * - Non-blocking UI: Renders absolutely positioned over the main UI without interrupting user workflows.
+ */
 const ServerWakeupNotice = () => {
     const [isVisible, setIsVisible] = useState(false);
 

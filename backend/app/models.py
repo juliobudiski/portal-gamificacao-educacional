@@ -285,7 +285,7 @@ class EventLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     
     # --- Contexto do usuário ---
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True, nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), index=True, nullable=True)
     activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), index=True, nullable=True)
     
     # --- Nova Estrutura de Logging ---
@@ -518,7 +518,7 @@ class ForumTopic(db.Model):
     category_id = db.Column(db.Integer, db.ForeignKey('forum_category.id', ondelete="CASCADE"), index=True, nullable=False)
 
     activity_id = db.Column(db.Integer, db.ForeignKey('activity.id', ondelete="CASCADE"), index=True, nullable=False)
-    author_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True, nullable=False)
+    author_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), index=True, nullable=False)
     best_answer_id = db.Column(db.Integer, db.ForeignKey('forum_post.id', use_alter=True), index=True, nullable=True)
 
     # --- ADICIONE ESTA LINHA ---
@@ -555,7 +555,7 @@ class ForumPost(db.Model):
     
     # Chaves estrangeiras que conectam a resposta
     topic_id = db.Column(db.Integer, db.ForeignKey('forum_topic.id', ondelete="CASCADE"), index=True, nullable=False)
-    author_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True, nullable=False)
+    author_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), index=True, nullable=False)
     likes = db.relationship('PostLike', backref='post', lazy=True, cascade="all, delete-orphan")
     
     def to_dict(self):
@@ -641,7 +641,7 @@ class ChatMessage(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     conversation_id = db.Column(db.Integer, db.ForeignKey('conversation.id'), index=True, nullable=False)
-    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True, nullable=False)
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), index=True, nullable=False)
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     
@@ -693,7 +693,7 @@ class ContactMessage(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     # CORREÇÃO 1: 'user.id' no singular (para bater com __tablename__ = 'user')
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True, nullable=True) 
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), index=True, nullable=True) 
     
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), nullable=False)
@@ -735,7 +735,7 @@ class SystemFeedback(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     # CORREÇÃO 1: Mudado de 'users.id' para 'user.id' (sua tabela é singular)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), index=True, nullable=False)
     role = db.Column(db.String(20), nullable=False) # 'professor' ou 'aluno'
     
     # Armazena perguntas e respostas

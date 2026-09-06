@@ -1,6 +1,15 @@
 // frontend/src/context/ActivityCreationContext.jsx
 import React, { createContext, useState, useContext, useCallback } from 'react';
 import { useAutoSave } from '../hooks/useAutoSave';
+
+/**
+ * ActivityCreationContext
+ * 
+ * Architectural intent: Manages the complex state of the multi-step activity creation wizard.
+ * This context centralizes the draft state and delegates side-effects (like auto-saving)
+ * to custom hooks (e.g., useAutoSave). This ensures High Cohesion (all creation state is together)
+ * and Low Coupling (components only consume the data they need without knowing how it's saved).
+ */
 const ActivityCreationContext = createContext();
 
 const initialState = {

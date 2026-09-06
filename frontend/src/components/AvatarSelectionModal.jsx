@@ -1,16 +1,19 @@
 // frontend/src/components/AvatarSelectionModal.jsx
-import React, { memo, useContext } from 'react';
+import React, { memo } from 'react';
 import { useAuth } from '../context/AuthContext';
 
-// Envolvemos o componente com React.memo para evitar re-renderizações
-// desnecessárias quando as props (onSelect, onClose) não mudam.
+/**
+ * @component AvatarSelectionModal
+ * @description
+ * Modal for user avatar selection.
+ * 
+ * Architectural Decisions:
+ * - Render Optimization: Wrapped with `React.memo` to prevent unnecessary re-renders when parent state changes.
+ * - Context Coupling: Currently fetches `user` via `useAuth` internally. To fully adhere to Dependency Injection, `unlockedAvatars` could be passed as a prop from the container component.
+ */
 const AvatarSelectionModal = memo(function AvatarSelectionModal({ onSelect, onClose }) {
-  // Log para quando o componente é renderizado e quais props ele recebe
-  console.log('--- [Debug] Componente AvatarSelectionModal renderizado ---');
-  console.log('[Debug] Props recebidas:', { onSelect, onClose });
   const { user } = useAuth();
   const unlockedAvatars = user?.unlocked_global_avatars || [];
-
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 animate-fade-in">

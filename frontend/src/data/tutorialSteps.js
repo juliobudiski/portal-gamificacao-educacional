@@ -1,8 +1,10 @@
 /**
- * Passos do Tutorial (Joyride)
+ * tutorialSteps
  * 
- * Arquivo de configuração contendo os passos, seletores CSS e textos (tooltips)
- * utilizados pela biblioteca react-joyride para guiar os novos usuários.
+ * Architectural intent: Centralizes the configuration data for the interactive Joyride tutorials across
+ * the application. By extracting the step definitions, target selectors, and tooltip content into a
+ * standalone data module, it keeps the UI components clean and ensures the onboarding flows remain
+ * easily maintainable and extensible.
  */
 export const STUDENT_DASHBOARD_STEPS = [
     {

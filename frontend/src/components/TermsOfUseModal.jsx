@@ -1,6 +1,15 @@
 import React, { useState, useRef } from "react";
 import { FaFileContract, FaCheckCircle } from "react-icons/fa";
 
+/**
+ * @component TermsOfUseModal
+ * @description
+ * Modal for displaying and accepting legal agreements.
+ * 
+ * Architectural Decisions:
+ * - Interaction Enforcement: Utilizes a `scroll` event listener and a ref to mandate that the user reads (or scrolls through) the entire document before enabling the accept button.
+ * - Content Injection: Expects `termsText` via props rather than hardcoding legal text, ensuring the modal remains a generic, reusable structural component.
+ */
 const TermsOfUseModal = ({ onClose, onAccept, termsText }) => {
   const [hasScrolledToEnd, setHasScrolledToEnd] = useState(false);
   const scrollContainerRef = useRef(null);

@@ -1,10 +1,13 @@
 import { createContext, useContext } from 'react';
 
 /**
- * Contexto de Atividade (Activity Context)
+ * ActivityContext
  * 
- * Fornece um estado global para o fluxo de criação e execução de atividades,
- * evitando prop-drilling entre os componentes de múltiplos passos.
+ * Architectural intent: Isolates the activity execution state from UI components.
+ * By centralizing this state, we prevent prop-drilling and ensure that the activity
+ * flow logic (the "domain" of the activity) is decoupled from the presentation layer.
+ * This adheres to the Single Responsibility Principle by keeping state management
+ * separate from rendering.
  */
 
 

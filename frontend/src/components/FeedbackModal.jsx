@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 import { useAuthOperations } from '../hooks/useAuthOperations';
 
 /**
- * Modal de Feedback
+ * @component FeedbackModal
+ * @description
+ * Feedback collection modal for system analytics.
  * 
- * Exibe mensagens de retorno (sucesso, erro, avisos) sobre ações do usuário,
- * garantindo uma melhor experiência e navegação.
+ * Architectural Decisions:
+ * - Separation of Concerns: Delegates actual submission logic to `useAuthOperations` hook.
+ * - Dynamic Configuration: Questions depend on `userRole` passed via props, maintaining UI reusability for different actors.
  */
 
 

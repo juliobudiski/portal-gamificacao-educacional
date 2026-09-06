@@ -20,10 +20,9 @@ logger = logging.getLogger(__name__)
 @cross_origin()
 def get_teacher_creators_ranking():
     """
-    Endpoint para obter o ranking de professores mais ativos na plataforma.
-    A pontuação (ou classificação) é baseada na quantidade de atividades criadas.
-    - Acesso: Usuários autenticados (qualquer role, geralmente professores consultam).
-    - Retorno: Top 10 professores (nome, qtd_atividades) e a posição/rank do usuário atual (se for professor).
+    [Arquitetura]
+    Por que: Agregação de rankings frequentemente exige queries pesadas e uso de cache. Mantendo a lógica
+    isolada no RankingService, a rota (Controller) fica enxuta e desacoplada das complexidades de performance e BD.
     """
     current_user_id = get_jwt_identity()
     

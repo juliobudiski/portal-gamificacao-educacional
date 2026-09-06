@@ -4,6 +4,14 @@
 import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import { jwtDecode } from 'jwt-decode';
 
+/**
+ * AuthContext
+ * 
+ * Architectural intent: Centralizes authentication state and token management.
+ * This isolates the UI from JWT decoding logic and localStorage persistence,
+ * respecting the Single Responsibility Principle. Components depend on this context
+ * via Dependency Injection (useContext) rather than interacting with tokens directly.
+ */
 // --- 2. CRIAÇÃO DO CONTEXTO DE AUTENTICAÇÃO ---
 export const AuthContext = createContext(null);
 

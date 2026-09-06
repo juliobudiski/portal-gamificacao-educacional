@@ -2,12 +2,13 @@ import React, { useEffect } from 'react';
 import { FaCheckCircle, FaExclamationTriangle, FaTimesCircle, FaTimes } from 'react-icons/fa';
 
 /**
- * Componente reutilizável para notificações (Toasts).
- * Substitui o uso de window.alert().
- * * @param {boolean} show - Se deve exibir o toast
- * @param {string} message - A mensagem a ser exibida
- * @param {string} type - 'success', 'error' ou 'warning'
- * @param {function} onClose - Função para fechar o toast
+ * @component ToastNotification
+ * @description
+ * Reusable ephemeral notification (toast) component.
+ * 
+ * Architectural Decisions:
+ * - Self-Dismissing Component: Manages its own lifecycle via `setTimeout` inside `useEffect`, emitting `onClose` to the parent to sync state.
+ * - Configuration Object Pattern: Uses a dictionary (`config`) to map `type` props to styling and icons, avoiding complex switch statements and improving extensibility.
  */
 const ToastNotification = ({ show, message, type = 'success', onClose }) => {
     if (!show) return null;

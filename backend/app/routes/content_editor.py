@@ -95,11 +95,10 @@ def orchestrate_draft_activity():
     app = current_app._get_current_object()
     from ..extensions import socketio
 
-    user = User.query.get(user_id)
-    # BYOK (Bring Your Own Key): Puxa a chave Gemini privada do professor para uso no orquestrador
-    # Se o usuário não tiver uma chave configurada, passamos None para que o ai_service 
-    # utilize a chave padrão de fallback do sistema (se houver no .env).
-    data['user_api_key'] = user.gemini_api_key if user and user.gemini_api_key else None
+    # [Arquitetura]
+    # Por que: A rota não deve conhecer os detalhes do modelo de banco de dados (User).
+    # O ContentEditorService passa a ser responsável por encapsular a lógica do BYOK.
+    data['user_api_key'] = ContentEditorService.get_user_api_key(user_id)
 
     # Validação Básica de Segurança (Anti Prompt Injection)
     teaching_focus = data.get('config', {}).get('teachingFocus', '')

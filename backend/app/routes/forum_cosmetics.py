@@ -3,6 +3,11 @@ import json
 from ..models import db, ActivityProgress, User
 
 def _enrich_forum_with_cosmetics(items_dicts, activity_id):
+    """
+    [Arquitetura]
+    Por que: Extraímos o enriquecimento de entidades (cosméticos e avatares) para esta função isolada,
+    evitando N+1 Queries no carregamento do fórum e encapsulando o parsing JSON de configurações do banco.
+    """
     if not items_dicts:
         return items_dicts
 

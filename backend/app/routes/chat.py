@@ -99,26 +99,19 @@ def handle_send_message(data):
 @cross_origin()
 def report_message(msg_id):
     """
-    Registra uma denúncia de conteúdo inapropriado feita por um usuário contra uma mensagem de chat.
-    - Acesso: Usuários autenticados.
-    - Lógica (no Service): Se a mensagem atingir X denúncias, ela é automaticamente ocultada/censurada.
-    - Retorno: Sucesso ou erro na denúncia, podendo emitir evento WS de censura global.
+    [Arquitetura]
+    Por que: Isola a responsabilidade de moderação. A camada de controller (esta rota)
+    apenas faz a ponte (HTTP/WebSocket) enquanto as regras de denúncia e rollback ficam no Service.
     """
     user_id = get_jwt_identity()
     
-    try:
-        result, error, status_code = ChatService.report_message(msg_id, user_id)
+    result, error, status_code = ChatService.report_message(msg_id, user_id)
+    
+    if error:
+        return jsonify({"error": error}), status_code
         
-        if error:
-            return jsonify({"error": error}), status_code
-            
-        # Se a denúncia causar a censura imediata da mensagem, avisa a sala para esconder a msg ao vivo
-        if result and result.get("is_censored_now"):
-            room = f'activity_{result["activity_id"]}'
-            socketio.emit('message_censored', {'msg_id': result["msg_id"]}, room=room)
-            
-        return jsonify({"success": "Denúncia registrada com sucesso."}), 200
-
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": "Erro ao processar denúncia."}), 500
+    if result and result.get("is_censored_now"):
+        room = f'activity_{result["activity_id"]}'
+        socketio.emit('message_censored', {'msg_id': result["msg_id"]}, room=room)
+        
+    return jsonify({"success": "Denúncia registrada com sucesso."}), 200

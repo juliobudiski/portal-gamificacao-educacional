@@ -1,6 +1,15 @@
 import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 
+/**
+ * @component ActivityCreationStepper
+ * @description
+ * Visual progress indicator and navigation for the multi-step activity creation process.
+ * 
+ * Architectural Decisions:
+ * - State Projection: Relies on `currentStep` and `maxReachedStep` props to determine visual states (active, completed, locked) rather than maintaining local state.
+ * - UX Optimization: Employs `useRef` and `useEffect` to automatically scroll the active step into view on small screens, ensuring mobile accessibility.
+ */
 const STEPS = [
     { id: 1, label: "Início", short: "Início" },
     { id: 2, label: "Cenário", short: "Cenário" },

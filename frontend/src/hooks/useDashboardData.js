@@ -3,12 +3,11 @@ import { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 
 /**
- * Hook para obtenção de dados do dashboard
- * @returns {{
- *   dashboardData: Object|null,
- *   loading: boolean,
- *   error: string
- * }}
+ * useDashboardData
+ * 
+ * Architectural intent: Encapsulates the data fetching logic and state management for the dashboard.
+ * Acts as an anti-corruption layer between the API and the UI components, ensuring the presentation
+ * layer remains decoupled from network protocols, loading states, and error handling.
  */
 const useDashboardData = () => {
   const [dashboardData, setDashboardData] = useState(null);

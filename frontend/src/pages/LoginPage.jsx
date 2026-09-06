@@ -8,9 +8,11 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa'; // Import adicionado
 
 // --- 2. DEFINIÇÃO DO COMPONENTE ---
 /**
- * Componente LoginPage
+ * LoginPage
  * 
- * Página de autenticação de usuários (login) via credenciais locais ou Google OAuth.
+ * Architectural intent: Encapsulates the UI and network logic for authenticating users. It acts as an
+ * isolation boundary for the unauthenticated state, handling both local credentials and Google OAuth,
+ * and orchestrates the routing facade based on the authenticated user's role.
  */
 function LoginPage() {
   // --- 3. ESTADOS DO COMPONENTE (State Hooks) ---

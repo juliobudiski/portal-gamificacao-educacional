@@ -1,6 +1,15 @@
 import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import Winwheel from 'winwheel';
 
+/**
+ * @component WinwheelWrapper
+ * @description
+ * React wrapper for the vanilla JavaScript `winwheel` library, bridging imperative DOM manipulation with React's declarative lifecycle.
+ * 
+ * Architectural Decisions:
+ * - Forwarded Ref API: Uses `forwardRef` and `useImperativeHandle` to expose a `spinTo` method to parent components, isolating the imperative Winwheel API.
+ * - Controlled Instantiation: Instantiates the `Winwheel` class only when `segments.length > 0` and the canvas is mounted (`useEffect`).
+ */
 // Usamos forwardRef para que o componente pai (RouletteTab) possa acessar métodos deste componente
 const WinwheelWrapper = forwardRef(({ segments }, ref) => {
   const canvasRef = useRef(null);

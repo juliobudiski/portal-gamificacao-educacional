@@ -5,6 +5,16 @@ import remarkBreaks from 'remark-breaks';
 import rehypeHighlight from 'rehype-highlight';
 import 'highlight.js/styles/github-dark.css';
 
+/**
+ * @component LearningMaterialViewer
+ * @description
+ * Interface for displaying multimedia learning resources (YouTube videos, Markdown text, external links).
+ * 
+ * Architectural Decisions:
+ * - Smart URL Extraction: Uses `getYouTubeEmbedUrl` to safely parse and convert various YouTube link formats into an embeddable iframe URL.
+ * - Memoized Markdown: Uses `useMemo` on `processedText` to avoid expensive regex operations on every render.
+ * - External Dependency Integration: Leverages `react-markdown` with GFM and syntax highlighting plugins to render rich text safely.
+ */
 // Helper inteligente: Extrai o ID do YouTube de QUALQUER formato e monta a URL oficial de embed
 const getYouTubeEmbedUrl = (input) => {
     if (!input) return null;

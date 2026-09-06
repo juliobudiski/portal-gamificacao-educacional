@@ -4,6 +4,16 @@ import { useAuth } from '../../context/AuthContext';
 import { useParams } from 'react-router-dom';
 import { useConfetti } from '../../context/ConfettiContext';
 
+/**
+ * @component SlotMachineTab
+ * @description
+ * Interactive 3x3 slot machine minigame where users spend coins to win points or prizes.
+ * 
+ * Architectural Decisions:
+ * - Delayed Resolution: Fetches outcome from backend immediately but uses a `setTimeout` to maintain the spinning animation, building suspense.
+ * - CSS Keyframe Injection: Injects custom `@keyframes` for the slot spinning blur effect directly via `<style>` tag.
+ * - Dictionary Mapping: Uses `SYMBOL_MAP` to translate raw backend string identifiers into rich visual data.
+ */
 // --- CONFIGURAÇÃO VISUAL DOS SÍMBOLOS ---
 const SYMBOL_MAP = {
   "orange": { icon: "🍊", color: "bg-orange-500/20 border-orange-500" },

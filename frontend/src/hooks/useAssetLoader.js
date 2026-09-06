@@ -1,6 +1,14 @@
 // frontend/src/hooks/useAssetLoader.js
 import { useState, useEffect, useRef } from 'react';
 
+/**
+ * useAssetLoader
+ * 
+ * Architectural intent: Abstracts the logic for preloading images and calculating loading progress.
+ * Separates the side-effect of asset caching from UI rendering, keeping the presentation layer
+ * focused solely on displaying the loading state and ensuring High Cohesion.
+ */
+
 function useAssetLoader(imageUrls) {
     const [loadingProgress, setLoadingProgress] = useState(0);
     const [isLoaded, setIsLoaded] = useState(false);

@@ -4,9 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { FaArrowLeft } from 'react-icons/fa';
 
 /**
- * Componente CreateClassPage
+ * CreateClassPage
  * 
- * Página contendo o formulário de criação de uma nova turma, gerando o código de convite para os alunos.
+ * Architectural intent: Handles the specific workflow of creating a new class entity. Isolated from
+ * editing and listing views, it focuses solely on form validation and payload construction for class
+ * instantiation, ensuring a Single Responsibility.
  */
 function CreateClassPage() {
     const { user } = useContext(AuthContext); // Removido 'authToken' da desestruturação

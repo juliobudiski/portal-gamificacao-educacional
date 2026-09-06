@@ -2,7 +2,15 @@ import React from 'react';
 import { FaStar, FaTrophy, FaCoins, FaShieldAlt } from 'react-icons/fa';
 import RecentActivityFeed from './RecentActivityFeed';
 
-const GameHUD = ({ progress }) => {
+/**
+ * @component GameHUD
+ * @description
+ * Heads-Up Display showing the user's progress, points, and coins overlaying the game board.
+ * 
+ * Architectural Decisions:
+ * - Read-Only Projection: Relies on the `progress` prop to render stats, ensuring the HUD remains purely presentational without managing its own fetch logic.
+ * - Responsive Layout: Employs Tailwind utility classes to dynamically collapse non-essential information on smaller viewports.
+ */
     // 1. USA OS DADOS VINDOS DO BACKEND (progress.py -> get_activity_progress)
     const currentPoints = progress?.points_earned || 0; // Pontos para a loja
     const currentCoins = progress?.coins || 0;         // Moedas (Tigrinho/Roleta)

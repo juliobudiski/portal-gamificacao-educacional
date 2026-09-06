@@ -18,13 +18,13 @@ const StatLine = ({ icon, label, value, colorClass }) => (
 
 /**
  * @component ProfessorSidebar
- * @desc Barra lateral para professores com analytics da turma, lista de alunos e controles de gerenciamento.
- * @param {Object} props - Propriedades do componente
- * @param {Object} props.analytics - Dados analíticos da turma
- * @param {Function} props.onStudentClick - Callback para seleção de aluno
- * @param {Function} props.onOpenQuizEditor - Callback para abertura do editor de quiz
- * @param {Function} props.onOpenNarrativeEditor - Callback para abertura do editor de narrativa
- * @returns {JSX.Element} Interface de gerenciamento para professores
+ * @description
+ * Sticky sidebar for teachers, providing real-time analytics, student progress tracking, and activity management controls.
+ * 
+ * Architectural Decisions:
+ * - Expandable List Pattern: Manages `expandedStudentId` state to show/hide granular student statistics on demand, preventing UI clutter.
+ * - Read-Only Analytics: Receives pre-calculated `analytics` via props, avoiding complex data transformations within the presentation component.
+ * - Action Delegation: Delegates actions like opening editors to the parent component, keeping the sidebar focused on presentation.
  */
 const ProfessorSidebar = ({ analytics, onStudentClick, onOpenQuizEditor, onOpenNarrativeEditor }) => {
 

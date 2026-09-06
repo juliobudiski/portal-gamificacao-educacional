@@ -14,12 +14,13 @@ import {
 import { useHelpModal } from "../../../context/HelpModalContext";
 
 /**
- * Componente para a Etapa 4 do formulário de criação de atividades.
- * Permite ao professor selecionar os perfis de jogador que deseja engajar.
- * @param {object} props - As propriedades passadas do componente pai.
- * @param {object} props.activityData - O objeto de estado que contém todos os dados do formulário.
- * @param {function} props.setActivityData - A função para definir o estado da atividade, ideal para manipular arrays.
- * @param {function} props.openHelpModal - A função para abrir o modal de ajuda do componente pai.
+ * @component Step4_Activity
+ * @description
+ * Fourth step of the activity creation wizard, profiling the target student audience (Competitive, Social, Explorer, Achiever).
+ * 
+ * Architectural Decisions:
+ * - Constant Mapping: Uses a static `playerProfiles` dictionary to define the UI elements (icons, descriptions) for each profile type.
+ * - Array Toggling: Implements an immutable array toggle pattern in `handleProfileSelection` to add or remove strings from the `selectedProfiles` state.
  */
 function Step4_PlayerProfile({ activityData, setActivityData, openHelpModal }) {
   // Array de objetos para os perfis de jogadores com descrições e ícones.

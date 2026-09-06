@@ -10,6 +10,16 @@ import {
 import { useHelpModal } from "../../../context/HelpModalContext";
 import api from '../../../services/api';
 
+/**
+ * @component Step5_Activity
+ * @description
+ * Fifth and most critical step: Recommends and allows selection of game mechanics using an AI/Decision Engine.
+ * 
+ * Architectural Decisions:
+ * - Asynchronous Recommendation Engine: Calls the `/activities/recommendations` endpoint on mount to cluster mechanics into `recommended`, `neutral`, and `forbidden` buckets based on previous wizard steps.
+ * - Guardrail Interception: Intercepts selection of `forbidden` mechanics with a warning modal, requiring explicit teacher override to proceed.
+ * - Dynamic Styling: Calculates border and background colors in `renderCard` based on both the recommendation bucket and the current selection state.
+ */
 const ICON_MAP = {
   "Níveis": <FaLayerGroup />,
   "Sistema de pontuação": <FaStar />,

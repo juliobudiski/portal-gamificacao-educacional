@@ -4,6 +4,13 @@ import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { Target, Users, Zap, Award, ArrowRight, Sparkles } from 'lucide-react';
 
+/**
+ * HomePage
+ * 
+ * Architectural intent: Serves as the unauthenticated entry point (Landing Page). It relies on the
+ * AuthContext to conditionally render routing logic (dashboard paths vs login/register paths), acting
+ * as a gateway and routing facade for the application.
+ */
 export default function Homepage() {
   const { user } = useContext(AuthContext);
 

@@ -2,6 +2,13 @@ import React, { createContext, useContext, useState, useCallback } from 'react';
 import { helpContent } from '../data/helpContent';
 import HelpModal from '../components/HelpModal'; // Importamos o visual aqui para encapsular
 
+/**
+ * HelpModalContext
+ * 
+ * Architectural intent: Centralizes the rendering and state management of the Help Modal at the root level.
+ * This prevents duplicate modal instances across the DOM tree and allows any component to trigger help content
+ * purely by emitting an intent (openHelp). This enforces Low Coupling and Separation of Concerns.
+ */
 const HelpModalContext = createContext();
 
 export const HelpModalProvider = ({ children }) => {

@@ -1,6 +1,14 @@
 // frontend/src/hooks/useAnalytics.js
 import { useEffect, useRef, useCallback } from "react";
 
+/**
+ * useAnalytics
+ * 
+ * Architectural intent: Provides a reusable mechanism for tracking user interactions and session durations.
+ * Decouples analytics logic (API calls, visibility tracking, timers) from UI components, adhering to the
+ * Single Responsibility Principle. Views can log events cleanly without knowing the underlying implementation.
+ */
+
 // URL base da API (ajuste conforme seu setup)
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/";
 

@@ -3,6 +3,16 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { FaDice, FaRedo } from 'react-icons/fa';
 
+/**
+ * @component CustomWheel
+ * @description
+ * Interactive roulette wheel UI component for randomizing outcomes.
+ * 
+ * Architectural Decisions:
+ * - CSS Animations: Relies on CSS transitions (`transform: rotate`) rather than JavaScript intervals for smoother, GPU-accelerated spinning animations.
+ * - Reactive Props: The spinning logic is triggered reactively when the `winningSegmentIndex` prop changes, keeping the component stateless regarding the actual game logic.
+ * - Dynamic Styling: Calculates conic-gradient segments dynamically based on the length of the `segments` array prop.
+ */
 const CustomWheel = ({ isRetry, segments, winningSegmentIndex, onFinished, onSpin, isSpinning, isLoading }) => {
   const [rotation, setRotation] = useState(0);
   const [internalSpin, setInternalSpin] = useState(false);

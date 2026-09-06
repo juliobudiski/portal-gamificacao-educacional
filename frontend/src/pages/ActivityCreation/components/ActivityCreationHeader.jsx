@@ -1,6 +1,14 @@
 import React from 'react';
 import { FaCheckCircle, FaTimesCircle, FaSync, FaGamepad } from 'react-icons/fa';
 
+/**
+ * ActivityCreationHeader
+ * 
+ * Architectural intent: Serves as a pure, presentational component for the Activity Creation wizard header.
+ * It solely depends on props to render its state (e.g., auto-save status, edit mode), adhering to the
+ * Single Responsibility Principle by decoupling visual feedback from the complex state management of the wizard.
+ */
+
 function ActivityCreationHeader({ isEditMode, showInitialSelection, autoSaveStatus, lastSavedAt }) {
   return (
     <div className="relative overflow-hidden bg-gradient-to-r from-accent-purple/20 via-accent-teal/20 to-accent-yellow/20 p-8 lg:p-12 rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] mb-10 border border-border-color backdrop-blur-md">

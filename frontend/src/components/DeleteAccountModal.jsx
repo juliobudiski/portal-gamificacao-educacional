@@ -2,15 +2,15 @@ import React from 'react';
 import { FaKey } from "react-icons/fa";
 
 /**
- * Modal de Exclusão de Conta
+ * @component DeleteAccountModal
+ * @description
+ * Specialized modal for critical account deletion confirmation.
  * 
- * Exibe um alerta de confirmação crítico solicitando que o usuário confirme a deleção
- * permanente de sua conta e dados associados.
+ * Architectural Decisions:
+ * - Presentation Layer Only: Contains no business logic for actual account deletion.
+ * - Dependency Injection: State (`password`, `message`) and actions (`onConfirm`, `onCancel`, `setPassword`) are injected via props, maintaining loose coupling from authentication services.
+ * - High Cohesion: Encapsulates all specific UI requirements for this critical action in a single place.
  */
-
-
-// Este é um componente de UI puro. Ele não sabe 'como' deletar uma conta,
-// apenas exibe a interface e notifica o componente pai quando os botões são clicados.
 const DeleteAccountModal = ({ onConfirm, onCancel, password, setPassword, message }) => (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
         <div className="bg-primary-bg p-8 rounded-2xl shadow-xl max-w-md w-full border border-red-500/50">

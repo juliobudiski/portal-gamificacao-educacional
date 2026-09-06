@@ -3,6 +3,15 @@ import { FaBell, FaShoppingCart, FaMedal, FaTimes, FaSpinner } from 'react-icons
 import { useAuth } from '../../context/AuthContext';
 import { useParams } from 'react-router-dom';
 
+/**
+ * @component RecentActivityFeed
+ * @description
+ * Dropdown feed showing real-time global events (purchases, medals) within the activity.
+ * 
+ * Architectural Decisions:
+ * - Lazy Fetching: Delays the API call to fetch recent events until the user explicitly opens the feed dropdown (`isOpen`), saving bandwidth.
+ * - Unread State Management: Manages a `hasUnread` notification dot that disappears upon the first opening of the feed.
+ */
 const RecentActivityFeed = () => {
     const { user } = useAuth();
     const { activityId } = useParams();

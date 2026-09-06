@@ -28,9 +28,11 @@ const getRandomHouseNames = (quantity, existingNames = []) => {
 };
 
 /**
- * Componente AssignActivityToClass
+ * AssignActivityToClass
  * 
- * Página que permite ao professor atribuir uma atividade específica a uma ou mais turmas.
+ * Architectural intent: Manages the business logic of assigning an activity to a class, including the
+ * orchestration of team generation (Sorting Hat logic). By isolating this process, it keeps the core
+ * activity management and class management domains strictly decoupled, adhering to the Single Responsibility Principle.
  */
 function AssignActivityToClass({ onAssignSuccess }) {
     const { activityId } = useParams();

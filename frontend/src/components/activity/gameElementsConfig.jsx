@@ -7,11 +7,13 @@ import {
 
 /**
  * MÓDULO CENTRAL DE CONFIGURAÇÃO DOS CARDS
- * Esta é a ÚNICA fonte de verdade para os cards do dashboard.
+ * 
+ * Architectural intent: Centralizes the configuration and business rules (availability logic) for the
+ * interactive game elements (cards) shown in the activity dashboard. By extracting this configuration
+ * into a pure data module, it ensures the UI components remain declarative and decoupled from the
+ * complex conditional rendering logic of gamification features.
  * 
  * @module gameElementsConfig
- * @description Configuração centralizada para os elementos de jogo no dashboard.
- *              Define propriedades, ícones e condições de exibição para cada card.
  */
 
 /**

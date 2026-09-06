@@ -1,5 +1,13 @@
 import { useEffect, useState, useCallback } from 'react';
 
+/**
+ * useKonamiCode
+ * 
+ * Architectural intent: Implements a global event listener for an easter egg.
+ * By abstracting the keystroke tracking logic into a custom hook, we adhere to the Single
+ * Responsibility Principle, allowing any component to consume the 'success' state without
+ * managing DOM events directly (Low Coupling).
+ */
 const useKonamiCode = (secretWord) => {
   const [success, setSuccess] = useState(false);
   const [input, setInput] = useState('');

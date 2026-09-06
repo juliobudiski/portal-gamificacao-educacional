@@ -8,46 +8,10 @@ from ..models import db, User, Purchase, UserUnlockedMedal, Medal
 @jwt_required()
 @cross_origin()
 def get_recent_events(activity_id):
-    """Busca o feed global de eventos recentes da turma na atividade."""
-    # Últimas compras
-    purchases = db.session.query(
-        User.name, Purchase.item_name, Purchase.purchase_date
-    ).join(User, User.id == Purchase.user_id)\
-     .filter(Purchase.activity_id == activity_id)\
-     .order_by(Purchase.purchase_date.desc()).limit(10).all()
-
-    # Últimas medalhas ganhas (filtra activity_id se houver, mas a maioria não tem, então filtra pela turma)
-    # Como UserUnlockedMedal pode não ter activity_id, buscamos as medalhas da atividade em si
-    medals = db.session.query(
-        User.name, Medal.name.label('medal_name'), UserUnlockedMedal.unlocked_at
-    ).join(User, User.id == UserUnlockedMedal.user_id)\
-     .join(Medal, Medal.id == UserUnlockedMedal.medal_id)\
-     .filter(Medal.activity_id == activity_id)\
-     .order_by(UserUnlockedMedal.unlocked_at.desc()).limit(10).all()
-
-    events = []
-    for p in purchases:
-        events.append({
-            "type": "purchase",
-            "user": p.name,
-            "description": f"comprou '{p.item_name}'",
-            "timestamp": p.purchase_date
-        })
-        
-    for m in medals:
-        events.append({
-            "type": "medal",
-            "user": m.name,
-            "description": f"desbloqueou a medalha '{m.medal_name}'",
-            "timestamp": m.unlocked_at
-        })
-        
-    # Ordena todos e pega os top 10
-    events.sort(key=lambda x: x["timestamp"], reverse=True)
-    events = events[:15]
-    
-    # Serializa timestamp
-    for e in events:
-        e["timestamp"] = e["timestamp"].isoformat() if e["timestamp"] else None
-        
-    return jsonify(events), 200
+    """
+    [Arquitetura]
+    Por que: Isolar a lógica complexa de agregação, junção e mescla temporal de múltiplos tipos de eventos 
+    (compras, medalhas) no ProgressService evita vazamento do modelo de persistência na camada HTTP.
+    """
+    from ..services.progress_service import ProgressService
+    return jsonify(ProgressService.get_recent_events_service(activity_id)), 200

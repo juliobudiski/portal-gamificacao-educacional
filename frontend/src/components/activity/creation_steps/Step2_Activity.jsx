@@ -8,10 +8,13 @@ import {
 import { useHelpModal } from "../../../context/HelpModalContext";
 
 /**
- * Criação de Atividade - Passo 2 (Mecânicas e Gamificação)
+ * @component Step2_Activity
+ * @description
+ * Second step of the activity creation wizard, allowing teachers to define the pedagogical goals (desired scenario) for the gamification.
  * 
- * Permite ao professor configurar regras de jogo, pontuação (XP), restrições de tempo
- * e recompensas associadas à atividade.
+ * Architectural Decisions:
+ * - Contextual Filtering: Dynamically filters and displays specific objectives based on the previously selected `subdomain` (from Step 1).
+ * - Multi-select Array: Toggles objectives within the `activityData.desiredScenario.objectives` array using a pure array filter/spread approach.
  */
 
 

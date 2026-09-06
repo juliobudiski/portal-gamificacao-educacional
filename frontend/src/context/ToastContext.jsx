@@ -1,6 +1,13 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import ToastNotification from '../components/ToastNotification';
 
+/**
+ * ToastContext
+ * 
+ * Architectural intent: Provides a global mechanism for rendering ephemeral notifications.
+ * Decouples the presentation and state management of toasts from the components that trigger them.
+ * This maintains High Cohesion for notification management and Low Coupling across the app.
+ */
 const ToastContext = createContext();
 
 export const ToastProvider = ({ children }) => {

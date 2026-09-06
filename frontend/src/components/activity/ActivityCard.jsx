@@ -7,7 +7,13 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 /**
- * Mapeia áreas de conhecimento ou temas para gradientes elegantes de capa
+ * @component ActivityCard
+ * @description
+ * Card component summarizing an activity, showing metadata and action buttons.
+ * 
+ * Architectural Decisions:
+ * - Dynamic Styling: Extracts complex theme-to-gradient mapping into a pure helper function (`getThemeGradient`) outside the component to keep the render body clean.
+ * - Conditional Actions: Renders different sets of action buttons (Edit, Clone, Delete) based on the `isOwner` prop, abstracting role logic from the parent list.
  */
 const getThemeGradient = (area, theme) => {
   const normalized = (area || theme || '').toLowerCase();

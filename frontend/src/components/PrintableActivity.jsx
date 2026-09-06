@@ -4,6 +4,16 @@ import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
 import { FaPrint, FaArrowLeft, FaCheckSquare, FaRegSquare } from 'react-icons/fa';
 
+/**
+ * @component PrintableActivity
+ * @description
+ * Specialized view for generating printer-friendly versions of gamified activities.
+ * 
+ * Architectural Decisions:
+ * - Print-Specific Styling: Injects scoped CSS `@media print` rules directly to guarantee rendering fidelity.
+ * - Data Transformation: Parses complex `activityData` object recursively, mapping abstract node types into concrete HTML structures.
+ * - High Cohesion: All logic related to print layout and node rendering is centralized here.
+ */
 function PrintableActivity({ activityData, onBack }) {
 
     const handlePrint = () => {

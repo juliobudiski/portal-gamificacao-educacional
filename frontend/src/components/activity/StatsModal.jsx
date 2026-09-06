@@ -1,10 +1,13 @@
 import React from 'react';
 
 /**
- * Modal de Estatísticas da Atividade
+ * @component StatsModal
+ * @description
+ * End-of-activity modal displaying the student's final performance metrics (score, time, achievements).
  * 
- * Exibe o desempenho final (XP ganho, tempo gasto, acertos) após o aluno concluir
- * uma atividade gamificada.
+ * Architectural Decisions:
+ * - Controlled Overlay: Relies on external state (`isOpen` logic in parent) to mount, ensuring it doesn't hold hidden DOM elements when inactive.
+ * - Presentation Only: Strictly receives `stats` via props, decoupling it from the calculation and API fetching logic of the activity context.
  */
 
 

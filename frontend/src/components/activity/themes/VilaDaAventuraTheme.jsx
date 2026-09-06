@@ -7,6 +7,16 @@ import GameHUD from '../GameHUD';
 import CurrentUserBadge from './CurrentUserBadge';
 import { FaUsers, FaShieldAlt } from 'react-icons/fa'; // Ícones para o indicador de equipe
 
+/**
+ * @component VilaDaAventuraTheme
+ * @description
+ * A rich, RPG-style visual theme representing the Activity Board as an isometric-style map with distinct physical buildings (Hub) and a path.
+ * 
+ * Architectural Decisions:
+ * - Multi-Badge Composition: Extracts `TeamBadge`, `RivalBadge`, and `CurrentUserBadge` into separate pure components, decoupling social multiplayer logic from map layout.
+ * - Absolute Layout: Relies heavily on absolute positioning driven by JS math to place nodes on a dynamic serpentine path, overlaying static backgrounds.
+ * - Fallback Handlers: Implements `handleImageError` on rival badges to gracefully degrade to an icon if a team's custom crest image fails to load.
+ */
 // --- COMPONENTE DE BADGE PARA COLEGAS (ALIADOS - AZUL) ---
 const TeamBadge = ({ teammates, title = "Sua Equipe:" }) => { // <--- Aceita prop title
     if (!teammates || teammates.length === 0) return null;

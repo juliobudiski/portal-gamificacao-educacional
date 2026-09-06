@@ -2,6 +2,15 @@
 import React from 'react';
 import { createPortal } from 'react-dom'; // Opcional, mas recomendado (leia nota abaixo)
 
+/**
+ * @component MedalDetailModal
+ * @description
+ * Modal showing details of a specific medal, including its unlocked status and obtaining criteria.
+ * 
+ * Architectural Decisions:
+ * - React Portals: Renders the modal content directly into `document.body` via `createPortal`, avoiding z-index or overflow clipping issues from parent containers.
+ * - Conditional Visuals: Applies CSS filters (`grayscale`, `opacity`) dynamically based on the `isUnlocked` prop to visually distinguish earned vs unearned medals.
+ */
 const MedalDetailModal = ({ medal, isUnlocked, onClose }) => {
     if (!medal) return null;
 

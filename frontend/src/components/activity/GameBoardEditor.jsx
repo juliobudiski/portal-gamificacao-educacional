@@ -11,9 +11,13 @@ import { useToast } from '../../context/ToastContext';
 
 /**
  * @component GameBoardEditor
- * @desc Componente responsável pela edição visual do tabuleiro de gamificação, permitindo gerenciar a trilha de progressão e elementos do Hub.
- * @param {Object} props - As propriedades recebidas pelo componente.
- * @returns {JSX.Element} O elemento JSX do editor do tabuleiro.
+ * @description
+ * Complex visual editor allowing teachers to construct and modify the gamification progression path and hub elements.
+ * 
+ * Architectural Decisions:
+ * - Controlled Design State: Lifts the `gamificationDesign` state up to the parent via `setActivityData` and `onStructureChange`, acting as a controlled component.
+ * - AI Integration Flow: Handles the application of AI-generated content (`handleAIContentApplied`), explicitly marking generated steps as `isDraft` to enforce human-in-the-loop validation.
+ * - Context/Memoization: Uses `useMemo` on `getThemeAssets` to prevent expensive recalculations of the asset tree on every render.
  */
 function GameBoardEditor({ gamificationDesign = {}, setActivityData, onEditContent, onStructureChange, activityId, fullActivityData }) {
 

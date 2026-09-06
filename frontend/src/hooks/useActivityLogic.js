@@ -5,6 +5,15 @@ import { getThemeAssets, decorationSpawnPoints, boardStructuralImages } from '..
 import useAssetLoader from './useAssetLoader';
 import { useToast } from '../context/ToastContext';
 
+/**
+ * useActivityLogic
+ * 
+ * Architectural intent: Encapsulates the domain logic and state management for the activity board.
+ * Acts as a Facade for the activity execution flow. By centralizing this complex logic, we maintain
+ * Low Coupling between the UI components (which merely consume state and dispatch actions) and the
+ * underlying data fetching, progression rules, and asset management.
+ */
+
 const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === 'true';
 const debugLog = (message, ...optionalParams) => {
     if (DEBUG_MODE) {

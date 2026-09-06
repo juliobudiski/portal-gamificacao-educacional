@@ -342,21 +342,17 @@ def add_store_item(activity_id):
 @jwt_required()
 @cross_origin()
 def delete_store_item(item_id):
-    """Deleta um item da loja."""
+    """
+    [Arquitetura]
+    Por que: A rota deve atuar puramente como Controller. A deleção de itens da loja e a verificação
+    de permissão de professor associado a atividade devem ficar na camada de domínio (ProgressService).
+    """
     user_id = get_jwt_identity()
-    user = User.query.get(user_id)
-
-    item = StoreItem.query.get(item_id)
-    if not item:
-        return jsonify({"message": "Item não encontrado."}), 404
-        
-    activity = Activity.query.get(item.activity_id)
-    if not user or user.role != 'professor' or activity.professor_id != user.id:
-        return jsonify({"message": "Acesso negado."}), 403
-
-    db.session.delete(item)
-    db.session.commit()
-    return jsonify({"message": "Item deletado com sucesso."}), 200
+    
+    result, error, status_code = ProgressService.delete_store_item_service(user_id, item_id)
+    if error:
+        return jsonify(error), status_code
+    return jsonify(result), status_code
 
 @progress_bp.route('/<int:activity_id>/update', methods=['POST'])
 @jwt_required()

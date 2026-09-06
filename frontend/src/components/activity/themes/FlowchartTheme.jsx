@@ -10,7 +10,16 @@ import {
     FaIdBadge, FaComments, FaPaintBrush, FaBookOpen, FaQuestionCircle, FaStar
 } from 'react-icons/fa';
 
-
+/**
+ * @component FlowchartTheme
+ * @description
+ * A generic, "serious" visual theme for the Gamified Activity Board, rendering progress as an SVG flowchart.
+ * 
+ * Architectural Decisions:
+ * - Mathematical SVG Generation: Uses a Catmull-Rom spline algorithm to draw smooth, curved SVG paths connecting dynamically calculated node coordinates.
+ * - Unified Progression Array: Merges Hub elements with the main `progression_path` array via `useMemo` so the entire flow can be rendered in a single pass.
+ * - Responsive Observers: Uses `ResizeObserver` to recalculate board width and node coordinates automatically.
+ */
 // --- CONFIGURAÇÃO VISUAL (Design System Local) ---
 const THEME_COLORS = {
     path: {

@@ -3,6 +3,14 @@ import Joyride, { ACTIONS, EVENTS, STATUS } from 'react-joyride';
 import { useAuth } from './AuthContext';
 import { useTheme } from './ThemeContext';
 
+/**
+ * TutorialContext
+ * 
+ * Architectural intent: Centralizes the execution state and logic of the guided tour.
+ * Isolates tour progression and backend persistence (onboarding status) from individual 
+ * view components, ensuring Low Coupling. View components only need to trigger the tour,
+ * without managing its lifecycle.
+ */
 const TutorialContext = createContext();
 
 export const TutorialProvider = ({ children }) => {

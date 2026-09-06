@@ -120,36 +120,20 @@ def submit_answer(activity_id):
 @cross_origin()
 def log_activity_event(activity_id):
     """
-    Registra eventos genéricos de interação do usuário com a atividade 
-    para análise de engajamento (analytics).
-    
-    - Acesso: Autenticado.
-    - Payload JSON: { "event_type": "str" } (ex: 'narrative_viewed', 'completed').
+    [Arquitetura]
+    Por que: A camada de rotas (Controller) não deve interagir diretamente com a persistência (EventLog, db.session).
+    A extração dessa lógica para o service isola a responsabilidade de tracking, permitindo reutilização
+    e facilitando testes unitários do domínio.
     """
     logger.info(f"[log_activity_event] Registrando evento para atividade {activity_id}")
     current_user_id = get_jwt_identity()
-    user = User.query.get(current_user_id)
     data = request.get_json()
-    event_type = data.get('event_type') # Ex: 'narrative_viewed'
+    event_type = data.get('event_type')
 
     if not event_type:
         return jsonify({"message": "O tipo do evento é obrigatório."}), 400
 
-    try:
-        event = EventLog(
-            user_id=user.id,
-            event_type=event_type,
-            event_data={'activity_id': activity_id}
-        )
-        db.session.add(event)
-        db.session.commit()
-        return jsonify({"message": "Evento registrado com sucesso."}), 200
-    except Exception as e:
-        db.session.rollback()
-        current_app.logger.error(f"Erro ao registrar evento '{event_type}' para user {current_user_id} na atividade {activity_id}: {str(e)}")
-        # LOG: [log_activity_event] Erro ao salvar evento.
-        current_app.logger.error(f"Erro ao registrar evento '{event_type}' para user {current_user_id} na atividade {activity_id}: {str(e)}", exc_info=True)
-        return jsonify({"message": "Erro interno ao registrar evento."}), 500
+    return activity_service.log_activity_event_service(current_user_id, activity_id, event_type)
 
 
 @activity_bp.route('', methods=['POST'])

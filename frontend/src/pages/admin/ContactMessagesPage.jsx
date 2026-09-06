@@ -3,6 +3,13 @@ import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import { CheckCircle, Copy, Inbox, MessageSquare, Search, Mail, Calendar, User } from 'lucide-react';
 
+/**
+ * ContactMessagesPage
+ * 
+ * Architectural intent: Provides an administrative interface for managing platform communications.
+ * It implements a split-pane Master-Detail pattern, encapsulating the logic for message filtering,
+ * optimistic UI updates for read status, and contextual actions (e.g., sending approval codes).
+ */
 const ContactMessagesPage = () => {
     const { user } = useContext(AuthContext);
     const [messages, setMessages] = useState([]);

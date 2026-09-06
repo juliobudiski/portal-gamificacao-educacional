@@ -2,9 +2,11 @@ import React from 'react';
 import GameBoardViewer from '../components/activity/GameBoardViewer';
 
 /**
- * Componente GameBoardTestPage
+ * GameBoardTestPage
  * 
- * Página de ambiente de testes isolado (sandbox) para as mecânicas de tabuleiro e validação de lógica.
+ * Architectural intent: Provides an isolated sandbox environment (Test/Debug View) for rendering and
+ * validating the GameBoardViewer component independently. This ensures that complex UI mechanics can be
+ * tested without the overhead of the full activity state machine.
  */
 function GameBoardTestPage() {
   return (

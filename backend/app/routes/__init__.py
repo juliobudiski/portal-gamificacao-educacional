@@ -22,12 +22,9 @@ from .contact import contact_bp
 
 def register_blueprints(app):
     """
-    Registra todos os blueprints da aplicação associando a um prefixo de URL.
-    
-    :param app: Instância da aplicação Flask
-    
-    Cada blueprint agrupa rotas relacionadas a um domínio específico.
-    Por exemplo, todas as rotas em auth_bp responderão no prefixo '/api/auth'.
+    [Arquitetura]
+    Por que: Isolar o registro de rotas (Registry Pattern) no Init evita dependências circulares 
+    durante a instanciação do app e garante que o mapeamento de prefixos (/api/...) fique centralizado.
     """
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(activity_bp, url_prefix='/api/activities')

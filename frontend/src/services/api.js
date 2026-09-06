@@ -1,6 +1,13 @@
 // frontend/src/services/api.js
 import axios from 'axios';
 
+/**
+ * api
+ * 
+ * Architectural intent: Configures the core Axios HTTP client instance for the application.
+ * It centralizes request interception to automatically inject authentication tokens and handles
+ * base URL configuration, ensuring a unified and consistent communication layer with the backend.
+ */
 const envUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const baseUrl = envUrl.endsWith('/') ? envUrl.slice(0, -1) : envUrl;
 

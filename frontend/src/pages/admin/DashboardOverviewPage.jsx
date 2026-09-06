@@ -7,10 +7,11 @@ import TopActivitiesChart from '../../components/admin/TopActivitiesChart';
 import RecentActivityFeed from '../../components/admin/RecentActivityFeed';
 
 /**
- * Página de Visão Geral (Admin Dashboard)
+ * DashboardOverviewPage
  * 
- * Reúne as principais métricas do sistema em tempo real, fornecendo um panorama
- * de cadastros, atividades e status das turmas para o administrador.
+ * Architectural intent: Serves as the primary telemetry and analytics facade for platform administrators.
+ * It acts as a Container component that orchestrates multiple concurrent API requests to fetch system KPIs,
+ * delegating the rendering of specialized charts and feeds to child components to enforce Single Responsibility.
  */
 
 

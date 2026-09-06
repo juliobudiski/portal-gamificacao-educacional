@@ -52,6 +52,10 @@ def get_student_performance():
 @jwt_required()
 def check_feedback_eligibility():
     """
+    [Arquitetura]
+    Por que: Isola a verificação de regras de elegibilidade (que podem ser complexas e envolver múltiplas tabelas)
+    na camada de AnalyticsService. A rota atua puramente como interface de entrada HTTP.
+    
     Verifica se um aluno está elegível para deixar um feedback global da plataforma.
     Por exemplo, ele pode ser elegível apenas se concluiu X atividades ou não enviou feedback recentemente.
     - Acesso: Alunos autenticados.

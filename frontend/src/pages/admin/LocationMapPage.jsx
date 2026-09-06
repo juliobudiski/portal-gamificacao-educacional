@@ -14,6 +14,13 @@ L.Icon.Default.mergeOptions({
     shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
 });
 
+/**
+ * LocationMapPage
+ * 
+ * Architectural intent: Serves as a geospatial visualization dashboard for administrators.
+ * It acts as a Container component, fetching user location metrics and delegating rendering to the external
+ * Leaflet map integration, isolating the complex map lifecycle from the broader admin view.
+ */
 function LocationMapPage() {
     const { user } = useContext(AuthContext);
     const [locations, setLocations] = useState([]);

@@ -19,7 +19,16 @@ const AUDIENCE_LEVELS = [
     { id: 'Senior', label: 'Especialista / Avançado', desc: 'Discussões arquiteturais e otimização.' }
 ];
 
-
+/**
+ * @component AIConfigModal
+ * @description
+ * Configuration interface for generating AI-driven narrative content via WebSocket.
+ * 
+ * Architectural Decisions:
+ * - Real-time Communication: Establishes a Socket.io connection scoped to this component's lifecycle to handle long-running asynchronous AI generation tasks gracefully.
+ * - Fallback Mechanisms: Implements client-side timeouts (`deadlockTimeoutRef`) to recover from silent WebSocket failures, ensuring robust UX.
+ * - Complex State Encapsulation: Groups multiple AI configuration parameters (tone, characters, etc.) into a single `config` state object to simplify the final API payload structure.
+ */
 const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, contextData }) => {
     const { user } = useAuth();
     const navigate = useNavigate();

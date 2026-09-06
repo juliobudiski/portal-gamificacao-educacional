@@ -1,10 +1,11 @@
 import { useState } from 'react';
 
 /**
- * Hook de Gerenciamento de Senhas
+ * usePasswordManagement
  * 
- * Encapsula a lógica de negócio e as requisições API (fetch) necessárias para
- * redefinição, alteração e recuperação de senhas.
+ * Architectural intent: Centralizes the state and business rules for password operations
+ * (validation, API synchronization). Promotes Low Coupling by allowing the settings UI
+ * to purely handle rendering and user input, delegating all domain logic to this hook.
  */
 
 

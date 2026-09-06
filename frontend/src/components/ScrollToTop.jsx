@@ -3,8 +3,12 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
 /**
- * Este componente detecta mudanças na rota da aplicação
- * e força a janela a rolar para o topo.
+ * @component ScrollToTop
+ * @description
+ * Utility component that resets window scroll position on route changes.
+ * 
+ * Architectural Decisions:
+ * - Renderless Component: Returns `null` as it solely manages the side effect of scrolling, following the "Renderless Component" pattern for cross-cutting router concerns.
  */
 function ScrollToTop() {
   const { pathname } = useLocation();

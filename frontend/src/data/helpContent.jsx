@@ -1,17 +1,12 @@
 import React from "react";
 
 /**
- * Dicionário de conteúdo para os Modais de Ajuda.
- * * Chaves disponíveis:
- * - analise_preliminar (Etapa 01 - Habilidades e Competências)
- * - cenario_desejado
- * - elementos_jogos
- * - perfil_jogador
- * - recompensas_oferecidas
- * - regras_gamificacao
- * - acoes_recompensadas
+ * helpContent
+ * 
+ * Architectural intent: Centralizes the static text content used by the Help Modals across the application.
+ * By extracting this extensive textual data into a standalone configuration module, it keeps the UI components
+ * clean and simplifies future localization or content updates.
  */
-
 export const helpContent = {
     analise_preliminar: {
         title: "Ajuda - Análise Preliminar e Competências",

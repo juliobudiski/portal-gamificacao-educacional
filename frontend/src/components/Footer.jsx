@@ -2,6 +2,15 @@
 import React from "react";
 import { ShieldAlert, Copyright } from "lucide-react";
 
+/**
+ * @component Footer
+ * @description
+ * Global application footer presenting legal and branding information.
+ * 
+ * Architectural Decisions:
+ * - Pure Presentation: Completely stateless and decoupled from business logic.
+ * - Centralized Branding: Consolidates copyright and warnings in a single reusable module to ensure consistency across the application.
+ */
 function Footer() {
   const currentYear = new Date().getFullYear();
 

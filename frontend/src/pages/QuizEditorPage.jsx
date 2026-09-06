@@ -6,9 +6,11 @@ import { useActivityCreation } from '../context/ActivityCreationContext';
 import ConfirmationModal from '../components/ConfirmationModal';
 
 /**
- * Componente QuizEditorPage
+ * QuizEditorPage
  * 
- * Página de criação/edição específica para atividades no formato de Quiz com múltiplas escolhas.
+ * Architectural intent: Provides a specialized editor view for creating and managing multiple-choice questions
+ * within the activity creation wizard. It orchestrates the local state of the question bank before syncing
+ * with the backend API, decoupling the form validation and question lifecycle from the main activity context.
  */
 function QuizEditorPage({ initialData, onSave, onCancel, isOfflineMode = false }) {
     const { activityId, stepId } = useParams();

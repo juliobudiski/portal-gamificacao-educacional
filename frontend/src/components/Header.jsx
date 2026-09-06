@@ -6,6 +6,16 @@ import {
   PlusCircle, Users, BarChart2, Award, LogOut, Info, Settings, ShieldCheck 
 } from 'lucide-react';
 
+/**
+ * @component Header
+ * @description
+ * Main application navigation bar with authentication and role-based routing.
+ * 
+ * Architectural Decisions:
+ * - Role-Based Rendering: Evaluates `user.role` from `useAuth` context to conditionally display specific navigation paths.
+ * - Event Delegation: Navigation handlers are encapsulated within the component to manage its internal state cohesively.
+ * - Note on Coupling: Connected to global `useAuth` context. While functional, passing user state as props from a higher-level layout could increase testability.
+ */
 function Header({ handleTeacherTour, handleStudentTour, isActivityPage }) {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();

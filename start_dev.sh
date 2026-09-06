@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# --- Cores ANSI ---
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+
 # --- Configurações (Verifique se os caminhos estão corretos) ---
 # O script assume que está na raiz do projeto 'portal-gamificacao-educacional'.
 BACKEND_DIR="backend"
@@ -8,31 +16,39 @@ ENV_FILE="$FRONTEND_DIR/.env"
 VITE_CONFIG_FILE="$FRONTEND_DIR/vite.config.js"
 ENV_VAR_NAME="VITE_API_URL"
 
-# --- Início do Script ---
+# --- TRAP para Graceful Shutdown ---
+trap 'cleanup' SIGINT SIGTERM
 
-echo "🚀 Iniciando ambiente de desenvolvimento completo..."
-# --- NOVO: Backup automático dos dados do WakaTime ---
+cleanup() {
+    echo -e "\n${RED}🔴 Recebido sinal de interrupção. Encerrando processos (Graceful Shutdown)...${NC}"
+    # Mata os processos se eles existirem
+    [ -n "$BACKEND_PID" ] && kill $BACKEND_PID 2>/dev/null
+    [ -n "$FRONTEND_PID" ] && kill $FRONTEND_PID 2>/dev/null
+    [ -n "$FLASK_PID" ] && kill $FLASK_PID 2>/dev/null
+    [ -n "$VITE_PID" ] && kill $VITE_PID 2>/dev/null
+    echo -e "${GREEN}✅ Todos os processos foram encerrados corretamente.${NC}"
+    exit 0
+}
+
+# --- Início do Script ---
+echo -e "${CYAN}🚀 Iniciando ambiente de desenvolvimento completo...${NC}"
 echo "---"
-# --------------------------------------------------------
+
 # Limpa logs antigos para garantir que não estamos lendo URLs velhas
 rm -f backend_tunnel.log frontend_tunnel.log
 
-echo "1. Iniciando túneis do Cloudflare em segundo plano..."
-# Inicia os túneis e redireciona a saída para os logs
+echo -e "${BLUE}1. Iniciando túneis do Cloudflare em segundo plano...${NC}"
 cloudflared tunnel --url http://localhost:5000 > backend_tunnel.log 2>&1 &
 BACKEND_PID=$!
 
 cloudflared tunnel --url http://localhost:5173 > frontend_tunnel.log 2>&1 &
 FRONTEND_PID=$!
 
-echo "2. Aguardando a geração das URLs (aprox. 8 segundos)..."
-# Um tempo de espera é necessário para o cloudflared conectar e gerar a URL.
-# Se falhar, você pode aumentar este valor (ex: sleep 10).
+echo -e "${YELLOW}2. Aguardando a geração das URLs (aprox. 15 segundos)...${NC}"
 sleep 15
 
 # --- Extração e Formatação das URLs ---
-
-echo "3. Extraindo e formatando as URLs dos logs..."
+echo -e "${BLUE}3. Extraindo e formatando as URLs dos logs...${NC}"
 
 # Encontra a linha que contém "trycloudflare.com" e extrai a URL completa.
 BACKEND_URL_FULL=$(grep 'trycloudflare.com' backend_tunnel.log | sed -n 's/.*\(https*:\/\/[-a-zA-Z0-9.]*\.trycloudflare\.com\).*/\1/p' | head -n 1)
@@ -40,67 +56,47 @@ FRONTEND_URL_FULL=$(grep 'trycloudflare.com' frontend_tunnel.log | sed -n 's/.*\
 
 # Validação para garantir que as URLs foram capturadas
 if [ -z "$BACKEND_URL_FULL" ] || [ -z "$FRONTEND_URL_FULL" ]; then
-    echo "❌ Erro Crítico: Não foi possível obter as URLs dos túneis."
+    echo -e "${RED}❌ Erro Crítico: Não foi possível obter as URLs dos túneis.${NC}"
     echo "Verifique os arquivos backend_tunnel.log e frontend_tunnel.log para mais detalhes."
-    # Mata os processos em background para não ficarem "zumbis"
-    kill $BACKEND_PID $FRONTEND_PID
-    exit 1
+    cleanup
 fi
 
 # Remove o "https://" para obter apenas o hostname para o vite.config.js
 FRONTEND_HOSTNAME=$(echo $FRONTEND_URL_FULL | sed 's|https://||')
 
-echo "✅ URL para .env (Backend): $BACKEND_URL_FULL"
-echo "✅ Hostname para vite.config.js (Frontend): $FRONTEND_HOSTNAME"
+echo -e "${GREEN}✅ URL para .env (Backend): $BACKEND_URL_FULL${NC}"
+echo -e "${GREEN}✅ Hostname para vite.config.js (Frontend): $FRONTEND_HOSTNAME${NC}"
 
 # --- Atualização dos Arquivos ---
-
-echo "4. Atualizando arquivos de configuração..."
+echo -e "${BLUE}4. Atualizando arquivos de configuração...${NC}"
 
 # Atualiza o .env
 sed -i.bak "s#^$ENV_VAR_NAME=.*#$ENV_VAR_NAME=$BACKEND_URL_FULL#" $ENV_FILE
 
 # Atualiza o vite.config.js
-#sed -i.bak "s#allowedHosts: \[ *'.*' *\]#allowedHosts: [ '$FRONTEND_HOSTNAME' ]#" $VITE_CONFIG_FILE
 sed -i.bak "s#allowedHosts: \[ *'.*' *\]#allowedHosts: [ '*' ]#" $VITE_CONFIG_FILE
 
 # Remove os arquivos de backup criados pelo sed
 rm -f "$ENV_FILE.bak" "$VITE_CONFIG_FILE.bak"
 
-echo "✅ Arquivos atualizados."
+echo -e "${GREEN}✅ Arquivos atualizados.${NC}"
 
-# --- Iniciando Servidores em Novos Terminais ---
+# --- Iniciando Servidores ---
+echo -e "${BLUE}5. Iniciando os servidores (Frontend & Backend) na mesma janela...${NC}"
 
-echo "5. Abrindo novos terminais e iniciando os servidores..."
+# Backend
+echo -e "${GREEN}🟢 Iniciando Backend...${NC}"
+(cd $BACKEND_DIR && source venv/bin/activate && exec python3 run.py) &
+FLASK_PID=$!
 
-# Comando para o terminal do BACKEND
-# 1. cd backend
-# 2. source venv/bin/activate
-# 3. flask run
-# 4. exec bash (mantém o terminal aberto após o comando)
-CMD_BACKEND="cd $BACKEND_DIR && source venv/bin/activate && echo '✅ Ambiente virtual ativado.' && python3 run.py; exec bash"
+# Frontend
+echo -e "${CYAN}🔵 Iniciando Frontend...${NC}"
+(cd $FRONTEND_DIR && exec npm run dev) &
+VITE_PID=$!
 
-# Comando para o terminal do FRONTEND
-# 1. cd frontend
-# 2. npm run dev
-# 3. exec bash
-CMD_FRONTEND="cd $FRONTEND_DIR && npm run dev; exec bash"
-
-# Abre os terminais. Use o que estiver instalado no seu sistema.
-# Opção 1: gnome-terminal (Padrão do Ubuntu)
-gnome-terminal --title="Backend Server" -- /bin/bash -c "$CMD_BACKEND"
-gnome-terminal --title="Frontend Server" -- /bin/bash -c "$CMD_FRONTEND"
-
-# Opção 2: konsole (Padrão do KDE)
-# konsole --new-tab -e /bin/bash -c "$CMD_BACKEND"
-# konsole --new-tab -e /bin/bash -c "$CMD_FRONTEND"
-
-# Opção 3: x-terminal-emulator (Alternativa genérica)
-# x-terminal-emulator -e /bin/bash -c "$CMD_BACKEND" &
-# x-terminal-emulator -e /bin/bash -c "$CMD_FRONTEND" &
-
-
-echo "✅ Processo concluído! Os servidores devem estar iniciando em novas janelas."
+echo -e "${GREEN}✅ Processo concluído! Os servidores estão rodando em background.${NC}"
+echo -e "${YELLOW}⚠️ Pressione Ctrl+C para encerrar todos os processos e fechar os túneis.${NC}"
 echo "---"
-echo "Os túneis do Cloudflare estão rodando em segundo plano. Para pará-los, use o comando:"
-echo "kill $BACKEND_PID $FRONTEND_PID"
+
+# Aguarda os processos (Mantém o terminal aberto e ativo)
+wait $FLASK_PID $VITE_PID

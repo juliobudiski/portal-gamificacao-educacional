@@ -1,6 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaArrowLeft, FaCheckCircle, FaExclamationCircle, FaShieldAlt } from 'react-icons/fa';
 
+/**
+ * @component MissionTab
+ * @description
+ * Immersive mission briefing interface that presents the activity's context and goals.
+ * 
+ * Architectural Decisions:
+ * - Sequential State Machine: Manages a `step` state (0 to 3) to orchestrate the sequential unmounting/mounting of briefing sections.
+ * - Reusable Animation Component: Extracts `TypewriterText` to handle the character-by-character text reveal effect without cluttering the main logic.
+ */
 // Componente auxiliar para efeito de digitação (Typewriter)
 const TypewriterText = ({ text, delay = 30, onComplete, start = true }) => {
     const [displayedText, setDisplayedText] = useState('');

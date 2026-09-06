@@ -7,11 +7,12 @@ const isDebugMode = import.meta.env.VITE_DEBUG_MODE === 'true';
 
 /**
  * @component StudentSidebar
- * @desc Componente de barra lateral que exibe o progresso do estudante (pontuação, nível, XP).
- * @param {Object} props - Propriedades do componente
- * @param {Object} props.progress - Objeto contendo dados de progresso do estudante
- * @param {Function} props.onShowStats - Callback para exibir estatísticas detalhadas
- * @returns {JSX.Element} Barra lateral com informações de progresso
+ * @description
+ * Sticky sidebar for students, displaying their current level, XP progress, and score within the activity.
+ * 
+ * Architectural Decisions:
+ * - Resilient Rendering: Includes a fallback UI (`"Carregando progresso..."`) to prevent crashes or layout shifts if `progress` data is pending.
+ * - Derived State Calculation: Calculates `xpPercentage` on the fly during render rather than storing it in state, keeping the component pure and reactive to prop changes.
  */
 const StudentSidebar = ({ progress, onShowStats }) => {
   // Log de inicialização

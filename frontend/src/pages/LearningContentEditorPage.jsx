@@ -23,9 +23,11 @@ const getYouTubeEmbedUrl = (input) => {
 };
 
 /**
- * Componente LearningContentEditorPage
+ * LearningContentEditorPage
  * 
- * Página dedicada à edição do conteúdo educacional bruto de uma atividade (questões, texto, links).
+ * Architectural intent: Provides a specialized editor view for educational content within the activity
+ * creation wizard. It implements the Live Preview pattern, decoupling the data mutation (left column)
+ * from the read-only presentation simulation (right column) using the LearningMaterialViewer.
  */
 function LearningContentEditorPage({ initialData, onSave, isOfflineMode = false }) {
     const { activityId, stepId } = useParams();
