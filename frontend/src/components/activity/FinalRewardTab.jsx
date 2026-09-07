@@ -12,6 +12,7 @@ import { AuthContext } from '../../context/AuthContext'; // Importe para ter o t
  * - Decoupled Submission: Rating submission (`submitRating`) is separated from reward collection (`handleCollect`), ensuring users still get rewards even if the rating API fails.
  * - UX Feedback loop: Uses visual `hover` and `rating` state to provide immediate star-rating feedback before submission.
  */
+const FinalRewardTab = ({ reward, activityId, onCollect, onReturnToBoard }) => {
     const [isCollecting, setIsCollecting] = useState(false);
     const [rating, setRating] = useState(0); // Estado para a nota (0 a 5)
     const [hover, setHover] = useState(null); // Estado para o efeito visual de passar o mouse
