@@ -44,20 +44,81 @@ class ContactService:
 
             db.session.add(new_message)
             db.session.commit()
+            saved_id = new_message.id
         except Exception as db_err:
             db.session.rollback()
-            err_trace = traceback.format_exc()
-            sys.stderr.write(f"\n[DATABASE ERROR IN CONTACT SERVICE]\n{err_trace}\n")
-            sys.stderr.flush()
-            if current_app:
-                current_app.logger.error(f"[DATABASE ERROR IN CONTACT SERVICE] {db_err}:\n{err_trace}")
-            return {
-                "error": "Erro ao salvar a mensagem de contato no banco de dados.",
-                "details": str(db_err),
-                "trace": err_trace
-            }, 500
+            err_str = str(db_err)
+            # Se o erro for coluna 'status' ou 'access_code' inexistente no banco legado do Render:
+            if 'column "status"' in err_str or 'column "access_code"' in err_str or 'no such column: status' in err_str:
+                try:
+                    from sqlalchemy import text
+                    # Tenta adicionar as colunas faltantes dinamicamente
+                    with db.engine.connect() as conn:
+                        try:
+                            conn.execute(text("ALTER TABLE contact_messages ADD COLUMN status VARCHAR(50) DEFAULT 'Pendente' NOT NULL;"))
+                            conn.commit()
+                        except Exception:
+                            pass
+                        try:
+                            conn.execute(text("ALTER TABLE contact_messages ADD COLUMN access_code VARCHAR(100);"))
+                            conn.commit()
+                        except Exception:
+                            pass
+                    
+                    # Tenta salvar novamente via ORM
+                    new_message = ContactMessage(
+                        user_id=user_id,
+                        name=name or 'Anônimo',
+                        email=email,
+                        subject=subject or 'Sem Assunto',
+                        message=message_content
+                    )
+                    db.session.add(new_message)
+                    db.session.commit()
+                    saved_id = new_message.id
+                except Exception as retry_err:
+                    # Fallback final: INSERT cru apenas nas colunas que sempre existiram
+                    db.session.rollback()
+                    try:
+                        with db.engine.connect() as conn:
+                            res = conn.execute(
+                                text("""
+                                    INSERT INTO contact_messages (user_id, name, email, subject, message, is_read)
+                                    VALUES (:user_id, :name, :email, :subject, :message, false)
+                                """),
+                                {
+                                    "user_id": user_id,
+                                    "name": name or 'Anônimo',
+                                    "email": email,
+                                    "subject": subject or 'Sem Assunto',
+                                    "message": message_content
+                                }
+                            )
+                            conn.commit()
+                            saved_id = getattr(res, 'lastrowid', 1) or 1
+                    except Exception as fatal_err:
+                        err_trace = traceback.format_exc()
+                        sys.stderr.write(f"\n[FATAL DB ERROR IN CONTACT SERVICE]\n{err_trace}\n")
+                        sys.stderr.flush()
+                        return {
+                            "error": "Erro ao salvar a mensagem de contato no banco de dados.",
+                            "details": str(fatal_err),
+                            "trace": err_trace
+                        }, 500
+            else:
+                err_trace = traceback.format_exc()
+                sys.stderr.write(f"\n[DATABASE ERROR IN CONTACT SERVICE]\n{err_trace}\n")
+                sys.stderr.flush()
+                if current_app:
+                    current_app.logger.error(f"[DATABASE ERROR IN CONTACT SERVICE] {db_err}:\n{err_trace}")
+                return {
+                    "error": "Erro ao salvar a mensagem de contato no banco de dados.",
+                    "details": str(db_err),
+                    "trace": err_trace
+                }, 500
 
         # Envio de notificação por e-mail isolado em try/except (Fail-Safe)
+
         email_dispatched = False
         try:
             admin_email = current_app.config.get('MAIL_USERNAME') if current_app else None
@@ -80,13 +141,14 @@ class ContactService:
         if email_dispatched:
             return {
                 "message": "Mensagem enviada com sucesso!",
-                "id": new_message.id,
+                "id": saved_id,
                 "email_status": "enviado"
             }, 201
         else:
             return {
                 "message": "Mensagem salva com sucesso!",
-                "id": new_message.id,
+                "id": saved_id,
                 "email_status": "nao_enviado_ou_fallback"
             }, 201
+
 

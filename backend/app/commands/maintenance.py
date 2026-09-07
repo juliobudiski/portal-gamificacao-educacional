@@ -52,5 +52,39 @@ def prune_medals_command():
         db.session.rollback()
         print(f"\nERRO: Falha ao limpar banco de dados: {e}")
 
+def auto_upgrade_contact_schema(app):
+    """
+    Garante que as colunas 'status' e 'access_code' existam na tabela 'contact_messages'.
+    Executado de forma segura e não destrutiva no startup (PostgreSQL e SQLite).
+    """
+    with app.app_context():
+        try:
+            from sqlalchemy import inspect, text
+            inspector = inspect(db.engine)
+            
+            # Se a tabela ainda não existir, cria-a
+            if not inspector.has_table('contact_messages'):
+                from app.models import ContactMessage
+                ContactMessage.__table__.create(db.engine, checkfirst=True)
+                print("✅ [DB AUTO-MIGRATE] Tabela contact_messages criada com sucesso.")
+                return
+
+            columns = [c['name'] for c in inspector.get_columns('contact_messages')]
+            with db.engine.connect() as conn:
+                if 'status' not in columns:
+                    print("⚠️ [DB AUTO-MIGRATE] Adicionando coluna 'status' em contact_messages...")
+                    conn.execute(text("ALTER TABLE contact_messages ADD COLUMN status VARCHAR(50) DEFAULT 'Pendente' NOT NULL;"))
+                    conn.commit()
+                    print("✅ [DB AUTO-MIGRATE] Coluna 'status' adicionada com sucesso.")
+                
+                if 'access_code' not in columns:
+                    print("⚠️ [DB AUTO-MIGRATE] Adicionando coluna 'access_code' em contact_messages...")
+                    conn.execute(text("ALTER TABLE contact_messages ADD COLUMN access_code VARCHAR(100);"))
+                    conn.commit()
+                    print("✅ [DB AUTO-MIGRATE] Coluna 'access_code' adicionada com sucesso.")
+        except Exception as e:
+            print(f"⚠️ [DB AUTO-MIGRATE] Aviso ao sincronizar schema de contact_messages: {e}")
+
 def init_app(app):
     app.cli.add_command(prune_medals_command)
+    auto_upgrade_contact_schema(app)
