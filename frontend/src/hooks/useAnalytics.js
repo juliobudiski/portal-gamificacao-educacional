@@ -14,15 +14,23 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/";
 
 // --- Função auxiliar para enviar logs ---
 async function sendLog(events, token) {
+  // Se o usuário não está autenticado ou o token é inválido, não envia log de analytics
+  const isValidToken = typeof token === 'string' &&
+                       token.trim() !== '' &&
+                       token !== 'null' &&
+                       token !== 'undefined';
+
+  if (!isValidToken) {
+    return;
+  }
+
   try {
     const fullUrl = `${API_URL}/api/log/event`; // Cria a URL completa
-    console.log("Enviando log para:", fullUrl);
-    // A URL completa é construída aqui
     const res = await fetch(fullUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`, // JWT do usuário logado
+        Authorization: `Bearer ${token.trim()}`, // JWT do usuário logado
       },
       body: JSON.stringify(
         Array.isArray(events) ? { events } : events
@@ -30,10 +38,10 @@ async function sendLog(events, token) {
     });
 
     if (!res.ok) {
-      console.error("Erro ao enviar log:", await res.json());
+      console.warn("Log de telemetria ignorado pelo backend (status:", res.status, ")");
     }
   } catch (err) {
-    console.error("Falha na requisição de log:", err);
+    console.warn("Falha silenciosa na requisição de telemetria:", err);
   }
 }
 
