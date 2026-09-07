@@ -582,12 +582,26 @@ def complete_activity_step(activity_id):
             progress.completed_steps.append(step_id_to_complete)
             # Notifica explicitamente o SQLAlchemy que o campo JSON foi alterado
             flag_modified(progress, "completed_steps")
+
+        new_medals = []
+        try:
+            new_medals = MedalService.check_and_award_medals(
+                user_id=user.id,
+                activity_id=activity_id,
+                event_type='step_completed',
+                step_id=step_id_to_complete,
+                step_type=data.get('step_type', ''),
+                is_puzzle_solved=data.get('is_puzzle_solved', False)
+            )
+        except Exception as medal_err:
+            current_app.logger.warning(f"[StepComplete] Erro silencioso ao checar medalhas: {medal_err}")
         
         db.session.commit()
         
         return jsonify({
             "message": "Passo concluído com sucesso!",
-            "completed_steps": progress.completed_steps
+            "completed_steps": progress.completed_steps,
+            "new_medals": new_medals or []
         }), 200
 
     except Exception as e:

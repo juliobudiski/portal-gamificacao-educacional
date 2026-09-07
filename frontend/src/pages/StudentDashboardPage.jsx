@@ -7,7 +7,7 @@ import {
   FaChalkboardTeacher, FaChevronRight,
   FaTrophy, FaUserGraduate
 } from 'react-icons/fa';
-import { BookOpen, Target, Lightbulb, TrendingUp } from 'lucide-react';
+import { BookOpen, Target, Lightbulb, TrendingUp, Lock } from 'lucide-react';
 import FeedbackModal from '../components/FeedbackModal';
 import { useAuthOperations } from '../hooks/useAuthOperations';
 import { useTutorial } from '../context/TutorialContext';
@@ -114,6 +114,69 @@ ActivityCard.propTypes = {
     title: PropTypes.string.isRequired,
     class_name: PropTypes.string.isRequired,
     expiresAt: PropTypes.string
+  }).isRequired
+};
+
+const BadgeCard = ({ badge }) => {
+  const isUnlocked = badge.is_unlocked;
+
+  return (
+    <div
+      className={`group relative rounded-2xl p-4 transition-all duration-300 flex flex-col items-center text-center ${
+        isUnlocked
+          ? 'bg-secondary-bg/80 border border-accent-yellow/40 hover:border-accent-yellow shadow-lg hover:shadow-accent-yellow/20 hover:-translate-y-1'
+          : 'bg-secondary-bg/30 border border-border-color/30 opacity-40 grayscale hover:opacity-75 transition-opacity'
+      }`}
+    >
+      <div className="relative mb-3 flex items-center justify-center">
+        <img
+          src={badge.imageUrl}
+          alt={badge.name}
+          className={`w-16 h-16 object-contain transition-transform duration-300 group-hover:scale-110 ${
+            !isUnlocked ? 'filter contrast-75' : 'drop-shadow-[0_0_12px_rgba(255,189,48,0.45)]'
+          }`}
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = '/medals/default.webp';
+          }}
+        />
+        {!isUnlocked && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full backdrop-blur-[1px]">
+            <Lock className="w-5 h-5 text-gray-300" />
+          </div>
+        )}
+      </div>
+
+      <h4 className="font-bold text-sm text-primary-text mb-1 tracking-tight line-clamp-1">
+        {badge.name}
+      </h4>
+
+      <p className="text-xs text-secondary-text line-clamp-2 leading-relaxed">
+        {badge.description}
+      </p>
+
+      <div className="mt-3 w-full pt-2 border-t border-border-color/20 text-[10px] font-bold uppercase tracking-wider">
+        {isUnlocked ? (
+          <span className="text-accent-teal flex items-center justify-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-accent-teal animate-pulse"></span>
+            Desbloqueada
+          </span>
+        ) : (
+          <span className="text-gray-400">Bloqueada</span>
+        )}
+      </div>
+    </div>
+  );
+};
+
+BadgeCard.propTypes = {
+  badge: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    name: PropTypes.string.isRequired,
+    description: PropTypes.string,
+    imageUrl: PropTypes.string,
+    is_unlocked: PropTypes.bool,
+    unlocked_at: PropTypes.string
   }).isRequired
 };
 
@@ -225,6 +288,8 @@ export default function StudentDashboardPage() {
   const tipIndex = Math.floor(Date.now() / 86400000) % DAILY_TIPS.length;
   const currentTip = DAILY_TIPS[tipIndex];
   const { global_level_info, total_achievements } = dashboardData.performance;
+  const badgesList = dashboardData?.badges || dashboardData?.performance?.badges || [];
+  const unlockedCount = badgesList.filter(b => b.is_unlocked).length || total_achievements || 0;
   const progressPercent = (global_level_info.xp_current / global_level_info.xp_to_next_level) * 100;
 
   return (
@@ -313,6 +378,38 @@ export default function StudentDashboardPage() {
                 </div>
               )}
             </section>
+
+            {/* Secção Galeria de Medalhas / Conquistas */}
+            <section id="tour-badges-section">
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-accent-yellow/20 rounded-xl">
+                    <FaTrophy className="w-7 h-7 text-accent-yellow" />
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-bold tracking-tight text-primary-text">Galeria de Medalhas</h2>
+                    <p className="text-sm text-secondary-text">Conquistas desbloqueadas e metas da sua jornada acadêmica</p>
+                  </div>
+                </div>
+                {badgesList.length > 0 && (
+                  <span className="text-xs font-bold uppercase tracking-wider bg-accent-yellow/10 text-accent-yellow border border-accent-yellow/30 px-3 py-1.5 rounded-full">
+                    {unlockedCount} / {badgesList.length} Desbloqueadas
+                  </span>
+                )}
+              </div>
+
+              {badgesList.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                  {badgesList.map(badge => (
+                    <BadgeCard key={badge.id} badge={badge} />
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-secondary-bg/40 backdrop-blur-sm border border-dashed border-border-color/50 rounded-3xl p-8 text-center">
+                  <p className="text-secondary-text">Nenhuma medalha catalogada no momento.</p>
+                </div>
+              )}
+            </section>
           </div>
 
           {/* Coluna Lateral (Painel Glassmorphism) */}
@@ -360,7 +457,7 @@ export default function StudentDashboardPage() {
                        </div>
                        <div>
                           <span className="text-xs font-bold uppercase tracking-widest text-secondary-text block mb-0.5">Medalhas de Honra</span>
-                          <span className="text-xl font-black text-primary-text">{total_achievements}</span>
+                          <span className="text-xl font-black text-primary-text">{unlockedCount}</span>
                        </div>
                     </div>
                  </div>

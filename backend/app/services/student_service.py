@@ -81,15 +81,21 @@ class StudentService:
         global_level_info = StudentService.calculate_global_level(user.global_xp)
         total_achievements = UserUnlockedMedal.query.filter_by(user_id=user.id).count()
         
+        # Hidratação completa de medalhas para o Dashboard
+        from ..services.medal_service import MedalService
+        badges_summary = MedalService.get_user_badges_full(user.id)
+        
         performance_data = {
             "global_level_info": global_level_info,
-            "total_achievements": total_achievements
+            "total_achievements": total_achievements,
+            "badges": badges_summary
         }
 
         return {
             "classes": classes_data,
             "pendingActivities": pending_activities_data,
-            "performance": performance_data
+            "performance": performance_data,
+            "badges": badges_summary
         }
 
     @staticmethod
