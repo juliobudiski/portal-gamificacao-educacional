@@ -425,6 +425,8 @@ function AppContent() {
             </Route>
           </Route>
 
+          <Route path="/404" element={<NotFoundPage />} />
+          <Route path="/error" element={<NotFoundPage isCrash={true} />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>

@@ -8,17 +8,18 @@ import {
   FaRobot,
   FaRocket,
   FaGamepad,
-  FaRegSadTear
+  FaRegSadTear,
+  FaRedo
 } from 'react-icons/fa';
 
 /**
  * NotFoundPage
  * 
- * Architectural intent: Acts as the fallback UI for unresolved routes (404 error boundary). It ensures
- * the application degrades gracefully when navigating to non-existent paths, maintaining the gamified
- * theme and providing navigation recovery options without coupling to specific domains.
+ * Architectural intent: Acts as the fallback UI for unresolved routes (404 error boundary)
+ * and unhandled application crashes (500 / Global Error Boundary). It ensures
+ * the application degrades gracefully, maintaining the gamified theme and providing navigation recovery options.
  */
-function NotFoundPage() {
+function NotFoundPage({ isCrash = false, error = null, onReset = null }) {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
 
@@ -68,7 +69,7 @@ function NotFoundPage() {
             <FaExclamationTriangle className="text-accent-yellow" />
           </motion.div>
 
-          {/* Número 404 com efeito */}
+          {/* Número do erro com efeito */}
           <motion.h1
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -76,7 +77,7 @@ function NotFoundPage() {
             // Gradiente semântico: Amarelo para Danger (Vermelho)
             className="text-9xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-accent-yellow to-danger mb-4"
           >
-            404
+            {isCrash ? '500' : '404'}
           </motion.h1>
 
           {/* Mensagem principal */}
@@ -86,7 +87,7 @@ function NotFoundPage() {
             transition={{ delay: 0.4, duration: 0.7 }}
             className="text-3xl md:text-4xl font-bold mb-6 text-primary-text"
           >
-            Oops! Página não encontrada
+            {isCrash ? 'Ops! Ocorreu uma instabilidade inesperada' : 'Oops! Página não encontrada'}
           </motion.h2>
 
           {/* Mensagem explicativa */}
@@ -96,7 +97,9 @@ function NotFoundPage() {
             transition={{ delay: 0.6, duration: 0.7 }}
             className="text-xl text-secondary-text mb-8 max-w-full mx-auto"
           >
-            Parece que você se perdeu no universo da gamificação. A página que você está procurando pode ter sido movida ou não existe mais.
+            {isCrash
+              ? 'Encontramos uma falha crítica ao carregar este recurso. Nossa equipe já foi notificada. Você pode recarregar ou retornar ao início com segurança.'
+              : 'Parece que você se perdeu no universo da gamificação. A página que você está procurando pode ter sido movida ou não existe mais.'}
           </motion.p>
 
           {/* Ícones flutuantes - Cores semânticas aplicadas */}
@@ -138,22 +141,38 @@ function NotFoundPage() {
             transition={{ delay: 0.8, duration: 0.7 }}
             className="flex flex-col sm:flex-row justify-center gap-4"
           >
-            <Link to="/">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onHoverStart={() => setIsHovered(true)}
-                onHoverEnd={() => setIsHovered(false)}
-                // Botão Gradiente: Roxo -> Azul (Info). Texto adaptável.
+            {onReset ? (
+              <button
+                onClick={onReset}
                 className="flex items-center justify-center px-6 py-3 bg-gradient-to-r from-accent-purple to-info text-white dark:text-primary-bg rounded-lg font-semibold shadow-lg hover:shadow-accent-purple/30 transition-all duration-300"
               >
-                <FaHome className="mr-2" />
-                Voltar ao Início
-              </motion.button>
-            </Link>
+                <FaRedo className="mr-2" />
+                Tentar Novamente
+              </button>
+            ) : (
+              <Link to="/">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onHoverStart={() => setIsHovered(true)}
+                  onHoverEnd={() => setIsHovered(false)}
+                  // Botão Gradiente: Roxo -> Azul (Info). Texto adaptável.
+                  className="flex items-center justify-center px-6 py-3 bg-gradient-to-r from-accent-purple to-info text-white dark:text-primary-bg rounded-lg font-semibold shadow-lg hover:shadow-accent-purple/30 transition-all duration-300"
+                >
+                  <FaHome className="mr-2" />
+                  Voltar ao Início
+                </motion.button>
+              </Link>
+            )}
 
             <button
-              onClick={() => window.history.back()}
+              onClick={() => {
+                if (window.history.length > 1) {
+                  window.history.back();
+                } else {
+                  window.location.href = '/';
+                }
+              }}
               // Botão Secundário: Secondary BG com borda e hover para primary
               className="flex items-center justify-center px-6 py-3 bg-secondary-bg text-primary-text border border-[var(--border-color)] rounded-lg font-semibold hover:bg-primary-bg transition-colors duration-300"
             >

@@ -6,9 +6,9 @@ import App from './App.jsx';
 import { ThemeProvider } from './context/ThemeContext.jsx';
 import { HelpModalProvider } from './context/HelpModalContext.jsx';
 import 'react-roulette-pro/dist/index.css';
-// Importação do Provider
 import { ToastProvider } from './context/ToastContext';
 import { ConfettiProvider } from './context/ConfettiContext';
+import GlobalErrorBoundary from './components/GlobalErrorBoundary.jsx';
 
 /**
  * Main Entry Point
@@ -20,16 +20,18 @@ import { ConfettiProvider } from './context/ConfettiContext';
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <Router>
-      <ThemeProvider>
-        <HelpModalProvider>
-          {/* Envolvendo a aplicação com o ToastProvider */}
-          <ToastProvider>
-            <ConfettiProvider>
-              <App />
-            </ConfettiProvider>
-          </ToastProvider>
-        </HelpModalProvider>
-      </ThemeProvider>
+      <GlobalErrorBoundary>
+        <ThemeProvider>
+          <HelpModalProvider>
+            {/* Envolvendo a aplicação com o ToastProvider */}
+            <ToastProvider>
+              <ConfettiProvider>
+                <App />
+              </ConfettiProvider>
+            </ToastProvider>
+          </HelpModalProvider>
+        </ThemeProvider>
+      </GlobalErrorBoundary>
     </Router>
   </React.StrictMode>,
 );

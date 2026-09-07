@@ -39,4 +39,28 @@ api.interceptors.request.use(
     }
 );
 
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        const status = error?.response?.status;
+
+        // Erros de validação, autenticação e regras de negócio: rejeita para exibição local (Toasts/Alertas)
+        if (status === 400 || status === 401 || status === 403 || status === 422) {
+            return Promise.reject(error);
+        }
+
+        // Erros críticos de rede/servidor ou recurso inexistente: redirecionamento global de emergência
+        if (status === 404 || status === 500 || status === 502 || status === 503) {
+            console.error(`[API ERROR INTERCEPTOR] Falha crítica (${status}) detectada:`, error?.config?.url);
+            
+            // Evita loops infinitos de redirecionamento caso já estejamos no fallback
+            if (window.location.pathname !== '/404') {
+                window.location.href = '/404';
+            }
+        }
+
+        return Promise.reject(error);
+    }
+);
+
 export default api;
