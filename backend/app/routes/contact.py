@@ -17,25 +17,32 @@ def send_message():
     Por que: O Controller intercepta a autorização híbrida (anônima ou autenticada) sem quebrar o fluxo.
     A lógica de persistência e validação da mensagem real vai para o ContactService, garantindo coesão.
     
-    Rota para envio de mensagem de contato.
-    - Acesso: Público (se o usuário estiver deslogado) ou Autenticado (se logado).
+    Rota para envio de mensagem de contato (incluindo solicitação de chave de professor).
+    - Acesso: Totalmente público. Usuários deslogados ou sem token podem enviar mensagens.
     - Payload JSON esperado: { "name": "str", "email": "str", "subject": "str", "message": "str" }
     - Retorno: Mensagem de sucesso ou erro (201, 400).
     """
     data = request.get_json()
     
     user_id = None
-    try:
-        # Tenta verificar se a requisição possui um JWT válido sem forçar o erro
-        # (optional=True permite que usuários não logados também enviem mensagens)
-        verify_jwt_in_request(optional=True)
-        current_user_id = get_jwt_identity()
-        if current_user_id:
-            user_id = current_user_id
-    except Exception as e:
-        # Se ocorrer falha silenciosa na leitura do token, registramos no log, mas permitimos o fluxo
-        from flask import current_app
-        current_app.logger.debug(f"Falha opcional de JWT em contact: {e}")
+    auth_header = request.headers.get('Authorization', '')
+    
+    # Blindagem: só tenta ler JWT se o header contiver um Bearer token de formato minimamente válido (3 segmentos)
+    if auth_header and auth_header.startswith('Bearer '):
+        token_candidate = auth_header.split(' ', 1)[1].strip()
+        if (
+            token_candidate
+            and token_candidate not in ('null', 'undefined', 'None', '')
+            and token_candidate.count('.') == 2
+        ):
+            try:
+                verify_jwt_in_request(optional=True)
+                current_user_id = get_jwt_identity()
+                if current_user_id:
+                    user_id = current_user_id
+            except Exception as e:
+                from flask import current_app
+                current_app.logger.debug(f"Falha ao validar token opcional em contact: {e}")
 
     # Delega o processamento e salvamento da mensagem para a camada de serviço
     result, status = ContactService.send_message(user_id, data)

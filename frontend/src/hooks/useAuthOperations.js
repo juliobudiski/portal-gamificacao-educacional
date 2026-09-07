@@ -51,8 +51,13 @@ export function useAuthOperations() {
         'Content-Type': 'application/json',
       };
 
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+      const isValidToken = typeof token === 'string' &&
+                           token.trim() !== '' &&
+                           token !== 'null' &&
+                           token !== 'undefined';
+
+      if (isValidToken) {
+        headers['Authorization'] = `Bearer ${token.trim()}`;
       }
 
       const response = await fetch(url, {

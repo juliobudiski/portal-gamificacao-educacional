@@ -48,12 +48,20 @@ const ContactPage = () => {
         setFeedback({ type: '', msg: '' });
 
         try {
+            const rawToken = localStorage.getItem('token');
+            const hasValidToken = typeof rawToken === 'string' &&
+                                  rawToken.trim() !== '' &&
+                                  rawToken !== 'null' &&
+                                  rawToken !== 'undefined';
+
+            const headers = {
+                'Content-Type': 'application/json',
+                ...(hasValidToken ? { 'Authorization': `Bearer ${rawToken.trim()}` } : {})
+            };
+
             const response = await fetch('/api/contact/', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
-                },
+                headers,
                 body: JSON.stringify(formData)
             });
 

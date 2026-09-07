@@ -20,17 +20,22 @@ const api = axios.create({
 
 api.interceptors.request.use(
     (config) => {
-        // --- CORREÇÃO AQUI ---
-        // Antes você buscava 'user', agora buscamos 'token' para alinhar com o AuthContext
         const token = localStorage.getItem('token');
 
-        console.log(`[API DEBUG] Enviando para: ${config.url}`);
+        // Guardrail estrito: Só anexa o header Authorization se o token for uma string válida e não-nula
+        const isValidToken = typeof token === 'string' && 
+                             token.trim() !== '' && 
+                             token !== 'null' && 
+                             token !== 'undefined';
 
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-            console.log(`[API DEBUG] Token anexado: Bearer ${token.substring(0, 10)}...`);
+        if (isValidToken) {
+            config.headers = config.headers || {};
+            config.headers.Authorization = `Bearer ${token.trim()}`;
         } else {
-            console.warn("[API DEBUG] Nenhum token encontrado no localStorage ('token').");
+            // Se o header tiver sido setado previamente com valor inválido, remove
+            if (config.headers?.Authorization) {
+                delete config.headers.Authorization;
+            }
         }
         return config;
     },
