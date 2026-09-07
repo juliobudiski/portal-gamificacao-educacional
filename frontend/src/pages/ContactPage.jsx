@@ -1,6 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
+import api from '../services/api';
 
 /**
  * ContactPage
@@ -48,49 +49,29 @@ const ContactPage = () => {
         setFeedback({ type: '', msg: '' });
 
         try {
-            const rawToken = localStorage.getItem('token');
-            const hasValidToken = typeof rawToken === 'string' &&
-                                  rawToken.trim() !== '' &&
-                                  rawToken !== 'null' &&
-                                  rawToken !== 'undefined';
+            // Utiliza a instância centralizada do Axios que aponta para o Backend no Render (VITE_API_URL)
+            await api.post('/contact', formData);
 
-            const headers = {
-                'Content-Type': 'application/json',
-                ...(hasValidToken ? { 'Authorization': `Bearer ${rawToken.trim()}` } : {})
-            };
+            // 1. Feedback visual imediato
+            setFeedback({ type: 'success', msg: 'Mensagem enviada! Voltando ao dashboard...' });
 
-            const response = await fetch('/api/contact/', {
-                method: 'POST',
-                headers,
-                body: JSON.stringify(formData)
-            });
+            // Opcional: Limpar formulário se não estiver logado
+            if (!user) setFormData({ name: '', email: '', subject: '', message: '' });
 
-            if (response.ok) {
-                // 1. Feedback visual imediato
-                setFeedback({ type: 'success', msg: 'Mensagem enviada! Voltando ao dashboard...' });
+            // 2. O Delay de 2 segundos (2000ms)
+            setTimeout(() => {
+                // Lógica inteligente: Se tiver usuário logado -> Dashboard. Se for visitante -> Home.
+                if (user) {
+                    navigate('/dashboard'); // Certifique-se que essa rota existe
+                } else {
+                    navigate('/'); // Visitantes voltam para a landing page
+                }
+            }, 2000);
 
-                // Opcional: Limpar formulário se não estiver logado
-                if (!user) setFormData({ name: '', email: '', subject: '', message: '' });
-
-                // 2. O Delay de 2 segundos (2000ms)
-                setTimeout(() => {
-                    // Lógica inteligente: Se tiver usuário logado -> Dashboard. Se for visitante -> Home.
-                    if (user) {
-                        navigate('/dashboard'); // Certifique-se que essa rota existe
-                    } else {
-                        navigate('/'); // Visitantes voltam para a landing page
-                    }
-                }, 2000);
-
-            } else {
-                throw new Error('Erro ao enviar mensagem.');
-            }
         } catch (error) {
-            setFeedback({ type: 'error', msg: 'Houve um problema. Tente novamente.' });
+            const errorMsg = error?.response?.data?.message || 'Houve um problema. Tente novamente.';
+            setFeedback({ type: 'error', msg: errorMsg });
         } finally {
-            // Nota: Se quiser que o botão continue desabilitado durante os 2 segundos de espera,
-            // mova o setLoading(false) para dentro do bloco 'catch' ou verifique o sucesso antes.
-            // Do jeito que está abaixo, ele reabilita o botão enquanto espera, o que é aceitável.
             if (!feedback.type === 'success') {
                 setLoading(false);
             }

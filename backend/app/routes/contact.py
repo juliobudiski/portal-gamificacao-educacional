@@ -10,6 +10,7 @@ from ..services.contact_service import ContactService
 
 contact_bp = Blueprint('contact', __name__)
 
+@contact_bp.route('', methods=['POST'])
 @contact_bp.route('/', methods=['POST'])
 def send_message():
     """
