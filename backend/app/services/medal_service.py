@@ -144,9 +144,21 @@ class BadgeRegistry:
     def get_strategies_for_event(self, event_type: str) -> list:
         return [s for s in self._strategies if event_type in s.event_types]
 
+    def get_strategy_by_name(self, medal_name: str):
+        return next((s for s in self._strategies if s.medal_name.strip().lower() == medal_name.strip().lower()), None)
+
+    def get_all_strategies(self) -> list:
+        return list(self._strategies)
+
 
 # Instância Singleton do Registry
 badge_registry = BadgeRegistry()
+
+# Mapeamento para compatibilidade com comandos CLI (triggers.py) e legacy checks
+MEDAL_CHECK_FUNCTIONS = {
+    strategy.medal_name: strategy.evaluate
+    for strategy in badge_registry.get_all_strategies()
+}
 
 
 class MedalService:

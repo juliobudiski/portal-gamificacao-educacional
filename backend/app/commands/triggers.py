@@ -3,7 +3,7 @@
 import click
 from flask.cli import with_appcontext
 from app.models import db, User, Medal, UserUnlockedMedal
-from app.routes.medals import MEDAL_CHECK_FUNCTIONS  # Vamos importar o mapa de funções
+from app.services.medal_service import MEDAL_CHECK_FUNCTIONS
 
 @click.command('test-medal')
 @click.argument('user_email')

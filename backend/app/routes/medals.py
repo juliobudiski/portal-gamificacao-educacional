@@ -6,7 +6,7 @@ permitir que os usuários consultem as medalhas que já desbloquearam.
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from ..models import Medal
-from ..services.medal_service import MedalService
+from ..services.medal_service import MedalService, MEDAL_CHECK_FUNCTIONS
 
 medals_bp = Blueprint('medals', __name__)
 
