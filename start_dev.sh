@@ -112,7 +112,11 @@ echo -e "${BLUE}5. Verificando dependências e iniciando os servidores (Frontend
 echo -e "${GREEN}🟢 Preparando e iniciando Backend...${NC}"
 (
     cd "$BACKEND_DIR" || exit 1
-    if [ -f "venv/bin/activate" ]; then
+    if [ -x "venv/bin/python3" ]; then
+        exec venv/bin/python3 run.py
+    elif [ -x ".venv/bin/python3" ]; then
+        exec .venv/bin/python3 run.py
+    elif [ -f "venv/bin/activate" ]; then
         # shellcheck disable=SC1091
         . venv/bin/activate
         exec python3 run.py
@@ -120,14 +124,10 @@ echo -e "${GREEN}🟢 Preparando e iniciando Backend...${NC}"
         # shellcheck disable=SC1091
         . .venv/bin/activate
         exec python3 run.py
-    elif [ -x "venv/bin/python3" ]; then
-        exec venv/bin/python3 run.py
-    elif [ -x ".venv/bin/python3" ]; then
-        exec .venv/bin/python3 run.py
     else
         echo -e "${YELLOW}⚠️ Ambiente virtual não encontrado em venv/.venv. Criando novo venv...${NC}"
-        python3 -m venv venv && . venv/bin/activate && pip install -r requirements.txt
-        exec python3 run.py
+        python3 -m venv venv && venv/bin/pip install -r requirements.txt
+        exec venv/bin/python3 run.py
     fi
 ) &
 FLASK_PID=$!
@@ -136,9 +136,9 @@ FLASK_PID=$!
 echo -e "${CYAN}🔵 Preparando e iniciando Frontend...${NC}"
 (
     cd "$FRONTEND_DIR" || exit 1
-    if [ ! -d "node_modules" ]; then
-        echo -e "${YELLOW}⚠️ 'node_modules' não encontrado no frontend. Executando npm install...${NC}"
-        npm install
+    if [ ! -d "node_modules" ] || [ ! -f "node_modules/.bin/vite" ]; then
+        echo -e "${YELLOW}⚠️ Dependências do frontend não encontradas. Executando npm install (--legacy-peer-deps)...${NC}"
+        npm install --legacy-peer-deps
     fi
     exec npm run dev
 ) &
