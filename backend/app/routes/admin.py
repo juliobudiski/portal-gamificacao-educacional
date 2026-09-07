@@ -17,7 +17,8 @@ from datetime import datetime, timedelta
 from collections import Counter
 import requests
 import os
-from ..models import ContactMessage
+import secrets
+from ..models import ContactMessage, TeacherAccessCode
 from ..services.admin_service import AdminService
 from ..utils.email_sender import send_teacher_code_email
 
@@ -661,24 +662,72 @@ def mark_contact_message_read(msg_id):
     return jsonify({"success": True, "message": "Mensagem marcada como lida"})
 
 @admin_bp.route('/contact/messages/<int:msg_id>/send_code', methods=['POST'])
+@admin_bp.route('/solicitacoes/<int:msg_id>/aprovar', methods=['POST'])
 @jwt_required()
-def send_access_code_email(msg_id):
+def approve_teacher_request(msg_id):
+    """
+    [Arquitetura e Segurança]
+    Endpoint de aprovação em 1 clique para solicitações de novos professores.
+    - Gera token/chave criptográfica segura e única (ex: PROF-XXXX-XXXX).
+    - Salva a chave no banco na tabela 'teacher_access_codes' vinculada ao e-mail.
+    - Atualiza a mensagem/solicitação: status='Aprovada', access_code=gerado, is_read=True.
+    - Dispara email via send_teacher_code_email.
+    - Fallback resiliente: Se SMTP não estiver configurado ou falhar em dev, loga o código e responde com sucesso e código.
+    """
     if not check_admin():
         return jsonify({"message": "Acesso negado."}), 403
 
     msg = ContactMessage.query.get_or_404(msg_id)
     
     if not msg.email:
-        return jsonify({"message": "Esta mensagem não possui um e-mail válido para resposta."}), 400
+        return jsonify({"message": "Esta solicitação não possui um e-mail válido para resposta."}), 400
 
-    access_code = os.environ.get('TEACHER_ACCESS_CODE', 'GAMIFICA_PROF_2026')
-    name = msg.name or 'Professor(a)'
+    # 1. Gera código seguro e único
+    unique_suffix = secrets.token_hex(4).upper()
+    access_code = f"PROF-{unique_suffix[:4]}-{unique_suffix[4:]}"
 
-    success = send_teacher_code_email(msg.email, access_code, name)
-    if success:
-        return jsonify({"success": True, "message": "Código enviado com sucesso!"})
+    # 2. Salva ou atualiza a chave no banco de dados vinculada ao email
+    teacher_code = TeacherAccessCode.query.filter_by(email=msg.email, is_used=False).first()
+    if not teacher_code:
+        teacher_code = TeacherAccessCode(
+            email=msg.email,
+            code=access_code,
+            is_used=False
+        )
+        db.session.add(teacher_code)
     else:
-        return jsonify({"success": False, "message": "Falha ao enviar e-mail. Verifique os logs."}), 500
+        teacher_code.code = access_code
+
+    # 3. Atualiza o status da solicitação
+    msg.status = 'Aprovada'
+    msg.access_code = access_code
+    msg.is_read = True
+
+    db.session.commit()
+
+    # 4. Envio de e-mail com fallback seguro de dev
+    name = msg.name or 'Professor(a)'
+    email_sent = False
+    try:
+        email_sent = send_teacher_code_email(msg.email, access_code, name)
+    except Exception as e:
+        current_app.logger.warning(f"[EMAIL FALLBACK] Erro ao disparar e-mail para {msg.email}: {e}")
+
+    if not email_sent:
+        # Fallback de Dev: Loga o código claramente no console sem quebrar a operação
+        print(f"\n==========================================")
+        print(f"🔑 [DEV ACCESS CODE] Chave de Acesso para {msg.email}: {access_code}")
+        print(f"==========================================\n")
+        current_app.logger.info(f"[DEV FALLBACK] Chave gerada para {msg.email}: {access_code}")
+
+    return jsonify({
+        "success": True,
+        "message": f"Professor aprovado com sucesso! Chave {access_code} gerada.",
+        "access_code": access_code,
+        "email_sent": email_sent,
+        "solicitacao_id": msg.id,
+        "status": msg.status
+    }), 200
 
 @admin_bp.route('/analytics/logs/export', methods=['GET'])
 @jwt_required()

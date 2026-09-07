@@ -1,68 +1,92 @@
 // frontend/src/pages/admin/ContactMessagesPage.jsx
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext';
-import { CheckCircle, Copy, Inbox, MessageSquare, Search, Mail, Calendar, User } from 'lucide-react';
+import { useToast } from '../../context/ToastContext';
+import { 
+    CheckCircle, 
+    Copy, 
+    Inbox, 
+    MessageSquare, 
+    Search, 
+    Mail, 
+    Calendar, 
+    User, 
+    Key, 
+    Check, 
+    Loader2, 
+    Send, 
+    Sparkles, 
+    Clock, 
+    AlertCircle 
+} from 'lucide-react';
 
 /**
  * ContactMessagesPage
  * 
- * Architectural intent: Provides an administrative interface for managing platform communications.
- * It implements a split-pane Master-Detail pattern, encapsulating the logic for message filtering,
- * optimistic UI updates for read status, and contextual actions (e.g., sending approval codes).
+ * Architectural intent: Provides an administrative interface for managing platform communications
+ * and one-click teacher authorization. It utilizes a split-pane Master-Detail layout with real-time
+ * status filters (All, Pending, Approved), instant optimistic feedback, and key-generation workflows.
  */
 const ContactMessagesPage = () => {
     const { user } = useContext(AuthContext);
+    const { showToast } = useToast();
     const [messages, setMessages] = useState([]);
     const [selectedMsg, setSelectedMsg] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
     const [copyFeedback, setCopyFeedback] = useState(false);
-    const [filter, setFilter] = useState('all'); // 'all', 'unread'
-    const [sendingCode, setSendingCode] = useState(false);
+    const [codeCopyFeedback, setCodeCopyFeedback] = useState(false);
+    const [filter, setFilter] = useState('all'); // 'all', 'pending', 'approved', 'unread'
+    const [approving, setApproving] = useState(false);
 
-    // --- 1. Fetch de Dados (Padrão do Projeto) ---
+    // --- 1. Fetch de Dados ---
+    const fetchMessages = async () => {
+        setLoading(true);
+        setError(null);
+
+        const token = user?.token;
+        if (!token) {
+            setError("Token não encontrado.");
+            setLoading(false);
+            return;
+        }
+
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/contact/messages`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!response.ok) throw new Error('Falha ao carregar mensagens e solicitações.');
+
+            const data = await response.json();
+            setMessages(data);
+            
+            // Mantém selecionado o item atual se ainda existir na lista
+            if (selectedMsg) {
+                const updated = data.find(m => m.id === selectedMsg.id);
+                if (updated) setSelectedMsg(updated);
+            }
+        } catch (e) {
+            console.error("Erro ao carregar mensagens:", e);
+            setError(e.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchMessages = async () => {
-            setLoading(true);
-            setError(null);
-
-            const token = user?.token;
-            if (!token) {
-                setError("Token não encontrado.");
-                setLoading(false);
-                return;
-            }
-
-            try {
-                // Usando fetch nativo e variáveis de ambiente como nas outras páginas
-                const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/contact/messages`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (!response.ok) throw new Error('Falha ao buscar mensagens.');
-
-                const data = await response.json();
-                setMessages(data);
-            } catch (e) {
-                console.error("Erro:", e);
-                setError(e.message);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         if (user?.token) {
             fetchMessages();
         }
     }, [user]);
 
-    // --- 2. Ações ---
+    // --- 2. Ações de Seleção e Leitura ---
     const handleSelectMessage = async (msg) => {
         setSelectedMsg(msg);
 
-        // Lógica de marcar como lida
         if (!msg.is_read) {
-            // Atualização Otimista (UI muda na hora)
+            // Atualização Otimista
             setMessages(prev => prev.map(m =>
                 m.id === msg.id ? { ...m, is_read: true } : m
             ));
@@ -81,203 +105,404 @@ const ContactMessagesPage = () => {
         }
     };
 
-    const copyToClipboard = (text) => {
+    const copyToClipboard = (text, isCode = false) => {
         navigator.clipboard.writeText(text);
-        setCopyFeedback(true);
-        setTimeout(() => setCopyFeedback(false), 2000);
-    };
-
-    const handleSendCode = async () => {
-        if (!selectedMsg || !user?.token) return;
-        if (!window.confirm(`Deseja enviar o código de acesso institucional para ${selectedMsg.email}?`)) return;
-        
-        setSendingCode(true);
-        try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/contact/messages/${selectedMsg.id}/send_code`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${user.token}` }
-            });
-            const data = await response.json();
-            if (response.ok) {
-                alert('Código enviado com sucesso!');
-            } else {
-                alert(data.message || 'Erro ao enviar o código.');
-            }
-        } catch (error) {
-            console.error("Erro ao enviar código:", error);
-            alert("Erro de conexão ao enviar o código.");
-        } finally {
-            setSendingCode(false);
+        if (isCode) {
+            setCodeCopyFeedback(true);
+            setTimeout(() => setCodeCopyFeedback(false), 2000);
+            showToast("Chave de acesso copiada para a área de transferência!", "info");
+        } else {
+            setCopyFeedback(true);
+            setTimeout(() => setCopyFeedback(false), 2000);
+            showToast("E-mail copiado!", "info");
         }
     };
 
-    // --- 3. Filtragem Local ---
+    // --- 3. Aprovação em 1 Clique (ÉPICO 2 & 3) ---
+    const handleApproveTeacher = async () => {
+        if (!selectedMsg || !user?.token || approving) return;
+
+        setApproving(true);
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/solicitacoes/${selectedMsg.id}/aprovar`, {
+                method: 'POST',
+                headers: { 
+                    'Authorization': `Bearer ${user.token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                const generatedCode = data.access_code;
+                
+                // Atualização otimista local
+                const updatedMsg = { 
+                    ...selectedMsg, 
+                    status: 'Aprovada', 
+                    access_code: generatedCode,
+                    is_read: true 
+                };
+
+                setSelectedMsg(updatedMsg);
+                setMessages(prev => prev.map(m => m.id === selectedMsg.id ? updatedMsg : m));
+
+                const emailStatus = data.email_sent ? "e enviada por e-mail!" : "(Dev: verifique o console do backend)";
+                showToast(`Professor aprovado com sucesso! Chave: ${generatedCode} ${emailStatus}`, "success");
+            } else {
+                showToast(data.message || "Erro ao aprovar solicitação.", "error");
+            }
+        } catch (err) {
+            console.error("Erro ao aprovar professor:", err);
+            showToast("Erro de conexão ao processar aprovação.", "error");
+        } finally {
+            setApproving(false);
+        }
+    };
+
+    // --- 4. Filtragem e Busca ---
     const filteredMessages = messages.filter(msg => {
+        const matchesSearch = 
+            (msg.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (msg.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (msg.subject || '').toLowerCase().includes(searchTerm.toLowerCase());
+
+        if (!matchesSearch) return false;
+
+        const isTeacherRequest = (msg.subject || '').toLowerCase().includes('código') || 
+                                (msg.subject || '').toLowerCase().includes('professor') ||
+                                (msg.subject || '').toLowerCase().includes('solicitação');
+
         if (filter === 'unread') return !msg.is_read;
+        if (filter === 'pending') return (msg.status === 'Pendente' || !msg.status) && isTeacherRequest;
+        if (filter === 'approved') return msg.status === 'Aprovada';
         return true;
     });
 
-    // --- 4. Renderização ---
-    if (loading) return <div className="text-center text-primary-text p-10">Carregando mensagens...</div>;
+    const pendingCount = messages.filter(m => 
+        (m.status === 'Pendente' || !m.status) && 
+        ((m.subject || '').toLowerCase().includes('código') || (m.subject || '').toLowerCase().includes('professor'))
+    ).length;
 
-    // Altura calculada para preencher a tela considerando o header do admin
+    const unreadCount = messages.filter(m => !m.is_read).length;
+
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[400px] text-primary-text space-y-4">
+                <Loader2 className="w-10 h-10 animate-spin text-accent-teal" />
+                <p className="text-secondary-text font-medium text-lg">Carregando solicitações e mensagens...</p>
+            </div>
+        );
+    }
+
     return (
-        <div className="animate-fade-in flex flex-col h-[calc(100vh-140px)]">
-
-            {/* Header da Página */}
-            <div className="flex justify-between items-center mb-6">
+        <div className="animate-fade-in flex flex-col h-[calc(100vh-140px)] space-y-4">
+            {/* Header da Página com Estatísticas Rápidas */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-secondary-bg border border-border-color p-5 rounded-2xl shadow-sm">
                 <div>
-                    <h1 className="text-3xl font-bold text-primary-text mb-2 bg-gradient-to-r from-accent-teal to-accent-purple bg-clip-text text-transparent flex items-center gap-3">
-                        <Inbox className="text-accent-purple" size={32} />
-                        Fale Conosco
+                    <h1 className="text-2xl sm:text-3xl font-bold text-primary-text flex items-center gap-3">
+                        <div className="p-2.5 bg-accent-purple/10 text-accent-purple rounded-xl">
+                            <Inbox size={26} />
+                        </div>
+                        Central de Solicitações & Mensagens
                     </h1>
-                    <p className="text-secondary-text">Gerencie as mensagens recebidas via formulário de contato.</p>
+                    <p className="text-secondary-text text-sm mt-1">
+                        Gerencie pedidos de novos professores, emita chaves seguras e atenda o Fale Conosco.
+                    </p>
                 </div>
 
-                {/* Filtros */}
-                <div className="flex bg-black/50 backdrop-blur-md p-1 rounded-lg border border-white/10">
+                {/* Filtros em Pílulas */}
+                <div className="flex flex-wrap items-center gap-2 bg-primary-bg/70 p-1.5 rounded-xl border border-border-color">
                     <button
                         onClick={() => setFilter('all')}
-                        className={`px-4 py-2 text-sm rounded-md transition-all ${filter === 'all' ? 'bg-accent-teal/20 text-accent-teal font-bold shadow-sm' : 'text-secondary-text hover:text-primary-text'}`}
+                        className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                            filter === 'all' 
+                                ? 'bg-accent-teal text-white shadow-md' 
+                                : 'text-secondary-text hover:text-primary-text hover:bg-secondary-bg'
+                        }`}
                     >
-                        Todas
+                        Todas ({messages.length})
+                    </button>
+                    <button
+                        onClick={() => setFilter('pending')}
+                        className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 ${
+                            filter === 'pending' 
+                                ? 'bg-accent-yellow text-gray-900 font-bold shadow-md' 
+                                : 'text-secondary-text hover:text-primary-text hover:bg-secondary-bg'
+                        }`}
+                    >
+                        <Clock size={12} />
+                        Pendentes {pendingCount > 0 && <span className="bg-red-500 text-white px-1.5 py-0.2 rounded-full text-[10px]">{pendingCount}</span>}
+                    </button>
+                    <button
+                        onClick={() => setFilter('approved')}
+                        className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 ${
+                            filter === 'approved' 
+                                ? 'bg-green-600 text-white font-bold shadow-md' 
+                                : 'text-secondary-text hover:text-primary-text hover:bg-secondary-bg'
+                        }`}
+                    >
+                        <CheckCircle size={12} />
+                        Aprovadas
                     </button>
                     <button
                         onClick={() => setFilter('unread')}
-                        className={`px-4 py-2 text-sm rounded-md transition-all ${filter === 'unread' ? 'bg-accent-teal/20 text-accent-teal font-bold shadow-sm' : 'text-secondary-text hover:text-primary-text'}`}
+                        className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                            filter === 'unread' 
+                                ? 'bg-accent-purple text-white shadow-md' 
+                                : 'text-secondary-text hover:text-primary-text hover:bg-secondary-bg'
+                        }`}
                     >
-                        Não lidas
+                        Não Lidas {unreadCount > 0 && `(${unreadCount})`}
                     </button>
                 </div>
             </div>
 
-            {error && <div className="bg-red-900/40 text-red-300 p-4 rounded-lg mb-4 border border-red-700">{error}</div>}
+            {error && (
+                <div className="flex items-center gap-3 bg-red-900/30 text-red-300 p-4 rounded-xl border border-red-700/50">
+                    <AlertCircle size={20} className="text-red-400 flex-shrink-0" />
+                    <span>{error}</span>
+                </div>
+            )}
 
-            {/* Layout Split: Lista vs Detalhe */}
-            <div className="flex flex-1 overflow-hidden bg-secondary-bg rounded-xl shadow-md border border-border-color">
+            {/* Layout Split: Lista de Mensagens vs Painel de Ações e Detalhes */}
+            <div className="flex flex-1 overflow-hidden bg-secondary-bg rounded-2xl shadow-lg border border-border-color">
 
-                {/* COLUNA ESQUERDA: LISTA */}
-                <div className="w-1/3 min-w-[300px] max-w-[400px] border-r border-border-color flex flex-col bg-secondary-bg">
+                {/* COLUNA ESQUERDA: LISTA DE SOLICITAÇÕES */}
+                <div className="w-full md:w-[380px] lg:w-[420px] border-r border-border-color flex flex-col bg-secondary-bg/50">
                     <div className="p-4 border-b border-border-color">
                         <div className="relative">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-secondary-text" size={16} />
+                            <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-secondary-text" size={16} />
                             <input
                                 type="text"
-                                placeholder="Buscar remetente..."
-                                className="w-full pl-10 pr-4 py-2 bg-primary-bg border border-border-color rounded-lg text-sm text-primary-text focus:ring-2 focus:ring-accent-teal outline-none transition-all shadow-inner hover:shadow-md"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                placeholder="Buscar por nome, e-mail ou assunto..."
+                                className="w-full pl-10 pr-4 py-2 bg-primary-bg border border-border-color rounded-xl text-sm text-primary-text focus:ring-2 focus:ring-accent-teal outline-none transition-all shadow-inner"
                             />
                         </div>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto custom-scrollbar">
+                    <div className="flex-1 overflow-y-auto divide-y divide-border-color/50 custom-scrollbar">
                         {filteredMessages.length === 0 ? (
-                            <div className="p-8 text-center text-secondary-text">
-                                <p>Nenhuma mensagem.</p>
+                            <div className="p-12 text-center text-secondary-text flex flex-col items-center justify-center space-y-3">
+                                <Inbox className="w-12 h-12 stroke-1 opacity-40 text-accent-teal" />
+                                <p className="font-medium">Nenhuma solicitação encontrada para o filtro ativo.</p>
                             </div>
                         ) : (
-                            filteredMessages.map((msg) => (
-                                <div
-                                    key={msg.id}
-                                    onClick={() => handleSelectMessage(msg)}
-                                    className={`p-4 border-b border-border-color cursor-pointer transition-colors hover:bg-hover-bg-color0 group
-                                        ${selectedMsg?.id === msg.id ? 'bg-accent-teal/5 border-l-4 border-l-accent-teal' : 'border-l-4 border-l-transparent'}
-                                    `}
-                                >
-                                    <div className="flex justify-between items-start mb-1">
-                                        <span className={`text-sm truncate pr-2 ${!msg.is_read ? 'text-primary-text font-bold' : 'text-secondary-text'}`}>
-                                            {msg.name}
-                                        </span>
-                                        <span className="text-xs text-secondary-text/70 whitespace-nowrap">
-                                            {new Date(msg.created_at).toLocaleDateString(undefined, { day: '2-digit', month: '2-digit' })}
-                                        </span>
+                            filteredMessages.map((msg) => {
+                                const isSelected = selectedMsg?.id === msg.id;
+                                const isApproved = msg.status === 'Aprovada';
+                                const isTeacherRequest = (msg.subject || '').toLowerCase().includes('código') || 
+                                                        (msg.subject || '').toLowerCase().includes('professor');
+
+                                return (
+                                    <div
+                                        key={msg.id}
+                                        onClick={() => handleSelectMessage(msg)}
+                                        className={`p-4 cursor-pointer transition-all duration-200 border-l-4 group relative
+                                            ${isSelected 
+                                                ? 'bg-accent-teal/10 border-l-accent-teal shadow-inner' 
+                                                : 'border-l-transparent hover:bg-hover-bg-color'
+                                            }
+                                        `}
+                                    >
+                                        <div className="flex justify-between items-start mb-1.5 gap-2">
+                                            <span className={`text-sm truncate font-medium ${!msg.is_read ? 'text-primary-text font-bold' : 'text-primary-text/80'}`}>
+                                                {msg.name}
+                                            </span>
+                                            <span className="text-[11px] text-secondary-text whitespace-nowrap bg-primary-bg/60 px-2 py-0.5 rounded-full border border-border-color">
+                                                {new Date(msg.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                            </span>
+                                        </div>
+
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <p className={`text-sm truncate ${!msg.is_read ? 'font-bold text-primary-text' : 'text-secondary-text font-medium'}`}>
+                                                {msg.subject}
+                                            </p>
+                                        </div>
+
+                                        <p className="text-xs text-secondary-text line-clamp-2 leading-relaxed opacity-75 mb-2">
+                                            {msg.message}
+                                        </p>
+
+                                        <div className="flex items-center gap-2">
+                                            {isApproved ? (
+                                                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-md border border-green-500/20">
+                                                    <CheckCircle size={11} /> Aprovado
+                                                </span>
+                                            ) : isTeacherRequest ? (
+                                                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-yellow-400 bg-yellow-500/10 px-2 py-0.5 rounded-md border border-yellow-500/20">
+                                                    <Clock size={11} /> Solicitação Professor
+                                                </span>
+                                            ) : null}
+
+                                            {msg.access_code && (
+                                                <span className="inline-flex items-center gap-1 text-[11px] font-mono text-accent-teal bg-accent-teal/10 px-2 py-0.5 rounded-md border border-accent-teal/20">
+                                                    <Key size={10} /> {msg.access_code}
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
-                                    <p className={`text-sm truncate mb-1 ${!msg.is_read ? 'text-primary-text font-semibold' : 'text-secondary-text'}`}>
-                                        {msg.subject}
-                                    </p>
-                                    <p className="text-xs text-secondary-text truncate opacity-80">
-                                        {msg.message}
-                                    </p>
-                                </div>
-                            ))
+                                );
+                            })
                         )}
                     </div>
                 </div>
 
-                {/* COLUNA DIREITA: LEITURA DETALHADA */}
-                <div className="flex-1 bg-transparent overflow-y-auto p-0 relative">
+                {/* COLUNA DIREITA: DETALHE COMPLETO E AÇÕES RÁPIDAS */}
+                <div className="flex-1 bg-primary-bg/30 overflow-y-auto relative flex flex-col">
                     {selectedMsg ? (
-                        <div className="animate-fade-in h-full flex flex-col">
+                        <div className="animate-fade-in flex flex-col h-full">
 
-                            {/* Header da Mensagem */}
-                            <div className="p-8 border-b border-border-color bg-secondary-bg sticky top-0 z-10">
-                                <div className="flex justify-between items-start mb-6">
-                                    <h2 className="text-2xl font-bold text-primary-text leading-tight">
-                                        {selectedMsg.subject}
-                                    </h2>
-                                    <span className="text-xs text-secondary-text bg-primary-bg px-2 py-1 rounded border border-border-color">
-                                        {new Date(selectedMsg.created_at).toLocaleString()}
-                                    </span>
+                            {/* Header Superior da Mensagem com Card de Perfil */}
+                            <div className="p-6 lg:p-8 border-b border-border-color bg-secondary-bg/80 sticky top-0 z-10 backdrop-blur-md">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                                    <div>
+                                        <h2 className="text-2xl font-bold text-primary-text flex items-center gap-2">
+                                            {selectedMsg.subject}
+                                        </h2>
+                                        <span className="text-xs text-secondary-text mt-1 block">
+                                            Recebido em {new Date(selectedMsg.created_at).toLocaleString('pt-BR')}
+                                        </span>
+                                    </div>
+
+                                    {/* Status Badge */}
+                                    <div>
+                                        {selectedMsg.status === 'Aprovada' ? (
+                                            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-green-500/20 text-green-400 border border-green-500/30 shadow-sm">
+                                                <CheckCircle size={14} /> Professor Aprovado
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 shadow-sm">
+                                                <Clock size={14} /> Aguardando Decisão
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
 
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-accent-teal to-accent-purple flex items-center justify-center text-white font-bold text-xl shadow-lg">
-                                        {selectedMsg.name.charAt(0).toUpperCase()}
+                                <div className="flex items-center gap-4 bg-primary-bg/70 p-4 rounded-xl border border-border-color">
+                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent-teal to-accent-purple flex items-center justify-center text-white font-extrabold text-xl shadow-md">
+                                        {selectedMsg.name?.charAt(0).toUpperCase()}
                                     </div>
-                                    <div className="flex-1">
-                                        <p className="font-bold text-primary-text text-lg flex items-center gap-2">
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-bold text-primary-text text-base truncate">
                                             {selectedMsg.name}
                                         </p>
-                                        <div className="flex items-center gap-2 group">
-                                            <Mail size={14} className="text-secondary-text" />
-                                            <p className="text-secondary-text text-sm">
+                                        <div className="flex items-center gap-2 mt-0.5">
+                                            <Mail size={13} className="text-secondary-text flex-shrink-0" />
+                                            <span className="text-secondary-text text-sm truncate">
                                                 {selectedMsg.email}
-                                            </p>
+                                            </span>
                                             <button
                                                 onClick={() => copyToClipboard(selectedMsg.email)}
-                                                className="text-accent-teal opacity-0 group-hover:opacity-100 transition-all hover:bg-accent-teal/10 p-1 rounded"
-                                                title="Copiar email"
+                                                className="text-accent-teal hover:text-white transition-colors p-1 rounded hover:bg-accent-teal/20"
+                                                title="Copiar e-mail"
                                             >
-                                                {copyFeedback ? <CheckCircle size={14} /> : <Copy size={14} />}
+                                                {copyFeedback ? <Check size={14} /> : <Copy size={14} />}
                                             </button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Corpo da Mensagem */}
-                            <div className="p-8 flex-1">
-                                <div className="prose prose-invert max-w-none text-primary-text leading-relaxed whitespace-pre-wrap">
-                                    {selectedMsg.message}
+                            {/* Conteúdo da Mensagem */}
+                            <div className="p-6 lg:p-8 flex-1 space-y-6">
+                                <div className="bg-secondary-bg/60 p-6 rounded-2xl border border-border-color shadow-sm">
+                                    <h3 className="text-xs font-bold text-secondary-text uppercase tracking-wider mb-3">Mensagem Enviada</h3>
+                                    <div className="prose prose-invert max-w-none text-primary-text leading-relaxed whitespace-pre-wrap text-base">
+                                        {selectedMsg.message}
+                                    </div>
                                 </div>
+
+                                {/* Se já houver chave de acesso emitida, exibe o cartão da chave */}
+                                {selectedMsg.access_code && (
+                                    <div className="bg-gradient-to-r from-accent-teal/10 via-accent-purple/10 to-transparent p-6 rounded-2xl border border-accent-teal/30 shadow-md">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-xs font-bold text-accent-teal uppercase tracking-wider flex items-center gap-1.5">
+                                                    <Key size={14} /> Chave Institucional Emitida
+                                                </p>
+                                                <p className="text-2xl font-mono font-extrabold text-primary-text mt-1">
+                                                    {selectedMsg.access_code}
+                                                </p>
+                                                <p className="text-xs text-secondary-text mt-1">
+                                                    Esta chave foi vinculada exclusivamente ao e-mail <strong>{selectedMsg.email}</strong>.
+                                                </p>
+                                            </div>
+                                            <button
+                                                onClick={() => copyToClipboard(selectedMsg.access_code, true)}
+                                                className="flex items-center gap-2 px-4 py-2 bg-secondary-bg hover:bg-hover-bg-color text-primary-text font-semibold rounded-xl border border-border-color transition-all shadow-sm"
+                                            >
+                                                {codeCopyFeedback ? <Check size={16} className="text-green-400" /> : <Copy size={16} />}
+                                                {codeCopyFeedback ? 'Copiado' : 'Copiar Chave'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
-                            {/* Footer de Ação */}
-                            <div className="p-6 border-t border-border-color bg-secondary-bg flex justify-end gap-3">
-                                {selectedMsg.subject && selectedMsg.subject.toLowerCase().includes('código') && (
-                                    <button
-                                        onClick={handleSendCode}
-                                        disabled={sendingCode}
-                                        className="flex items-center gap-2 px-4 py-2 bg-accent-yellow hover:bg-yellow-500 text-gray-900 font-bold rounded-lg transition-colors shadow-md disabled:opacity-50"
+                            {/* Footer de Ações Rápidas (1-Clique Aprovação) */}
+                            <div className="p-6 border-t border-border-color bg-secondary-bg flex flex-wrap items-center justify-between gap-4">
+                                <div className="text-xs text-secondary-text">
+                                    {selectedMsg.status === 'Aprovada' 
+                                        ? 'Solicitação já aprovada pelo administrador.' 
+                                        : 'Aprovar gerará uma chave única e enviará um e-mail ao solicitante.'
+                                    }
+                                </div>
+
+                                <div className="flex items-center gap-3">
+                                    <a
+                                        href={`mailto:${selectedMsg.email}?subject=Re: ${selectedMsg.subject}`}
+                                        className="flex items-center gap-2 px-4 py-2.5 bg-secondary-bg hover:bg-hover-bg-color text-primary-text font-semibold rounded-xl border border-border-color transition-all shadow-sm"
                                     >
-                                        <CheckCircle size={18} />
-                                        {sendingCode ? 'Enviando...' : 'Aprovar Professor'}
+                                        <Send size={16} />
+                                        Responder por E-mail
+                                    </a>
+
+                                    <button
+                                        onClick={handleApproveTeacher}
+                                        disabled={approving || selectedMsg.status === 'Aprovada'}
+                                        className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold transition-all shadow-lg text-sm ${
+                                            selectedMsg.status === 'Aprovada'
+                                                ? 'bg-green-600/30 text-green-300 border border-green-500/30 cursor-not-allowed'
+                                                : 'bg-gradient-to-r from-accent-yellow to-yellow-500 hover:from-yellow-400 hover:to-yellow-500 text-gray-950 hover:shadow-yellow-500/20 active:scale-95'
+                                        }`}
+                                    >
+                                        {approving ? (
+                                            <>
+                                                <Loader2 size={18} className="animate-spin" />
+                                                Gerando Chave & Enviando...
+                                            </>
+                                        ) : selectedMsg.status === 'Aprovada' ? (
+                                            <>
+                                                <CheckCircle size={18} />
+                                                Professor Já Aprovado
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Sparkles size={18} />
+                                                Aprovar e Enviar Chave
+                                            </>
+                                        )}
                                     </button>
-                                )}
-                                <a
-                                    href={`mailto:${selectedMsg.email}?subject=Re: ${selectedMsg.subject}`}
-                                    className="flex items-center gap-2 px-4 py-2 bg-accent-teal hover:bg-accent-teal/80 text-primary-text font-semibold rounded-lg transition-colors shadow-md"
-                                >
-                                    <Mail size={18} />
-                                    Responder por E-mail
-                                </a>
+                                </div>
                             </div>
 
                         </div>
                     ) : (
                         /* Estado Vazio */
-                        <div className="h-full flex flex-col items-center justify-center text-secondary-text opacity-50">
-                            <MessageSquare className="w-24 h-24 mb-4 stroke-1" />
-                            <p className="text-xl font-medium">Selecione uma mensagem para ler</p>
+                        <div className="h-full flex flex-col items-center justify-center text-secondary-text p-10 text-center space-y-4">
+                            <div className="p-6 bg-secondary-bg rounded-3xl border border-border-color shadow-inner">
+                                <MessageSquare className="w-16 h-16 stroke-1 text-accent-teal/60" />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-bold text-primary-text">Nenhuma mensagem selecionada</h3>
+                                <p className="text-sm text-secondary-text max-w-sm mt-1">
+                                    Escolha uma mensagem ou solicitação na lista lateral para revisar o conteúdo e emitir credenciais.
+                                </p>
+                            </div>
                         </div>
                     )}
                 </div>

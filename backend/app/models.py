@@ -703,7 +703,9 @@ class ContactMessage(db.Model):
     # CORREÇÃO 2: Usar db.func.current_timestamp() para consistência com o resto do sistema
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     
-    is_read = db.Column(db.Boolean, default=False) 
+    is_read = db.Column(db.Boolean, default=False)
+    status = db.Column(db.String(50), default='Pendente', nullable=False) # 'Pendente', 'Aprovada', 'Rejeitada'
+    access_code = db.Column(db.String(100), nullable=True)
 
     # Relacionamento opcional
     user = db.relationship('User', backref='sent_messages')
@@ -716,7 +718,33 @@ class ContactMessage(db.Model):
             'subject': self.subject,
             'message': self.message,
             'created_at': self.created_at.isoformat() if self.created_at else None,
-            'is_read': self.is_read
+            'is_read': self.is_read,
+            'status': self.status,
+            'access_code': self.access_code
+        }
+
+class TeacherAccessCode(db.Model):
+    """
+    Modelo para armazenar tokens/chaves únicas e seguras de acesso para novos professores.
+    Permite validação personalizada por e-mail ou código genérico.
+    """
+    __tablename__ = 'teacher_access_codes'
+
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), index=True, nullable=False)
+    code = db.Column(db.String(100), unique=True, nullable=False)
+    is_used = db.Column(db.Boolean, default=False, nullable=False)
+    used_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'email': self.email,
+            'code': self.code,
+            'is_used': self.is_used,
+            'used_at': self.used_at.isoformat() if self.used_at else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None
         }
     
 class Team(db.Model):

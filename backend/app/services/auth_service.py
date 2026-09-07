@@ -10,7 +10,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from sqlalchemy.orm.attributes import flag_modified
-from ..models import db, User, EventLog
+from ..models import db, User, EventLog, TeacherAccessCode
 from ..utils.geo import update_user_location_data  
 from ..utils.email_sender import send_reset_email
 from ..utils.text_sanitizer import clean_text, detect_strict_sql_injection, detect_prompt_injection
@@ -80,9 +80,24 @@ class AuthService:
         access_code = data.get('accessCode', '')
 
         # Validação do código de acesso para professores
+        teacher_code_record = None
         if role == 'professor':
             required_code = os.environ.get('TEACHER_ACCESS_CODE', 'GAMIFICA_PROF_2026')
-            if not access_code or access_code.strip() != required_code:
+            clean_code = (access_code or '').strip()
+            
+            # 1. Verifica se bate com o código global
+            if clean_code and clean_code == required_code:
+                is_valid_code = True
+            else:
+                # 2. Verifica se existe chave individual emitida pelo Admin para este email
+                teacher_code_record = TeacherAccessCode.query.filter_by(
+                    email=email,
+                    code=clean_code,
+                    is_used=False
+                ).first()
+                is_valid_code = teacher_code_record is not None
+
+            if not is_valid_code:
                 return None, {"message": "Código de Acesso Institucional inválido para professor."}, 403
 
         # WAF Interno: Bloqueia injeções claras
@@ -113,6 +128,9 @@ class AuthService:
 
         try:
             db.session.add(new_user)
+            if teacher_code_record:
+                teacher_code_record.is_used = True
+                teacher_code_record.used_at = db.func.current_timestamp()
             db.session.commit()
             AuthService._log_auth_event(new_user.id, 'register_success', {'email': new_user.email, 'method': 'email'}, True, remote_addr, user_agent)
 
