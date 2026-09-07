@@ -37,49 +37,73 @@ echo "---"
 # Limpa logs antigos para garantir que não estamos lendo URLs velhas
 rm -f backend_tunnel.log frontend_tunnel.log
 
-echo -e "${BLUE}1. Iniciando túneis do Cloudflare em segundo plano...${NC}"
-cloudflared tunnel --url http://localhost:5000 > backend_tunnel.log 2>&1 &
-BACKEND_PID=$!
-
-cloudflared tunnel --url http://localhost:5173 > frontend_tunnel.log 2>&1 &
-FRONTEND_PID=$!
-
-echo -e "${YELLOW}2. Aguardando a geração das URLs (aprox. 15 segundos)...${NC}"
-sleep 15
-
-# --- Extração e Formatação das URLs ---
-echo -e "${BLUE}3. Extraindo e formatando as URLs dos logs...${NC}"
-
-# Encontra a linha que contém "trycloudflare.com" e extrai a URL completa.
-BACKEND_URL_FULL=$(grep 'trycloudflare.com' backend_tunnel.log | sed -n 's/.*\(https*:\/\/[-a-zA-Z0-9.]*\.trycloudflare\.com\).*/\1/p' | head -n 1)
-FRONTEND_URL_FULL=$(grep 'trycloudflare.com' frontend_tunnel.log | sed -n 's/.*\(https*:\/\/[-a-zA-Z0-9.]*\.trycloudflare\.com\).*/\1/p' | head -n 1)
-
-# Validação para garantir que as URLs foram capturadas
-if [ -z "$BACKEND_URL_FULL" ] || [ -z "$FRONTEND_URL_FULL" ]; then
-    echo -e "${RED}❌ Erro Crítico: Não foi possível obter as URLs dos túneis.${NC}"
-    echo "Verifique os arquivos backend_tunnel.log e frontend_tunnel.log para mais detalhes."
-    cleanup
+# Verifica se cloudflared está instalado no sistema
+HAS_CLOUDFLARED=false
+if command -v cloudflared &> /dev/null; then
+    HAS_CLOUDFLARED=true
 fi
 
-# Remove o "https://" para obter apenas o hostname para o vite.config.js
-FRONTEND_HOSTNAME=$(echo $FRONTEND_URL_FULL | sed 's|https://||')
+if [ "$HAS_CLOUDFLARED" = true ]; then
+    echo -e "${BLUE}1. Iniciando túneis do Cloudflare em segundo plano...${NC}"
+    cloudflared tunnel --url http://localhost:5000 > backend_tunnel.log 2>&1 &
+    BACKEND_PID=$!
 
-echo -e "${GREEN}✅ URL para .env (Backend): $BACKEND_URL_FULL${NC}"
-echo -e "${GREEN}✅ Hostname para vite.config.js (Frontend): $FRONTEND_HOSTNAME${NC}"
+    cloudflared tunnel --url http://localhost:5173 > frontend_tunnel.log 2>&1 &
+    FRONTEND_PID=$!
+
+    echo -e "${YELLOW}2. Aguardando a geração das URLs (aprox. 15 segundos)...${NC}"
+    sleep 15
+
+    # --- Extração e Formatação das URLs ---
+    echo -e "${BLUE}3. Extraindo e formatando as URLs dos logs...${NC}"
+
+    # Regex aprimorada para capturar URLs do Cloudflare (ex: https://xxx.trycloudflare.com)
+    BACKEND_URL_FULL=$(grep -oE 'https?://[a-zA-Z0-9.-]+\.trycloudflare\.com' backend_tunnel.log 2>/dev/null | head -n 1)
+    FRONTEND_URL_FULL=$(grep -oE 'https?://[a-zA-Z0-9.-]+\.trycloudflare\.com' frontend_tunnel.log 2>/dev/null | head -n 1)
+fi
+
+# Fallback gracioso para Localhost caso o Cloudflare não esteja instalado ou falhe
+if [ -z "$BACKEND_URL_FULL" ] || [ -z "$FRONTEND_URL_FULL" ]; then
+    echo -e "${YELLOW}⚠️ [AVISO] Túnel Cloudflare indisponível ou URLs não geradas.${NC}"
+    if [ "$HAS_CLOUDFLARED" = false ]; then
+        echo -e "${YELLOW}ℹ️  Motivo: binário 'cloudflared' não encontrado no PATH.${NC}"
+    else
+        echo -e "${YELLOW}ℹ️  Verifique backend_tunnel.log e frontend_tunnel.log para detalhes.${NC}"
+    fi
+    echo -e "${GREEN}🔄 Operando em modo de Fallback (Ambiente Local):${NC}"
+    BACKEND_URL_FULL="http://localhost:5000"
+    FRONTEND_URL_FULL="http://localhost:5173"
+    FRONTEND_HOSTNAME="localhost"
+else
+    # Remove o protocolo para obter o hostname para o vite.config.js
+    FRONTEND_HOSTNAME=$(echo "$FRONTEND_URL_FULL" | sed -E 's|https?://||')
+fi
+
+echo -e "${GREEN}✅ URL API (Backend): $BACKEND_URL_FULL${NC}"
+echo -e "${GREEN}✅ Hostname (Frontend): $FRONTEND_HOSTNAME${NC}"
 
 # --- Atualização dos Arquivos ---
 echo -e "${BLUE}4. Atualizando arquivos de configuração...${NC}"
 
-# Atualiza o .env
-sed -i.bak "s#^$ENV_VAR_NAME=.*#$ENV_VAR_NAME=$BACKEND_URL_FULL#" $ENV_FILE
+# Cria ou atualiza o .env no frontend
+if [ ! -f "$ENV_FILE" ]; then
+    echo "$ENV_VAR_NAME=$BACKEND_URL_FULL" > "$ENV_FILE"
+elif grep -q "^$ENV_VAR_NAME=" "$ENV_FILE"; then
+    sed -i.bak "s#^$ENV_VAR_NAME=.*#$ENV_VAR_NAME=$BACKEND_URL_FULL#" "$ENV_FILE"
+    rm -f "$ENV_FILE.bak"
+else
+    echo "$ENV_VAR_NAME=$BACKEND_URL_FULL" >> "$ENV_FILE"
+fi
 
-# Atualiza o vite.config.js
-sed -i.bak "s#allowedHosts: \[ *'.*' *\]#allowedHosts: [ '*' ]#" $VITE_CONFIG_FILE
+# Atualiza allowedHosts no vite.config.js se o arquivo existir
+if [ -f "$VITE_CONFIG_FILE" ]; then
+    if grep -q "allowedHosts:" "$VITE_CONFIG_FILE"; then
+        sed -i.bak "s#allowedHosts:.*#allowedHosts: true,#" "$VITE_CONFIG_FILE"
+        rm -f "$VITE_CONFIG_FILE.bak"
+    fi
+fi
 
-# Remove os arquivos de backup criados pelo sed
-rm -f "$ENV_FILE.bak" "$VITE_CONFIG_FILE.bak"
-
-echo -e "${GREEN}✅ Arquivos atualizados.${NC}"
+echo -e "${GREEN}✅ Configurações sincronizadas com sucesso.${NC}"
 
 # --- Iniciando Servidores ---
 echo -e "${BLUE}5. Iniciando os servidores (Frontend & Backend) na mesma janela...${NC}"
