@@ -106,16 +106,42 @@ fi
 echo -e "${GREEN}✅ Configurações sincronizadas com sucesso.${NC}"
 
 # --- Iniciando Servidores ---
-echo -e "${BLUE}5. Iniciando os servidores (Frontend & Backend) na mesma janela...${NC}"
+echo -e "${BLUE}5. Verificando dependências e iniciando os servidores (Frontend & Backend)...${NC}"
 
-# Backend
-echo -e "${GREEN}🟢 Iniciando Backend...${NC}"
-(cd $BACKEND_DIR && source venv/bin/activate && exec python3 run.py) &
+# Backend: Verifica e ativa o ambiente virtual
+echo -e "${GREEN}🟢 Preparando e iniciando Backend...${NC}"
+(
+    cd "$BACKEND_DIR" || exit 1
+    if [ -f "venv/bin/activate" ]; then
+        # shellcheck disable=SC1091
+        . venv/bin/activate
+        exec python3 run.py
+    elif [ -f ".venv/bin/activate" ]; then
+        # shellcheck disable=SC1091
+        . .venv/bin/activate
+        exec python3 run.py
+    elif [ -x "venv/bin/python3" ]; then
+        exec venv/bin/python3 run.py
+    elif [ -x ".venv/bin/python3" ]; then
+        exec .venv/bin/python3 run.py
+    else
+        echo -e "${YELLOW}⚠️ Ambiente virtual não encontrado em venv/.venv. Criando novo venv...${NC}"
+        python3 -m venv venv && . venv/bin/activate && pip install -r requirements.txt
+        exec python3 run.py
+    fi
+) &
 FLASK_PID=$!
 
-# Frontend
-echo -e "${CYAN}🔵 Iniciando Frontend...${NC}"
-(cd $FRONTEND_DIR && exec npm run dev) &
+# Frontend: Garante node_modules antes de iniciar o Vite
+echo -e "${CYAN}🔵 Preparando e iniciando Frontend...${NC}"
+(
+    cd "$FRONTEND_DIR" || exit 1
+    if [ ! -d "node_modules" ]; then
+        echo -e "${YELLOW}⚠️ 'node_modules' não encontrado no frontend. Executando npm install...${NC}"
+        npm install
+    fi
+    exec npm run dev
+) &
 VITE_PID=$!
 
 echo -e "${GREEN}✅ Processo concluído! Os servidores estão rodando em background.${NC}"
