@@ -5,13 +5,15 @@ enviadas pela página de "Fale Conosco".
 """
 
 from flask import Blueprint, request, jsonify
+from flask_cors import cross_origin
 from flask_jwt_extended import jwt_required, get_jwt_identity, verify_jwt_in_request
 from ..services.contact_service import ContactService
 
 contact_bp = Blueprint('contact', __name__)
 
-@contact_bp.route('', methods=['POST'])
-@contact_bp.route('/', methods=['POST'])
+@contact_bp.route('', methods=['POST'], strict_slashes=False)
+@contact_bp.route('/', methods=['POST'], strict_slashes=False)
+@cross_origin()
 def send_message():
     """
     [Arquitetura]
