@@ -13,6 +13,7 @@ import RankingItem from './RankingItem'; // Importa o novo componente de item
  * - List Semantics: Uses an ordered list (`<ol>`) and delegates rendering to `RankingItem` components to ensure semantic HTML for rankings.
  * - Current User Highlighting: Injects an `isCurrentUser` prop into the child items by comparing the user ID from the global auth context.
  */
+const LeaderboardTab = ({ leaderboardData, isLoading, onReturn }) => {
     // Pega o usuário logado do contexto para poder destacá-lo
     const { user } = useAuth();
     React.useEffect(() => {
