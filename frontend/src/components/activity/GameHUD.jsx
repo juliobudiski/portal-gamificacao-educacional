@@ -11,6 +11,7 @@ import RecentActivityFeed from './RecentActivityFeed';
  * - Read-Only Projection: Relies on the `progress` prop to render stats, ensuring the HUD remains purely presentational without managing its own fetch logic.
  * - Responsive Layout: Employs Tailwind utility classes to dynamically collapse non-essential information on smaller viewports.
  */
+const GameHUD = ({ progress }) => {
     // 1. USA OS DADOS VINDOS DO BACKEND (progress.py -> get_activity_progress)
     const currentPoints = progress?.points_earned || 0; // Pontos para a loja
     const currentCoins = progress?.coins || 0;         // Moedas (Tigrinho/Roleta)
