@@ -30,23 +30,36 @@ def send_message():
     user_id = None
     auth_header = request.headers.get('Authorization', '')
     
-    # Blindagem: só tenta ler JWT se o header contiver um Bearer token de formato minimamente válido (3 segmentos)
-    if auth_header and auth_header.startswith('Bearer '):
-        token_candidate = auth_header.split(' ', 1)[1].strip()
-        if (
-            token_candidate
-            and token_candidate not in ('null', 'undefined', 'None', '')
-            and token_candidate.count('.') == 2
-        ):
-            try:
-                verify_jwt_in_request(optional=True)
-                current_user_id = get_jwt_identity()
-                if current_user_id:
-                    user_id = current_user_id
-            except Exception as e:
-                from flask import current_app
-                current_app.logger.debug(f"Falha ao validar token opcional em contact: {e}")
+    import sys
+    import traceback
+    from flask import current_app
 
-    # Delega o processamento e salvamento da mensagem para a camada de serviço
-    result, status = ContactService.send_message(user_id, data)
-    return jsonify(result), status
+    try:
+        # Blindagem: só tenta ler JWT se o header contiver um Bearer token de formato minimamente válido (3 segmentos)
+        if auth_header and auth_header.startswith('Bearer '):
+            token_candidate = auth_header.split(' ', 1)[1].strip()
+            if (
+                token_candidate
+                and token_candidate not in ('null', 'undefined', 'None', '')
+                and token_candidate.count('.') == 2
+            ):
+                try:
+                    verify_jwt_in_request(optional=True)
+                    current_user_id = get_jwt_identity()
+                    if current_user_id:
+                        user_id = current_user_id
+                except Exception as e:
+                    current_app.logger.debug(f"Falha ao validar token opcional em contact: {e}")
+
+        # Delega o processamento e salvamento da mensagem para a camada de serviço
+        result, status = ContactService.send_message(user_id, data)
+        return jsonify(result), status
+    except Exception as e:
+        error_trace = traceback.format_exc()
+        sys.stderr.write(f"\n[CRITICAL CONTACT API ERROR]\n{error_trace}\n")
+        sys.stderr.flush()
+        current_app.logger.error(f"[CONTACT API FAILURE] {str(e)}:\n{error_trace}")
+        return jsonify({
+            "error": str(e),
+            "trace": error_trace
+        }), 500

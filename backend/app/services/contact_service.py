@@ -4,8 +4,12 @@ Responsável por abstrair as regras e persistência de mensagens enviadas
 pelos usuários na página de contato do portal.
 """
 
+import sys
+import traceback
+from flask import current_app
 from app import db
 from app.models import ContactMessage
+from app.utils.email_sender import send_html_email
 
 class ContactService:
     @staticmethod
@@ -14,24 +18,75 @@ class ContactService:
         Valida os campos obrigatórios e salva uma nova mensagem no banco de dados.
         Se user_id for fornecido (usuário logado), ele será vinculado, 
         senão será tratado como um visitante anônimo.
+        O envio de e-mail de notificação/confirmação é desacoplado e protegido
+        por fail-safe: falhas no SMTP ou no serviço de e-mail não impedem o registro.
         """
+        if not data or not isinstance(data, dict):
+            return {"error": "Dados inválidos."}, 400
+
         # Validação simples de requisitos mínimos
-        if not data.get('message') or not data.get('email'):
+        message_content = data.get('message', '').strip() if isinstance(data.get('message'), str) else ''
+        email = data.get('email', '').strip() if isinstance(data.get('email'), str) else ''
+        name = data.get('name', 'Anônimo').strip() if isinstance(data.get('name'), str) else 'Anônimo'
+        subject = data.get('subject', 'Sem Assunto').strip() if isinstance(data.get('subject'), str) else 'Sem Assunto'
+
+        if not message_content or not email:
             return {"error": "Campos obrigatórios faltando."}, 400
 
         try:
             new_message = ContactMessage(
                 user_id=user_id,
-                name=data.get('name', 'Anônimo'),
-                email=data.get('email'),
-                subject=data.get('subject', 'Sem Assunto'),
-                message=data.get('message')
+                name=name or 'Anônimo',
+                email=email,
+                subject=subject or 'Sem Assunto',
+                message=message_content
             )
 
             db.session.add(new_message)
             db.session.commit()
-
-            return {"message": "Mensagem enviada com sucesso!"}, 201
-        except Exception as e:
+        except Exception as db_err:
             db.session.rollback()
-            return {"error": "Erro ao salvar a mensagem de contato."}, 500
+            err_trace = traceback.format_exc()
+            sys.stderr.write(f"\n[DATABASE ERROR IN CONTACT SERVICE]\n{err_trace}\n")
+            sys.stderr.flush()
+            if current_app:
+                current_app.logger.error(f"[DATABASE ERROR IN CONTACT SERVICE] {db_err}:\n{err_trace}")
+            return {
+                "error": "Erro ao salvar a mensagem de contato no banco de dados.",
+                "details": str(db_err),
+                "trace": err_trace
+            }, 500
+
+        # Envio de notificação por e-mail isolado em try/except (Fail-Safe)
+        email_dispatched = False
+        try:
+            admin_email = current_app.config.get('MAIL_USERNAME') if current_app else None
+            if admin_email:
+                html_body = f"""
+                <h3>Nova mensagem de contato recebida no Portal GamificaEdu</h3>
+                <p><strong>Nome:</strong> {name}</p>
+                <p><strong>E-mail:</strong> {email}</p>
+                <p><strong>Assunto:</strong> {subject}</p>
+                <p><strong>Mensagem:</strong><br>{message_content}</p>
+                """
+                email_dispatched = send_html_email(admin_email, f"[Fale Conosco] {subject}", html_body)
+        except Exception as mail_err:
+            mail_trace = traceback.format_exc()
+            sys.stderr.write(f"\n[EMAIL DISPATCH WARNING]\n{mail_trace}\n")
+            sys.stderr.flush()
+            if current_app:
+                current_app.logger.warning(f"[EMAIL FAIL-SAFE] Falha ao enviar e-mail de contato ({mail_err}). Mensagem foi salva com sucesso.")
+
+        if email_dispatched:
+            return {
+                "message": "Mensagem enviada com sucesso!",
+                "id": new_message.id,
+                "email_status": "enviado"
+            }, 201
+        else:
+            return {
+                "message": "Mensagem salva com sucesso!",
+                "id": new_message.id,
+                "email_status": "nao_enviado_ou_fallback"
+            }, 201
+
