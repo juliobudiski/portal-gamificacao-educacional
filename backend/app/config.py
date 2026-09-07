@@ -5,12 +5,13 @@ Define as variáveis de ambiente, configurações do banco de dados (SQLAlchemy)
 chaves secretas (JWT, Flask) e diretórios do sistema.
 """
 import os
+import logging
 from dotenv import load_dotenv
 from datetime import timedelta
 load_dotenv()
 
 class Config:
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL')
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'sqlite:///app.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Otimização de concorrência para muitos usuários simultâneos
@@ -21,12 +22,14 @@ class Config:
         'pool_recycle': 1800
     }
     
-    SECRET_KEY = os.getenv('SECRET_KEY')
-    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
+    SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-portal-gamificacao')
+    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'dev-jwt-secret-portal-gamificacao')
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=2)
     UPLOAD_FOLDER = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'uploads/avatars')
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-    GOOGLE_CLIENT_ID_BACKEND = os.getenv('GOOGLE_CLIENT_ID_BACKEND')
+    
+    # Integrações de terceiros (Soft Fail com fallback amigável)
+    GOOGLE_CLIENT_ID_BACKEND = os.getenv('GOOGLE_CLIENT_ID_BACKEND', None)
     
     if not GOOGLE_CLIENT_ID_BACKEND:
-        raise ValueError("A variável de ambiente GOOGLE_CLIENT_ID_BACKEND não foi definida!")
+        logging.warning("⚠️ [Config Soft-Fail] GOOGLE_CLIENT_ID_BACKEND ausente no .env. Login via Google desabilitado para este ambiente.")
