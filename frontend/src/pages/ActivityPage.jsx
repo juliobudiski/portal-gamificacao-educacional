@@ -262,6 +262,9 @@ function ActivityPage() {
   }
 
   debugLog('Renderizando ActivityProvider e ActivityPageContent...');
+  if (typeof window !== 'undefined') {
+    window.__activityLogic = activityLogic;
+  }
   return (
     <ActivityProvider value={activityLogic}>
       <ActivityPageContent />

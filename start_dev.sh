@@ -57,9 +57,10 @@ if [ "$HAS_CLOUDFLARED" = true ]; then
     # --- Extração e Formatação das URLs ---
     echo -e "${BLUE}3. Extraindo e formatando as URLs dos logs...${NC}"
 
-    # Regex aprimorada para capturar URLs do Cloudflare (ex: https://xxx.trycloudflare.com)
-    BACKEND_URL_FULL=$(grep -oE 'https?://[a-zA-Z0-9.-]+\.trycloudflare\.com' backend_tunnel.log 2>/dev/null | head -n 1)
-    FRONTEND_URL_FULL=$(grep -oE 'https?://[a-zA-Z0-9.-]+\.trycloudflare\.com' frontend_tunnel.log 2>/dev/null | head -n 1)
+    # Regex aprimorada para capturar URLs geradas do Cloudflare (ex: https://xxx-yyy.trycloudflare.com)
+    # Ignora 'api.trycloudflare.com' que é a API interna de controle do Cloudflare e pode aparecer em erros
+    BACKEND_URL_FULL=$(grep -oE 'https?://[a-zA-Z0-9-]+\.trycloudflare\.com' backend_tunnel.log 2>/dev/null | grep -v 'api\.trycloudflare\.com' | head -n 1)
+    FRONTEND_URL_FULL=$(grep -oE 'https?://[a-zA-Z0-9-]+\.trycloudflare\.com' frontend_tunnel.log 2>/dev/null | grep -v 'api\.trycloudflare\.com' | head -n 1)
 fi
 
 # Fallback gracioso para Localhost caso o Cloudflare não esteja instalado ou falhe

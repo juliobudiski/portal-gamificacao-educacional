@@ -378,6 +378,7 @@ function AppContent() {
 
           <Route element={<PrivateRoute />}>
             <Route path="/perfil" element={<UserProfilePage />} />
+            <Route path="/profile" element={<UserProfilePage />} />
             <Route path="/activities/:activityId" element={<ActivityPage />} />
             <Route path="/classes/:class_id" element={<ClassDetailsPage />} />
             <Route path="/teste-tabuleiro" element={<GameBoardTestPage />} />

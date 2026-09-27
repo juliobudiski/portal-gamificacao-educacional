@@ -123,7 +123,15 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
 
         socket.on('ai_progress', (data) => {
             if (data.room_id !== `user_ai_${user.id}`) return;
-            // Se recebeu evento, significa que a comunicação está viva, podemos dar um "reset" no timeout se quisermos
+            // Se recebeu evento, significa que a comunicação está viva, renova o timeout de segurança
+            if (deadlockTimeoutRef.current) clearTimeout(deadlockTimeoutRef.current);
+            deadlockTimeoutRef.current = setTimeout(() => {
+                showToast("A conexão com o Roteirista Virtual expirou ou falhou de forma silenciosa. Tente novamente.", "error");
+                setLoading(false);
+                setProgressMessage("Falha de Comunicação.");
+                setProgress(0);
+            }, 120000);
+
             const safePercent = Math.min(Math.max(data.percent || 0, 0), 99);
             setProgress(safePercent);
             setProgressMessage(data.message || "Processando...");
@@ -455,7 +463,7 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                             <FaExclamationTriangle className="mt-1 flex-shrink-0" />
                             <div>
                                 <strong>Aviso:</strong> Você não possui uma chave de API configurada. O sistema usará a cota compartilhada, o que pode causar lentidão. 
-                                <button onClick={() => navigate('/profile')} className="ml-1 underline font-bold hover:text-yellow-600">Configurar Chave no Perfil</button>
+                                <button onClick={() => navigate('/perfil?tab=ai_config')} className="ml-1 underline font-bold hover:text-yellow-600">Configurar Chave no Perfil</button>
                             </div>
                         </div>
                     )}

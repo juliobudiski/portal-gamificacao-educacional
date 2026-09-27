@@ -1,7 +1,7 @@
 // frontend/src/pages/UserProfilePage.jsx
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import useAnalytics from '../hooks/useAnalytics';
 import { 
@@ -39,8 +39,11 @@ function UserProfilePage() {
   const { showToast } = useToast();
   const { logEvent } = useAnalytics('user_profile', user?.token);
 
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') || 'profile';
+
   // Estados principais
-  const [activeTab, setActiveTab] = useState('profile'); // 'profile' | 'security' | 'ai_config' | 'location'
+  const [activeTab, setActiveTab] = useState(initialTab); // 'profile' | 'security' | 'ai_config' | 'location'
   const [locationInfo, setLocationInfo] = useState(null);
   const [locationStatus, setLocationStatus] = useState('');
   const [showAvatarModal, setShowAvatarModal] = useState(false);

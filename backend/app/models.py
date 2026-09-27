@@ -39,6 +39,7 @@ class User(db.Model):
     cached_state = db.Column(db.String(100), nullable=True)
     cached_country = db.Column(db.String(100), nullable=True)
     cached_suburb = db.Column(db.String(100), nullable=True)
+    status = db.Column(db.String(20), default='ACTIVE', nullable=False, server_default='ACTIVE')
     onboarding_status = db.Column(JSONB, default={}, nullable=False, server_default='{}')
     
     @validates('name')
@@ -58,6 +59,7 @@ class User(db.Model):
             'name': self.name,
             'email': self.email,
             'role': self.role,
+            'status': self.status if hasattr(self, 'status') and self.status else 'ACTIVE',
             'institution_name': self.institution_name,
             'discipline': self.discipline,
             'profile_picture': self.profile_picture,
@@ -106,7 +108,7 @@ class Activity(db.Model):
     class_id = db.Column(db.Integer, db.ForeignKey('class.id'), index=True, nullable=True)
     copy_count = db.Column(db.Integer, nullable=False, default=0, server_default='0')
     assignment_count = db.Column(db.Integer, nullable=False, default=0, server_default='0')
-    professor = db.relationship('User', backref='activities', lazy='joined')
+    professor = db.relationship('User', backref=db.backref('activities', cascade="save-update, merge", passive_deletes=True), lazy='joined')
     class_obj = db.relationship('Class', backref='assigned_activities', lazy='joined')
     gamification_design = db.Column(JSONB, nullable=True)
     forum_topics = db.relationship('ForumTopic', backref='activity', lazy=True, cascade="all, delete-orphan")
@@ -197,7 +199,7 @@ class Class(db.Model):
     professor_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True, nullable=False)
     enrollment_code = db.Column(db.String(50), unique=True, nullable=False)
     assignment_count = db.Column(db.Integer, nullable=False, default=0, server_default='0')
-    professor = db.relationship('User', backref='created_classes', lazy=True)
+    professor = db.relationship('User', backref=db.backref('created_classes', cascade="save-update, merge", passive_deletes=True), lazy=True)
     is_enrollment_code_public = db.Column(db.Boolean, default=False, nullable=False, server_default='f') 
     
     def to_dict(self):

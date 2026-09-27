@@ -41,3 +41,4 @@ for root_dir in ['backend/app', 'frontend/src']:
 print("Arquivos possivelmente sem comentários ou docstrings:")
 for p in undocumented:
     print(p)
+

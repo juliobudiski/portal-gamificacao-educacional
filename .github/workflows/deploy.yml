@@ -1,0 +1,48 @@
+name: Deploy GamificaEdu to VPS
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build Frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_vps
+          chmod 600 ~/.ssh/id_vps
+          ssh-keyscan -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Sync Files to VPS
+        run: |
+          rsync -avz --delete -e "ssh -p ${{ secrets.VPS_PORT }} -i ~/.ssh/id_vps" \
+            backend/ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/gamificaedu/backend/
+          
+          rsync -avz --delete -e "ssh -p ${{ secrets.VPS_PORT }} -i ~/.ssh/id_vps" \
+            frontend/dist/ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/gamificaedu/frontend/dist/
+
+      - name: Restart Web Service
+        run: |
+          ssh -p ${{ secrets.VPS_PORT }} -i ~/.ssh/id_vps ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "
+            docker cp /opt/gamificaedu/backend gamificaedu-web:/app/ && \
+            docker cp /opt/gamificaedu/frontend/dist gamificaedu-web:/app/frontend/ && \
+            docker restart gamificaedu-web
+          "

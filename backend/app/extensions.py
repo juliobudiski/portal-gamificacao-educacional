@@ -12,6 +12,7 @@ redis_url = os.environ.get('REDIS_URL')
 socketio = SocketIO(
     cors_allowed_origins="*", 
     message_queue=redis_url if redis_url else None,
+    manage_session=False,
     ping_timeout=300,
     ping_interval=60
 )

@@ -168,6 +168,10 @@ class AuthService:
         user = User.query.filter_by(email=email).first()
 
         if user and check_password_hash(user.password_hash, password):
+            if hasattr(user, 'status') and user.status == 'INACTIVE':
+                AuthService._log_auth_event(user.id, 'login_fail', {'email': user.email, 'reason': 'account_inactive'}, False, remote_addr, user_agent)
+                return None, {"message": "Conta inativa. Entre em contato com a administração da plataforma."}, 403
+
             AuthService._log_auth_event(user.id, 'login_success', {'email': user.email, 'method': 'email'}, True, remote_addr, user_agent)
             additional_claims = AuthService._generate_jwt_claims(user)
             access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
@@ -480,7 +484,7 @@ class AuthService:
         
         if 'gemini_api_key' in data and data['gemini_api_key']:
             try:
-                genai.configure(api_key=data['gemini_api_key'], transport="rest")
+                genai.configure(api_key=data['gemini_api_key'])
                 model = genai.GenerativeModel('models/gemini-2.5-flash-lite')
                 response = model.generate_content("Responda com 'OK'", generation_config={"max_output_tokens": 10})
                 if not response.text:

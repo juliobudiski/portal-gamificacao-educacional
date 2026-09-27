@@ -82,8 +82,16 @@ def auto_upgrade_contact_schema(app):
                     conn.execute(text("ALTER TABLE contact_messages ADD COLUMN access_code VARCHAR(100);"))
                     conn.commit()
                     print("✅ [DB AUTO-MIGRATE] Coluna 'access_code' adicionada com sucesso.")
+
+                # Migração defensiva: coluna 'status' na tabela 'user'
+                user_columns = [c['name'] for c in inspector.get_columns('user')]
+                if 'status' not in user_columns:
+                    print("⚠️ [DB AUTO-MIGRATE] Adicionando coluna 'status' em user...")
+                    conn.execute(text("ALTER TABLE \"user\" ADD COLUMN status VARCHAR(20) DEFAULT 'ACTIVE' NOT NULL;"))
+                    conn.commit()
+                    print("✅ [DB AUTO-MIGRATE] Coluna 'status' adicionada na tabela user com sucesso.")
         except Exception as e:
-            print(f"⚠️ [DB AUTO-MIGRATE] Aviso ao sincronizar schema de contact_messages: {e}")
+            print(f"⚠️ [DB AUTO-MIGRATE] Aviso ao sincronizar schema: {e}")
 
 def init_app(app):
     app.cli.add_command(prune_medals_command)

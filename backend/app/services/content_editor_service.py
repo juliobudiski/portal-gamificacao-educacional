@@ -5,7 +5,7 @@ que pertencem aos "passos" (steps) individuais do tabuleiro gamificado de uma At
 Garante que apenas o professor dono da atividade pode modificar esses conteúdos.
 """
 from flask import current_app
-from ..models import db, Activity, QuizContent, NarrativeContent, LearningContent
+from ..models import db, Activity, QuizContent, NarrativeContent, LearningContent, User
 
 class ContentEditorService:
     @staticmethod
@@ -128,3 +128,17 @@ class ContentEditorService:
             db.session.rollback()
             current_app.logger.error(f"Erro ao salvar conteúdo para step_id: {step_id}: {str(e)}")
             return None, {"message": "Erro interno do servidor."}, 500
+
+    @staticmethod
+    def get_user_api_key(user_id):
+        """
+        Recupera a chave de API de LLM customizada do usuário (BYOK).
+        Retorna None se não configurada ou se o usuário não for encontrado.
+        """
+        try:
+            user = User.query.get(user_id)
+            if user and user.gemini_api_key:
+                return user.gemini_api_key.strip()
+        except Exception as e:
+            current_app.logger.error(f"Erro ao recuperar API key do usuário {user_id}: {str(e)}")
+        return None

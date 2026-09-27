@@ -775,22 +775,26 @@ def update_user(user_id):
 def delete_user(user_id):
     if not check_admin(): return jsonify({"message": "Acesso negado."}), 403
     
-    user_to_delete = User.query.get_or_404(user_id)
-    
-    if user_to_delete.id == get_jwt_identity():
+    current_admin_id = get_jwt_identity()
+    if str(user_id) == str(current_admin_id):
         return jsonify({"success": False, "message": "Você não pode deletar a si mesmo."}), 400
 
-    try:
-        # Como o banco não tem cascade all completo configurado no User, a exclusão pode falhar 
-        # se houver dependências não tratadas. Uma abordagem manual simplificada para EventLogs:
-        EventLog.query.filter_by(user_id=user_to_delete.id).delete()
-        
-        db.session.delete(user_to_delete)
-        db.session.commit()
-        return jsonify({"success": True, "message": "Usuário deletado com sucesso."})
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"success": False, "message": f"Erro ao deletar usuário. Pode haver registros dependentes. Detalhes: {str(e)}"}), 500
+    from ..services.user_service import delete_user_securely
+    result, status_code = delete_user_securely(user_id)
+    return jsonify(result), status_code
+
+@admin_bp.route('/users/<int:user_id>/deactivate', methods=['PATCH'])
+@jwt_required()
+def deactivate_user_endpoint(user_id):
+    if not check_admin(): return jsonify({"message": "Acesso negado."}), 403
+    
+    current_admin_id = get_jwt_identity()
+    if str(user_id) == str(current_admin_id):
+        return jsonify({"success": False, "message": "Você não pode desativar a si mesmo."}), 400
+
+    from ..services.user_service import deactivate_user
+    result, status_code = deactivate_user(user_id)
+    return jsonify(result), status_code
 
 @admin_bp.route('/activities/<int:activity_id>/visibility', methods=['PATCH'])
 @jwt_required()

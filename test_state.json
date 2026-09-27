@@ -1,0 +1,17 @@
+{
+  "auth_pilot_teacher_login_to_classes": {
+    "status": "passed",
+    "updated_at": "2026-09-12T17:52:31.449926",
+    "details": {
+      "base_url": "http://127.0.0.1:5173",
+      "user": "professor@gamificaedu.com"
+    }
+  },
+  "e2e_gamification_lifecycle_multiuser": {
+    "status": "failed",
+    "updated_at": "2026-09-12T18:37:42.408399",
+    "details": {
+      "error": "Locator expected to be visible\nActual value: None\nError: element(s) not found \nCall log:\n  - Expect \"to_be_visible\" with timeout 30000ms\n  - waiting for locator(\"button:has-text(\\\"Single Responsibility Principle (SRP)\\\")\").first\n\nAria snapshot:\n- heading \"Servidor Inicializando...\" [level=3]\n- paragraph: Este é um projeto acadêmico em hospedagem gratuita. O primeiro acesso pode levar até 50 segundos para \"acordar\" o servidor. Agradecemos a paciência!\n- button \"Fechar aviso\"\n- button \"Alternar tema\"\n- banner:\n  - navigation:\n    - link \"Logo GamificaEdu\":\n      - /url: /\n      - img \"Logo GamificaEdu\"\n    - list:\n      - listitem:\n        - link \"Início\":\n          - /url: /\n      - listitem:\n        - link \"Sobre Nós\":\n          - /url: /sobre-nos\n      - listitem:\n        - button \"Perfil\"\n      - listitem:\n        - button \"Aluno\"\n- main:\n  - main:\n    - text: Progresso 1 / 4\n    - img\n    - text: 23s\n    - paragraph: \"Na arena do relatório de vendas, os Clientes VIPs apareceram duplicados, uma falha que o Estagiário Curioso não previu. O Mentor questionou: 'O que o cliente *esperava* que acontecesse com os VIPs?'. Qual a ferramenta de requisitos que, se bem utilizada, teria impedido essa emboscada de ambiguidade sobre como tratar entidades únicas?\"\n    - button \"Casos de Uso ou User Stories com critérios de aceitação explícitos sobre unicidade e agregação.\"\n    - button \"Diagramas de Sequência UML detalhados para cada interação.\"\n    - button \"Um robusto conjunto de testes de integração automatizados.\"\n    - button \"Documentação interna do banco de dados sobre a tabela de clientes.\"\n    - button \"Confirmar Resposta\" [disabled]"
+    }
+  }
+}

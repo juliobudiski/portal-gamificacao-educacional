@@ -60,18 +60,14 @@ class AIService:
         """
         self.default_api_key = os.environ.get("GOOGLE_API_KEY")
         if self.default_api_key:
-            genai.configure(api_key=self.default_api_key, transport="rest")
+            genai.configure(api_key=self.default_api_key)
         
-        # Lista de prioridade de modelos, do mais preferível ao fallback.
-        # ATENÇÃO: gemini-2.0-flash foi descontinuado (404 em produção em 2026-08-30).
-        # Substituído por gemini-3.6-flash conforme mensagem oficial da API.
+        # Lista de prioridade de modelos funcionais e rápidos para evitar timeouts de requisição
         self.MODEL_HIERARCHY = [
-            'models/gemini-2.5-flash',             # 1. Qualidade e Velocidade
-            'models/gemini-3.6-flash',             # 2. Substituto oficial do 2.0-flash
-            'models/gemini-2.5-flash-lite',        # 3. Lite - Rápido e barato
-            'models/gemini-2.5-flash-lite-preview-06-17', # 4. Preview lite
-            'models/gemini-flash-latest',          # 5. Fallback genérico
-            'models/gemini-2.5-pro'                # 6. Alta inteligência (se necessário)
+            'models/gemini-2.5-flash-lite', # 1. Ultrarrápido e confiável
+            'models/gemini-2.5-flash',      # 2. Alta qualidade e velocidade
+            'models/gemini-flash-latest',   # 3. Fallback estável
+            'models/gemini-3.6-flash'       # 4. Modelo adicional de alta capacidade
         ]
         
         # Configurações de geração para a API, buscando respostas em JSON.
@@ -120,10 +116,10 @@ class AIService:
         # Log de debug para saber qual origem da chave estamos usando
         if user_api_key:
             logger.debug("Usando a chave de API fornecida pelo usuário (BYOK).")
-            genai.configure(api_key=user_api_key, transport="rest")
+            genai.configure(api_key=user_api_key)
         else:
             logger.debug("Usando a chave de API padrão do sistema.")
-            genai.configure(api_key=self.default_api_key, transport="rest")
+            genai.configure(api_key=self.default_api_key)
         
         # Memória de execução persistente durante a orquestração
         execution_trace = {
@@ -231,7 +227,7 @@ class AIService:
                         socketio.emit('ai_error', {'message': error_msg, 'room_id': room_id}, namespace='/')
                     # Restaurar chave padrão antes de sair
                     if user_api_key and self.default_api_key:
-                        genai.configure(api_key=self.default_api_key, transport="rest")
+                        genai.configure(api_key=self.default_api_key)
                     return {}  # Aborta toda a orquestração
                 except Exception as e:
                     logger.error(f"Erro no modelo {model_name}: {str(e)}")
@@ -260,9 +256,9 @@ class AIService:
              socketio.emit('ai_complete', {'result': final_map, 'room_id': room_id}, namespace='/')
              socketio.sleep(0)
 
-        # Restaurar chave default com REST para não vazar a custom key em outras threads assíncronas no escopo global
+        # Restaurar chave default para não vazar a custom key em outras threads assíncronas no escopo global
         if user_api_key and self.default_api_key:
-            genai.configure(api_key=self.default_api_key, transport="rest")
+            genai.configure(api_key=self.default_api_key)
 
         return final_map
 

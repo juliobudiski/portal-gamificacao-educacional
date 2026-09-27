@@ -93,13 +93,21 @@ def create_activity(user, data):
     try:
         # SE NÃO EXISTE (Novo) -> Instancia
         if not activity:
-            activity = Activity(professor_id=user.id)
+            activity = Activity(
+                professor_id=user.id,
+                title=data.get('title') or 'Atividade Sem Título',
+                description=data.get('description', ''),
+                area_knowledge=data.get('areaKnowledge'),
+                is_public=data.get('isPublic', False),
+                is_team_activity=activity_planning_data.get('isTeamActivity', False),
+                is_draft=False
+            )
             db.session.add(activity)
             db.session.flush() # Gera o ID
             _populate_default_store(activity.id) # Popula loja apenas se for novo
 
         # ATUALIZA CAMPOS (Seja novo ou existente)
-        activity.title = data.get('title')
+        activity.title = data.get('title') or activity.title
         activity.description = data.get('description', '')
         activity.current_scenario = data.get('currentScenario', {})
         activity.desired_scenario = data.get('desiredScenario', {})

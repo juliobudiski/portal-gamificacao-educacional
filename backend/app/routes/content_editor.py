@@ -67,18 +67,17 @@ def orchestrate_worker(app, data, room_id):
     with app.app_context():
         try:
             # Chama o serviço de IA passando o BYOK (chave própria do usuário) se disponível
-            full_content_map = ai_service.orchestrate_story(
+            # O próprio ai_service já emite ai_progress e ai_complete com as salas corretas
+            ai_service.orchestrate_story(
                 data['context'], 
                 data['structure'], 
                 data['config'], 
                 room_id=room_id,
                 user_api_key=data.get('user_api_key')
             )
-            # Notifica o cliente via WebSocket            # Emitindo sucesso via socket
-            socketio.emit('ai_complete', {'result': full_content_map, 'room_id': room_id}, namespace='/')
         except Exception as e:
             current_app.logger.error(f"Erro na thread de IA: {str(e)}")
-            socketio.emit('ai_error', {"message": str(e), 'room_id': room_id}, namespace='/')
+            socketio.emit('ai_error', {"message": str(e), 'room_id': room_id}, room=room_id, namespace='/')
 
 @content_editor_bp.route('/orchestrate', methods=['POST'])
 @jwt_required()

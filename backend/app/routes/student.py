@@ -43,14 +43,12 @@ def student_dashboard():
 @cross_origin()
 def get_all_student_activities():
     """
-    [Arquitetura]
-    Por que: O acesso direto ao modelo User acopla o controller ao banco. 
-    Delegando o ID do usuário diretamente para o Service centralizamos a recuperação do usuário 
-    e regras de autorização em um só lugar.
+    Recupera a lista completa de atividades do aluno para a página 'Minhas Atividades'.
     """
     current_user_id = get_jwt_identity()
-    
-    result, error, status_code = StudentService.get_all_activities_by_id(current_user_id)
-    if error:
-        return jsonify(error), status_code
-    return jsonify(result), status_code
+    user = User.query.get(current_user_id)
+    if not user or user.role != 'aluno':
+        return jsonify({"message": "Acesso não autorizado"}), 403
+
+    activities = StudentService.get_all_activities(user)
+    return jsonify(activities), 200
