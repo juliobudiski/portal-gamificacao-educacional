@@ -66,24 +66,95 @@ def validate_user_deletion_invariants(user: User):
 
 def delete_user_securely(user_id: int):
     """
-    Exclui um usuário após validar todos os invariantes do domínio.
+    Exclui um usuário e suas dependências.
+    Para professores, realiza exclusão em cascata das turmas (e times/matrículas) e atividades,
+    preservando intactas as contas dos alunos.
     """
     user = User.query.get(user_id)
     if not user:
         return {"success": False, "message": "Usuário não encontrado."}, 404
 
-    # 1. Validação de Invariantes de Domínio (Fail-Fast)
     try:
-        validate_user_deletion_invariants(user)
-    except DomainException as e:
-        return {"success": False, "message": e.message}, e.status_code
+        from ..models import (
+            Class, Activity, Enrollment, Team, ActivityProgress, 
+            Conversation, ChatMessage, ActivityRating, Purchase, StoreItem, 
+            SlotWin, RouletteWin, StudentResponse, QuizContent, NarrativeContent, 
+            LearningContent, UserUnlockedTitle, UserUnlockedMedal, ActivityRevision,
+            ForumTopic, ForumPost, TopicLike, PostLike, MessageReport, ManualFeedback
+        )
 
-    # 2. Exclusão física segura
-    try:
-        EventLog.query.filter_by(user_id=user.id).delete()
+        # 1. Se for professor, deletar turmas e atividades associadas em cascata (preservando os alunos)
+        if user.role == 'professor':
+            # A. Turmas do professor
+            classes = Class.query.filter_by(professor_id=user.id).all()
+            for cls in classes:
+                # Remove progresso atrelado diretamente à turma
+                ActivityProgress.query.filter_by(class_id=cls.id).delete(synchronize_session=False)
+                # Remove matrículas na turma (o aluno continua existindo!)
+                Enrollment.query.filter_by(class_id=cls.id).delete(synchronize_session=False)
+                # Remove equipes da turma
+                Team.query.filter_by(class_id=cls.id).delete(synchronize_session=False)
+                # Desvincula atividades que apontavam para essa turma
+                Activity.query.filter_by(class_id=cls.id).update({'class_id': None}, synchronize_session=False)
+                # Deleta a turma
+                db.session.delete(cls)
+            db.session.flush()
+
+            # B. Atividades do professor
+            activities = Activity.query.filter_by(professor_id=user.id).all()
+            activity_ids = [act.id for act in activities]
+            if activity_ids:
+                item_ids = [item.id for item in StoreItem.query.filter(StoreItem.activity_id.in_(activity_ids)).all()]
+                if item_ids:
+                    ActivityProgress.query.filter(ActivityProgress.equipped_name_cosmetic_id.in_(item_ids)).update({'equipped_name_cosmetic_id': None}, synchronize_session=False)
+                    ActivityProgress.query.filter(ActivityProgress.equipped_title_cosmetic_id.in_(item_ids)).update({'equipped_title_cosmetic_id': None}, synchronize_session=False)
+
+                conversations = Conversation.query.filter(Conversation.activity_id.in_(activity_ids)).all()
+                if conversations:
+                    conv_ids = [c.id for c in conversations]
+                    ChatMessage.query.filter(ChatMessage.conversation_id.in_(conv_ids)).delete(synchronize_session=False)
+                    Conversation.query.filter(Conversation.id.in_(conv_ids)).delete(synchronize_session=False)
+
+                ActivityRating.query.filter(ActivityRating.activity_id.in_(activity_ids)).delete(synchronize_session=False)
+                Purchase.query.filter(Purchase.activity_id.in_(activity_ids)).delete(synchronize_session=False)
+                StoreItem.query.filter(StoreItem.activity_id.in_(activity_ids)).delete(synchronize_session=False)
+                SlotWin.query.filter(SlotWin.activity_id.in_(activity_ids)).delete(synchronize_session=False)
+                RouletteWin.query.filter(RouletteWin.activity_id.in_(activity_ids)).delete(synchronize_session=False)
+                StudentResponse.query.filter(StudentResponse.activity_id.in_(activity_ids)).delete(synchronize_session=False)
+                QuizContent.query.filter(QuizContent.activity_id.in_(activity_ids)).delete(synchronize_session=False)
+                NarrativeContent.query.filter(NarrativeContent.activity_id.in_(activity_ids)).delete(synchronize_session=False)
+                LearningContent.query.filter(LearningContent.activity_id.in_(activity_ids)).delete(synchronize_session=False)
+                UserUnlockedTitle.query.filter(UserUnlockedTitle.activity_id.in_(activity_ids)).delete(synchronize_session=False)
+                ActivityProgress.query.filter(ActivityProgress.activity_id.in_(activity_ids)).delete(synchronize_session=False)
+                EventLog.query.filter(EventLog.activity_id.in_(activity_ids)).delete(synchronize_session=False)
+                ActivityRevision.query.filter(ActivityRevision.activity_id.in_(activity_ids)).delete(synchronize_session=False)
+                UserUnlockedMedal.query.filter(UserUnlockedMedal.activity_id.in_(activity_ids)).delete(synchronize_session=False)
+
+                Activity.query.filter(Activity.id.in_(activity_ids)).delete(synchronize_session=False)
+                db.session.flush()
+
+        # 2. Se for aluno, remove registros de matrícula e progresso
+        if user.role == 'aluno':
+            Enrollment.query.filter_by(student_id=user.id).delete(synchronize_session=False)
+            ActivityProgress.query.filter_by(student_id=user.id).delete(synchronize_session=False)
+            StudentResponse.query.filter_by(student_id=user.id).delete(synchronize_session=False)
+            UserUnlockedTitle.query.filter_by(user_id=user.id).delete(synchronize_session=False)
+            UserUnlockedMedal.query.filter_by(user_id=user.id).delete(synchronize_session=False)
+            Purchase.query.filter_by(user_id=user.id).delete(synchronize_session=False)
+            SlotWin.query.filter_by(user_id=user.id).delete(synchronize_session=False)
+            RouletteWin.query.filter_by(user_id=user.id).delete(synchronize_session=False)
+            ActivityRating.query.filter_by(user_id=user.id).delete(synchronize_session=False)
+
+        # 3. Limpeza de logs e dados diretos do usuário
+        EventLog.query.filter_by(user_id=user.id).delete(synchronize_session=False)
+        ManualFeedback.query.filter_by(given_by_id=user.id).delete(synchronize_session=False)
+        ActivityRevision.query.filter_by(revised_by_id=user.id).delete(synchronize_session=False)
+
+        # 4. Deletar o próprio usuário
         db.session.delete(user)
         db.session.commit()
-        return {"success": True, "message": "Usuário deletado com sucesso."}, 200
+        return {"success": True, "message": "Usuário e suas dependências excluídos com sucesso."}, 200
+
     except Exception as e:
         db.session.rollback()
         logger.error(f"Erro ao deletar usuário {user_id}: {str(e)}", exc_info=True)
