@@ -230,19 +230,24 @@ function UserProfilePage() {
 
     setIsChangingPassword(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/user/change-password`, {
+      const apiBase = import.meta.env.VITE_API_URL || '';
+      const response = await fetch(`${apiBase}/api/auth/user/change-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${getToken()}`
         },
         body: JSON.stringify({ 
+          currentPassword: passwordData.oldPassword,
           old_password: passwordData.oldPassword, 
+          newPassword: passwordData.newPassword,
           new_password: passwordData.newPassword 
         })
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Falha ao alterar a senha.');
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.message || data.error || 'Falha ao alterar a senha.');
+      }
       
       showToast('Senha alterada com sucesso!', 'success');
       setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' });

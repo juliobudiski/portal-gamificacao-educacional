@@ -38,7 +38,8 @@ export function usePasswordManagement() {
     if (!validatePassword()) return false;
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/user/change-password`, {
+      const apiBase = import.meta.env.VITE_API_URL || '';
+      const response = await fetch(`${apiBase}/api/auth/user/change-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -46,18 +47,20 @@ export function usePasswordManagement() {
         },
         body: JSON.stringify({
           currentPassword: passwordData.currentPassword,
-          newPassword: passwordData.newPassword
+          old_password: passwordData.currentPassword,
+          newPassword: passwordData.newPassword,
+          new_password: passwordData.newPassword
         })
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
       
       if (response.ok) {
         setMessage('Senha alterada com sucesso!');
         setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
         return true;
       } else {
-        setMessage(data.message || 'Erro ao alterar senha');
+        setMessage(data.message || data.error || 'Erro ao alterar senha');
         return false;
       }
     } catch (error) {

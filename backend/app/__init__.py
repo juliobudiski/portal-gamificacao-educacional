@@ -110,6 +110,11 @@ def _register_blueprints_and_routes(app):
         """Endpoint ultraleve para keep-alive (UptimeRobot, etc) evitar cold start"""
         return jsonify({"status": "ok", "message": "Server is awake"}), 200
 
+    @app.errorhandler(500)
+    def internal_server_error(e):
+        app.logger.error(f"Internal Server Error: {str(e)}")
+        return jsonify({"message": "Erro interno no servidor."}), 500
+
     frontend_dist_env = os.environ.get('FRONTEND_DIST_DIR')
     candidate_paths = [
         frontend_dist_env,

@@ -247,8 +247,14 @@ class AuthService:
         if user.password_hash == 'google_auth_only':
             return None, {"message": "Não é possível alterar a senha de uma conta vinculada ao Google."}, 400
 
-        current_password = data.get('currentPassword')
-        new_password = data.get('newPassword')
+        if not data:
+            return None, {"message": "Dados da requisição não informados."}, 400
+
+        current_password = data.get('currentPassword') or data.get('old_password') or data.get('current_password')
+        new_password = data.get('newPassword') or data.get('new_password')
+
+        if not current_password or not new_password:
+            return None, {"message": "Senha atual e nova senha são obrigatórias."}, 400
 
         if not check_password_hash(user.password_hash, current_password):
             return None, {"message": "Senha atual incorreta."}, 401
