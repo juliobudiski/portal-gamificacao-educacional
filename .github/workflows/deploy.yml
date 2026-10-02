@@ -20,6 +20,9 @@ jobs:
 
       - name: Build Frontend
         working-directory: frontend
+        env:
+          VITE_API_URL: ""
+          VITE_GOOGLE_CLIENT_ID: "133837215411-f108mo4flmbqmtpofs2k1876kkrnl6tg.apps.googleusercontent.com"
         run: |
           npm ci
           npm run build
@@ -43,6 +46,7 @@ jobs:
         run: |
           ssh -p ${{ secrets.VPS_PORT }} -i ~/.ssh/id_vps ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "
             docker cp /opt/gamificaedu/backend gamificaedu-web:/app/ && \
-            docker cp /opt/gamificaedu/frontend/dist gamificaedu-web:/app/frontend/ && \
+            docker exec gamificaedu-web rm -rf /app/frontend_dist && \
+            docker cp /opt/gamificaedu/frontend/dist gamificaedu-web:/app/frontend_dist && \
             docker restart gamificaedu-web
           "

@@ -34,7 +34,8 @@ function LoginPage() {
   const handleGoogleSignInCallback = useCallback(async (response) => {
     if (response.credential) {
       try {
-        const backendResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/google`, {
+        const apiBase = import.meta.env.VITE_API_URL || '';
+        const backendResponse = await fetch(`${apiBase}/api/auth/google`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -74,7 +75,8 @@ function LoginPage() {
     console.log('[Login Padrão] Dados do formulário:', { email, password });
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
+      const apiBase = import.meta.env.VITE_API_URL || '';
+      const response = await fetch(`${apiBase}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

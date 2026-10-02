@@ -135,7 +135,7 @@ export const AuthProvider = ({ children }) => {
   // --- Função de Login com Logs Detalhados ---
   const login = useCallback((data) => {
     debugLog('AuthProvider (login): Função chamada com dados:', data);
-    const receivedToken = data?.access_token; // Pega o token dos dados recebidos
+    const receivedToken = typeof data === 'string' ? data : data?.access_token; // Aceita tanto string direta quanto objeto { access_token }
     if (receivedToken) {
       debugLog('AuthProvider (login): access_token recebido. Salvando no localStorage.');
       localStorage.setItem('token', receivedToken);
