@@ -53,7 +53,8 @@ const ContactMessagesPage = () => {
         }
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/contact/messages`, {
+            const apiBase = import.meta.env.VITE_API_URL || '';
+            const response = await fetch(`${apiBase}/api/admin/contact/messages`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -94,7 +95,8 @@ const ContactMessagesPage = () => {
             const token = user?.token;
             if (token) {
                 try {
-                    await fetch(`${import.meta.env.VITE_API_URL}/api/admin/contact/messages/${msg.id}/read`, {
+                    const apiBase = import.meta.env.VITE_API_URL || '';
+                    await fetch(`${apiBase}/api/admin/contact/messages/${msg.id}/read`, {
                         method: 'PATCH',
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
@@ -124,7 +126,8 @@ const ContactMessagesPage = () => {
 
         setApproving(true);
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/solicitacoes/${selectedMsg.id}/aprovar`, {
+            const apiBase = import.meta.env.VITE_API_URL || '';
+            const response = await fetch(`${apiBase}/api/admin/solicitacoes/${selectedMsg.id}/aprovar`, {
                 method: 'POST',
                 headers: { 
                     'Authorization': `Bearer ${user.token}`,
@@ -132,7 +135,7 @@ const ContactMessagesPage = () => {
                 }
             });
 
-            const data = await response.json();
+            const data = await response.json().catch(() => ({}));
 
             if (response.ok) {
                 const generatedCode = data.access_code;
@@ -453,14 +456,6 @@ const ContactMessagesPage = () => {
                                 </div>
 
                                 <div className="flex items-center gap-3">
-                                    <a
-                                        href={`mailto:${selectedMsg.email}?subject=Re: ${selectedMsg.subject}`}
-                                        className="flex items-center gap-2 px-4 py-2.5 bg-secondary-bg hover:bg-hover-bg-color text-primary-text font-semibold rounded-xl border border-border-color transition-all shadow-sm"
-                                    >
-                                        <Send size={16} />
-                                        Responder por E-mail
-                                    </a>
-
                                     <button
                                         onClick={handleApproveTeacher}
                                         disabled={approving || selectedMsg.status === 'Aprovada'}
