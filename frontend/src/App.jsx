@@ -54,7 +54,6 @@ import { TutorialProvider } from './context/TutorialContext';
 import { useTutorial } from './context/TutorialContext';
 import { STUDENT_DASHBOARD_STEPS } from './data/tutorialSteps';
 import { ACTIVITY_SELECTION_STEPS } from './data/tutorialSteps';
-import ServerWakeupNotice from './components/ServerWakeupNotice';
 import useKonamiCode from './hooks/useKonamiCode';
 
 // --- 2. COMPONENTES AUXILIARES ---
@@ -447,7 +446,6 @@ function App() {
     // O AuthProvider já está aqui, o que é ótimo.
     // O ThemeProvider será adicionado em `main.jsx` para envolver tudo.
     <AuthProvider>
-      <ServerWakeupNotice />
       <TutorialProvider>
         <AppContent />
       </TutorialProvider>

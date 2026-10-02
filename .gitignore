@@ -155,3 +155,4 @@ instance/
 .venv_e2e/
 *.sql
 backend/venv/
+backend/venv

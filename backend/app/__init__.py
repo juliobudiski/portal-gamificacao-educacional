@@ -110,6 +110,21 @@ def _register_blueprints_and_routes(app):
         """Endpoint ultraleve para keep-alive (UptimeRobot, etc) evitar cold start"""
         return jsonify({"status": "ok", "message": "Server is awake"}), 200
 
+    frontend_dist = os.environ.get('FRONTEND_DIST_DIR') or os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'frontend_dist')
+
+    @app.route('/', defaults={'path': ''})
+    @app.route('/<path:path>')
+    def serve_frontend(path):
+        # Ignora rotas de API ou medalhas se não forem tratadas
+        if path.startswith('api/') or path.startswith('medals/'):
+            return jsonify({"error": "Not Found"}), 404
+        if path != "" and os.path.exists(os.path.join(frontend_dist, path)):
+            return send_from_directory(frontend_dist, path)
+        index_file = os.path.join(frontend_dist, "index.html")
+        if os.path.exists(index_file):
+            return send_from_directory(frontend_dist, "index.html")
+        return jsonify({"message": "GamificaEdu API is running. Frontend build not found."}), 200
+
 def _register_cli_commands(app):
     """Centraliza a definição de comandos de linha de comando."""
     
