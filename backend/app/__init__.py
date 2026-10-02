@@ -110,7 +110,15 @@ def _register_blueprints_and_routes(app):
         """Endpoint ultraleve para keep-alive (UptimeRobot, etc) evitar cold start"""
         return jsonify({"status": "ok", "message": "Server is awake"}), 200
 
-    frontend_dist = os.environ.get('FRONTEND_DIST_DIR') or os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'frontend_dist')
+    frontend_dist_env = os.environ.get('FRONTEND_DIST_DIR')
+    candidate_paths = [
+        frontend_dist_env,
+        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'frontend_dist'),
+        '/app/frontend/dist',
+        '/app/frontend',
+        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '..', 'frontend', 'dist'),
+    ]
+    frontend_dist = next((p for p in candidate_paths if p and os.path.exists(p)), candidate_paths[1])
 
     @app.route('/', defaults={'path': ''})
     @app.route('/<path:path>')
