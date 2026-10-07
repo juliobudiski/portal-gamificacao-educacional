@@ -44,11 +44,10 @@ class LogisticsInput(BaseModel):
 class GameficaContextInput(BaseModel):
     greatArea: str = Field(default="")
     areaKnowledge: str = Field(default="")
+    subdomain: str = Field(default="")
     currentScenario: CurrentScenarioInput = Field(default_factory=CurrentScenarioInput)
     desiredScenario: DesiredScenarioInput = Field(default_factory=DesiredScenarioInput)
     playerProfile: PlayerProfileInput = Field(default_factory=PlayerProfileInput)
-    activityPlanning: LogisticsInput = Field(default_factory=LogisticsInput)
-
     activityPlanning: LogisticsInput = Field(default_factory=LogisticsInput)
 
 # ==========================================
@@ -61,31 +60,125 @@ FRONTEND_MAP = {
     "Economia": "Economia (sistema monetário)",
     "Pressão de tempo": "Pressão de tempo",
     "Competição": "Sistema de classificação e ranking",
-    "Cooperação": "Fórum de Discussão", 
+    "Cooperação": "Cooperação", 
     "Objetivo": "Objetivo (missão, meta do jogo)",
     "Quebra cabeça": "Quebra-cabeça",
-    "Narrativa": "Narrativas",
+    "Narrativa": "Narrativas envolventes",
     "Progressão": "Progressão baseada em habilidade",
     "Reconhecimento": "Conquistas digitais para metas alcançadas"
 }
 
+SUBDOMAIN_TO_SWEBOK = {
+    "fundamentos e programação introdutória": "SOFTWARE CONSTRUCTION",
+    "engenharia de software e projetos": "SOFTWARE DESIGN",
+    "testes e qualidade de software": "SOFTWARE TESTING",
+    "computação e engenharia de software": "SOFTWARE ENGINEERING PROFESSIONAL PRACTICE"
+}
+
 ALL_REACT_ELEMENTS = [
-    "Níveis", "Sistema de pontuação", "Estatísticas (métricas de progresso)", "Reconhecimento",
-    "Raridade (itens exclusivos, objetos raros)", "Economia (sistema monetário)",
-    "Chance (sorte e probabilidade)", "Pressão de tempo", "Reputação (prestígio, renome, status)",
-    "Pressão social", "Objetivo (missão, meta do jogo)", "Quebra-cabeça", 
-    "Renovação (atualizações de conteúdo)", "Novidade (novas funcionalidades)", 
-    "Customização de personagem", "Customização de equipamento", "Chat ou sistema de mensagens", 
-    "Fórum de Discussão", "Interação social com outros jogadores", "Feedback claro sobre o desempenho",
-    "Progressão baseada em habilidade", "Narrativa", "Sistema de classificação e ranking",
-    "Recompensas atraentes", "Conquistas digitais para metas alcançadas"
+    "Níveis",
+    "Sistema de pontuação",
+    "Estatísticas (métricas de progresso)",
+    "Reconhecimento",
+    "Raridade (itens exclusivos, objetos raros)",
+    "Economia (sistema monetário)",
+    "Escolha imposta (decisões forçadas)",
+    "Chance (sorte e probabilidade)",
+    "Pressão de tempo",
+    "Reputação (prestígio, renome, status)",
+    "Cooperação",
+    "Competição",
+    "Pressão social",
+    "Sensação (imersão, experiência sensorial)",
+    "Objetivo (missão, meta do jogo)",
+    "Quebra-cabeça",
+    "Renovação (atualizações de conteúdo)",
+    "Novidade (novas funcionalidades)",
+    "Storytelling",
+    "Customização de personagem",
+    "Customização de equipamento",
+    "Chat ou sistema de mensagens",
+    "Fórum de Discussão",
+    "Interação social com outros jogadores",
+    "Feedback claro sobre o desempenho",
+    "Progressão baseada em habilidade",
+    "Narrativas envolventes",
+    "Sistema de classificação e ranking",
+    "Recompensas atraentes",
+    "Conquistas digitais para metas alcançadas"
 ]
 
 PROFILE_MODS = {
-    "competitivo": { "Competição": {"mu": 1.5, "lambda": 0.5}, "Pressão de tempo": {"mu": 1.5, "lambda": 0.5}, "Cooperação": {"mu": 0.1, "lambda": 5.0} },
-    "social": { "Cooperação": {"mu": 1.5, "lambda": 0.5}, "Narrativa": {"mu": 1.5, "lambda": 0.5}, "Competição": {"mu": 0.1, "lambda": 5.0} }, 
-    "realizador": { "Pontos": {"mu": 1.5, "lambda": 0.5}, "Nível": {"mu": 1.5, "lambda": 0.5}, "Quebra cabeça": {"mu": 1.5, "lambda": 0.5}, "Reconhecimento": {"mu": 1.5, "lambda": 0.5} },
-    "explorador": { "Narrativa": {"mu": 1.5, "lambda": 0.5}, "Quebra cabeça": {"mu": 1.5, "lambda": 0.5}, "Pressão de tempo": {"mu": 0.1, "lambda": 5.0} }
+    "competitivo": { 
+        "Competição": {"mu": 1.5, "lambda": 0.5},
+        "Sistema de classificação e ranking": {"mu": 1.5, "lambda": 0.5},
+        "Pressão de tempo": {"mu": 1.5, "lambda": 0.5},
+        "Cooperação": {"mu": 0.1, "lambda": 5.0}
+    },
+    "social": { 
+        "Cooperação": {"mu": 1.5, "lambda": 0.5},
+        "Fórum de Discussão": {"mu": 1.5, "lambda": 0.5},
+        "Chat ou sistema de mensagens": {"mu": 1.5, "lambda": 0.5},
+        "Interação social com outros jogadores": {"mu": 1.5, "lambda": 0.5},
+        "Narrativa": {"mu": 1.5, "lambda": 0.5},
+        "Narrativas envolventes": {"mu": 1.5, "lambda": 0.5},
+        "Storytelling": {"mu": 1.5, "lambda": 0.5},
+        "Competição": {"mu": 0.1, "lambda": 5.0},
+        "Sistema de classificação e ranking": {"mu": 0.1, "lambda": 5.0}
+    }, 
+    "realizador": { 
+        "Pontos": {"mu": 1.5, "lambda": 0.5},
+        "Sistema de pontuação": {"mu": 1.5, "lambda": 0.5},
+        "Nível": {"mu": 1.5, "lambda": 0.5},
+        "Níveis": {"mu": 1.5, "lambda": 0.5},
+        "Quebra cabeça": {"mu": 1.5, "lambda": 0.5},
+        "Quebra-cabeça": {"mu": 1.5, "lambda": 0.5},
+        "Reconhecimento": {"mu": 1.5, "lambda": 0.5},
+        "Conquistas digitais para metas alcançadas": {"mu": 1.5, "lambda": 0.5}
+    },
+    "explorador": { 
+        "Narrativa": {"mu": 1.5, "lambda": 0.5},
+        "Narrativas envolventes": {"mu": 1.5, "lambda": 0.5},
+        "Storytelling": {"mu": 1.5, "lambda": 0.5},
+        "Quebra cabeça": {"mu": 1.5, "lambda": 0.5},
+        "Quebra-cabeça": {"mu": 1.5, "lambda": 0.5},
+        "Pressão de tempo": {"mu": 0.1, "lambda": 5.0}
+    }
+}
+
+OBJECTIVE_MODS = {
+    "teorico": { 
+        "Narrativa": {"mu": 1.5, "lambda": 0.5},
+        "Narrativas envolventes": {"mu": 1.5, "lambda": 0.5},
+        "Storytelling": {"mu": 1.5, "lambda": 0.5},
+        "Quebra cabeça": {"mu": 1.5, "lambda": 0.5},
+        "Quebra-cabeça": {"mu": 1.5, "lambda": 0.5},
+        "Pressão de tempo": {"mu": 0.1, "lambda": 5.0},
+        "Economia": {"mu": 0.1, "lambda": 5.0},
+        "Economia (sistema monetário)": {"mu": 0.1, "lambda": 5.0}
+    },
+    "pratico": { 
+        "Pontos": {"mu": 1.5, "lambda": 0.5},
+        "Sistema de pontuação": {"mu": 1.5, "lambda": 0.5},
+        "Economia": {"mu": 1.5, "lambda": 0.5},
+        "Economia (sistema monetário)": {"mu": 1.5, "lambda": 0.5},
+        "Pressão de tempo": {"mu": 1.5, "lambda": 0.5},
+        "Estatísticas": {"mu": 1.5, "lambda": 0.5},
+        "Estatísticas (métricas de progresso)": {"mu": 1.5, "lambda": 0.5},
+        "Narrativa": {"mu": 0.1, "lambda": 5.0},
+        "Narrativas envolventes": {"mu": 0.1, "lambda": 5.0},
+        "Storytelling": {"mu": 0.1, "lambda": 5.0}
+    }, 
+    "colaborativo": { 
+        "Cooperação": {"mu": 1.5, "lambda": 0.5},
+        "Fórum de Discussão": {"mu": 1.5, "lambda": 0.5},
+        "Chat ou sistema de mensagens": {"mu": 1.5, "lambda": 0.5},
+        "Interação social com outros jogadores": {"mu": 1.5, "lambda": 0.5},
+        "Reconhecimento": {"mu": 1.5, "lambda": 0.5},
+        "Conquistas digitais para metas alcançadas": {"mu": 1.5, "lambda": 0.5},
+        "Competição": {"mu": 0.1, "lambda": 5.0},
+        "Sistema de classificação e ranking": {"mu": 0.1, "lambda": 5.0}
+    }
 }
 
 OBJECTIVE_MODS = {
@@ -201,9 +294,16 @@ class ContextualRecommendationEngine:
         except Exception as e:
             raise ValueError(f"Payload inválido: {e}")
 
-        area_swebok = val_input.areaKnowledge.upper()
-        if area_swebok not in self.bible:
-            area_swebok = "SOFTWARE ENGINEERING PROFESSIONAL PRACTICE"
+        raw_subdomain = (val_input.subdomain or "").strip().lower()
+        raw_area = (val_input.areaKnowledge or "").strip().lower()
+
+        if raw_subdomain in SUBDOMAIN_TO_SWEBOK:
+            area_swebok = SUBDOMAIN_TO_SWEBOK[raw_subdomain]
+        elif raw_area in SUBDOMAIN_TO_SWEBOK:
+            area_swebok = SUBDOMAIN_TO_SWEBOK[raw_area]
+        else:
+            area_upper = val_input.areaKnowledge.upper()
+            area_swebok = area_upper if area_upper in self.bible else "SOFTWARE ENGINEERING PROFESSIONAL PRACTICE"
 
         profiles = val_input.playerProfile.selectedProfiles
         frontend_texts = val_input.currentScenario.problems + val_input.desiredScenario.objectives

@@ -59,13 +59,25 @@ function Step5_GameElements({ activityData, handleInputChange, setActivityData }
   const [loading, setLoading] = useState(true);
   const [conflictModal, setConflictModal] = useState({ isOpen: false, element: null, message: '' });
 
+  const contextKey = JSON.stringify({
+    areaKnowledge: activityData.areaKnowledge,
+    subdomain: activityData.subdomain,
+    currentScenario: activityData.currentScenario,
+    desiredScenario: activityData.desiredScenario,
+    activityPlanning: activityData.activityPlanning,
+    playerProfile: activityData.playerProfile
+  });
+
   useEffect(() => {
+    let isSubscribed = true;
+
     const fetchRecommendations = async () => {
       try {
         setLoading(true);
         const response = await api.post('/activities/recommendations', activityData);
-        const data = response.data;
+        if (!isSubscribed) return;
 
+        const data = response.data;
         setClusters({
           recommended: data.recommended || [],
           neutral: data.neutral || [],
@@ -73,7 +85,7 @@ function Step5_GameElements({ activityData, handleInputChange, setActivityData }
         });
 
         if (activityData.gameElements.selectedElements.length === 0) {
-          const preSelected = data.recommended.map(item => item.name);
+          const preSelected = (data.recommended || []).map(item => item.name);
           if (preSelected.length > 0) {
             setActivityData(prev => ({
               ...prev,
@@ -82,16 +94,21 @@ function Step5_GameElements({ activityData, handleInputChange, setActivityData }
           }
         }
       } catch (error) {
+        if (!isSubscribed) return;
         console.error("Erro ao carregar recomendações:", error);
         const allNames = Object.keys(ICON_MAP).map(name => ({ name, score: 0 }));
         setClusters({ recommended: [], neutral: allNames, forbidden: [] });
       } finally {
-        setLoading(false);
+        if (isSubscribed) setLoading(false);
       }
     };
 
     fetchRecommendations();
-  }, []);
+
+    return () => {
+      isSubscribed = false;
+    };
+  }, [contextKey]);
 
   const handleSelectionAttempt = (elementObj, category) => {
     const elementName = elementObj.name;
