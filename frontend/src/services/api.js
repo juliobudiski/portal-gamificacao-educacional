@@ -8,11 +8,11 @@ import axios from 'axios';
  * It centralizes request interception to automatically inject authentication tokens and handles
  * base URL configuration, ensuring a unified and consistent communication layer with the backend.
  */
-const envUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const envUrl = import.meta.env.VITE_API_URL !== undefined ? import.meta.env.VITE_API_URL : 'http://localhost:5000';
 const baseUrl = envUrl.endsWith('/') ? envUrl.slice(0, -1) : envUrl;
 
 const api = axios.create({
-    baseURL: `${baseUrl}/api`,
+    baseURL: baseUrl ? `${baseUrl}/api` : '/api',
     headers: {
         'Content-Type': 'application/json',
     },

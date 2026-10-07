@@ -17,6 +17,7 @@ const initialState = {
     title: '',
     description: '',
     areaKnowledge: '',
+    subdomain: '',
     isPublic: true,
     currentScenario: { problems: [], otherProblem: '' },
     desiredScenario: { objectives: [], otherObjective: '' },

@@ -217,6 +217,7 @@ function ActivityCreationPage({ existingActivity }) {
               title: data.title || prev.title,
               description: data.description || prev.description,
               areaKnowledge: data.area_knowledge || data.areaKnowledge || prev.areaKnowledge,
+              subdomain: data.subdomain || data.activity_planning?.subdomain || prev.subdomain || '',
               isPublic: data.is_public ?? prev.isPublic,
               currentScenario: data.current_scenario || data.currentScenario || prev.currentScenario,
               desiredScenario: data.desired_scenario || data.desiredScenario || prev.desiredScenario,

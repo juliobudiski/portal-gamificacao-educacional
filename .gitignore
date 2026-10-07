@@ -162,3 +162,4 @@ backend/venv
 VPS_ACCESS.md
 .vps_config*
 *.vps
+backend/frontend_dist/

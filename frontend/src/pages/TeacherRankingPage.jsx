@@ -21,7 +21,7 @@ const TeacherRankingPage = () => {
   const navigate = useNavigate();
 
   // Define a URL base da API a partir das variáveis de ambiente
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const API_URL = import.meta.env.VITE_API_URL !== undefined ? import.meta.env.VITE_API_URL : 'http://localhost:5000';
 
   useEffect(() => {
     const fetchRanking = async () => {

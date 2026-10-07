@@ -9,8 +9,8 @@ import { useEffect, useRef, useCallback } from "react";
  * Single Responsibility Principle. Views can log events cleanly without knowing the underlying implementation.
  */
 
-// URL base da API (ajuste conforme seu setup)
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/";
+const envApiUrl = import.meta.env.VITE_API_URL !== undefined ? import.meta.env.VITE_API_URL : "http://localhost:5000";
+const API_URL = envApiUrl.endsWith('/') ? envApiUrl.slice(0, -1) : envApiUrl;
 
 // --- Função auxiliar para enviar logs ---
 async function sendLog(events, token) {
