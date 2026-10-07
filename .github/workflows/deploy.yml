@@ -46,7 +46,5 @@ jobs:
         run: |
           ssh -p ${{ secrets.VPS_PORT }} -i ~/.ssh/id_vps ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "
             docker cp /opt/gamificaedu/backend gamificaedu-web:/app/ && \
-            docker exec gamificaedu-web rm -rf /app/frontend_dist && \
-            docker cp /opt/gamificaedu/frontend/dist gamificaedu-web:/app/frontend_dist && \
             docker restart gamificaedu-web
           "
