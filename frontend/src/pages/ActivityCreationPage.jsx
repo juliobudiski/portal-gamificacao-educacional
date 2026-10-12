@@ -22,6 +22,7 @@ import ActivityCreationStepper from '../components/activity/ActivityCreationStep
 import InitialSelectionPanel from './ActivityCreation/components/InitialSelectionPanel';
 import ActivityCreationHeader from './ActivityCreation/components/ActivityCreationHeader';
 import { FaCheckCircle, FaTimesCircle, FaSync, FaArrowLeft, FaSave } from 'react-icons/fa';
+import { WizardOrchestrator } from '../utils/wizardStepValidators';
 
 import {
   ACTIVITY_SELECTION_STEPS,
@@ -432,6 +433,10 @@ function ActivityCreationPage({ existingActivity }) {
    * handleNext: Avança para a próxima etapa ou submete o formulário.
    * AGORA COM VALIDAÇÃO E COOLDOWN ANTI-CLIQUE DUPLO!
    */
+  /**
+   * handleNext: Avança para a próxima etapa ou submete o formulário.
+   * AGORA COM VALIDAÇÃO POLIMÓRFICA (OO) E COOLDOWN ANTI-CLIQUE DUPLO!
+   */
   const handleNext = async () => {
     // 1. Prevenção de cliques duplos/Spam (Cooldown)
     if (isSubmittingRef.current || isNavigating) return;
@@ -439,158 +444,29 @@ function ActivityCreationPage({ existingActivity }) {
     // Trava imediatamente a navegação
     setIsNavigating(true);
 
-    // --- 2. VALIDAÇÕES POR ETAPA (Bloqueia o avanço se vazio) ---
-
-    // Etapa 1: Título, Área e Desafios (Problemas)
-    if (currentStep === 1) {
-      if (!activityData.title?.trim() || !activityData.areaKnowledge) {
-        showToast('Por favor, preencha o Título e a Área de Conhecimento.', 'warning');
-        setTimeout(() => setIsNavigating(false), 300); // Destrava o botão rapidamente
-        return;
-      }
-      if (!activityData.currentScenario?.problems || activityData.currentScenario.problems.length === 0) {
-        showToast('Selecione pelo menos um desafio que seus alunos enfrentam.', 'warning');
-        setTimeout(() => setIsNavigating(false), 300);
-        return;
-      }
+    // --- 2. VALIDAÇÃO POLIMÓRFICA DA ETAPA ATUAL (OO - Abstração e Encapsulamento) ---
+    const stepValidation = WizardOrchestrator.validateStep(currentStep, activityData);
+    if (!stepValidation.isValid) {
+      showToast(stepValidation.errorMessage, 'warning');
+      setTimeout(() => setIsNavigating(false), 300); // Destrava o botão rapidamente
+      return;
     }
 
-    // Etapa 2: Objetivos/Cenário Desejado
-    if (currentStep === 2) {
-      if (!activityData.desiredScenario?.objectives || activityData.desiredScenario.objectives.length === 0) {
-        showToast('Selecione pelo menos uma meta ou objetivo.', 'warning');
-        setTimeout(() => setIsNavigating(false), 300);
-        return;
-      }
-    }
+    // --- FIM DAS VALIDAÇÕES POR ETAPA ---
 
-    // Etapa 3: Dinâmica e Ambiente (ATUALIZADA)
-    if (currentStep === 3) {
-      if (typeof activityData.activityPlanning?.isTeamActivity !== 'boolean') {
-        showToast('Selecione a Dinâmica de Participação (Individual ou Equipe).', 'warning');
-        setTimeout(() => setIsNavigating(false), 300);
-        return;
-      }
-      // Verifica se escolheu Pelo Menos 1 ambiente excludente (Presencial Lab, Desplugado ou Online)
-      const hasEnvironment = activityData.activityPlanning?.characteristics?.some(c =>
-        c.includes("Laboratório") || c.includes("Desplugado") || c.includes("Online")
-      );
-      if (!hasEnvironment) {
-        showToast('Selecione obrigatóriamente o Ambiente de Aplicação.', 'warning');
-        setTimeout(() => setIsNavigating(false), 300);
-        return;
-      }
-    }
-
-    // Etapa 4: Perfis
-    if (currentStep === 4) {
-      if (!activityData.playerProfile?.selectedProfiles || activityData.playerProfile.selectedProfiles.length === 0) {
-        showToast('Selecione pelo menos um perfil de jogador.', 'warning');
-        setTimeout(() => setIsNavigating(false), 300);
-        return;
-      }
-    }
-
-    // Etapa 5: Elementos de Jogos
-    if (currentStep === 5) {
-      if (!activityData.gameElements?.selectedElements || activityData.gameElements.selectedElements.length === 0) {
-        showToast('Selecione pelo menos um Elemento de Jogo para sua atividade.', 'warning');
-        setTimeout(() => setIsNavigating(false), 300);
-        return;
-      }
-    }
-
-    // Etapa 6: Tabuleiro de Progressão
-    if (currentStep === 6) {
-      const path = activityData.gamificationDesign?.progression_path || [];
-      if (path.length === 0) {
-        showToast('O Editor do Tabuleiro não pode ficar vazio. Adicione pelo menos um passo (Conteúdo, Quiz ou Narrativa) à trilha.', 'warning');
-        setTimeout(() => setIsNavigating(false), 300);
-        return;
-      }
-      
-      const hasUnvalidatedDrafts = path.some(step => step.isDraft === true);
-      if (hasUnvalidatedDrafts) {
-        showToast('Atenção: Você possui rascunhos automáticos da IA no tabuleiro! Clique no lápis (✏️) em cada passo gerado para revisar e validar o conteúdo antes de avançar.', 'warning');
-        setTimeout(() => setIsNavigating(false), 300);
-        return;
-      }
-    }
-
-    // Etapa 7: Recompensas (NOVO)
-    if (currentStep === 7) {
-      const hasPredefined = activityData.rewardsOffered?.selectedRewards?.length > 0;
-      const hasCustom = activityData.rewardsOffered?.otherReward?.trim().length > 0;
-      if (!hasPredefined && !hasCustom) {
-        showToast('Selecione pelo menos uma Recompensa para engajar seus alunos.', 'warning');
-        setTimeout(() => setIsNavigating(false), 300);
-        return;
-      }
-    }
-
-    // Etapa 8: Ações Recompensadas (NOVO)
-    if (currentStep === 8) {
-      const hasPredefined = activityData.rewardedActions?.selectedActions?.length > 0;
-      const hasCustom = activityData.rewardedActions?.otherAction?.trim().length > 0;
-      if (!hasPredefined && !hasCustom) {
-        showToast('Defina pelo menos uma Ação que os alunos devem fazer para ganhar as recompensas.', 'warning');
-        setTimeout(() => setIsNavigating(false), 300);
-        return;
-      }
-    }
-
-    // Etapa 9: Regras (NOVO)
-    if (currentStep === 9) {
-      const hasPredefined = activityData.gamificationRules?.generalRules?.length > 0;
-      const hasCustom = activityData.gamificationRules?.specificRules?.trim().length > 0;
-      if (!hasPredefined && !hasCustom) {
-        showToast('Estabeleça ao menos uma Regra para manter a atividade justa e organizada.', 'warning');
-        setTimeout(() => setIsNavigating(false), 300);
-        return;
-      }
-    }
-
-    // --- FIM DAS VALIDAÇÕES ---
-
-    // 3. Lógica de Avanço (se passou pelas validações)
+    // 3. Lógica de Avanço (se passou pela validação polimórfica)
     if (currentStep < totalSteps) {
       setCurrentStep(prevStep => prevStep + 1);
       // Destrava a navegação após meio segundo para evitar spam
       setTimeout(() => setIsNavigating(false), 500);
 
     } else {
-      if (!activityData.title?.trim() || !activityData.areaKnowledge) {
-        showToast('O Título e a Área são obrigatórios. Volte à Etapa 1.', 'error');
-        setIsNavigating(false); return;
-      }
-      if (!activityData.currentScenario?.problems?.length) {
-        showToast('Selecione pelo menos um desafio enfrentado pelos alunos. Volte à Etapa 1.', 'error');
-        setIsNavigating(false); return;
-      }
-      if (!activityData.desiredScenario?.objectives?.length) {
-        showToast('Selecione pelo menos uma meta ou objetivo. Volte à Etapa 2.', 'error');
-        setIsNavigating(false); return;
-      }
-      if (typeof activityData.activityPlanning?.isTeamActivity !== 'boolean') {
-        showToast('Selecione a Dinâmica Individual ou Equipe. Volte à Etapa 3.', 'error');
-        setIsNavigating(false); return;
-      }
-      const hasEnv = activityData.activityPlanning?.characteristics?.some(c => c.includes("Laboratório") || c.includes("Desplugado") || c.includes("Online"));
-      if (!hasEnv) {
-        showToast('Selecione o Ambiente de Aplicação. Volte à Etapa 3.', 'error');
-        setIsNavigating(false); return;
-      }
-      if (!activityData.playerProfile?.selectedProfiles?.length) {
-        showToast('Selecione pelo menos um perfil de jogador. Volte à Etapa 4.', 'error');
-        setIsNavigating(false); return;
-      }
-      if (!activityData.gameElements?.selectedElements?.length) {
-        showToast('Selecione pelo menos um elemento de jogo. Volte à Etapa 5.', 'error');
-        setIsNavigating(false); return;
-      }
-      if ((activityData.gamificationDesign?.progression_path || []).length === 0) {
-        showToast('O Editor do Tabuleiro não pode ficar vazio. Adicione um passo. Volte à Etapa 5.', 'error');
-        setIsNavigating(false); return;
+      // Validação Global Polimórfica antes de Salvar Oficialmente
+      const allValidation = WizardOrchestrator.validateAll(activityData);
+      if (!allValidation.isValid) {
+        showToast(allValidation.errorMessage, 'error');
+        setIsNavigating(false);
+        return;
       }
 
       // Se passou pela Validação Global, Inicia o Salvamento
