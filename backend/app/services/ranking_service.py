@@ -9,17 +9,56 @@ from ..models import db, User, Activity
 
 logger = logging.getLogger(__name__)
 
+class TeacherPrivacyNameFormatter:
+    """
+    Formatador de nomes orientado a objetos para conformidade com a LGPD.
+    Exibe o primeiro nome e as iniciais dos sobrenomes (ex: 'Julio Cesar da Silva' -> 'Julio C. S.').
+    """
+    PREPOSITIONS = {'de', 'da', 'do', 'das', 'dos', 'e'}
+
+    @classmethod
+    def format(cls, raw_name: str) -> str:
+        if not raw_name or not isinstance(raw_name, str):
+            return "Professor Anônimo"
+        
+        cleaned = " ".join(raw_name.strip().split())
+        if not cleaned:
+            return "Professor Anônimo"
+        
+        tokens = cleaned.split(" ")
+        first_name = tokens[0].capitalize()
+        
+        if len(tokens) == 1:
+            return first_name
+        
+        initials = []
+        for token in tokens[1:]:
+            lower_token = token.lower()
+            if lower_token in cls.PREPOSITIONS:
+                continue
+            char = token[0].upper()
+            if char.isalnum():
+                initials.append(f"{char}.")
+        
+        if not initials:
+            return first_name
+            
+        return f"{first_name} {' '.join(initials)}"
+
+
 class RankingService:
     @staticmethod
     def get_teacher_creators_ranking(current_user_id):
         """
         Agrupa todas as atividades criadas pelos professores e calcula
         quem são os mais ativos (Top 10).
+        - Anonimiza o nome exibido (LGPD: primeiro nome + iniciais dos sobrenomes).
+        - Utiliza critério de desempate determinístico (User.id asc).
         - Se o professor atual estiver fora do Top 10, sua posição é anexada no final da lista.
         - Se o professor atual nunca tiver criado uma atividade, ele é incluído com score 0 e a última posição.
         """
         try:
-            # Conta o número de atividades associadas a cada professor
+            # Conta o número de atividades associadas a cada professor com critério determinístico de desempate
             ranking_query = db.session.query(
                 User.id,
                 User.name,
@@ -28,7 +67,7 @@ class RankingService:
             ).join(Activity, User.id == Activity.professor_id)\
              .filter(User.role == 'professor')\
              .group_by(User.id)\
-             .order_by(db.func.count(Activity.id).desc())
+             .order_by(db.func.count(Activity.id).desc(), User.id.asc())
             
             all_teachers_ranked = ranking_query.all()
 
@@ -42,7 +81,7 @@ class RankingService:
                 teacher_data = {
                     "rank": rank,
                     "id": teacher.id,
-                    "name": teacher.name,
+                    "name": TeacherPrivacyNameFormatter.format(teacher.name),
                     "avatar_url": teacher.profile_picture,
                     "score": teacher.activity_count
                 }
@@ -66,7 +105,7 @@ class RankingService:
                     top_10_ranking.append({
                         "rank": len(all_teachers_ranked) + 1, # Último lugar + 1
                         "id": user_obj.id,
-                        "name": user_obj.name,
+                        "name": TeacherPrivacyNameFormatter.format(user_obj.name),
                         "avatar_url": user_obj.profile_picture,
                         "score": 0
                     })

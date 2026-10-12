@@ -24,33 +24,35 @@ const TeacherRankingPage = () => {
   const API_URL = import.meta.env.VITE_API_URL !== undefined ? import.meta.env.VITE_API_URL : 'http://localhost:5000';
 
   useEffect(() => {
+    const controller = new AbortController();
+    const { signal } = controller;
+
     const fetchRanking = async () => {
       try {
         setIsLoading(true);
-        const token = getToken(); // Chamando a função para obter o token
+        const token = getToken();
 
         if (!token) {
           throw new Error('Usuário não autenticado. Não foi possível carregar o ranking.');
         }
 
-        // Usando a variável API_URL para montar o endpoint
         const response = await fetch(`${API_URL}/api/rankings/teachers/creators`, {
+          signal,
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
 
         if (!response.ok) {
-          const errorData = await response.json();
-          // Verifica se a mensagem de erro vem do backend, senão usa uma padrão
+          const errorData = await response.json().catch(() => ({}));
           throw new Error(errorData.message || 'Falha ao buscar os dados do ranking.');
         }
 
         const data = await response.json();
-        setCreatorsRanking(data.ranking);
+        setCreatorsRanking(data.ranking || []);
         setError(null);
       } catch (err) {
-        // Define o erro como a mensagem do objeto de erro
+        if (err.name === 'AbortError') return;
         setError(err.message);
         console.error("Erro ao buscar ranking:", err);
       } finally {
@@ -59,7 +61,11 @@ const TeacherRankingPage = () => {
     };
 
     fetchRanking();
-  }, [getToken, API_URL]); // Adicionado API_URL às dependências
+
+    return () => {
+      controller.abort();
+    };
+  }, [getToken, API_URL]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br bg-primary-bg  p-4 md:p-8">
