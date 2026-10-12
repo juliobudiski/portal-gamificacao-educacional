@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useContext } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 import {
@@ -211,6 +211,7 @@ function ActivityCard({ activity, isProfessor, onEditDeadline }) {
 function ClassDetailsPage() {
     const { class_id } = useParams();
     const { user } = useContext(AuthContext);
+    const navigate = useNavigate();
     const [classDetails, setClassDetails] = useState(null);
     const [activities, setActivities] = useState([]);
     const [message, setMessage] = useState('');

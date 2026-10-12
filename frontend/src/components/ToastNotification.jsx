@@ -11,6 +11,15 @@ import { FaCheckCircle, FaExclamationTriangle, FaTimesCircle, FaTimes } from 're
  * - Configuration Object Pattern: Uses a dictionary (`config`) to map `type` props to styling and icons, avoiding complex switch statements and improving extensibility.
  */
 const ToastNotification = ({ show, message, type = 'success', onClose }) => {
+    // Auto-fechamento após 5 segundos (sempre no topo para respeitar as Regras de Hooks)
+    useEffect(() => {
+        if (!show) return;
+        const timer = setTimeout(() => {
+            onClose();
+        }, 5000);
+        return () => clearTimeout(timer);
+    }, [show, onClose]);
+
     if (!show) return null;
 
     // Configuração de ícones e cores baseados no tipo
@@ -33,14 +42,6 @@ const ToastNotification = ({ show, message, type = 'success', onClose }) => {
     };
 
     const currentConfig = config[type] || config.success;
-
-    // Auto-fechamento após 5 segundos
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            onClose();
-        }, 5000);
-        return () => clearTimeout(timer);
-    }, [show, onClose]);
 
     return (
         <div className="fixed top-6 right-6 z-[100] animate-slide-in-right">

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
   Home, LogIn, UserPlus, User, BookOpen, LayoutDashboard, 
@@ -19,7 +19,6 @@ import {
 function Header({ handleTeacherTour, handleStudentTour, isActivityPage }) {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
 
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isTeacherMenuOpen, setIsTeacherMenuOpen] = useState(false);
