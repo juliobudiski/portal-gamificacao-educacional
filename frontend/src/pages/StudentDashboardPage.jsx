@@ -1,5 +1,4 @@
-// src/pages/StudentDashboardPage.jsx
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { AuthContext } from '../context/AuthContext';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -198,12 +197,16 @@ export default function StudentDashboardPage() {
   const { startTour } = useTutorial();
   const location = useLocation();
 
+  const tourTriggeredRef = useRef(false);
+
   useEffect(() => {
-    const shouldForce = location.state?.forceTour === true && !window.hasForcedTourStudent;
+    const shouldForce = location.state?.forceTour === true && !tourTriggeredRef.current;
     const timer = setTimeout(() => {
-      if (shouldForce) window.hasForcedTourStudent = true;
+      if (shouldForce) {
+        tourTriggeredRef.current = true;
+      }
       startTour(STUDENT_DASHBOARD_STEPS, 'student_dashboard_v1', shouldForce);
-    }, 500);
+    }, 400);
     return () => clearTimeout(timer);
   }, [startTour, location.state]);
 
@@ -217,7 +220,7 @@ export default function StudentDashboardPage() {
       }, 2000);
     };
     checkFeedback();
-  }, []);
+  }, [performAuthRequest]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import Joyride, { ACTIONS, EVENTS, STATUS } from 'react-joyride';
 import { useAuth } from './AuthContext';
 import { useTheme } from './ThemeContext';
@@ -44,34 +44,52 @@ export const TutorialProvider = ({ children }) => {
         }
     };
 
+    const isTransitioningRef = React.useRef(false);
+
     /**
-     * Inicia um tutorial.
+     * Inicia um tutorial de forma controlada.
      * @param {Array} tourSteps - Array de passos importados do tutorialSteps.js
      * @param {String} key - Identificador único (ex: 'student_dashboard_v1')
      * @param {Boolean} force - Se true, inicia mesmo que o usuário já tenha visto (para botão "Ver Tutorial")
      */
     const startTour = useCallback((tourSteps, key, force = false) => {
-        setRun(false);
-        // Se não for forçado e o usuário já tiver visto, aborta.
+        // Se não for forçado e o usuário já tiver visto, aborta
         if (!force && user?.onboarding_status?.[key]) {
             return;
         }
 
-        setSteps(tourSteps);
+        setRun(false);
+        setSteps(tourSteps || []);
         setTourKey(key);
         setStepIndex(0);
-        setRun(true);
-        // 4. Inicia com um micro-delay
-        setTimeout(() => setRun(true), 100);
-    }, [user]);
 
-    // Lógica ao terminar ou pular o tour
+        // Dispara de forma atômica após o próximo tick para permitir que o DOM monte os seletores
+        const timer = setTimeout(() => {
+            setRun(true);
+        }, 150);
+
+        return () => clearTimeout(timer);
+    }, [user?.onboarding_status]);
+
+    // Lógica ao terminar ou pular o tour com tolerância a Chaos Monkey e Nós Ausentes
     const handleJoyrideCallback = async (data) => {
         const { status, action, index, type } = data;
 
-        // Atualiza o índice atual
-        if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
+        // Tolerância a Chaos Monkey: Ignora nós não encontrados e avança silenciosamente
+        if (type === EVENTS.TARGET_NOT_FOUND) {
+            console.warn(`[TutorialContext] Alvo não encontrado no passo ${index}. Avançando para o próximo passo.`);
+            setStepIndex(prev => prev + 1);
+            return;
+        }
+
+        // Atualiza o índice atual com debounce contra rajadas de cliques (rapid-clicking)
+        if (type === EVENTS.STEP_AFTER) {
+            if (isTransitioningRef.current) return;
+            isTransitioningRef.current = true;
             setStepIndex(index + (action === ACTIONS.PREV ? -1 : 1));
+            setTimeout(() => {
+                isTransitioningRef.current = false;
+            }, 250);
         }
 
         const finishedStatuses = [STATUS.FINISHED, STATUS.SKIPPED];
@@ -85,9 +103,9 @@ export const TutorialProvider = ({ children }) => {
             }
 
             // Só salva no banco se o usuário estiver logado e tiver uma chave de tour
-            if (user && tourKey) {
+            if (user && tourKey && token) {
                 try {
-                    // 1. Chamada ao Backend
+                    // Chamada assíncrona não-bloqueante ao Backend
                     const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/user/update-onboarding`, {
                         method: 'POST',
                         headers: {
@@ -98,14 +116,14 @@ export const TutorialProvider = ({ children }) => {
                     });
 
                     if (response.ok) {
-                        const data = await response.json();
-                        // 2. Atualiza o contexto do usuário localmente com o novo token
-                        if (data.access_token) {
-                            updateUserData({ access_token: data.access_token });
+                        const resData = await response.json();
+                        if (resData.access_token) {
+                            updateUserData({ access_token: resData.access_token });
                         }
                     }
                 } catch (error) {
-                    console.error("Erro ao salvar status do tutorial:", error);
+                    // Resiliência a queda de rede (Chaos Monkey - Offline Drop)
+                    console.warn("[TutorialContext] Falha de rede ao persistir status do onboarding (não-bloqueante):", error);
                 }
             }
         }

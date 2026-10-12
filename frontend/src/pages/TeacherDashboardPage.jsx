@@ -31,11 +31,6 @@ export default function TeacherDashboardPage() {
     return () => clearTimeout(timer);
   }, [startTour, location.state]);
 
-  if (!user || user.role !== 'professor') {
-    navigate('/login');
-    return null;
-  }
-
   useEffect(() => {
     const checkFeedback = async () => {
       setTimeout(async () => {
@@ -46,7 +41,17 @@ export default function TeacherDashboardPage() {
       }, 2000);
     };
     checkFeedback();
-  }, []);
+  }, [performAuthRequest]);
+
+  useEffect(() => {
+    if (!user || user.role !== 'professor') {
+      navigate('/login');
+    }
+  }, [user, navigate]);
+
+  if (!user || user.role !== 'professor') {
+    return null;
+  }
 
   const dashboardCards = [
     {
