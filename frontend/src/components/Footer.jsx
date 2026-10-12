@@ -1,6 +1,6 @@
 // frontend/src/components/Footer.jsx
 import React from "react";
-import { ShieldAlert, Copyright } from "lucide-react";
+import { ShieldAlert, Copyright, Tag } from "lucide-react";
 
 /**
  * @component Footer
@@ -13,6 +13,7 @@ import { ShieldAlert, Copyright } from "lucide-react";
  */
 function Footer() {
   const currentYear = new Date().getFullYear();
+  const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '2.0.0';
 
   return (
     <footer className="relative bg-primary-bg/80 backdrop-blur-md text-secondary-text text-sm border-t border-border-color shadow-[0_-8px_30px_rgb(0,0,0,0.12)] overflow-hidden">
@@ -23,11 +24,15 @@ function Footer() {
       <div className="relative max-w-6xl mx-auto px-6 py-8">
         {/* Marca e direitos */}
         <div className="flex flex-col items-center text-center space-y-4">
-          <div className="flex items-center space-x-2 group">
+          <div className="flex flex-wrap items-center justify-center gap-2 group">
             <Copyright className="w-5 h-5 text-accent-yellow group-hover:rotate-180 transition-transform duration-700" />
             <p className="font-bold text-base text-primary-text bg-clip-text text-transparent bg-gradient-to-r from-accent-yellow to-accent-teal">
               {currentYear} GamificaEdu - Portal de Gamificação Educacional
             </p>
+            <span className="inline-flex items-center gap-1 text-xs font-mono font-semibold px-2.5 py-0.5 rounded-full bg-accent-teal/10 text-accent-teal border border-accent-teal/30 tracking-wide ml-1 shadow-sm">
+              <Tag className="w-3 h-3" />
+              v{appVersion}
+            </span>
           </div>
 
           {/* Texto legal */}
