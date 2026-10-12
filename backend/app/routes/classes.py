@@ -409,6 +409,9 @@ def add_student_to_class(class_id):
     professor = User.query.get(current_user_id)
     class_obj = Class.query.get(class_id)
 
+    if not class_obj:
+        return jsonify({"message": "Turma não encontrada."}), 404
+
     if not professor or professor.role != 'professor' or class_obj.professor_id != professor.id:
         return jsonify({"message": "Acesso negado."}), 403
 
@@ -454,6 +457,9 @@ def remove_student_from_class(class_id, student_id):
     professor = User.query.get(current_user_id)
     class_obj = Class.query.get(class_id)
 
+    if not class_obj:
+        return jsonify({"message": "Turma não encontrada."}), 404
+
     if not professor or professor.role != 'professor' or class_obj.professor_id != professor.id:
         return jsonify({"message": "Acesso negado."}), 403
     
@@ -481,6 +487,9 @@ def add_activity_to_class(class_id):
     current_user_id = get_jwt_identity()
     professor = User.query.get(current_user_id)
     class_obj = Class.query.get(class_id)
+
+    if not class_obj:
+        return jsonify({"message": "Turma não encontrada."}), 404
 
     if not professor or professor.role != 'professor' or class_obj.professor_id != professor.id:
         return jsonify({"message": "Acesso negado."}), 403
@@ -521,6 +530,9 @@ def remove_activity_from_class(class_id, activity_id):
     professor = User.query.get(current_user_id)
     class_obj = Class.query.get(class_id)
 
+    if not class_obj:
+        return jsonify({"message": "Turma não encontrada."}), 404
+
     if not professor or professor.role != 'professor' or class_obj.professor_id != professor.id:
         return jsonify({"message": "Acesso negado."}), 403
 
@@ -549,6 +561,9 @@ def generate_teams(class_id):
     current_user_id = get_jwt_identity()
     professor = User.query.get(current_user_id)
     class_obj = Class.query.get(class_id)
+
+    if not class_obj:
+        return jsonify({"message": "Turma não encontrada."}), 404
 
     if not professor or professor.role != 'professor' or class_obj.professor_id != professor.id:
         return jsonify({"message": "Acesso negado."}), 403
