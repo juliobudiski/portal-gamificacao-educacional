@@ -372,7 +372,7 @@ class ContextualRecommendationEngine:
 
             # Avaliação Logística (Mundo Físico)
             veto_logistico = False
-            if any("desplugado" in item for item in logistics):
+            if any("desplugad" in item for item in logistics):
                 elementos_digitais = [
                     "Fórum de Discussão", "Chat ou sistema de mensagens", 
                     "Conquistas digitais para metas alcançadas", 
@@ -433,7 +433,7 @@ class ContextualRecommendationEngine:
                 
                 # 4. Avaliação Logística (Mundo Físico)
                 veto_logistico = False
-                if any("desplugado" in item for item in logistics):
+                if any("desplugad" in item for item in logistics):
                     elementos_digitais = [
                         "Fórum de Discussão", "Chat ou sistema de mensagens", 
                         "Conquistas digitais para metas alcançadas", 

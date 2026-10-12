@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   test-frontend:
-    name: Frontend Build Check
+    name: Frontend Quality Gate (Lint & Build)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -34,6 +34,10 @@ jobs:
         working-directory: frontend
         run: npm ci
 
+      - name: Run Frontend Static Linter
+        working-directory: frontend
+        run: npx eslint src --quiet
+
       - name: Verify Frontend Production Build
         working-directory: frontend
         env:
@@ -42,7 +46,7 @@ jobs:
         run: npm run build
 
   test-backend:
-    name: Backend Tests
+    name: Backend Quality Gate (Hermetic Tests & SRE Resiliency)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -59,13 +63,23 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
-          pip install pytest
+          pip install pytest pytest-cov pytest-mock
 
-      - name: Run Backend Integration & Smoke Tests
+      - name: Run Hermetic Pytest Suite (Unit, BDD, Contracts, SRE)
         env:
-          SECRET_KEY: "ci-secret-key-test"
+          SECRET_KEY: "ci-secret-key-test-production-ready-32-chars"
+          JWT_SECRET_KEY: "ci-jwt-secret-test-production-ready-32-chars"
           DATABASE_URL: "sqlite:///:memory:"
           FLASK_ENV: "testing"
-          GEMINI_API_KEY: "mock-gemini-key"
+          RUN_SCHEDULER: "false"
         run: |
-          python backend/test_contact_api.py
+          pytest backend/tests -v --tb=short
+
+      - name: Run Legacy Smoke API Check
+        env:
+          SECRET_KEY: "ci-secret-key-test-production-ready-32-chars"
+          JWT_SECRET_KEY: "ci-jwt-secret-test-production-ready-32-chars"
+          DATABASE_URL: "sqlite:///:memory:"
+          FLASK_ENV: "testing"
+        run: |
+          PYTHONPATH=backend python backend/test_contact_api.py

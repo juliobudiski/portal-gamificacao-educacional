@@ -27,7 +27,7 @@ const getYouTubeEmbedUrl = (input) => {
     }
 
     // Tenta extrair o ID do vídeo (geralmente 11 caracteres)
-    const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|shorts\/)([^"&?\/\s]{11})/i;
+    const regExp = /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|shorts\/)([^"&?/\s]{11})/i;
     const match = urlString.match(regExp);
 
     if (match && match[1].length === 11) {

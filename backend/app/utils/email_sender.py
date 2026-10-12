@@ -38,32 +38,22 @@ def _get_smtp_connection(smtp_server, smtp_port, smtp_user, smtp_password):
                 current_app.logger.error(f"Fallback na porta 465 também falhou: {e2}")
             raise e2
 
-def _dispatch_email(to_email, subject, html_content):
-    """
-    Despacha o e-mail verificando primeiro se há a configuração do Google Apps Script.
-    Caso contrário, tenta o fallback pelo SMTP tradicional.
-    Isso burla o bloqueio de portas SMTP do Render Free (usa porta 443 HTTPS).
-    """
+def _raw_dispatch(to_email, subject, html_content):
     apps_script_url = os.environ.get("GOOGLE_APPS_SCRIPT_URL")
 
     if apps_script_url:
-        try:
-            payload = json.dumps({
-                "to_email": to_email,
-                "subject": subject,
-                "html_content": html_content
-            }).encode('utf-8')
-            
-            req = urllib.request.Request(apps_script_url, data=payload, headers={'Content-Type': 'application/json'}, method='POST')
-            with urllib.request.urlopen(req, timeout=10) as response:
-                res_body = response.read().decode('utf-8')
-                if current_app:
-                    current_app.logger.info(f"E-mail disparado via Google Apps Script (HTTP). Resposta: {res_body}")
-                return True
-        except Exception as e:
+        payload = json.dumps({
+            "to_email": to_email,
+            "subject": subject,
+            "html_content": html_content
+        }).encode('utf-8')
+        
+        req = urllib.request.Request(apps_script_url, data=payload, headers={'Content-Type': 'application/json'}, method='POST')
+        with urllib.request.urlopen(req, timeout=10) as response:
+            res_body = response.read().decode('utf-8')
             if current_app:
-                current_app.logger.error(f"Erro ao disparar via Google Apps Script: {str(e)}")
-            return False
+                current_app.logger.info(f"E-mail disparado via Google Apps Script (HTTP). Resposta: {res_body}")
+            return True
 
     # Fallback SMTP tradicional (útil para desenvolvimento local)
     smtp_server = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
@@ -71,24 +61,49 @@ def _dispatch_email(to_email, subject, html_content):
     smtp_user = os.environ.get("MAIL_USERNAME")
     smtp_password = os.environ.get("MAIL_PASSWORD")
 
+    msg = MIMEMultipart()
+    msg['From'] = f"Gamefica.Edu <{smtp_user}>"
+    msg['To'] = to_email
+    msg['Subject'] = subject
+    msg.attach(MIMEText(html_content, 'html'))
+
+    server = _get_smtp_connection(smtp_server, smtp_port, smtp_user, smtp_password)
+    text = msg.as_string()
+    server.sendmail(smtp_user, to_email, text)
+    server.quit()
+
+    if current_app:
+        current_app.logger.info(f"E-mail disparado com sucesso via SMTP tradicional para {to_email}.")
+    return True
+
+def _dispatch_email(to_email, subject, html_content):
+    """
+    Despacha o e-mail blindado por Circuit Breaker ('email_gateway') e Retry com Backoff.
+    Evita travamento das threads do backend se a infraestrutura de e-mail estiver lenta ou indisponível.
+    """
+    from .resilience.circuit_breaker import CircuitBreakerRegistry
+    from .resilience.retry import retry_with_backoff
+
+    email_breaker = CircuitBreakerRegistry.get_or_create(
+        name="email_gateway",
+        failure_threshold=3,
+        recovery_timeout=30.0,
+        fallback=lambda *args, **kwargs: False
+    )
+
     try:
-        msg = MIMEMultipart()
-        msg['From'] = f"Gamefica.Edu <{smtp_user}>"
-        msg['To'] = to_email
-        msg['Subject'] = subject
-        msg.attach(MIMEText(html_content, 'html'))
-
-        server = _get_smtp_connection(smtp_server, smtp_port, smtp_user, smtp_password)
-        text = msg.as_string()
-        server.sendmail(smtp_user, to_email, text)
-        server.quit()
-
-        if current_app:
-            current_app.logger.info(f"E-mail disparado com sucesso via SMTP tradicional para {to_email}.")
-        return True
+        return email_breaker.call(
+            retry_with_backoff,
+            _raw_dispatch,
+            to_email,
+            subject,
+            html_content,
+            max_retries=2,
+            base_delay=0.3
+        )
     except Exception as e:
         if current_app:
-            current_app.logger.error(f"Erro no disparo SMTP para {to_email}: {str(e)}")
+            current_app.logger.error(f"[CircuitBreaker email_gateway] Falha ou disjuntor aberto: {e}")
         return False
 
 

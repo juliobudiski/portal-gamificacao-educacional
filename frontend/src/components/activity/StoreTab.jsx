@@ -83,6 +83,7 @@ const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel }) => {
     );
 };
 const AddItemForm = ({ onAddItem, onCancel }) => {
+    const { showToast } = useToast();
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [price, setPrice] = useState('');
@@ -93,7 +94,7 @@ const AddItemForm = ({ onAddItem, onCancel }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!name || !description || !price) {
-            showToast('Por favor, preencha todos os campos.');
+            showToast('Por favor, preencha todos os campos.', 'warning');
             return;
         }
         let finalEffectId = null;

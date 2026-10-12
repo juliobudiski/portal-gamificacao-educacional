@@ -78,7 +78,7 @@ function ActivityBankPage() {
 
     } catch (error) {
       setMessage(error.message);
-    } fontFinally: {
+    } finally {
       setLoading(false);
       setIsSearching(false);
     }

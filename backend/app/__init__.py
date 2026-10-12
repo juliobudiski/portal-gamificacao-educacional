@@ -107,8 +107,46 @@ def _register_blueprints_and_routes(app):
 
     @app.route('/api/health', methods=['GET'])
     def health_check():
-        """Endpoint ultraleve para keep-alive (UptimeRobot, etc) evitar cold start"""
-        return jsonify({"status": "ok", "message": "Server is awake"}), 200
+        """
+        Deep Health Check Probe (Enterprise / SRE Standard)
+        - Valida a conectividade ativa do banco de dados executando SELECT 1
+        - Mede a latência da consulta SQL em milissegundos
+        - Expõe o estado operacional dos Circuit Breakers registrados
+        - Retorna HTTP 200 (UP) ou HTTP 503 (DOWN / DEGRADED)
+        """
+        import time
+        from sqlalchemy import text
+        from .utils.resilience.circuit_breaker import CircuitBreakerRegistry
+
+        db_status = "UNKNOWN"
+        db_latency_ms = None
+        http_status = 200
+
+        start_time = time.time()
+        try:
+            with db.engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+            db_latency_ms = round((time.time() - start_time) * 1000, 2)
+            db_status = "CONNECTED"
+        except Exception as exc:
+            db_latency_ms = round((time.time() - start_time) * 1000, 2)
+            db_status = f"ERROR: {str(exc)}"
+            http_status = 503
+
+        circuit_breakers = CircuitBreakerRegistry.get_all_status()
+        overall_status = "UP" if http_status == 200 else "DEGRADED"
+
+        payload = {
+            "status": overall_status,
+            "database": {
+                "status": db_status,
+                "latency_ms": db_latency_ms
+            },
+            "circuit_breakers": circuit_breakers,
+            "timestamp": time.time()
+        }
+
+        return jsonify(payload), http_status
 
     @app.errorhandler(500)
     def internal_server_error(e):

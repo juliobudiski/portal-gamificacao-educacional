@@ -33,11 +33,12 @@ const TypewriterText = ({ text, delay = 30, onComplete, start = true }) => {
 };
 
 const MissionTab = ({ activity, onComplete, onReturn }) => {
+    const [step, setStep] = useState(0); 
+    const [accepted, setAccepted] = useState(false);
+
     if (!activity) return null;
 
     const { description, currentScenario, desiredScenario } = activity;
-    const [step, setStep] = useState(0); 
-    const [accepted, setAccepted] = useState(false);
 
     // Passo 0: Mostra a descrição principal
     // Passo 1: Mostra o cenário atual (problemas)

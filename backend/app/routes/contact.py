@@ -8,12 +8,14 @@ from flask import Blueprint, request, jsonify
 from flask_cors import cross_origin
 from flask_jwt_extended import jwt_required, get_jwt_identity, verify_jwt_in_request
 from ..services.contact_service import ContactService
+from ..utils.resilience.idempotency import idempotent
 
 contact_bp = Blueprint('contact', __name__)
 
 @contact_bp.route('', methods=['POST'], strict_slashes=False)
 @contact_bp.route('/', methods=['POST'], strict_slashes=False)
 @cross_origin()
+@idempotent(ttl_seconds=300)
 def send_message():
     """
     [Arquitetura]

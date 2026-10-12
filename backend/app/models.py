@@ -4,7 +4,12 @@ Define todos os modelos de dados da aplicação utilizando SQLAlchemy.
 Cada classe representa uma tabela no banco de dados e suas respectivas colunas e relações.
 """
 from . import db # Importa a instância do db do __init__.py
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import JSON
+from sqlalchemy.dialects.postgresql import JSONB as PG_JSONB
+
+# Suporte universal: utiliza JSONB no PostgreSQL nativo e JSON padrão no SQLite para testes herméticos
+JSONB = db.JSON().with_variant(PG_JSONB, 'postgresql')
+
 from .extensions import socketio
 from sqlalchemy.orm import validates
 # --- Modelos de Banco de Dados (SQLAlchemy) ---
@@ -117,6 +122,7 @@ class Activity(db.Model):
     ratings = db.relationship('ActivityRating', backref='activity', lazy=True)
     is_team_activity = db.Column(db.Boolean, default=False, nullable=False, server_default='f')
     is_draft = db.Column(db.Boolean, default=False, index=True, nullable=False, server_default='f')
+    tags = db.relationship('Tag', secondary='activity_tag', backref=db.backref('activities', lazy='dynamic'))
     
     def to_dict(self):
         design = self.gamification_design or {}
@@ -158,7 +164,8 @@ class Activity(db.Model):
                 'progression_path': design.get('progression_path', []),
                 'hub_elements': design.get('hub_elements', [])
             },
-            'is_team_activity': self.is_team_activity
+            'is_team_activity': self.is_team_activity,
+            'is_draft': self.is_draft
         }
 
 # --- NOVAS TABELAS PARA CONTEÚDO DOS PASSOS ---

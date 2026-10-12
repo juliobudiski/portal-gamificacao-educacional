@@ -13,7 +13,7 @@ const getYouTubeEmbedUrl = (input) => {
     if (iframeMatch) {
         urlString = iframeMatch[1];
     }
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = urlString.match(regExp);
 
     if (match && match[2].length === 11) {

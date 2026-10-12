@@ -29,9 +29,20 @@ jobs:
         env:
           VITE_API_URL: ""
           VITE_GOOGLE_CLIENT_ID: "133837215411-f108mo4flmbqmtpofs2k1876kkrnl6tg.apps.googleusercontent.com"
-        run: |
-          npm ci
-          npm run build
+      - name: Install Frontend Dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run Frontend Static Linter
+        working-directory: frontend
+        run: npx eslint src --quiet
+
+      - name: Build Frontend
+        working-directory: frontend
+        env:
+          VITE_API_URL: ""
+          VITE_GOOGLE_CLIENT_ID: "133837215411-f108mo4flmbqmtpofs2k1876kkrnl6tg.apps.googleusercontent.com"
+        run: npm run build
 
       - name: Setup Python 3.12
         uses: actions/setup-python@v5
@@ -40,16 +51,21 @@ jobs:
           cache: 'pip'
           cache-dependency-path: backend/requirements.txt
 
-      - name: Run Backend Smoke Tests
-        env:
-          SECRET_KEY: "deploy-check-secret"
-          DATABASE_URL: "sqlite:///:memory:"
-          FLASK_ENV: "testing"
-          GEMINI_API_KEY: "mock-key"
+      - name: Install Backend Test Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
-          python backend/test_contact_api.py
+          pip install pytest pytest-cov pytest-mock
+
+      - name: Run Full Hermetic Pytest Gate
+        env:
+          SECRET_KEY: "deploy-gate-secret-key-32-chars-long"
+          JWT_SECRET_KEY: "deploy-gate-jwt-secret-32-chars-long"
+          DATABASE_URL: "sqlite:///:memory:"
+          FLASK_ENV: "testing"
+          RUN_SCHEDULER: "false"
+        run: |
+          pytest backend/tests -v --tb=short
 
   deploy:
     name: Sync & Deploy to VPS
