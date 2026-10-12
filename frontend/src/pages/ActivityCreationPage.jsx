@@ -21,7 +21,7 @@ import { useToast } from '../context/ToastContext';
 import ActivityCreationStepper from '../components/activity/ActivityCreationStepper';
 import InitialSelectionPanel from './ActivityCreation/components/InitialSelectionPanel';
 import ActivityCreationHeader from './ActivityCreation/components/ActivityCreationHeader';
-import { FaCheckCircle, FaTimesCircle, FaSync, FaArrowLeft } from 'react-icons/fa';
+import { FaCheckCircle, FaTimesCircle, FaSync, FaArrowLeft, FaSave } from 'react-icons/fa';
 
 import {
   ACTIVITY_SELECTION_STEPS,
@@ -91,7 +91,8 @@ function ActivityCreationPage({ existingActivity }) {
     resetCreation,
     autoSaveStatus,
     lastSavedAt,
-    loadDraft
+    loadDraft,
+    forceSave
   } = useActivityCreation();
 
   const stepStartTimeRef = useRef(Date.now());
@@ -240,10 +241,19 @@ function ActivityCreationPage({ existingActivity }) {
     fetchActivityDataForBoard();
   }, [activityId, user?.token, setActivityData, setShowInitialSelection, setCurrentStep]);
 
-  const handleStepJump = (stepId) => {
+  const handleStepJump = async (stepId) => {
     // --- PROTEÇÃO DE NAVEGAÇÃO ---
     if (isSubmittingRef.current || isNavigating) return;
     setIsNavigating(true);
+
+    // Salva rascunho defensivamente antes de pular etapa
+    try {
+      if (forceSave && activityData.title?.trim()) {
+        await forceSave();
+      }
+    } catch (e) {
+      console.warn("Falha ao salvar rascunho durante salto de etapa:", e);
+    }
 
     logEvent("stepper_navigation", {
       from_step: currentStep,
@@ -634,11 +644,19 @@ function ActivityCreationPage({ existingActivity }) {
 
   /**
    * handlePrevious: Retorna para a etapa anterior.
-   * AGORA COM COOLDOWN PARA EVITAR SPAM
+   * AGORA COM FLUSH DE RASCUNHO E COOLDOWN PARA EVITAR SPAM
    */
-  const handlePrevious = () => {
+  const handlePrevious = async () => {
     if (isNavigating) return;
     setIsNavigating(true);
+
+    try {
+      if (forceSave && activityData.title?.trim()) {
+        await forceSave();
+      }
+    } catch (e) {
+      console.warn("Falha ao salvar rascunho durante retrocesso:", e);
+    }
 
     if (currentStep > 1) {
       logEvent("previous_button_click", {
@@ -649,6 +667,29 @@ function ActivityCreationPage({ existingActivity }) {
     }
 
     setTimeout(() => setIsNavigating(false), 500); // Destrava após meio segundo
+  };
+
+  /**
+   * handleManualSaveDraft: Botão explícito para salvar o progresso atual imediatamente
+   */
+  const handleManualSaveDraft = async () => {
+    if (isNavigating || isSaving) return;
+    if (!activityData.title?.trim()) {
+      showToast('Preencha ao menos o título da atividade na Etapa 1 para salvar como rascunho.', 'warning');
+      return;
+    }
+
+    setIsNavigating(true);
+    try {
+      showToast('Salvando rascunho...', 'info');
+      await forceSave();
+      showToast('Rascunho salvo com sucesso!', 'success');
+    } catch (error) {
+      console.error('Erro ao salvar rascunho:', error);
+      showToast('Falha ao salvar rascunho. Tente novamente.', 'error');
+    } finally {
+      setTimeout(() => setIsNavigating(false), 400);
+    }
   };
 
   const handleInputChange = (e) => {
@@ -773,30 +814,45 @@ function ActivityCreationPage({ existingActivity }) {
               </div>
 
               {/* Botões de Navegação */}
-              <div className="flex justify-between mt-10 pt-6 border-t border-border-color/50">
-                {currentStep > 1 ? (
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-10 pt-6 border-t border-border-color/50">
+                <div className="w-full sm:w-auto flex justify-start">
+                  {currentStep > 1 && (
+                    <button
+                      onClick={handlePrevious}
+                      disabled={isNavigating} // Trava visualmente
+                      className={`w-full sm:w-auto py-3 px-6 rounded-xl font-bold uppercase tracking-wide text-sm transition-all duration-300 transform hover:-translate-y-0.5
+                        ${isNavigating ? 'bg-primary-bg cursor-not-allowed opacity-50 text-secondary-text border border-border-color' 
+                        : 'bg-primary-bg hover:bg-hover-bg-color text-secondary-text border border-border-color hover:border-accent-teal/50 hover:shadow-lg'}`}
+                    >
+                      Voltar
+                    </button>
+                  )}
+                </div>
+
+                <div className="w-full sm:w-auto flex items-center gap-3 justify-end">
+                  {/* Botão explícito de Salvar Rascunho */}
                   <button
-                    onClick={handlePrevious}
-                    disabled={isNavigating} // Trava visualmente
-                    className={`py-3 px-6 rounded-xl font-bold uppercase tracking-wide text-sm transition-all duration-300 transform hover:-translate-y-0.5
-                      ${isNavigating ? 'bg-primary-bg cursor-not-allowed opacity-50 text-secondary-text border border-border-color' 
-                      : 'bg-primary-bg hover:bg-hover-bg-color text-secondary-text border border-border-color hover:border-accent-teal/50 hover:shadow-lg'}`}
+                    type="button"
+                    onClick={handleManualSaveDraft}
+                    disabled={isSaving || isNavigating}
+                    title="Salvar rascunho manualmente a qualquer momento"
+                    className="flex items-center justify-center gap-2 py-3 px-5 rounded-xl font-semibold text-sm transition-all duration-300 border border-accent-teal/40 bg-accent-teal/10 text-accent-teal hover:bg-accent-teal/20 hover:border-accent-teal active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                   >
-                    Voltar
+                    <FaSave className="text-base" />
+                    <span>Salvar Rascunho</span>
                   </button>
-                ) : (
-                  <div></div>
-                )}
-                <button
-                  id={currentStep === totalSteps ? "tour-final-save" : "tour-next-button"}
-                  onClick={handleNext}
-                  disabled={isSaving || isNavigating} // Bloqueia cliques duplos!
-                  className={`py-3 px-8 rounded-xl font-bold uppercase tracking-wide text-sm transition-all duration-300 transform hover:-translate-y-0.5 shadow-lg
-                  ${(isSaving || isNavigating) ? 'bg-gray-500 cursor-wait opacity-70 text-white' 
-                  : 'bg-gradient-to-r from-accent-teal to-teal-600 hover:from-teal-500 hover:to-teal-700 text-gray-900 hover:shadow-[0_0_15px_rgba(20,184,166,0.5)]'}`}
-                >
-                  {isSaving ? 'Salvando...' : (currentStep === totalSteps ? 'Concluir e Salvar' : 'Próximo Passo')}
-                </button>
+
+                  <button
+                    id={currentStep === totalSteps ? "tour-final-save" : "tour-next-button"}
+                    onClick={handleNext}
+                    disabled={isSaving || isNavigating} // Bloqueia cliques duplos!
+                    className={`py-3 px-8 rounded-xl font-bold uppercase tracking-wide text-sm transition-all duration-300 transform hover:-translate-y-0.5 shadow-lg
+                    ${(isSaving || isNavigating) ? 'bg-gray-500 cursor-wait opacity-70 text-white' 
+                    : 'bg-gradient-to-r from-accent-teal to-teal-600 hover:from-teal-500 hover:to-teal-700 text-gray-900 hover:shadow-[0_0_15px_rgba(20,184,166,0.5)]'}`}
+                  >
+                    {isSaving ? 'Salvando...' : (currentStep === totalSteps ? 'Concluir e Salvar' : 'Próximo Passo')}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

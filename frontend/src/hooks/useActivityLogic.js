@@ -195,11 +195,16 @@ export const useActivityLogic = (activityId) => {
         // 1. Atualiza a interface (volta para o tabuleiro) IMEDIATAMENTE
         setCurrentView('board');
 
-        // 2. BYPASS PARA PROFESSORES:
-        // Se não for aluno, não tentamos salvar no backend nem buscar progresso atualizado.
-        // Apenas encerramos a função aqui.
+        // 2. SIMULAÇÃO PARA PROFESSORES / ADMIN:
+        // Atualiza o progresso em memória local permitindo validar o movimento do avatar no tabuleiro!
         if (user?.role !== 'aluno') {
-            debugLog("Modo Visualização (Professor/Admin): Fechando passo sem salvar progresso.");
+            debugLog("Modo Simulação (Professor/Admin): Avançando passo no estado local em memória.");
+            setUserProgress(prev => ({
+                ...(prev || {}),
+                status: 'in_progress',
+                completed_steps: Array.from(new Set([...(prev?.completed_steps || []), completedStepId]))
+            }));
+            showToast('Passo concluído em modo de simulação!', 'info');
             return;
         }
 
@@ -242,9 +247,9 @@ export const useActivityLogic = (activityId) => {
     const completedStepsSet = useMemo(() => new Set(userProgress?.completed_steps || []), [userProgress]);
 
     const activeStepId = useMemo(() => {
-        if (user.role !== 'aluno' || !activity?.gamificationDesign?.progression_path) return null;
+        if (!activity?.gamificationDesign?.progression_path) return null;
         return activity.gamificationDesign.progression_path.find(step => !completedStepsSet.has(step.id))?.id || null;
-    }, [user.role, activity, completedStepsSet]);
+    }, [activity, completedStepsSet]);
 
     const finalRewardStatus = useMemo(() => {
         if (!activity || !userProgress) return 'locked';

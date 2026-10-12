@@ -547,6 +547,56 @@ def remove_activity_from_class(class_id, activity_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": str(e)}), 500
+
+# ATUALIZAR PRAZO DA ATIVIDADE NA TURMA
+@class_bp.route('/<int:class_id>/activities/<int:activity_id>/deadline', methods=['PUT'])
+@cross_origin()
+@jwt_required()
+def update_activity_deadline(class_id, activity_id):
+    """
+    Atualiza a data limite (expires_at) de uma atividade vinculada a uma turma.
+    - Acesso: Professor dono da turma.
+    """
+    current_user_id = get_jwt_identity()
+    professor = User.query.get(current_user_id)
+    class_obj = Class.query.get(class_id)
+
+    if not class_obj:
+        return jsonify({"message": "Turma não encontrada."}), 404
+
+    if not professor or professor.role != 'professor' or class_obj.professor_id != professor.id:
+        return jsonify({"message": "Acesso negado. Apenas o professor responsável pode alterar prazos."}), 403
+
+    activity = Activity.query.get(activity_id)
+    if not activity or activity.class_id != class_obj.id:
+        return jsonify({"message": "Atividade não encontrada nesta turma."}), 404
+
+    data = request.get_json() or {}
+    expires_at_str = data.get('expires_at')
+
+    try:
+        if expires_at_str:
+            # Suporta formato ISO 8601 (YYYY-MM-DDTHH:MM ou YYYY-MM-DD HH:MM:SS)
+            clean_str = expires_at_str.replace('Z', '')
+            if 'T' in clean_str:
+                activity.expires_at = datetime.fromisoformat(clean_str)
+            else:
+                activity.expires_at = datetime.strptime(clean_str, '%Y-%m-%d %H:%M:%S')
+        else:
+            activity.expires_at = None
+
+        db.session.commit()
+        return jsonify({
+            "message": "Prazo da atividade atualizado com sucesso!",
+            "expires_at": activity.expires_at.isoformat() if activity.expires_at else None
+        }), 200
+    except ValueError as ve:
+        db.session.rollback()
+        return jsonify({"message": f"Formato de data inválido: {str(ve)}"}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": str(e)}), 500
+
     
     
 @class_bp.route('/<int:class_id>/teams/generate', methods=['POST'])

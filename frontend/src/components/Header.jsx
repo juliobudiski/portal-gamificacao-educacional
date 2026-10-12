@@ -38,11 +38,16 @@ function Header({ handleTeacherTour, handleStudentTour, isActivityPage }) {
     navigate('/');
   };
 
+  // Destino padrão do início/logo de acordo com o papel do usuário
+  const homePath = isAuthenticated
+    ? (user?.role === 'professor' ? '/professor/dashboard' : user?.role === 'aluno' ? '/aluno/dashboard' : '/admin')
+    : '/';
+
   return (
     <header className={`flex-shrink-0 w-full max-w-full mx-auto bg-secondary-bg text-primary-text p-4 rounded-xl shadow-xl border-b-2 border-border-color z-50 transition-all duration-300 ${isActivityPage ? 'mt-0 mb-2 rounded-t-none' : 'mt-4 mb-4'}`}>
       <nav className="flex flex-col sm:flex-row justify-between items-center">
         <Link
-          to="/"
+          to={homePath}
           className="flex items-center space-x-2 mb-4 sm:mb-0 group transition-transform duration-300"
           onClick={closeAllMenus}
         >
@@ -64,7 +69,7 @@ function Header({ handleTeacherTour, handleStudentTour, isActivityPage }) {
         <ul className="flex flex-wrap justify-center sm:justify-end items-center gap-2 sm:gap-3">
           <li>
             <Link
-              to="/"
+              to={homePath}
               className="flex items-center space-x-1 px-4 py-2 rounded-xl hover:bg-primary-bg/50 hover:shadow-inner text-accent-yellow transition-all duration-300"
               onClick={closeAllMenus}
             >

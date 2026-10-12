@@ -34,26 +34,27 @@ const ToastNotification = ({ show, message, type = 'success', onClose }) => {
 
     const currentConfig = config[type] || config.success;
 
-    // Auto-fechamento após 4 segundos
+    // Auto-fechamento após 5 segundos
     useEffect(() => {
         const timer = setTimeout(() => {
             onClose();
-        }, 4000);
+        }, 5000);
         return () => clearTimeout(timer);
     }, [show, onClose]);
 
     return (
-        <div className="fixed bottom-5 right-5 z-[60] animate-slide-in-right">
-            <div className={`bg-secondary-bg border-l-4 ${currentConfig.borderColor} text-primary-text px-6 py-4 rounded shadow-2xl flex items-center gap-4 min-w-[300px] max-w-md border border-[#3e4a52]`}>
-                <div className={`${currentConfig.textColor} text-xl`}>
+        <div className="fixed top-6 right-6 z-[100] animate-slide-in-right">
+            <div className={`bg-secondary-bg/95 backdrop-blur-md border-l-4 ${currentConfig.borderColor} text-primary-text px-6 py-4 rounded-xl shadow-2xl flex items-center gap-4 min-w-[320px] max-w-lg border border-border-color`}>
+                <div className={`${currentConfig.textColor} text-2xl flex-shrink-0`}>
                     {currentConfig.icon}
                 </div>
                 <div className="flex-1">
-                    <p className="font-medium text-sm md:text-base">{message}</p>
+                    <p className="font-semibold text-sm md:text-base leading-snug">{message}</p>
                 </div>
                 <button
                     onClick={onClose}
-                    className="text-secondary-text hover:text-primary-text transition-colors"
+                    className="text-secondary-text hover:text-primary-text transition-colors p-1 rounded-lg hover:bg-primary-bg"
+                    aria-label="Fechar notificação"
                 >
                     <FaTimes />
                 </button>

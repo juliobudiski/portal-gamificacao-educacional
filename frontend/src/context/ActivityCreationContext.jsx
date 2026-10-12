@@ -47,7 +47,7 @@ export const ActivityCreationProvider = ({ children }) => {
     }, []);
 
     // O hook roda "em background". Monitora activityData e chama o serviço.
-    const { saveStatus, lastSavedAt } = useAutoSave(activityData, updateActivityId, 2000);
+    const { saveStatus, lastSavedAt, forceSave } = useAutoSave(activityData, updateActivityId, 2000);
 
     // ---------------------------
 
@@ -106,6 +106,7 @@ export const ActivityCreationProvider = ({ children }) => {
         startNewActivity,
         resetCreation,
         loadDraft,
+        forceSave,
         // Exporta status do salvamento para UI (ex: mostrar "Salvando..." no topo)
         autoSaveStatus: saveStatus,
         lastSavedAt

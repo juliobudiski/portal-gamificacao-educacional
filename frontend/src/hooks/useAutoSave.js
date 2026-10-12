@@ -60,5 +60,15 @@ export const useAutoSave = (data, updateIdCallback, delay = 2000) => {
         };
     }, [data, delay, save]);
 
-    return { saveStatus, lastSavedAt };
+    const forceSave = useCallback(async (customData = null) => {
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+            timeoutRef.current = null;
+        }
+        const dataToSave = customData || data;
+        await save(dataToSave);
+        prevDataRef.current = dataToSave;
+    }, [data, save]);
+
+    return { saveStatus, lastSavedAt, forceSave };
 };

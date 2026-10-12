@@ -11,12 +11,12 @@ import {
     FaUserGraduate,
     FaChevronDown,
     FaChevronUp,
-    FaUsers, FaClock, FaCheckCircle, FaTimesCircle, FaHourglassStart, FaShieldAlt, FaArrowLeft
+    FaUsers, FaClock, FaCheckCircle, FaTimesCircle, FaHourglassStart, FaShieldAlt, FaArrowLeft, FaCalendarAlt
 } from "react-icons/fa";
 
 // --- COMPONENTE INTERNO PARA O CARD DA ATIVIDADE ---
 // Este componente agora gerencia seu próprio estado de expansão
-function ActivityCard({ activity }) {
+function ActivityCard({ activity, isProfessor, onEditDeadline }) {
     const [isExpanded, setIsExpanded] = useState({
         description: false,
         gameElements: false,
@@ -169,7 +169,21 @@ function ActivityCard({ activity }) {
                 )}
             </div>
 
-            <div className="mt-6 text-right border-t border-border-color pt-4">
+            <div className="mt-6 flex items-center justify-between border-t border-border-color pt-4 gap-2">
+                {isProfessor ? (
+                    <button
+                        type="button"
+                        onClick={() => onEditDeadline(activity)}
+                        className="flex items-center gap-1.5 text-xs font-semibold py-2 px-3 rounded-lg border border-accent-yellow/40 bg-accent-yellow/10 text-accent-yellow hover:bg-accent-yellow/20 hover:border-accent-yellow transition-colors"
+                        title="Alterar data limite da atividade"
+                    >
+                        <FaCalendarAlt className="text-sm" />
+                        <span>Alterar Prazo</span>
+                    </button>
+                ) : (
+                    <div />
+                )}
+
                 {/* --- CORREÇÃO: Botão ciente do tema --- */}
                 <button
                     onClick={handleAccess}
@@ -204,6 +218,77 @@ function ClassDetailsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [students, setStudents] = useState([]);
     const [teams, setTeams] = useState([]);
+
+    // Estado para edição rápida de prazo pelo professor
+    const [deadlineModal, setDeadlineModal] = useState({
+        isOpen: false,
+        activity: null,
+        expiresAtDate: '',
+        expiresAtTime: '',
+        isSubmitting: false
+    });
+
+    const isProfessor = user?.role === 'professor';
+
+    const openDeadlineModal = (activity) => {
+        let initialDate = '';
+        let initialTime = '23:59';
+        if (activity.expiresAt) {
+            const d = new Date(activity.expiresAt);
+            initialDate = d.toISOString().split('T')[0];
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            initialTime = `${hours}:${minutes}`;
+        }
+        setDeadlineModal({
+            isOpen: true,
+            activity,
+            expiresAtDate: initialDate,
+            expiresAtTime: initialTime,
+            isSubmitting: false
+        });
+    };
+
+    const handleSaveDeadline = async (e) => {
+        e.preventDefault();
+        if (!deadlineModal.activity || !user?.token) return;
+
+        setDeadlineModal(prev => ({ ...prev, isSubmitting: true }));
+        try {
+            let combinedIso = null;
+            if (deadlineModal.expiresAtDate) {
+                const time = deadlineModal.expiresAtTime || '23:59';
+                combinedIso = `${deadlineModal.expiresAtDate}T${time}:00`;
+            }
+
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/classes/${class_id}/activities/${deadlineModal.activity.id}/deadline`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.token}`
+                },
+                body: JSON.stringify({ expires_at: combinedIso })
+            });
+
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || 'Falha ao atualizar prazo.');
+
+            // Atualiza a lista de atividades localmente
+            setActivities(prev => prev.map(a => {
+                if (a.id === deadlineModal.activity.id) {
+                    return { ...a, expiresAt: data.expires_at };
+                }
+                return a;
+            }));
+
+            setMessage('Prazo da atividade atualizado com sucesso!');
+            setDeadlineModal({ isOpen: false, activity: null, expiresAtDate: '', expiresAtTime: '', isSubmitting: false });
+        } catch (err) {
+            console.error('Erro ao atualizar prazo:', err);
+            setError(err.message || 'Erro ao atualizar prazo.');
+            setDeadlineModal(prev => ({ ...prev, isSubmitting: false }));
+        }
+    };
 
     useEffect(() => {
         const fetchClassData = async () => {
@@ -470,7 +555,12 @@ function ClassDetailsPage() {
                     {activities.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
                             {activities.map((activity) => (
-                                <ActivityCard key={activity.id} activity={activity} />
+                                <ActivityCard 
+                                    key={activity.id} 
+                                    activity={activity} 
+                                    isProfessor={isProfessor}
+                                    onEditDeadline={openDeadlineModal}
+                                />
                             ))}
                         </div>
                     ) : (
@@ -497,6 +587,81 @@ function ClassDetailsPage() {
                     </div>
                 )}
             </div>
+
+            {/* MODAL DE ALTERAÇÃO DE PRAZO (PROFESSOR) */}
+            {deadlineModal.isOpen && (
+                <div className="fixed inset-0 bg-primary-bg/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+                    <div className="bg-secondary-bg border border-border-color rounded-2xl shadow-2xl max-w-md w-full p-6">
+                        <div className="flex items-center justify-between mb-4 border-b border-border-color pb-3">
+                            <h3 className="text-lg font-bold text-accent-yellow flex items-center gap-2">
+                                <FaCalendarAlt />
+                                Alterar Prazo da Atividade
+                            </h3>
+                            <button
+                                onClick={() => setDeadlineModal({ ...deadlineModal, isOpen: false })}
+                                className="text-secondary-text hover:text-danger text-xl font-bold"
+                            >
+                                &times;
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSaveDeadline} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-primary-text mb-1">
+                                    Atividade
+                                </label>
+                                <p className="text-secondary-text text-sm font-medium p-2 bg-primary-bg rounded-lg border border-border-color">
+                                    {deadlineModal.activity?.title}
+                                </p>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-primary-text mb-1">
+                                    Data Limite
+                                </label>
+                                <input
+                                    type="date"
+                                    value={deadlineModal.expiresAtDate}
+                                    onChange={(e) => setDeadlineModal({ ...deadlineModal, expiresAtDate: e.target.value })}
+                                    className="w-full px-3 py-2 bg-primary-bg border border-border-color rounded-lg text-primary-text focus:outline-none focus:ring-2 focus:ring-accent-yellow"
+                                />
+                                <p className="text-xs text-secondary-text mt-1">Deixe em branco para atividade sem prazo limite.</p>
+                            </div>
+
+                            {deadlineModal.expiresAtDate && (
+                                <div>
+                                    <label className="block text-sm font-semibold text-primary-text mb-1">
+                                        Horário Limite
+                                    </label>
+                                    <input
+                                        type="time"
+                                        value={deadlineModal.expiresAtTime}
+                                        onChange={(e) => setDeadlineModal({ ...deadlineModal, expiresAtTime: e.target.value })}
+                                        className="w-full px-3 py-2 bg-primary-bg border border-border-color rounded-lg text-primary-text focus:outline-none focus:ring-2 focus:ring-accent-yellow"
+                                    />
+                                </div>
+                            )}
+
+                            <div className="flex justify-end gap-3 pt-4 border-t border-border-color">
+                                <button
+                                    type="button"
+                                    onClick={() => setDeadlineModal({ ...deadlineModal, isOpen: false })}
+                                    className="px-4 py-2 rounded-xl text-sm font-medium text-secondary-text hover:bg-primary-bg transition-colors"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={deadlineModal.isSubmitting}
+                                    className="px-5 py-2 rounded-xl text-sm font-bold bg-accent-yellow text-gray-900 hover:bg-yellow-400 disabled:opacity-50 transition-colors shadow-md"
+                                >
+                                    {deadlineModal.isSubmitting ? 'Salvando...' : 'Salvar Prazo'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -182,7 +182,11 @@ const AchievementsTab = ({ onReturn, activityId }) => {
                                 src={medal.imageUrl}
                                 alt={`Medalha ${medal.name}`}
                                 loading="lazy"
-                                className={`w-24 h-24 transition-all duration-300 ${isUnlocked ? '' : 'filter grayscale opacity-60'}`}
+                                onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = '/medals/default.webp';
+                                }}
+                                className={`w-24 h-24 object-contain transition-all duration-300 ${isUnlocked ? '' : 'filter grayscale opacity-60'}`}
                             />
                             <p className={`mt-2 font-semibold text-sm ${isUnlocked ? 'text-primary-text' : 'text-secondary-text'}`}>
                                 {medal.name}
