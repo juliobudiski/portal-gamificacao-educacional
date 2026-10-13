@@ -263,7 +263,7 @@ function UserProfilePage() {
     navigate('/login');
   };
 
-  const serverUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const serverUrl = (import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL.trim() !== '') ? import.meta.env.VITE_API_URL : '';
   const displayAvatar = user?.profile_picture
     ? (user.profile_picture.startsWith('/avatars/') ? user.profile_picture : `${serverUrl}${user.profile_picture}`)
     : '/avatars/default_avatar.webp';
