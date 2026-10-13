@@ -253,7 +253,7 @@ class AIService:
              socketio.emit('ai_progress', {'percent': percent, 'message': f"Finalizando roteiro..."}, room=room_id, namespace='/')
              socketio.sleep(0)
              logger.info(f"Emitindo ai_complete para sala {room_id} com chaves: {list(final_map.keys())}")
-             socketio.emit('ai_complete', {'result': final_map, 'room_id': room_id}, namespace='/')
+             socketio.emit('ai_complete', {'result': final_map, 'room_id': room_id}, room=room_id, namespace='/')
              socketio.sleep(0)
 
         # Restaurar chave default para não vazar a custom key em outras threads assíncronas no escopo global
