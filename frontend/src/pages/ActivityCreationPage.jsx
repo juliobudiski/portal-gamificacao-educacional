@@ -417,7 +417,7 @@ function ActivityCreationPage({ existingActivity }) {
     setActivityData(prev => {
       const newPath = prev.gamificationDesign.progression_path.map(step => {
         if (step.id === editingStep.id) {
-          return { ...step, content: newContent };
+          return { ...step, content: newContent, isDraft: false };
         }
         return step;
       });

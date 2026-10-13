@@ -110,7 +110,7 @@ class AIService:
         if not active_key:
             logger.error("Nenhuma chave de API (Usuário ou Sistema) configurada!")
             if room_id:
-                socketio.emit('ai_error', {'message': 'Nenhuma chave de API configurada. Adicione sua chave no Perfil.', 'room_id': room_id}, namespace='/')
+                socketio.emit('ai_error', {'message': 'Nenhuma chave de API configurada. Adicione sua chave no Perfil.', 'room_id': room_id}, room=room_id, namespace='/')
             return {}
         
         # Log de debug para saber qual origem da chave estamos usando
@@ -137,7 +137,7 @@ class AIService:
                 # Garante que o frontend saia dos 5% iniciais
                 if percent == 0: percent = 10 
                 logger.info(f"Emitindo ai_progress para sala {room_id}: {percent}%")
-                socketio.emit('ai_progress', {'percent': percent, 'message': f"Criando {self._get_step_label(step_type)}...", 'room_id': room_id}, namespace='/')
+                socketio.emit('ai_progress', {'percent': percent, 'message': f"Criando {self._get_step_label(step_type)}...", 'room_id': room_id}, room=room_id, namespace='/')
                 socketio.sleep(0) # Força o context switch do eventlet para garantir o envio imediato da mensagem!
 
             # Build prompt usando a memória atualizada (agora separa a persona em System Instruction)
@@ -224,7 +224,7 @@ class AIService:
                     error_msg = "Chave de API inválida. Verifique sua chave no perfil ou aguarde a cota do sistema ser restaurada."
                     logger.error(f"❌ ABORT: {error_msg} | Detalhe: {str(e)}")
                     if room_id:
-                        socketio.emit('ai_error', {'message': error_msg, 'room_id': room_id}, namespace='/')
+                        socketio.emit('ai_error', {'message': error_msg, 'room_id': room_id}, room=room_id, namespace='/')
                     # Restaurar chave padrão antes de sair
                     if user_api_key and self.default_api_key:
                         genai.configure(api_key=self.default_api_key)

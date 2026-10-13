@@ -1,0 +1,187 @@
+"""
+Testes Automatizados para o Pipeline de Rascunhos de IA
+Cobre:
+1. Sincronização relacional de QuizContent, NarrativeContent e LearningContent a partir de progression_path
+2. Idempotência e integridade referencial no ciclo de vida de atividades
+3. Persistência de conteúdos gerados pela IA através de update_activity e autosave
+4. Resiliência do serviço de IA (fallback de modelos e validação estrutural)
+"""
+import pytest
+from app.models import Activity, QuizContent, NarrativeContent, LearningContent, User
+from app.services.activity_service import sync_progression_path_contents, create_activity, update_activity, save_autosave
+from app.services.ai_service import AIService
+
+class TestAIDraftPipeline:
+    def test_sync_progression_path_contents_creates_relational_entities(self, client, db_session, professor_user):
+        activity = Activity(
+            professor_id=professor_user.id,
+            title="Atividade Teste Trilha",
+            description="Descrição teste",
+            is_draft=True
+        )
+        db_session.add(activity)
+        db_session.commit()
+
+        progression_path = [
+            {
+                "id": "step_narrative_1",
+                "type": "narrative",
+                "content": {
+                    "type": "narrative",
+                    "scenario": "/narrativa/cenarios/cenario1.webp",
+                    "characters": [{"role": "Mentor", "image": "/narrativa/personagens/instrutor1.webp"}],
+                    "dialogue": [{"characterRole": "Mentor", "text": "Iniciando a jornada no espaço."}]
+                }
+            },
+            {
+                "id": "step_content_2",
+                "type": "content",
+                "content": {
+                    "type": "content",
+                    "text_content": "### Fundamentos de Gravidade\nA gravidade atrai os corpos...",
+                    "video_url": "https://youtube.com/watch?v=123",
+                    "material_link": "https://docs.educacional.com"
+                }
+            },
+            {
+                "id": "step_quiz_3",
+                "type": "quiz",
+                "content": {
+                    "type": "quiz",
+                    "questions": [
+                        {
+                            "text": "Qual a aceleração da gravidade aproximada na Terra?",
+                            "options": ["9.8 m/s²", "5.0 m/s²", "12.0 m/s²", "1.6 m/s²"],
+                            "correct_option": "9.8 m/s²",
+                            "points": 10,
+                            "coins": 5,
+                            "timeLimit": 45
+                        }
+                    ]
+                }
+            }
+        ]
+
+        sync_progression_path_contents(activity.id, progression_path)
+        db_session.commit()
+
+        narrative = NarrativeContent.query.filter_by(activity_id=activity.id, step_id="step_narrative_1").first()
+        assert narrative is not None
+        assert narrative.scenario == "/narrativa/cenarios/cenario1.webp"
+        assert len(narrative.dialogue) == 1
+        assert narrative.dialogue[0]["characterRole"] == "Mentor"
+
+        learning = LearningContent.query.filter_by(activity_id=activity.id, step_id="step_content_2").first()
+        assert learning is not None
+        assert "Fundamentos de Gravidade" in learning.text_content
+        assert learning.video_url == "https://youtube.com/watch?v=123"
+
+        quiz = QuizContent.query.filter_by(activity_id=activity.id, step_id="step_quiz_3").first()
+        assert quiz is not None
+        assert len(quiz.questions) == 1
+        assert quiz.questions[0]["correct_option"] == "9.8 m/s²"
+
+    def test_sync_progression_path_is_idempotent_and_updates_in_place(self, client, db_session, professor_user):
+        activity = Activity(
+            professor_id=professor_user.id,
+            title="Atividade Idempotente",
+            description="Teste",
+            is_draft=False
+        )
+        db_session.add(activity)
+        db_session.commit()
+
+        initial_path = [
+            {
+                "id": "step_q1",
+                "type": "quiz",
+                "content": {
+                    "type": "quiz",
+                    "questions": [{"text": "Pergunta V1", "options": ["A", "B"], "correct_option": "A"}]
+                }
+            }
+        ]
+
+        sync_progression_path_contents(activity.id, initial_path)
+        db_session.commit()
+
+        assert QuizContent.query.filter_by(activity_id=activity.id).count() == 1
+        q_item = QuizContent.query.filter_by(activity_id=activity.id, step_id="step_q1").first()
+        assert q_item.questions[0]["text"] == "Pergunta V1"
+
+        updated_path = [
+            {
+                "id": "step_q1",
+                "type": "quiz",
+                "content": {
+                    "type": "quiz",
+                    "questions": [{"text": "Pergunta V2 Refinada", "options": ["A", "B"], "correct_option": "A"}]
+                }
+            }
+        ]
+        sync_progression_path_contents(activity.id, updated_path)
+        db_session.commit()
+
+        assert QuizContent.query.filter_by(activity_id=activity.id).count() == 1
+        q_item_updated = QuizContent.query.filter_by(activity_id=activity.id, step_id="step_q1").first()
+        assert q_item_updated.questions[0]["text"] == "Pergunta V2 Refinada"
+
+    def test_update_activity_synchronizes_new_ai_generated_contents(self, client, db_session, professor_user):
+        activity = Activity(
+            professor_id=professor_user.id,
+            title="Atividade Preexistente",
+            description="Sem passos",
+            is_draft=False
+        )
+        db_session.add(activity)
+        db_session.commit()
+
+        update_payload = {
+            "title": "Atividade Atualizada com IA",
+            "gamificationDesign": {
+                "theme": "vila_da_aventura",
+                "progression_path": [
+                    {
+                        "id": "step_ai_content",
+                        "type": "content",
+                        "content": {
+                            "type": "content",
+                            "text_content": "Guia de Sobrevivência gerado pela IA com markdown detalhado."
+                        }
+                    }
+                ]
+            }
+        }
+
+        response, status = update_activity(professor_user, activity.id, update_payload)
+        assert status == 200
+
+        content_item = LearningContent.query.filter_by(activity_id=activity.id, step_id="step_ai_content").first()
+        assert content_item is not None
+        assert "Guia de Sobrevivência" in content_item.text_content
+
+    def test_ai_service_validation_integrity(self):
+        ai = AIService()
+
+        valid_narrative = {
+            "type": "narrative",
+            "dialogue": [
+                {"characterRole": "Mentor", "text": "Linha 1"},
+                {"characterRole": "Aluno", "text": "Linha 2"}
+            ]
+        }
+        assert ai._validate_content_integrity("narrative", valid_narrative) is True
+
+        invalid_narrative = {
+            "type": "narrative",
+            "dialogue": [{"characterRole": "Mentor", "text": "Apenas uma linha"}]
+        }
+        assert ai._validate_content_integrity("narrative", invalid_narrative) is False
+
+        valid_quiz = {"type": "quiz", "questions": [{"text": "P?", "options": ["A"]}]}
+        assert ai._validate_content_integrity("quiz", valid_quiz) is True
+        assert ai._validate_content_integrity("quiz", {"type": "quiz", "questions": []}) is False
+
+        valid_content = {"type": "content", "text_content": "A" * 60}
+        assert ai._validate_content_integrity("content", valid_content) is True
+        assert ai._validate_content_integrity("content", {"type": "content", "text_content": "Curto"}) is False

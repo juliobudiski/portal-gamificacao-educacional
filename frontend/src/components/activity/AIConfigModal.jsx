@@ -121,8 +121,10 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
             console.log(`[SOCKET DEBUG] Evento Recebido: ${eventName}`, args);
         });
 
+        const expectedRoom = `user_ai_${user?.id}`;
+
         socket.on('ai_progress', (data) => {
-            if (data.room_id !== `user_ai_${user.id}`) return;
+            if (data?.room_id && data.room_id !== expectedRoom) return;
             // Se recebeu evento, significa que a comunicação está viva, renova o timeout de segurança
             if (deadlockTimeoutRef.current) clearTimeout(deadlockTimeoutRef.current);
             deadlockTimeoutRef.current = setTimeout(() => {
@@ -132,15 +134,15 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                 setProgress(0);
             }, 120000);
 
-            const safePercent = Math.min(Math.max(data.percent || 0, 0), 99);
+            const safePercent = Math.min(Math.max(data?.percent || 0, 0), 99);
             setProgress(safePercent);
-            setProgressMessage(data.message || "Processando...");
+            setProgressMessage(data?.message || "Processando...");
         });
 
         socket.on('ai_complete', (data) => {
-            if (data.room_id !== `user_ai_${user.id}`) return;
+            if (data?.room_id && data.room_id !== expectedRoom) return;
             if (deadlockTimeoutRef.current) clearTimeout(deadlockTimeoutRef.current);
-            const contentMap = data.result || data;
+            const contentMap = data?.result || data;
 
             if (!contentMap || typeof contentMap !== 'object' || Object.keys(contentMap).length === 0) {
                 showToast("A IA não conseguiu gerar o conteúdo. O formato retornado é inválido. Tente novamente.", "error");
@@ -158,8 +160,9 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
         });
 
         socket.on('ai_error', (data) => {
+            if (data?.room_id && data.room_id !== expectedRoom) return;
             if (deadlockTimeoutRef.current) clearTimeout(deadlockTimeoutRef.current);
-            showToast(`Falha da IA: ${data.message || 'Erro desconhecido'}`, "error");
+            showToast(`Falha da IA: ${data?.message || 'Erro desconhecido'}`, "error");
             setLoading(false); // Libera o botão para nova tentativa
             setProgressMessage("Falha na geração.");
             setProgress(0);
