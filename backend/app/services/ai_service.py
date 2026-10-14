@@ -64,10 +64,10 @@ class AIService:
         
         # Lista de prioridade de modelos funcionais e rápidos para evitar timeouts de requisição
         self.MODEL_HIERARCHY = [
-            'models/gemini-2.5-flash-lite', # 1. Ultrarrápido e confiável
-            'models/gemini-2.5-flash',      # 2. Alta qualidade e velocidade
+            'models/gemini-3.1-flash-lite', # 1. Ultrarrápido (<1s) e cota livre
+            'models/gemini-2.5-flash',      # 2. Alta fidelidade e raciocínio profundo
             'models/gemini-flash-latest',   # 3. Fallback estável
-            'models/gemini-3.6-flash'       # 4. Modelo adicional de alta capacidade
+            'models/gemini-2.5-flash-lite'  # 4. Opção adicional rápida
         ]
         
         # Configurações de geração para a API, buscando respostas em JSON.
@@ -176,7 +176,7 @@ class AIService:
                         system_instruction=system_instruction
                     )
                     socketio.sleep(0) # Cede controle para o heartbeat do eventlet
-                    response = model.generate_content(full_prompt, request_options={"timeout": 25})
+                    response = model.generate_content(full_prompt, request_options={"timeout": 45})
                     socketio.sleep(0)
                     logger.debug(f"[DEBUG] Resposta raw do LLM (primeiros 300 chars): {response.text[:300]}...")
                     
@@ -211,15 +211,10 @@ class AIService:
                     else:
                         raise Exception("Conteúdo estruturalmente inválido gerado pela IA")
                 except google_exceptions.ResourceExhausted as e:
-                    if current_retry < 1:
-                        current_retry += 1
-                        logger.warning(f"⚠️ Erro transitório (ResourceExhausted) em {model_name} (tentativa {current_retry}/2). Retentando em 2s...")
-                        socketio.sleep(2)
-                        continue
-                    else:
-                        logger.warning(f"⚠️ Cota esgotada em {model_name}. Rebaixando modelo...")
-                        current_model_idx += 1
-                        current_retry = 0
+                    logger.warning(f"⚠️ Cota esgotada (ResourceExhausted) em {model_name}. Rebaixando modelo na hierarquia...")
+                    fallback_reason = str(e)
+                    current_model_idx += 1
+                    current_retry = 0
                 except google_exceptions.InvalidArgument as e:
                     # FIX: API_KEY_INVALID (400) — não adianta tentar outros modelos ou outros passos.
                     # A chave é inválida para toda a sessão. Abortar TODA a orquestração agora.
@@ -232,16 +227,10 @@ class AIService:
                         genai.configure(api_key=self.default_api_key, transport='rest')
                     return {}  # Aborta toda a orquestração
                 except Exception as e:
-                    logger.error(f"Erro no modelo {model_name}: {str(e)}")
-                    if "429" in str(e) or "Quota" in str(e) or "503" in str(e):
-                        current_model_idx += 1
-                    elif "404" in str(e) or "no longer available" in str(e).lower():
-                        # Modelo deprecado — pular para o próximo na hierarquia
-                        logger.warning(f"⚠️ Modelo {model_name} descontinuado (404). Pulando para o próximo.")
-                        current_model_idx += 1
-                    else:
-                        fallback_reason = str(e)
-                        break
+                    logger.error(f"Erro no modelo {model_name} para {step_type} no passo {step_id}: {str(e)}")
+                    fallback_reason = str(e)
+                    current_model_idx += 1
+                    current_retry = 0
             
             if not success:
                 logger.error(f"Falha ao gerar passo {step_id}. Usando fallback estático.")
@@ -276,7 +265,7 @@ class AIService:
             model_name = self.MODEL_HIERARCHY[i]
             try:
                 socketio.sleep(0)
-                response = current_model.generate_content(prompt, request_options={"timeout": 25})
+                response = current_model.generate_content(prompt, request_options={"timeout": 45})
                 socketio.sleep(0)
                 return self._clean_and_parse_json(response.text), i # Retorna o conteúdo e o índice que funcionou
             except google_exceptions.ResourceExhausted as e:
@@ -325,7 +314,7 @@ class AIService:
 
                 # Tenta gerar o conteúdo.
                 socketio.sleep(0)
-                response = current_model.generate_content(prompt, request_options={"timeout": 25})
+                response = current_model.generate_content(prompt, request_options={"timeout": 45})
                 socketio.sleep(0)
                 
                 # Se chegou aqui, funcionou. Retorna o texto.
@@ -365,22 +354,18 @@ class AIService:
             return False
             
         if step_type == 'narrative':
-            # Precisa ter array de diálogos e pelo menos 2 falas
             dialogue = content.get('dialogue', [])
             has_dialogue = isinstance(dialogue, list) and len(dialogue) >= 2
-            # Garante que as falas tenham texto
-            valid_lines = all(d.get('text') and d.get('characterRole') for d in dialogue) if has_dialogue else False
+            valid_lines = all(d.get('text') and (d.get('characterRole') or d.get('character') or d.get('speaker')) for d in dialogue) if has_dialogue else False
             return has_dialogue and valid_lines
 
         elif step_type == 'quiz':
-            # Precisa ter perguntas
             questions = content.get('questions', [])
-            return isinstance(questions, list) and len(questions) > 0
+            return isinstance(questions, list) and len(questions) > 0 and all(isinstance(q, dict) and bool(q.get('text') or q.get('question')) for q in questions)
 
         elif step_type == 'content':
-            # Precisa ter texto
             text = content.get('text_content', '')
-            return len(str(text)) > 50
+            return len(str(text).strip()) >= 20
 
         return True
 
@@ -475,51 +460,110 @@ class AIService:
         @returns {Dict} Dicionário parseado ou vazio em caso de erro.
         """
         
-        # 1. Pré-limpeza simples (remover espaços e tags comuns markdown markdown de json)
+        # 1. Limpeza segura de blocos de markdown externos de ponta a ponta
         clean_text = raw_text.strip()
-        
-        # Se vier encapsulado em ```json ... ```, extrai o conteúdo do meio via Regex
-        match = re.search(r'```(?:json)?\s*(.*?)\s*```', clean_text, re.DOTALL | re.IGNORECASE)
-        if match:
-            clean_text = match.group(1).strip()
+        if clean_text.startswith("```"):
+            first_nl = clean_text.find("\n")
+            if first_nl != -1:
+                clean_text = clean_text[first_nl + 1:]
+            last_fence = clean_text.rstrip().rfind("```")
+            if last_fence != -1:
+                clean_text = clean_text[:last_fence].strip()
+        elif "```" in clean_text:
+            match = re.search(r'```(?:json)?\s*(.*?)\s*```(?=[^`]*$)', clean_text, re.DOTALL | re.IGNORECASE)
+            if match:
+                clean_text = match.group(1).strip()
             
+        def _extract_outer_brackets(text):
+            first_brace = text.find('{')
+            first_bracket = text.find('[')
+            start = -1
+            end = -1
+            if first_brace != -1 and (first_bracket == -1 or first_brace < first_bracket):
+                start = first_brace
+                end = text.rfind('}')
+            elif first_bracket != -1:
+                start = first_bracket
+                end = text.rfind(']')
+            if start != -1 and end != -1 and end > start:
+                return text[start:end + 1]
+            return text
+
         def _normalize(data):
             if isinstance(data, list):
-                if data and all(isinstance(item, dict) and ('options' in item or 'correct_option' in item) for item in data):
-                    return {"type": "quiz", "questions": data}
-                if data and all(isinstance(item, dict) and ('characterRole' in item or ('character' in item and 'text' in item)) for item in data):
-                    return {"type": "narrative", "dialogue": data}
-                if len(data) == 1 and isinstance(data[0], dict):
+                if data and all(isinstance(item, dict) and ('options' in item or 'correct_option' in item or 'question' in item) for item in data):
+                    data = {"type": "quiz", "questions": data}
+                elif data and all(isinstance(item, dict) and ('characterRole' in item or 'character' in item or 'speaker' in item or 'text' in item) for item in data):
+                    data = {"type": "narrative", "dialogue": data}
+                elif len(data) == 1 and isinstance(data[0], dict):
                     data = data[0]
 
             if isinstance(data, dict):
-                if ('options' in data or 'correct_option' in data) and 'questions' not in data:
-                    return {"type": "quiz", "questions": [data]}
+                # Se for um quiz que veio como pergunta solta
+                if ('options' in data or 'correct_option' in data or 'question' in data) and 'questions' not in data:
+                    data = {"type": "quiz", "questions": [data]}
                 if 'dialogue' in data and 'type' not in data:
                     data['type'] = 'narrative'
+
+                # Normalização e preenchimento de defaults para quiz
+                if data.get('type') == 'quiz' and 'questions' in data:
+                    for q in data.get('questions', []):
+                        if isinstance(q, dict):
+                            if 'text' not in q and 'question' in q:
+                                q['text'] = q['question']
+                            if 'points' not in q:
+                                q['points'] = 10
+                            if 'coins' not in q:
+                                q['coins'] = 5
+                            if 'timeLimit' not in q:
+                                q['timeLimit'] = 30
+                            if 'options' in q and isinstance(q['options'], list):
+                                if not q.get('correct_option') and len(q['options']) > 0:
+                                    q['correct_option'] = q['options'][0]
+
+                # Normalização de narrativa
+                if data.get('type') == 'narrative' and 'dialogue' in data:
+                    for d in data.get('dialogue', []):
+                        if isinstance(d, dict):
+                            if 'characterRole' not in d:
+                                d['characterRole'] = d.get('character') or d.get('speaker') or d.get('role') or 'Mentor'
+                            if 'text' not in d and 'speech' in d:
+                                d['text'] = d['speech']
+
                 return data
             return None
 
-        # Fast-Path: Tenta usar o parser nativo (super rápido) antes de engatilhar a lib externa.
+        # 1. Fast-Path: json.loads
         try:
             result = json.loads(clean_text)
             norm = _normalize(result)
             if norm is not None:
                 return norm
-        except json.JSONDecodeError:
-            pass # Falhou, vai pro fallback do json_repair
-            
+        except Exception:
+            pass
+
+        # 2. json_repair
         try:
-            # json_repair cuida magicamente de crases, vírgulas sobrando, etc.
             result = json_repair.loads(clean_text)
             norm = _normalize(result)
             if norm is not None:
                 return norm
-            logger.error("JSON Parse Error: Resultado não é um dicionário ou lista compatível.")
-            return {}
-        except Exception as e:
-            logger.error(f"JSON Parse Error: {e} | Text snippet: {raw_text[:100]}...")
-            return {}
+        except Exception:
+            pass
+
+        # 3. Fallback com extração de delimitadores externos
+        bracketed = _extract_outer_brackets(clean_text)
+        if bracketed != clean_text:
+            try:
+                result = json_repair.loads(bracketed)
+                norm = _normalize(result)
+                if norm is not None:
+                    return norm
+            except Exception:
+                pass
+
+        logger.error(f"JSON Parse Error: Não foi possível parsear JSON válido | Snippet: {raw_text[:120]}...")
+        return {}
     
     def _shuffle_quiz_options(self, content: Dict) -> Dict:
         """
@@ -620,7 +664,7 @@ class AIService:
                 )
                 
                 socketio.sleep(0)
-                response = model.generate_content(prompt, request_options={"timeout": 25})
+                response = model.generate_content(prompt, request_options={"timeout": 45})
                 socketio.sleep(0)
                 
                 # Tenta parsear o JSON

@@ -302,3 +302,20 @@ class TestAIDraftPipeline:
         assert result["type"] == "narrative"
         assert len(result["dialogue"]) == 2
         assert result["dialogue"][0]["characterRole"] == "Mentor"
+
+        # 6. Markdown enclosing nested code fences in quiz text
+        nested_markdown_quiz = '```json\n{"type": "quiz", "questions": [{"text": "Observe o codigo:\\n```python\\nprint(\'hello\')\\n```\\nO que faz?", "options": ["Imprime hello", "Erro"], "correct_option": "Imprime hello"}]}\n```'
+        result = ai_service._clean_and_parse_json(nested_markdown_quiz)
+        assert result["type"] == "quiz"
+        assert "print('hello')" in result["questions"][0]["text"]
+
+        # 7. Quiz with question alias instead of text
+        quiz_question_alias = '{"type": "quiz", "questions": [{"question": "O que e POO?", "options": ["Paradigma", "Linguagem"], "correct_option": "Paradigma"}]}'
+        result = ai_service._clean_and_parse_json(quiz_question_alias)
+        assert result["questions"][0]["text"] == "O que e POO?"
+
+        # 8. Narrative with character alias instead of characterRole
+        narrative_char_alias = '{"dialogue": [{"character": "Mentor", "text": "Iniciando jornada."}]}'
+        result = ai_service._clean_and_parse_json(narrative_char_alias)
+        assert result["type"] == "narrative"
+        assert result["dialogue"][0]["characterRole"] == "Mentor"
