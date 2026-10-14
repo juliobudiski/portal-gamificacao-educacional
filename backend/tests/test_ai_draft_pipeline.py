@@ -270,3 +270,35 @@ class TestAIDraftPipeline:
         assert response.status_code == 400
         data = response.get_json()
         assert "não permitidos" in data["message"]
+
+    def test_clean_and_parse_json_handles_various_formats(self):
+        """Valida que _clean_and_parse_json normaliza dicts, markdown, listas de quiz e narrativas."""
+        ai_service = AIService()
+
+        # 1. Normal dict
+        result = ai_service._clean_and_parse_json('{"key": "value"}')
+        assert result == {"key": "value"}
+
+        # 2. Markdown fenced json
+        markdown_text = "```json\n{\"text_content\": \"Conteúdo educativo sobre algoritmos.\"}\n```"
+        result = ai_service._clean_and_parse_json(markdown_text)
+        assert result == {"text_content": "Conteúdo educativo sobre algoritmos."}
+
+        # 3. List with single dict
+        list_single = '[{"title": "Unico"}]'
+        result = ai_service._clean_and_parse_json(list_single)
+        assert result == {"title": "Unico"}
+
+        # 4. List of quiz questions normalized to {"type": "quiz", "questions": [...]}
+        quiz_list = '[{"text": "Quanto é 2+2?", "options": ["3", "4"], "correct_option": "4"}]'
+        result = ai_service._clean_and_parse_json(quiz_list)
+        assert result["type"] == "quiz"
+        assert len(result["questions"]) == 1
+        assert result["questions"][0]["text"] == "Quanto é 2+2?"
+
+        # 5. List of dialogue normalized to {"type": "narrative", "dialogue": [...]}
+        dialogue_list = '[{"characterRole": "Mentor", "text": "Bem-vindo!"}, {"characterRole": "Aluno", "text": "Obrigado!"}]'
+        result = ai_service._clean_and_parse_json(dialogue_list)
+        assert result["type"] == "narrative"
+        assert len(result["dialogue"]) == 2
+        assert result["dialogue"][0]["characterRole"] == "Mentor"

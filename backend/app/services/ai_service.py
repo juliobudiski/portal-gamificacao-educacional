@@ -60,7 +60,7 @@ class AIService:
         """
         self.default_api_key = os.environ.get("GOOGLE_API_KEY")
         if self.default_api_key:
-            genai.configure(api_key=self.default_api_key)
+            genai.configure(api_key=self.default_api_key, transport='rest')
         
         # Lista de prioridade de modelos funcionais e rápidos para evitar timeouts de requisição
         self.MODEL_HIERARCHY = [
@@ -116,10 +116,10 @@ class AIService:
         # Log de debug para saber qual origem da chave estamos usando
         if user_api_key:
             logger.debug("Usando a chave de API fornecida pelo usuário (BYOK).")
-            genai.configure(api_key=user_api_key)
+            genai.configure(api_key=user_api_key, transport='rest')
         else:
             logger.debug("Usando a chave de API padrão do sistema.")
-            genai.configure(api_key=self.default_api_key)
+            genai.configure(api_key=self.default_api_key, transport='rest')
         
         # Memória de execução persistente durante a orquestração
         execution_trace = {
@@ -175,7 +175,9 @@ class AIService:
                         generation_config=config,
                         system_instruction=system_instruction
                     )
-                    response = model.generate_content(full_prompt)
+                    socketio.sleep(0) # Cede controle para o heartbeat do eventlet
+                    response = model.generate_content(full_prompt, request_options={"timeout": 25})
+                    socketio.sleep(0)
                     logger.debug(f"[DEBUG] Resposta raw do LLM (primeiros 300 chars): {response.text[:300]}...")
                     
                     if step_type == 'content':
@@ -227,7 +229,7 @@ class AIService:
                         socketio.emit('ai_error', {'message': error_msg, 'room_id': room_id}, room=room_id, namespace='/')
                     # Restaurar chave padrão antes de sair
                     if user_api_key and self.default_api_key:
-                        genai.configure(api_key=self.default_api_key)
+                        genai.configure(api_key=self.default_api_key, transport='rest')
                     return {}  # Aborta toda a orquestração
                 except Exception as e:
                     logger.error(f"Erro no modelo {model_name}: {str(e)}")
@@ -258,7 +260,7 @@ class AIService:
 
         # Restaurar chave default para não vazar a custom key em outras threads assíncronas no escopo global
         if user_api_key and self.default_api_key:
-            genai.configure(api_key=self.default_api_key)
+            genai.configure(api_key=self.default_api_key, transport='rest')
 
         return final_map
 
@@ -273,8 +275,9 @@ class AIService:
         for i in range(start_index, len(self.MODEL_HIERARCHY)):
             model_name = self.MODEL_HIERARCHY[i]
             try:
-                current_model = genai.GenerativeModel(model_name, generation_config=self.generation_config)
-                response = current_model.generate_content(prompt)
+                socketio.sleep(0)
+                response = current_model.generate_content(prompt, request_options={"timeout": 25})
+                socketio.sleep(0)
                 return self._clean_and_parse_json(response.text), i # Retorna o conteúdo e o índice que funcionou
             except google_exceptions.ResourceExhausted as e:
                 # HTTP 429: Rate Limit / Quota Exceeded
@@ -321,7 +324,9 @@ class AIService:
                     logger.debug(f"[AIService] Prompt length: {len(prompt)} chars")
 
                 # Tenta gerar o conteúdo.
-                response = current_model.generate_content(prompt)
+                socketio.sleep(0)
+                response = current_model.generate_content(prompt, request_options={"timeout": 25})
+                socketio.sleep(0)
                 
                 # Se chegou aqui, funcionou. Retorna o texto.
                 logger.info(f"✅ Sucesso com {model_name}!")
@@ -478,21 +483,40 @@ class AIService:
         if match:
             clean_text = match.group(1).strip()
             
+        def _normalize(data):
+            if isinstance(data, list):
+                if data and all(isinstance(item, dict) and ('options' in item or 'correct_option' in item) for item in data):
+                    return {"type": "quiz", "questions": data}
+                if data and all(isinstance(item, dict) and ('characterRole' in item or ('character' in item and 'text' in item)) for item in data):
+                    return {"type": "narrative", "dialogue": data}
+                if len(data) == 1 and isinstance(data[0], dict):
+                    data = data[0]
+
+            if isinstance(data, dict):
+                if ('options' in data or 'correct_option' in data) and 'questions' not in data:
+                    return {"type": "quiz", "questions": [data]}
+                if 'dialogue' in data and 'type' not in data:
+                    data['type'] = 'narrative'
+                return data
+            return None
+
         # Fast-Path: Tenta usar o parser nativo (super rápido) antes de engatilhar a lib externa.
         try:
             result = json.loads(clean_text)
-            if isinstance(result, dict):
-                return result
+            norm = _normalize(result)
+            if norm is not None:
+                return norm
         except json.JSONDecodeError:
             pass # Falhou, vai pro fallback do json_repair
             
         try:
             # json_repair cuida magicamente de crases, vírgulas sobrando, etc.
             result = json_repair.loads(clean_text)
-            if not isinstance(result, dict):
-                logger.error("JSON Parse Error: Resultado não é um dicionário.")
-                return {}
-            return result
+            norm = _normalize(result)
+            if norm is not None:
+                return norm
+            logger.error("JSON Parse Error: Resultado não é um dicionário ou lista compatível.")
+            return {}
         except Exception as e:
             logger.error(f"JSON Parse Error: {e} | Text snippet: {raw_text[:100]}...")
             return {}
@@ -595,8 +619,9 @@ class AIService:
                     generation_config={"response_mime_type": "application/json"}
                 )
                 
-                logger.info(f"🛡️ Verificando segurança com modelo: {model_name}...")
-                response = model.generate_content(prompt)
+                socketio.sleep(0)
+                response = model.generate_content(prompt, request_options={"timeout": 25})
+                socketio.sleep(0)
                 
                 # Tenta parsear o JSON
                 result = json.loads(response.text)
