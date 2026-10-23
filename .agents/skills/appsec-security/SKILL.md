@@ -65,3 +65,8 @@ Para cada nova arquitetura, integração ou módulo crítico, avaliar os seis ve
    - Proibir expressamente o registro de senhas, CPFs, e-mails, números de cartão de crédito e tokens de acesso nos arquivos de log e dashboards de métricas.
 3. **Direito ao Esquecimento e Retenção Controlada:**
    - Implementar mecanismos de exclusão permanente ou anonimização irreversível de dados a pedido do titular ou após o término do período de retenção legal.
+4. **Privacidade e Proteção de Destinatários em Disparos de E-mail (Anti-Vazamento LGPD):**
+   - **Proibição Estrita de Múltiplos Destinatários em `To` ou `Cc`:** Comunicações em massa ou para grupos nunca devem expor endereços uns aos outros. Usar envio individualizado ou lista estritamente em **`Bcc` (Cópia Oculta)** com chunking seguro (máx. 50 por lote).
+   - **Validação de Sintaxe RFC 5322:** Validar rigorosamente e-mails antes de enfileirar disparos para evitar injeção de cabeçalhos (`\r\n` injection).
+   - **Double Opt-in e Tokens Temporais:** Confirmações de e-mail e newsletters devem usar links assinados (HMAC/JWT) com expiração determinística e taxa limitada (rate limit) por IP e e-mail.
+

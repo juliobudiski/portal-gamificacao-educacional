@@ -10,6 +10,11 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 
 
+DEFAULT_CACHE_FILE = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "data", "test_state.json")
+)
+
+
 class TestStateCache:
     """
     Controlador do cache de execução dos testes E2E.
@@ -20,8 +25,11 @@ class TestStateCache:
     """
     __test__ = False
 
-    def __init__(self, cache_file: str = "test_state.json", skip_passed: bool = True):
-        self.cache_file = cache_file
+    def __init__(self, cache_file: Optional[str] = None, skip_passed: bool = True):
+        if cache_file is None or cache_file == "test_state.json":
+            self.cache_file = DEFAULT_CACHE_FILE
+        else:
+            self.cache_file = cache_file
         self.skip_passed = skip_passed
         self._state: Dict[str, Any] = self._load()
 

@@ -8,10 +8,13 @@ YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-# --- Configurações (Verifique se os caminhos estão corretos) ---
-# O script assume que está na raiz do projeto 'portal-gamificacao-educacional'.
-BACKEND_DIR="backend"
-FRONTEND_DIR="frontend"
+# --- Configurações (Ancoragem Dinâmica ao PROJECT_ROOT) ---
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+BACKEND_DIR="$PROJECT_ROOT/backend"
+FRONTEND_DIR="$PROJECT_ROOT/frontend"
+LOGS_DIR="$PROJECT_ROOT/logs"
+mkdir -p "$LOGS_DIR"
+
 ENV_FILE="$FRONTEND_DIR/.env"
 VITE_CONFIG_FILE="$FRONTEND_DIR/vite.config.js"
 ENV_VAR_NAME="VITE_API_URL"
@@ -35,7 +38,7 @@ echo -e "${CYAN}🚀 Iniciando ambiente de desenvolvimento completo...${NC}"
 echo "---"
 
 # Limpa logs antigos para garantir que não estamos lendo URLs velhas
-rm -f backend_tunnel.log frontend_tunnel.log
+rm -f "$LOGS_DIR/backend_tunnel.log" "$LOGS_DIR/frontend_tunnel.log"
 
 # Verifica se cloudflared está instalado no sistema
 HAS_CLOUDFLARED=false
@@ -45,10 +48,10 @@ fi
 
 if [ "$HAS_CLOUDFLARED" = true ]; then
     echo -e "${BLUE}1. Iniciando túneis do Cloudflare em segundo plano...${NC}"
-    cloudflared tunnel --url http://localhost:5000 > backend_tunnel.log 2>&1 &
+    cloudflared tunnel --url http://localhost:5000 > "$LOGS_DIR/backend_tunnel.log" 2>&1 &
     BACKEND_PID=$!
 
-    cloudflared tunnel --url http://localhost:5173 > frontend_tunnel.log 2>&1 &
+    cloudflared tunnel --url http://localhost:5173 > "$LOGS_DIR/frontend_tunnel.log" 2>&1 &
     FRONTEND_PID=$!
 
     echo -e "${YELLOW}2. Aguardando a geração das URLs (aprox. 15 segundos)...${NC}"
@@ -59,8 +62,8 @@ if [ "$HAS_CLOUDFLARED" = true ]; then
 
     # Regex aprimorada para capturar URLs geradas do Cloudflare (ex: https://xxx-yyy.trycloudflare.com)
     # Ignora 'api.trycloudflare.com' que é a API interna de controle do Cloudflare e pode aparecer em erros
-    BACKEND_URL_FULL=$(grep -oE 'https?://[a-zA-Z0-9-]+\.trycloudflare\.com' backend_tunnel.log 2>/dev/null | grep -v 'api\.trycloudflare\.com' | head -n 1)
-    FRONTEND_URL_FULL=$(grep -oE 'https?://[a-zA-Z0-9-]+\.trycloudflare\.com' frontend_tunnel.log 2>/dev/null | grep -v 'api\.trycloudflare\.com' | head -n 1)
+    BACKEND_URL_FULL=$(grep -oE 'https?://[a-zA-Z0-9-]+\.trycloudflare\.com' "$LOGS_DIR/backend_tunnel.log" 2>/dev/null | grep -v 'api\.trycloudflare\.com' | head -n 1)
+    FRONTEND_URL_FULL=$(grep -oE 'https?://[a-zA-Z0-9-]+\.trycloudflare\.com' "$LOGS_DIR/frontend_tunnel.log" 2>/dev/null | grep -v 'api\.trycloudflare\.com' | head -n 1)
 fi
 
 # Fallback gracioso para Localhost caso o Cloudflare não esteja instalado ou falhe
@@ -69,7 +72,7 @@ if [ -z "$BACKEND_URL_FULL" ] || [ -z "$FRONTEND_URL_FULL" ]; then
     if [ "$HAS_CLOUDFLARED" = false ]; then
         echo -e "${YELLOW}ℹ️  Motivo: binário 'cloudflared' não encontrado no PATH.${NC}"
     else
-        echo -e "${YELLOW}ℹ️  Verifique backend_tunnel.log e frontend_tunnel.log para detalhes.${NC}"
+        echo -e "${YELLOW}ℹ️  Verifique $LOGS_DIR/backend_tunnel.log e $LOGS_DIR/frontend_tunnel.log para detalhes.${NC}"
     fi
     echo -e "${GREEN}🔄 Operando em modo de Fallback (Ambiente Local):${NC}"
     BACKEND_URL_FULL="http://localhost:5000"

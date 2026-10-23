@@ -21,8 +21,11 @@ from .ai_prompt_builder import build_prompt
 logger = logging.getLogger(__name__)
 # ADD DEBUG FILE HANDLER
 try:
-    # Usando caminho relativo para não quebrar em produção (ex: Render)
-    file_handler = logging.FileHandler('ai_debug.log')
+    # Ancoragem dinâmica ao diretório logs/ na raiz do projeto
+    _project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+    _logs_dir = os.path.join(_project_root, "logs")
+    os.makedirs(_logs_dir, exist_ok=True)
+    file_handler = logging.FileHandler(os.path.join(_logs_dir, "ai_debug.log"))
     file_handler.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     file_handler.setFormatter(formatter)

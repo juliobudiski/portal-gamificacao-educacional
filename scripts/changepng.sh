@@ -26,6 +26,10 @@ handle_error() {
 # Define que o script deve parar se qualquer comando falhar
 trap 'handle_error' ERR
 
+# Ancoragem dinâmica ao PROJECT_ROOT
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$PROJECT_ROOT" || exit 1
+
 # ====================================================================================
 # INÍCIO DO SCRIPT
 # ====================================================================================

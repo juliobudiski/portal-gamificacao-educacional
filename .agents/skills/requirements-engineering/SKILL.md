@@ -34,7 +34,12 @@ Este guia e conjunto de habilidades define os procedimentos analíticos para tra
    - **T**estable (Testáveis)
    - Formato: *Como [persona], quero [ação/funcionalidade], para que [benefício de negócio].*
 
-2. **Critérios de Aceite em Gherkin / BDD:**
+2. **Critérios de Aceite em Gherkin / BDD (Quádrupla Cobertura Obrigatória):**
+   - Para cada User Story, é obrigatório mapear ao menos 4 dimensões de cenários:
+     1. **Caminho Feliz (Happy Path):** O fluxo ideal executado com sucesso.
+     2. **Fluxo Alternativo:** Variações válidas de regra de negócio (ex.: toggle, particionamento de lotes).
+     3. **Fluxos de Exceção:** Erros de validação (400/422), tokens expirados ou falhas de autorização (401/403).
+     4. **Teste Destrutivo (Chaos Monkey):** Concorrência massiva, race conditions, timeout de serviços terceiros (SMTP) ou clock skew.
    ```gherkin
    Cenário: [Nome do Cenário]
      Dado que [contexto inicial / pré-condição]
@@ -65,10 +70,34 @@ Este guia e conjunto de habilidades define os procedimentos analíticos para tra
 
 ---
 
-## 4. Matriz de Rastreabilidade e Análise de Impacto
+## 4. Matriz de Rastreabilidade e Grafo de Conhecimento (Obsidian & Mermaid)
 
-1. **Mapeamento de Ponta a Ponta:**
-   - Cada RF/RNF deve rastrear para:
-     `Objetivo de Negócio` $\rightarrow$ `User Story` $\rightarrow$ `Critério de Aceite BDD` $\rightarrow$ `Caso de Teste Técnico`.
-2. **Análise de Impacto em Mudanças de Escopo:**
-   - Ao propor ou receber alteração de requisitos, avaliar custos em cascata: componentes afetados, risco de quebra, migrações de dados e esforço de re-teste.
+1. **Rastreabilidade Bidirecional Ponta a Ponta:**
+   - Todo requisito deve rastrear vertical e horizontalmente:
+     $$\text{Objetivo de Negócio} \longleftrightarrow \text{User Story (BDD)} \longleftrightarrow \text{Portas / Interfaces} \longleftrightarrow \text{Classes Concretas} \longleftrightarrow \text{Tabelas ORM} \longleftrightarrow \text{Testes (Pytest)}$$
+
+2. **Formatação para Grafo de Requisitos no Obsidian:**
+   - As histórias e requisitos devem ser gravados em `docs/backlog/user-stories/US-XX.md` utilizando **YAML Frontmatter** e links bidirecionais (`[[wikilinks]]`):
+     ```yaml
+     ---
+     id: US-XX
+     title: Nome da Funcionalidade
+     epic: "[[EPIC-XX-nome-do-epico]]"
+     type: user-story
+     status: draft | ready | in_progress | implemented
+     priority: high | medium | low
+     tags: [requisito, modulo, regra]
+     ports: ["[[IPortaDeEntrada]]"]
+     classes: ["[[ServicoDeDominio]]"]
+     tables: ["[[tb_entidade]]"]
+     tests: ["[[test_funcionalidade_tdd.py]]"]
+     ---
+     ```
+   - Ao abrir o cofre no **Obsidian**, a funcionalidade nativa de Grafo (*Graph View*) exibe uma teia interativa conectando requisitos a classes e testes.
+
+3. **Grafo de Rastreabilidade Universal (Mermaid):**
+   - Manter atualizado o arquivo `docs/requirements-matrix/traceability_graph.md` contendo o diagrama Mermaid (`graph TD` / `graph LR`) para que qualquer ferramenta (GitHub, VSCode, IDEs) renderize visualmente a cobertura de requisitos sem depender exclusivamente do Obsidian.
+
+4. **Governança do Backlog Vivo:**
+   - Nenhuma funcionalidade pode ser codificada sem que haja um arquivo de User Story correspondente em `docs/backlog/user-stories/` e sem que o grafo seja atualizado.
+   - Histórias concluídas e homologadas são marcadas com status `implemented` ou movidas para `docs/backlog/archive/`.

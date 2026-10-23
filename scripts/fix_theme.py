@@ -1,10 +1,12 @@
 import os
 import re
 
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
 files = [
-    "frontend/src/pages/NarrativeEditorPage.jsx",
-    "frontend/src/pages/QuizEditorPage.jsx",
-    "frontend/src/pages/LearningContentEditorPage.jsx"
+    os.path.join(PROJECT_ROOT, "frontend/src/pages/NarrativeEditorPage.jsx"),
+    os.path.join(PROJECT_ROOT, "frontend/src/pages/QuizEditorPage.jsx"),
+    os.path.join(PROJECT_ROOT, "frontend/src/pages/LearningContentEditorPage.jsx")
 ]
 
 replacements = {
