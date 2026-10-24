@@ -1,6 +1,6 @@
 ---
-trigger: always_on
-description: Regras de orquestração colaborativa entre subagentes para engenharia de software, POO, TDD e arquitetura hexagonal.
+trigger: model_decision
+description: Protocolo detalhado de handoff formal, matriz RACI e governança DoR/DoD avançada entre múltiplos subagentes da squad.
 ---
 
 # Regras de Orquestração Colaborativa entre Subagentes (Squad de Engenharia & POO)

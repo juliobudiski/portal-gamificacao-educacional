@@ -174,3 +174,7 @@ backups/
 backups/*.sql
 data/*.json
 
+# Teamwork ephemeral agent runs
+.agents/*_*/
+.agents/sentinel/
+.agents/ORIGINAL_REQUEST.md
