@@ -99,9 +99,15 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
             }));
         }
 
-        const socketUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        // Resolução dinâmica de URL do Socket:
+        // Em produção (VITE_API_URL vazia), usa a mesma origem (window.location.origin).
+        // Em desenvolvimento local, usa VITE_API_URL (http://localhost:5000).
+        const socketUrl = (import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL.trim() !== '')
+            ? import.meta.env.VITE_API_URL
+            : (typeof window !== 'undefined' ? window.location.origin : '');
+
         const socket = io(socketUrl, {
-            // Removendo transports: ['websocket'] para permitir o long-polling do Cloudflare Tunnel
+            path: '/socket.io',
             reconnectionAttempts: 5,
             reconnectionDelay: 2000,
             timeout: 120000, // Aumenta timeout de conexão para 120s (2 min) para tolerar IA lenta
@@ -111,9 +117,12 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
 
         // 3. Lógica de Conexão e Inscrição na Sala
         socket.on('connect', () => {
-            console.log("Socket Conectado. ID:", socket.id);
-            // Continua emitindo join para manter compatibilidade, mas o backend enviará broadcast
+            console.log("Socket Conectado com sucesso. ID:", socket.id, "URL:", socketUrl);
             socket.emit('join', `user_ai_${user.id}`);
+        });
+
+        socket.on('connect_error', (err) => {
+            console.error("[SOCKET ERROR] Erro na conexão Socket.IO:", err.message);
         });
 
         // 4. Listeners para os eventos de progresso da IA
@@ -121,8 +130,10 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
             console.log(`[SOCKET DEBUG] Evento Recebido: ${eventName}`, args);
         });
 
+        const expectedRoom = `user_ai_${user?.id}`;
+
         socket.on('ai_progress', (data) => {
-            if (data.room_id !== `user_ai_${user.id}`) return;
+            if (data?.room_id && data.room_id !== expectedRoom) return;
             // Se recebeu evento, significa que a comunicação está viva, renova o timeout de segurança
             if (deadlockTimeoutRef.current) clearTimeout(deadlockTimeoutRef.current);
             deadlockTimeoutRef.current = setTimeout(() => {
@@ -132,15 +143,15 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                 setProgress(0);
             }, 120000);
 
-            const safePercent = Math.min(Math.max(data.percent || 0, 0), 99);
+            const safePercent = Math.min(Math.max(data?.percent || 0, 0), 99);
             setProgress(safePercent);
-            setProgressMessage(data.message || "Processando...");
+            setProgressMessage(data?.message || "Processando...");
         });
 
         socket.on('ai_complete', (data) => {
-            if (data.room_id !== `user_ai_${user.id}`) return;
+            if (data?.room_id && data.room_id !== expectedRoom) return;
             if (deadlockTimeoutRef.current) clearTimeout(deadlockTimeoutRef.current);
-            const contentMap = data.result || data;
+            const contentMap = data?.result || data;
 
             if (!contentMap || typeof contentMap !== 'object' || Object.keys(contentMap).length === 0) {
                 showToast("A IA não conseguiu gerar o conteúdo. O formato retornado é inválido. Tente novamente.", "error");
@@ -158,8 +169,9 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
         });
 
         socket.on('ai_error', (data) => {
+            if (data?.room_id && data.room_id !== expectedRoom) return;
             if (deadlockTimeoutRef.current) clearTimeout(deadlockTimeoutRef.current);
-            showToast(`Falha da IA: ${data.message || 'Erro desconhecido'}`, "error");
+            showToast(`Falha da IA: ${data?.message || 'Erro desconhecido'}`, "error");
             setLoading(false); // Libera o botão para nova tentativa
             setProgressMessage("Falha na geração.");
             setProgress(0);

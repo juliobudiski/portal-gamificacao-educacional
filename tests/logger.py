@@ -12,6 +12,14 @@ from typing import Optional
 from playwright.async_api import Page
 
 
+DEFAULT_LOG_FILE = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "logs", "e2e_execution.log")
+)
+DEFAULT_SCREENSHOTS_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "screenshots")
+)
+
+
 class E2ELogger:
     """
     Logger especializado para automações Playwright.
@@ -21,9 +29,18 @@ class E2ELogger:
     - Capturas de tela organizadas no diretório de artefatos.
     """
 
-    def __init__(self, log_file: str = "e2e_execution.log", screenshots_dir: str = "screenshots"):
-        self.log_file = log_file
-        self.screenshots_dir = screenshots_dir
+    def __init__(self, log_file: Optional[str] = None, screenshots_dir: Optional[str] = None):
+        if log_file is None or log_file == "e2e_execution.log":
+            self.log_file = DEFAULT_LOG_FILE
+        else:
+            self.log_file = log_file
+
+        if screenshots_dir is None or screenshots_dir == "screenshots":
+            self.screenshots_dir = DEFAULT_SCREENSHOTS_DIR
+        else:
+            self.screenshots_dir = screenshots_dir
+
+        os.makedirs(os.path.dirname(self.log_file), exist_ok=True)
         os.makedirs(self.screenshots_dir, exist_ok=True)
 
         self.logger = logging.getLogger("GamificaEdu_E2E")

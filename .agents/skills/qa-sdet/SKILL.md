@@ -18,8 +18,13 @@ Este guia e conjunto de habilidades consolida as práticas para planejar, automa
    - **Testes de Integração & Contrato de API (Meio):** Validação de rotas HTTP, payloads de request/response, schemas JSON, códigos de status e integridade do banco de dados.
    - **Testes E2E (Topo):** Reservados para jornadas críticas do usuário (ex.: cadastro/login, conclusão de atividade, premiação de medalha). Foco no fluxo completo.
 
-2. **Cultura Shift-Left (Prevenção Antecipada):**
-   - Participar ativamente do refinamento de requisitos para identificar ambiguidades, cenários de falha e regras incompletas antes do início do desenvolvimento.
+2. **Cultura Shift-Left e TDD Rigoroso:**
+   - Participar ativamente do refinamento para garantir que a suíte de testes seja escrita **antes** do código de produção (Fase Vermelha - Red Phase).
+   - Validar a passagem de 100% dos testes sem mocks frágeis antes de autorizar o avanço no pipeline (Fase Verde - Green Phase).
+
+3. **Chaos Monkey & Testes Destrutivos:**
+   - Inserir testes de concorrência massiva em mutações de banco (simulação de 50-200 requisições simultâneas por aluno).
+   - Simular quedas e timeouts de serviços de terceiros (servidores SMTP, APIs de IA, gateways de pagamento) para atestar que o fluxo principal não sofra interrupção ou gere HTTP 500.
 
 ---
 

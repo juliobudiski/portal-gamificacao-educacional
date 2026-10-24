@@ -11,7 +11,7 @@ Este guia e conjunto de habilidades estabelece os procedimentos e padrões opera
 
 ---
 
-## 1. Padrões Arquiteturais e Design Limpo (Clean Architecture & SOLID)
+## 1. Padrões Arquiteturais e Design Limpo (Clean Architecture, Hexagonal & SOLID)
 
 1. **Separação de Camadas e Responsabilidades:**
    - **Domínio (Domain):** Entidades, regras de negócio centrais, objetos de valor (Value Objects), invariantes. Não depende de frameworks externos ou bancos de dados.
@@ -19,12 +19,20 @@ Este guia e conjunto de habilidades estabelece os procedimentos e padrões opera
    - **Infraestrutura (Infrastructure / Adapters):** Implementações concretas de bancos de dados (ORMs, SQL), clientes HTTP, filas, envio de e-mails, cache (Redis).
    - **Interfaces / Apresentação (Interface / Web / CLI):** Controladores de API (REST/GraphQL), rotas, DTOs de entrada e saída, serialização e interfaces gráficas.
 
-2. **Princípios SOLID:**
+2. **Arquitetura Hexagonal (Ports & Adapters) na Prática de POO:**
+   - **O Princípio Fundamental:** O núcleo da aplicação (regras de negócio) deve ser agnóstico aos mecanismos de entrega (Web/CLI) e de armazenamento (Banco de dados/APIs externas).
+   - **Portas de Entrada (Inbound/Driving Ports):** Interfaces que definem o que a aplicação faz. Representam as operações de casos de uso (ex.: `CreateUserUseCasePort`, `RegisterAttendancePort`).
+   - **Portas de Saída (Outbound/Driven Ports):** Interfaces que definem o que a aplicação necessita para cumprir sua tarefa (ex.: `UserRepositoryPort`, `EmailSenderPort`, `ClockPort`).
+   - **Adaptadores de Entrada (Inbound/Driving Adapters):** Classes/controladores que recebem eventos externos (requisições HTTP, comandos de terminal) e chamam as portas de entrada.
+   - **Adaptadores de Saída (Outbound/Driven Adapters):** Classes concretas que implementam as portas de saída (ex.: `PostgresUserRepository`, `SendgridEmailAdapter`, `SystemClock`).
+   - **Benefício Didático em POO:** Permite que alunos testem 100% da regra de negócio substituindo adaptadores reais por adaptadores em memória (mocks/stubs), compreendendo o valor de **Polimorfismo** e **Injeção de Dependência**.
+
+3. **Princípios SOLID:**
    - **S (Single Responsibility):** Uma classe ou módulo deve ter um único motivo para mudar.
    - **O (Open/Closed):** Aberto para extensão, fechado para modificação. Favorecer polimorfismo e interfaces.
    - **L (Liskov Substitution):** Subtipos devem ser substituíveis por seus tipos base sem alterar o comportamento esperado.
    - **I (Interface Segregation):** Muitas interfaces específicas são melhores que uma interface genérica inflada.
-   - **D (Dependency Inversion):** Módulos de alto nível não devem depender de módulos de baixo nível; ambos devem depender de abstrações.
+   - **D (Dependency Inversion):** Módulos de alto nível não devem depender de módulos de baixo nível; ambos devem depender de abstrações (Portas).
 
 ---
 

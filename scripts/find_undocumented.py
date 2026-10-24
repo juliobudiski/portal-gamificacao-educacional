@@ -25,9 +25,11 @@ def check_documentation(filepath):
         return False
     return True
 
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 undocumented = []
 
-for root_dir in ['backend/app', 'frontend/src']:
+for rel_dir in ['backend/app', 'frontend/src']:
+    root_dir = os.path.join(PROJECT_ROOT, rel_dir)
     for dirpath, _, filenames in os.walk(root_dir):
         # skip tests or cache
         if '__pycache__' in dirpath or 'tests' in dirpath:

@@ -46,17 +46,28 @@ Este guia e conjunto de habilidades reúne os métodos e práticas para governar
 
 ---
 
-## 3. Elaboração de Histórias de Usuário e Critérios de Aceitação
+## 3. Elaboração de Histórias de Usuário, BDD e Critérios de Aceitação
 
-1. **Critérios de Aceitação com Foco em Valor de Negócio:**
-   - Devem descrever o comportamento observável sem ditar detalhes de implementação de software (o PO define o *quê* e o *porquê*, a engenharia define o *como*).
-   - Incluir casos de sucesso, restrições regulatórias/legais e mensagens ao usuário em situações anômalas.
+1. **Critérios de Aceitação em 4 Dimensões (Gherkin BDD):**
+   - **Caminho Feliz (Happy Path):** Sucesso padrão com entrega do valor pretendido.
+   - **Fluxos Alternativos:** Decisões do usuário que desviam do fluxo principal sem gerar falha.
+   - **Fluxos de Exceção:** Respostas claras e elegantes para erros previstos (falha de rede, timeout, payload incorreto).
+   - **Comportamentos Destrutivos e Chaos Monkey:** Resiliência contra payload massivo, desconexão súbita de serviços externos e concorrência elevada.
 
 2. **Definição de Preparado (Definition of Ready - DoR):**
-   - A história tem declaração de valor clara?
-   - Os critérios de aceitação foram compreendidos e validados pela squad?
-   - As dependências externas foram mapeadas?
-   - O item é pequeno o bastante para caber com folga em uma sprint?
+   - [ ] Declaração de valor clara e persona definida (`Como... Quero... Para...`).
+   - [ ] Cenários BDD estruturados nas 4 dimensões (Caminho Feliz, Alternativo, Exceção, Caos).
+   - [ ] Dependências e integrações externas mapeadas (com estratégias de fallback).
+   - [ ] Requisitos Não-Funcionais (RNFs) de Usabilidade e Desempenho definidos e mensuráveis.
+   - [ ] Estimativa e viabilidade acordadas com o time de engenharia.
+
+3. **Definição de Feito (Definition of Done - DoD):**
+   - [ ] Código implementado com TDD (100% de testes unitários e de integração passando).
+   - [ ] Pelo menos 5 RNFs de Usabilidade validados (feedback visual imediato, acessibilidade WCAG, contraste, mensagens de erro humanizadas, responsividade).
+   - [ ] Pelo menos 5 RNFs de Desempenho validados (latência de API p95 < 250ms, queries indexadas, chunking em disparos em massa, payload enxuto, zero memory leak).
+   - [ ] Testes de caos executados com sucesso (serviço não entra em crash quando dependência externa cai).
+   - [ ] Alterações isoladas em feature branch, sem deploy não-autorizado em produção.
+
 
 ---
 

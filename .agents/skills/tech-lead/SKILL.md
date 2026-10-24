@@ -29,16 +29,17 @@ Este guia e conjunto de habilidades reúne os procedimentos, padrões de governa
 
 ## 2. Governança e Definição de Padrões de Engenharia
 
-1. **Definition of Done (DoD) Clara e Pragmática:**
-   - Código implementado seguindo convenções do projeto.
-   - Testes unitários e de integração implementados com cobertura adequada.
-   - Sem falhas de linter ou vulnerabilidades de segurança conhecidas (SAST / audit de pacotes).
-   - Documentação de API atualizada e scripts de migração testados.
-   - Pipeline de CI/CD aprovada em ambiente de homologação/staging.
+1. **Definition of Ready (DoR) e Definition of Done (DoD):**
+   - **DoR Exigente:** Contrato de API congelado, cenários em BDD/Gherkin (caminho feliz, alternativo, exceção e Chaos Monkey), e isolamento de dependências externas antes de codificar.
+   - **DoD Rigoroso:** Testes unitários/integração escritos via TDD e 100% verdes, conformidade com SOLID/OOP (baixo acoplamento, alta coesão), build limpo no frontend e backend, e resiliência transacional comprovada.
 
-2. **Engenharia de Release e Integração Contínua (CI/CD):**
+2. **Cultura TDD & BDD Estruturada:**
+   - Exigir que a squad escreva cenários Gherkin e crie a suíte de testes (Red Phase) antes de implementar regras de negócio concretas.
+   - Prever testes destrutivos com Chaos Monkey (concorrência massiva, timeouts em SMTP/redes externas, transições de fuso horário).
+
+3. **Engenharia de Release e Integração Contínua (CI/CD):**
    - Garantir feedback loops rápidos: pipelines de build/test com tempo de execução curto (< 5-10 min).
-   - Promover estratégias de deploy com baixo risco: Feature Flags / Toggles, Blue-Green deployments e Canary releases.
+   - Promover estratégias de deploy com baixo risco: isolamento em branch de feature/staging, Feature Flags / Toggles, e proteção estrita contra deploys não aprovados em produção.
 
 ---
 

@@ -21,18 +21,22 @@ def _log_system_event(user_id, action, section='activity_management', details=No
         if details is None:
             details = {}
 
+        # Trata segurança quando invocado fora do contexto de requisição HTTP (ex: testes de serviços ou tarefas assíncronas)
+        from flask import has_request_context
+        ip_addr = request.remote_addr if has_request_context() else "127.0.0.1"
+        u_agent = request.headers.get("User-Agent") if has_request_context() else "system_service"
+
         event = EventLog(
             user_id=user_id,
             activity_id=activity_id,
             section=section,
             action=action,
             details=details,
-            ip_address=request.remote_addr,
-            user_agent=request.headers.get("User-Agent")
+            ip_address=ip_addr,
+            user_agent=u_agent
         )
         db.session.add(event)
-        db.session.commit()
+        # Observação: Não realizar db.session.commit() isolado aqui para não cortar
+        # nem dar rollback na transação de negócio da operação chamadora
     except Exception as e:
-        db.session.rollback()
-        # Usamos o logger da aplicação Flask para registrar falhas críticas no log
-        current_app.logger.error(f"Falha CRÍTICA ao registrar evento de log do sistema: {e}")
+        current_app.logger.error(f"Falha ao registrar evento de log do sistema: {e}")

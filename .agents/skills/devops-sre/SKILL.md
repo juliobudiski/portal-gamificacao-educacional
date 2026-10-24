@@ -65,3 +65,15 @@ Este guia e conjunto de habilidades define os procedimentos e padrões operacion
 2. **Plano de Recuperação de Desastres (Disaster Recovery):**
    - Políticas automatizadas de backup periódico de bancos de dados.
    - Rotina regular de testes de restauração (RTO - Recovery Time Objective e RPO - Recovery Point Objective mensurados na prática).
+
+---
+
+## 5. Isolamento de Ambientes e Resiliência a Serviços Externos
+
+1. **Isolamento Estrito de Feature Branches:**
+   - **Regra de Ouro:** Novas funcionalidades e refatorações complexas devem ser desenvolvidas e testadas exclusivamente em branches dedicadas (`feature/*`, `squad/*`).
+   - Nunca disparar build ou deploy direto para staging/produção sem aprovação prévia e validação de todos os testes unitários, de integração e BDD.
+2. **Resiliência a Quedas de Dependências Externas (SMTP, APIs Terceiras):**
+   - Garantir que falhas de rede ou timeout de serviços de e-mail/notificação não travem a aplicação cliente (usar background tasks, buffers em memória ou filas assíncronas com dead-letter queue).
+   - Migrações de banco devem ser idempotentes (`IF NOT EXISTS`, verificação de colunas existentes) para permitir rollbacks limpos sem corrupção de dados.
+

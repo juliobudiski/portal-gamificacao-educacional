@@ -53,9 +53,74 @@ DEFAULT_TITLES = [
         "name": "O Grande Comprador",
         "description": "Um título para aqueles que investem em seu sucesso na loja.",
         "price": 1200, "icon": "👑", "item_type": "title",
-        "effect_id": "TITLE_GRANDE_COMPRADOR" # effect_id simples para o Título
+        "effect_id": "TITLE_GRANDE_COMPRADOR"
     }
 ]
+
+def sync_progression_path_contents(activity_id, progression_path, purge_orphans=False):
+    """
+    Sincroniza os conteúdos dos passos da trilha (Quiz, Narrativa, Conteúdo Estático)
+    com as tabelas filhas relacionais correspondentes (QuizContent, NarrativeContent, LearningContent).
+    Garante idempotência e integridade referencial sem duplicação de registros.
+    Quando purge_orphans=True, remove registros órfãos que foram excluídos da trilha.
+    """
+    if not progression_path or not isinstance(progression_path, list):
+        return
+
+    active_step_ids = set()
+
+    for step in progression_path:
+        content = step.get('content')
+        step_id = step.get('id')
+
+        if not content or not step_id:
+            continue
+
+        content_type = content.get('type')
+        step_id_str = str(step_id)
+        active_step_ids.add(step_id_str)
+
+        if content_type == 'quiz':
+            quiz = QuizContent.query.filter_by(activity_id=activity_id, step_id=step_id_str).first()
+            if not quiz:
+                quiz = QuizContent(activity_id=activity_id, step_id=step_id_str)
+                db.session.add(quiz)
+            quiz.questions = content.get('questions', [])
+
+        elif content_type == 'narrative':
+            narrative = NarrativeContent.query.filter_by(activity_id=activity_id, step_id=step_id_str).first()
+            if not narrative:
+                narrative = NarrativeContent(activity_id=activity_id, step_id=step_id_str)
+                db.session.add(narrative)
+            narrative.scenario = content.get('scenario', '')
+            narrative.characters = content.get('characters', [])
+            narrative.dialogue = content.get('dialogue', [])
+
+        elif content_type in ['content', 'learning_material']:
+            learning = LearningContent.query.filter_by(activity_id=activity_id, step_id=step_id_str).first()
+            if not learning:
+                learning = LearningContent(activity_id=activity_id, step_id=step_id_str)
+                db.session.add(learning)
+            learning.video_url = content.get('video_url', '')
+            learning.text_content = content.get('text_content', '')
+            learning.material_link = content.get('material_link', '')
+
+    if purge_orphans and active_step_ids:
+        QuizContent.query.filter(
+            QuizContent.activity_id == activity_id,
+            ~QuizContent.step_id.in_(active_step_ids)
+        ).delete(synchronize_session=False)
+
+        NarrativeContent.query.filter(
+            NarrativeContent.activity_id == activity_id,
+            ~NarrativeContent.step_id.in_(active_step_ids)
+        ).delete(synchronize_session=False)
+
+        LearningContent.query.filter(
+            LearningContent.activity_id == activity_id,
+            ~LearningContent.step_id.in_(active_step_ids)
+        ).delete(synchronize_session=False)
+
 
 def create_activity(user, data):
     """
@@ -135,45 +200,10 @@ def create_activity(user, data):
                     db.session.add(tag)
                 activity.tags.append(tag)
         
-        # 3. PROCESSAMENTO DE CONTEÚDO (Extração para Tabelas)
+        # 3. PROCESSAMENTO DE CONTEÚDO (Extração e Sincronização com Tabelas)
         gamification_design = data.get('gamificationDesign', {})
         progression_path = gamification_design.get('progression_path', [])
-
-        if progression_path and isinstance(progression_path, list):
-            for step in progression_path:
-                content = step.get('content')
-                step_id = step.get('id')
-
-                if content and step_id:
-                    content_type = content.get('type')
-
-                    if content_type == 'quiz':
-                        new_quiz = QuizContent(
-                            activity_id=activity.id,
-                            step_id=str(step_id),
-                            questions=content.get('questions', [])
-                        )
-                        db.session.add(new_quiz)
-
-                    elif content_type == 'narrative':
-                        new_narrative = NarrativeContent(
-                            activity_id=activity.id,
-                            step_id=str(step_id),
-                            scenario=content.get('scenario', ''),
-                            characters=content.get('characters', []),
-                            dialogue=content.get('dialogue', [])
-                        )
-                        db.session.add(new_narrative)
-                    
-                    elif content_type == 'content' or content_type == 'learning_material':
-                         new_learning = LearningContent(
-                            activity_id=activity.id,
-                            step_id=str(step_id),
-                            video_url=content.get('video_url'),
-                            text_content=content.get('text_content'),
-                            material_link=content.get('material_link')
-                         )
-                         db.session.add(new_learning)
+        sync_progression_path_contents(activity.id, progression_path)
 
         db.session.commit()
         
@@ -207,6 +237,8 @@ def update_activity_structure(user, activity_id, data):
     try:
         if 'gamificationDesign' in data:
             activity.gamification_design = data['gamificationDesign']
+            progression_path = data['gamificationDesign'].get('progression_path', [])
+            sync_progression_path_contents(activity.id, progression_path, purge_orphans=True)
             db.session.commit()
             logger.info(f"Estrutura da atividade ID {activity_id} atualizada.")
             return {"message": "Estrutura salva com sucesso!"}, 200
@@ -253,6 +285,8 @@ def update_activity(user, activity_id, data):
         # 1. Nossa correção para salvar o tabuleiro de gamificação
         if 'gamificationDesign' in data:
             activity.gamification_design = data['gamificationDesign']
+            progression_path = data['gamificationDesign'].get('progression_path', [])
+            sync_progression_path_contents(activity.id, progression_path, purge_orphans=True)
         
         # 2. O log de eventos importante da segunda versão
         _log_system_event(
@@ -620,6 +654,10 @@ def save_autosave(user, data):
         for key, value in update_data.items():
             setattr(activity, key, value)
         
+        # Sincroniza conteúdos preenchidos da trilha nas tabelas filhas
+        progression_path = update_data['gamification_design'].get('progression_path', [])
+        sync_progression_path_contents(activity.id, progression_path)
+        
         activity.updated_at = datetime.utcnow()
         
         try:
@@ -641,6 +679,10 @@ def save_autosave(user, data):
             
             db.session.add(new_draft)
             db.session.flush() # Gera ID
+            
+            # Sincroniza conteúdos preenchidos da trilha nas tabelas filhas
+            progression_path = update_data['gamification_design'].get('progression_path', [])
+            sync_progression_path_contents(new_draft.id, progression_path)
             
             # Popula loja no rascunho também!
             _populate_default_store(new_draft.id)

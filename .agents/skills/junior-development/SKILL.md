@@ -24,17 +24,24 @@ Este guia e conjunto de habilidades estabelece os procedimentos para executar ta
 
 ---
 
-## 2. Escrita Eficaz de Testes Unitários
+## 2. Escrita Eficaz de Testes Unitários e TDD Básico
 
-1. **Padrão AAA (Arrange, Act, Assert):**
+1. **Ciclo Red-Green-Refactor (TDD no dia a dia):**
+   - **Red:** Escrever o teste unitário que define o comportamento esperado e garantir que ele falhe.
+   - **Green:** Implementar a lógica mais direta e limpa para fazer o teste passar.
+   - **Refactor:** Eliminar duplicações, melhorar nomes de variáveis e organizar o código mantendo o teste verde.
+
+2. **Padrão AAA (Arrange, Act, Assert):**
    - **Arrange (Preparar):** Configurar os dados e o estado necessário para o teste.
    - **Act (Agir):** Invocar o método ou função que está sendo testada.
    - **Assert (Garantir):** Verificar se o resultado ou efeito é exatamente o esperado.
 
-2. **Prevenção de Regressão (Bug Fix Workflow):**
+3. **Prevenção de Regressão (Bug Fix Workflow):**
    - Criar um teste unitário que falhe comprovando a existência do bug.
    - Aplicar a correção mínima necessária no código.
    - Executar o teste novamente e confirmar que passou (verde), além de rodar os testes existentes para garantir que nada foi quebrado.
+   - **Nunca pular testes:** Nenhuma tarefa é considerada concluída sem testes automatizados que validem as alterações.
+
 
 ---
 

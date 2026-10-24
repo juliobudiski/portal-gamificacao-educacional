@@ -4,9 +4,11 @@ import os
 from datetime import date, timedelta
 
 # --- CONFIGURAÇÃO ---
-# Coloque sua API Key aqui
-API_KEY = 'waka_c0fa51f8-159b-45c5-aee3-0af9740c5068'
-HISTORY_FILE = 'wakatime_history.json'
+API_KEY = os.getenv("WAKATIME_API_KEY", "waka_c0fa51f8-159b-45c5-aee3-0af9740c5068")
+HISTORY_FILE = os.getenv(
+    "WAKATIME_HISTORY_FILE",
+    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "wakatime_history.json"))
+)
 # --------------------
 
 def fetch_last_7_days_data():
