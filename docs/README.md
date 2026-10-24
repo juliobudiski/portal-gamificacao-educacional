@@ -23,11 +23,16 @@ graph LR
 
 ## 2. Mapa Geral de Navegação da Documentação
 
-A taxonomia viva de documentação está estruturada em cinco pilares fundamentais:
+A taxonomia viva de documentação está estruturada em pilares fundamentais de engenharia de software e pesquisa:
 
 ```
 docs/
 ├── README.md                                  # Este Índice Mestre Navegável
+│
+├── requirements/                              # 📋 ENGENHARIA DE REQUISITOS & RASTREABILIDADE (ISO 29148)
+│   ├── README.md                              # Sumário e governança do núcleo de requisitos
+│   ├── SRS.md                                 # Especificação de Requisitos de Software (15 RFs, 10 RNFs)
+│   └── RTM.md                                 # Matriz de Rastreabilidade de Requisitos Bidirecional (RTM)
 │
 ├── architecture/                              # 🏛️ ARQUITETURA DE SOFTWARE & ENGENHARIA
 │   ├── README.md                              # Sumário e visão geral da arquitetura
@@ -100,6 +105,9 @@ docs/
 │   ├── game_board_mechanics.md                # Regras do Tabuleiro Interativo e Roleta Diária
 │   └── pedagogical_heuristics_mda.md          # Teoria da Autodeterminação (SDT), MDA e Funil de Dados
 │
+├── security/                                  # 🛡️ SEGURANÇA DA INFORMAÇÃO & APPSEC
+│   └── AUDIT_SECURITY_REPORT.md               # Relatório Oficial de Auditoria AppSec, STRIDE e OWASP
+│
 ├── academic/                                  # 🔬 PESQUISA CIENTÍFICA & DOUTORADO
 │   ├── README.md                              # Sumário e visão científica da tese
 │   ├── phd_context_and_methodology.md         # Metodologia Design Science Research (DSR) e Questões QP1-QP3
@@ -131,6 +139,11 @@ docs/
 ---
 
 ## 3. Resumo Executivo das Seções
+
+### 3.0 Engenharia de Requisitos e Rastreabilidade (`docs/requirements/`)
+- **[Governança de Requisitos (README)](requirements/README.md):** Diretrizes alinhadas à ISO/IEC/IEEE 29148:2018 e ISO/IEC 25010 para sustentação formal do ciclo de vida de software.
+- **[Especificação de Requisitos de Software (SRS)](requirements/SRS.md):** Catálogo formal de 15 Requisitos Funcionais (RF-01 a RF-15), 10 Requisitos Não-Funcionais (RNF-01 a RNF-10) e Regras de Negócio Globais (RN-01 a RN-05).
+- **[Matriz de Rastreabilidade de Requisitos (RTM)](requirements/RTM.md):** Rastreabilidade bidirecional (Forward & Backward) mapeando Requisitos <-> Épicos <-> User Stories BDD <-> Rotas & Serviços Backend <-> Páginas Frontend <-> 43 Testes Automatizados no CI/CD.
 
 ### 3.1 Arquitetura de Software e Engenharia (`docs/architecture/`)
 - **[Catálogo Completo de 23 ADRs](architecture/adrs/README.md):** Histórico de decisões técnicas críticas desde a fundação até o deploy na nuvem.
