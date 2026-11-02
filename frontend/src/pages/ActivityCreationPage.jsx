@@ -660,6 +660,7 @@ function ActivityCreationPage({ existingActivity }) {
           autoSaveStatus={autoSaveStatus}
           lastSavedAt={lastSavedAt}
           activityData={activityData}
+          currentStep={currentStep}
         />
 
         {(showInitialSelection && !isEditMode) ? (

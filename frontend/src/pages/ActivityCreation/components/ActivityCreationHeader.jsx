@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { FaCheckCircle, FaTimesCircle, FaSync, FaGamepad, FaEye, FaBolt, FaTimes, FaLayerGroup } from 'react-icons/fa';
+import { FaCheckCircle, FaTimesCircle, FaSync, FaGamepad, FaEye, FaBolt, FaTimes, FaLayerGroup, FaQuestionCircle } from 'react-icons/fa';
+import { useHelpModal } from '../../../context/HelpModalContext';
 
 /**
  * ActivityCreationHeader
@@ -9,8 +10,21 @@ import { FaCheckCircle, FaTimesCircle, FaSync, FaGamepad, FaEye, FaBolt, FaTimes
  * Single Responsibility Principle by decoupling visual feedback from the complex state management of the wizard.
  */
 
-function ActivityCreationHeader({ isEditMode, showInitialSelection, autoSaveStatus, lastSavedAt, activityData }) {
+function ActivityCreationHeader({ isEditMode, showInitialSelection, autoSaveStatus, lastSavedAt, activityData, currentStep = 1 }) {
+  const { openHelp } = useHelpModal();
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+
+  const STEP_HELP_KEYS = {
+    1: 'analise_preliminar',
+    2: 'cenario_desejado',
+    3: 'planejamento_atividade',
+    4: 'perfil_jogador',
+    5: 'elementos_jogos',
+    6: 'tabuleiro_progressao',
+    7: 'recompensas_oferecidas',
+    8: 'acoes_recompensadas',
+    9: 'regras_gamificacao'
+  };
 
   // Calcula estimativa de complexidade com base nos elementos configurados
   const calculateComplexity = () => {
@@ -64,6 +78,15 @@ function ActivityCreationHeader({ isEditMode, showInitialSelection, autoSaveStat
                   title="Visualizar resumo de como o aluno experimentará o fluxo"
                 >
                   <FaEye /> Ver Prévia do Aluno
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => openHelp(STEP_HELP_KEYS[currentStep] || 'analise_preliminar')}
+                  className="flex items-center gap-2 px-3.5 py-1 rounded-full border border-accent-yellow/40 bg-accent-yellow/10 text-accent-yellow hover:bg-accent-yellow/20 hover:scale-105 transition-all text-xs font-bold uppercase tracking-wider shadow-sm"
+                  title="Abrir o guia e dicas pedagógicas deste passo"
+                >
+                  <FaQuestionCircle /> Guia do Passo {currentStep}
                 </button>
               </div>
             )}

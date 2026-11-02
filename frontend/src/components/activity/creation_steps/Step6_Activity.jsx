@@ -1,6 +1,7 @@
 import React from 'react';
 import GameBoardEditor from '../../activity/GameBoardEditor';
 import { useHelpModal } from "../../../context/HelpModalContext";
+import StepHelpButton from "../../common/StepHelpButton";
 import { FaRoute, FaLightbulb, FaRobot, FaInfoCircle } from 'react-icons/fa';
 
 /**
@@ -27,13 +28,11 @@ function Step6_GameBoard({ activityData, setActivityData, onEditContent, onStruc
             A trilha de progressão é o coração da sua atividade. Defina a jornada que os alunos farão.
           </p>
         </div>
-        <button
-          onClick={() => openHelp('tabuleiro_progressao')}
-          className="group flex items-center justify-center w-12 h-12 rounded-full bg-primary-bg border border-border-color hover:border-accent-teal/50 hover:bg-accent-teal/10 transition-all duration-300 shadow-sm"
-          title="Ajuda sobre este passo"
-        >
-          <FaInfoCircle className="text-xl text-secondary-text group-hover:text-accent-teal transition-colors" />
-        </button>
+        <StepHelpButton 
+          contentKey="tabuleiro_progressao" 
+          title="Trilha & Tabuleiro" 
+          subtitle="Narrativa, quizzes & conteúdos" 
+        />
       </div>
 
       <div className="bg-info-bg/30 backdrop-blur-sm border border-info/50 p-6 rounded-2xl animate-fade-in shadow-inner">

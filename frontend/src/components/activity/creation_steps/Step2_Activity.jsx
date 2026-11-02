@@ -6,6 +6,7 @@ import {
   FaSearch, FaCheckDouble, FaBriefcase, FaHandshake, FaCheckCircle, FaInfoCircle
 } from 'react-icons/fa';
 import { useHelpModal } from "../../../context/HelpModalContext";
+import StepHelpButton from "../../common/StepHelpButton";
 
 /**
  * @component Step2_Activity
@@ -92,13 +93,11 @@ function Step2_DesiredScenario({ activityData, handleInputChange, setActivityDat
             }
           </p>
         </div>
-        <button
-          onClick={() => openHelp('cenario_desejado')}
-          className="group flex items-center justify-center w-12 h-12 rounded-full bg-primary-bg border border-border-color hover:border-accent-teal/50 hover:bg-accent-teal/10 transition-all duration-300 shadow-sm"
-          title="Ajuda sobre este passo"
-        >
-          <FaInfoCircle className="text-xl text-secondary-text group-hover:text-accent-teal transition-colors" />
-        </button>
+        <StepHelpButton 
+          contentKey="cenario_desejado" 
+          title="Metas & Objetivos" 
+          subtitle="Definindo objetivos de aprendizagem" 
+        />
       </div>
 
       <div className="pt-2">

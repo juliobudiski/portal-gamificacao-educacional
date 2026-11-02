@@ -43,10 +43,10 @@ tags:
 - **Então** o saldo de moedas é deduzido corretamente, o professor consegue eleger a melhor resposta (`PUT /api/forum/topics/{id}/best-answer`),
 - **E** o quadro de líderes (`GET /api/progress/{id}/leaderboard`) exibe os dados enriquecidos com títulos e efeitos cosméticos.
 
-### Cenário 4: Cenário Destrutivo / Anti-Abuso (Chaos Monkey & Security)
+### Cenário 4: Cenário de Exceção e Destrutivo / Anti-Abuso (Exception & Chaos Monkey)
 - **Dado** que um usuário tenta enviar mensagem maliciosa com termos ofensivos ou denúncias consecutivas no chat,
-- **Quando** o método `ChatService.process_message` e o endpoint `POST /api/chat/messages/{id}/report` são acionados,
-- **Então** os filtros de segurança interceptam o payload malicioso, a contagem de denúncias é incrementada de forma atômica e mensagens que atingem o limiar de moderação são censuradas automaticamente sem degradar a estabilidade do sistema.
+- **Quando** o método `ChatService.process_message` e o endpoint `POST /api/chat/messages/{id}/report` são acionados com payload inválido ou duplicado,
+- **Então** os filtros de segurança interceptam o payload malicioso disparando exceção tratada de validação, a contagem de denúncias é incrementada de forma atômica e mensagens que atingem o limiar de moderação são censuradas automaticamente sem degradar a estabilidade do sistema.
 
 ---
 

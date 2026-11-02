@@ -12,6 +12,7 @@ import {
   FaInfoCircle
 } from 'react-icons/fa';
 import { useHelpModal } from "../../../context/HelpModalContext";
+import StepHelpButton from "../../common/StepHelpButton";
 
 /**
  * @component Step4_Activity
@@ -82,13 +83,11 @@ function Step4_PlayerProfile({ activityData, setActivityData, openHelpModal }) {
             Quais perfis você quer engajar? Isso ajuda a definir os elementos gamificados.
           </p>
         </div>
-        <button
-          onClick={() => openHelp('perfil_jogador')}
-          className="group flex items-center justify-center w-12 h-12 rounded-full bg-primary-bg border border-border-color hover:border-accent-teal/50 hover:bg-accent-teal/10 transition-all duration-300 shadow-sm"
-          title="Ajuda sobre este passo"
-        >
-          <FaInfoCircle className="text-xl text-secondary-text group-hover:text-accent-teal transition-colors" />
-        </button>
+        <StepHelpButton 
+          contentKey="perfil_jogador" 
+          title="Perfis de Jogador" 
+          subtitle="Engajamento por HEXAD & Bartle" 
+        />
       </div>
 
       {/* SEÇÃO 2: Seleção de Perfis com Cards */}
