@@ -16,6 +16,7 @@ function ClassListPage() {
     const [classes, setClasses] = useState([]);
     const [message, setMessage] = useState('');
     const [isLoading, setIsLoading] = useState(true);
+    const [copiedCode, setCopiedCode] = useState(null);
     // Estado para controlar o Modal de Confirmação
     const [modalConfig, setModalConfig] = useState({
         isOpen: false,
@@ -24,6 +25,13 @@ function ClassListPage() {
         title: '',
         message: ''
     });
+
+    const handleCopyCode = (code) => {
+        if (!code) return;
+        navigator.clipboard?.writeText(code);
+        setCopiedCode(code);
+        setTimeout(() => setCopiedCode(null), 2500);
+    };
     // Log de montagem/desmontagem do componente
     useEffect(() => {
         console.log('[ClassListPage] Componente montado.');
@@ -292,16 +300,48 @@ function ClassListPage() {
 
                                     {user?.role === 'professor' && (
                                         <div className="mb-6 bg-primary-bg/50 rounded-xl p-3 border border-border-color/50">
-                                            <p className="text-xs text-secondary-text font-semibold uppercase tracking-wider mb-1">
-                                                Código de Inscrição
-                                            </p>
-                                            <div className="flex items-center gap-2">
-                                                <svg className="w-4 h-4 text-accent-yellow" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-                                                </svg>
-                                                <span className="font-mono text-accent-yellow font-bold tracking-widest text-lg">
-                                                    {cls.enrollment_code}
-                                                </span>
+                                            <div className="flex items-center justify-between mb-1">
+                                                <p className="text-xs text-secondary-text font-semibold uppercase tracking-wider">
+                                                    Código de Inscrição
+                                                </p>
+                                                {copiedCode === cls.enrollment_code && (
+                                                    <span className="text-[11px] font-bold text-success animate-fade-in flex items-center gap-1">
+                                                        ✓ Copiado!
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center justify-between gap-2">
+                                                <div className="flex items-center gap-2">
+                                                    <svg className="w-4 h-4 text-accent-yellow" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                                                    </svg>
+                                                    <span className="font-mono text-accent-yellow font-bold tracking-widest text-lg">
+                                                        {cls.enrollment_code}
+                                                    </span>
+                                                </div>
+
+                                                <div className="flex items-center gap-1.5">
+                                                    {/* Botão Copiar com Feedback (Melhoria 82) */}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleCopyCode(cls.enrollment_code)}
+                                                        className="px-2.5 py-1 rounded-lg bg-secondary-bg hover:bg-accent-teal/20 text-secondary-text hover:text-accent-teal text-xs font-bold border border-border-color transition-all"
+                                                        title="Copiar código para a área de transferência"
+                                                    >
+                                                        {copiedCode === cls.enrollment_code ? 'Copiado!' : 'Copiar'}
+                                                    </button>
+
+                                                    {/* Compartilhar WhatsApp (Melhoria 83) */}
+                                                    <a
+                                                        href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`Olá! Participe da nossa turma "${cls.name}" no Gamefica.Edu com o código: ${cls.enrollment_code}`)}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="px-2 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 text-xs font-bold border border-emerald-500/30 transition-all"
+                                                        title="Compartilhar no WhatsApp"
+                                                    >
+                                                        WhatsApp
+                                                    </a>
+                                                </div>
                                             </div>
                                         </div>
                                     )}

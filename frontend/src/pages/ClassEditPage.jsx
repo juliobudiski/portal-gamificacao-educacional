@@ -243,15 +243,15 @@ function ClassEditPage() {
                 {message && <div className="bg-green-900/50 border border-green-600 text-green-100 p-3 mb-4 rounded-xl text-center" role="alert">{message}</div>}
 
                 {/* --- SEÇÃO 1: DETALHES DA TURMA --- */}
-                <form onSubmit={handleUpdateDetails} className="bg-secondary-bg p-6 md:p-8 rounded-2xl shadow-xl border border-[#3e4a52] mb-8">
-                    <h2 className="text-xl font-bold mb-4">Detalhes da Turma</h2>
+                <form onSubmit={handleUpdateDetails} className="bg-secondary-bg p-6 md:p-8 rounded-2xl shadow-xl border border-border-color mb-8">
+                    <h2 className="text-xl font-bold mb-4 text-primary-text">Detalhes da Turma</h2>
                     <div className="mb-6">
                         <label htmlFor="editName" className="block text-sm font-medium text-secondary-text mb-2">Nome da Turma</label>
                         <input
                             type="text" id="editName"
                             value={classDetails.name}
                             onChange={(e) => setClassDetails({ ...classDetails, name: e.target.value })}
-                            className="w-full px-4 py-3 bg-primary-bg border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30] text-primary-text"
+                            className="w-full px-4 py-3 bg-primary-bg border border-border-color rounded-xl focus:outline-none focus:ring-2 focus:ring-accent-teal text-primary-text transition-all"
                             required
                         />
                     </div>
@@ -261,7 +261,7 @@ function ClassEditPage() {
                             id="editDescription"
                             value={classDetails.description}
                             onChange={(e) => setClassDetails({ ...classDetails, description: e.target.value })}
-                            className="w-full px-4 py-3 bg-primary-bg border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30] text-primary-text h-32"
+                            className="w-full px-4 py-3 bg-primary-bg border border-border-color rounded-xl focus:outline-none focus:ring-2 focus:ring-accent-teal text-primary-text h-32 resize-none transition-all"
                         ></textarea>
                     </div>
                     <div className="mb-6">
@@ -289,10 +289,10 @@ function ClassEditPage() {
                 </form>
 
                 {/* --- SEÇÃO 2: GERENCIAR ALUNOS --- */}
-                <div className="bg-secondary-bg p-6 md:p-8 rounded-2xl shadow-xl border border-[#3e4a52] mb-8">
-                    <h2 className="text-xl font-bold mb-4 flex items-center"><FaUsers className="mr-3 text-[#69e8cb]" /> Gerenciar Alunos ({students.length})</h2>
+                <div className="bg-secondary-bg p-6 md:p-8 rounded-2xl shadow-xl border border-border-color mb-8">
+                    <h2 className="text-xl font-bold mb-4 flex items-center text-primary-text"><FaUsers className="mr-3 text-accent-teal" /> Gerenciar Alunos ({students.length})</h2>
                     <div className="mb-4 flex flex-col sm:flex-row gap-2">
-                        <input type="email" value={studentEmail} onChange={(e) => setStudentEmail(e.target.value)} placeholder="E-mail do aluno para adicionar" className="flex-grow px-4 py-3 bg-primary-bg border border-[#3e4a52] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ffbd30]" />
+                        <input type="email" value={studentEmail} onChange={(e) => setStudentEmail(e.target.value)} placeholder="E-mail do aluno para adicionar" className="flex-grow px-4 py-3 bg-primary-bg border border-border-color rounded-xl focus:outline-none focus:ring-2 focus:ring-accent-teal text-primary-text placeholder-secondary-text/60 shadow-sm transition-all" />
                         <button onClick={handleAddStudent} className="bg-green-600 hover:bg-green-700 text-primary-text font-bold py-2 px-4 rounded-lg flex items-center justify-center"><FaUserPlus className="mr-2" /> Adicionar Aluno</button>
                     </div>
                     <ul className="space-y-2 max-h-60 overflow-y-auto pr-2">

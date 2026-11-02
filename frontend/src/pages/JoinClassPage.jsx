@@ -133,7 +133,7 @@ function JoinClassPage() {
                                     setEnrollmentCode(e.target.value);
                                     console.log('[JoinClassPage] Código de inscrição alterado para:', e.target.value);
                                 }}
-                                className="w-full bg-border-color text-primary-text py-3 px-4 pl-11 rounded-xl border border-gray-600 focus:outline-none focus:ring-2 focus:ring-accent-yellow focus:border-transparent transition-all duration-200"
+                                className="w-full bg-secondary-bg text-primary-text py-3.5 px-4 pl-11 rounded-xl border border-border-color focus:outline-none focus:ring-2 focus:ring-accent-teal focus:border-transparent transition-all duration-200 placeholder:text-secondary-text/60 shadow-inner"
                                 placeholder="Digite o código aqui"
                                 required
                                 disabled={isLoading}

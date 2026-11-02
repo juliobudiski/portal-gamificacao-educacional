@@ -87,6 +87,7 @@ const StudentPerformancePage = () => {
   const [selectedClass, setSelectedClass] = useState('');
   const [selectedActivity, setSelectedActivity] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilterTag, setStatusFilterTag] = useState('all'); // Melhoria 46: Filtros combinados com tags
 
   // Estados de Dados (Inicializado com estrutura segura)
   const [performanceData, setPerformanceData] = useState({ stats: { total_students: 0 }, students: [] });
@@ -220,6 +221,32 @@ const StudentPerformancePage = () => {
         </div>
       </div>
 
+      {/* TAGS DE FILTRO INTERATIVAS (Melhoria 46: Filtros Combinados com Tags) */}
+      {selectedActivity && (
+        <div className="flex flex-wrap items-center gap-2 mb-6 animate-fade-in">
+          <span className="text-xs font-bold uppercase text-secondary-text tracking-wider mr-2">Filtrar por Status:</span>
+          {[
+            { id: 'all', label: 'Todos' },
+            { id: 'completed', label: 'Concluídos', color: 'text-success border-success/30 bg-success-bg/20' },
+            { id: 'in_progress', label: 'Em Andamento', color: 'text-accent-yellow border-accent-yellow/30 bg-yellow-500/10' },
+            { id: 'not_started', label: 'Não Iniciados', color: 'text-secondary-text border-border-color bg-primary-bg/50' },
+          ].map(tag => (
+            <button
+              key={tag.id}
+              type="button"
+              onClick={() => setStatusFilterTag(tag.id)}
+              className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${
+                statusFilterTag === tag.id
+                  ? 'bg-accent-teal text-primary-bg border-accent-teal shadow-md scale-105'
+                  : 'bg-secondary-bg/80 text-secondary-text border-border-color hover:border-accent-teal/50'
+              }`}
+            >
+              {tag.label}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* DASHBOARD DE MÉTRICAS (4 Colunas) */}
       {!loading && performanceData?.stats?.total_students > 0 && (
         <>
@@ -324,8 +351,23 @@ const StudentPerformancePage = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-color">
-                {performanceData?.students && performanceData.students.length > 0 ? (
-                  performanceData.students.map((student) => (
+                {(() => {
+                  const filteredStudents = (performanceData?.students || []).filter(student => {
+                    if (statusFilterTag === 'all') return true;
+                    return student.status === statusFilterTag;
+                  });
+
+                  if (filteredStudents.length === 0) {
+                    return (
+                      <tr>
+                        <td colSpan={selectedActivity ? 8 : 3} className="p-8 text-center text-secondary-text">
+                          Nenhum aluno encontrado para o filtro selecionado.
+                        </td>
+                      </tr>
+                    );
+                  }
+
+                  return filteredStudents.map((student) => (
                     <tr key={student.id} className="hover:bg-hover-bg-color transition-colors group">
                       <td className="p-4 px-6 flex items-center gap-4">
                         <div className="w-10 h-10 rounded-full bg-primary-bg border border-border-color overflow-hidden text-secondary-text flex-shrink-0">
@@ -378,10 +420,8 @@ const StudentPerformancePage = () => {
                         </>
                       )}
                     </tr>
-                  ))
-                ) : (
-                  <tr><td colSpan="8" className="p-8 text-center text-secondary-text">{classes.length === 0 ? "Nenhuma turma." : "Nenhum aluno."}</td></tr>
-                )}
+                  ));
+                })()}
               </tbody>
             </table>
           </div>

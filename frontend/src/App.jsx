@@ -55,6 +55,7 @@ import { useTutorial } from './context/TutorialContext';
 import { STUDENT_DASHBOARD_STEPS } from './data/tutorialSteps';
 import { ACTIVITY_SELECTION_STEPS } from './data/tutorialSteps';
 import useKonamiCode from './hooks/useKonamiCode';
+import HelpFloatingWidget from './components/common/HelpFloatingWidget';
 
 // --- 2. COMPONENTES AUXILIARES ---
 const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === 'true';
@@ -431,6 +432,7 @@ function AppContent() {
         </Routes>
       </main>
 
+      {!isActivityPage && <HelpFloatingWidget />}
       {!isActivityPage && <Footer />}
     </div>
   );

@@ -312,7 +312,7 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                                     </label>
                                     <input
                                         type="text"
-                                        className="w-full p-3 rounded-xl bg-primary-bg dark:bg-hover-bg-color0 border border-border-color text-sm text-primary-text focus:ring-2 focus:ring-purple-500"
+                                        className="w-full p-3 rounded-xl bg-primary-bg border border-border-color text-sm text-primary-text focus:ring-2 focus:ring-purple-500"
                                         placeholder="Ex: Diferença entre Git Merge e Rebase"
                                         value={config.teachingFocus}
                                         onChange={e => setConfig({ ...config, teachingFocus: e.target.value })}
@@ -324,7 +324,7 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                                         <FaGraduationCap className="text-blue-500" /> Nível da Turma
                                     </label>
                                     <select
-                                        className="w-full p-3 rounded-xl bg-primary-bg dark:bg-hover-bg-color0 border border-border-color text-sm text-primary-text"
+                                        className="w-full p-3 rounded-xl bg-primary-bg border border-border-color text-sm text-primary-text"
                                         value={config.targetAudience}
                                         onChange={e => setConfig({ ...config, targetAudience: e.target.value })}
                                     >
@@ -340,7 +340,7 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                                     <FaBook className="text-purple-500" /> Contexto da História
                                 </label>
                                 <textarea
-                                    className="w-full p-3 rounded-xl bg-primary-bg dark:bg-hover-bg-color0 border border-border-color text-sm text-primary-text focus:ring-2 focus:ring-purple-500"
+                                    className="w-full p-3 rounded-xl bg-primary-bg border border-border-color text-sm text-primary-text focus:ring-2 focus:ring-purple-500"
                                     rows="3"
                                     placeholder="Ex: O servidor caiu e a equipe precisa analisar os logs para achar o erro de memória..."
                                     value={config.narrativeGoal}
@@ -357,7 +357,7 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                                 <div>
                                     <label className="block font-bold text-sm mb-2 text-secondary-text">Gênero / Tom</label>
                                     <select
-                                        className="w-full p-3 rounded-xl bg-primary-bg dark:bg-hover-bg-color0 border border-border-color text-primary-text"
+                                        className="w-full p-3 rounded-xl bg-primary-bg border border-border-color text-primary-text"
                                         value={config.tone}
                                         onChange={e => setConfig({ ...config, tone: e.target.value })}
                                     >
@@ -371,7 +371,7 @@ const AIConfigModal = ({ isOpen, onClose, onSuccess, activityId, structure, cont
                                 <div>
                                     <label className="block font-bold text-sm mb-2 text-secondary-text">Personalidade da Historia</label>
                                     <select
-                                        className="w-full p-3 rounded-xl bg-primary-bg dark:bg-hover-bg-color0 border border-border-color text-primary-text"
+                                        className="w-full p-3 rounded-xl bg-primary-bg border border-border-color text-primary-text"
                                         value={config.personality}
                                         onChange={e => setConfig({ ...config, personality: e.target.value })}
                                     >

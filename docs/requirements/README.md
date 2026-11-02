@@ -19,8 +19,8 @@ docs/requirements/
 
 | Documento | Padrão / Framework | Finalidade |
 | :--- | :--- | :--- |
-| **[SRS.md](file:///home/julio/Documentos/projetos/portal-gamificacao-educacional/docs/requirements/SRS.md)** | ISO/IEC/IEEE 29148 / IEEE 830 | Especificação completa do escopo, 15 Requisitos Funcionais (RF-01 a RF-15), 10 Requisitos Não-Funcionais (RNF-01 a RNF-10), regras de negócio e catálogo de atores. |
-| **[RTM.md](file:///home/julio/Documentos/projetos/portal-gamificacao-educacional/docs/requirements/RTM.md)** | RTM Bidirecional (Forward & Backward) | Matriz que rastreia cada requisito formal com seu Épico, User Story (BDD), componentes de Backend, Frontend e suíte de testes automatizados no CI/CD. |
+| **[SRS.md](SRS.md)** | ISO/IEC/IEEE 29148 / IEEE 830 | Especificação completa do escopo, 15 Requisitos Funcionais (RF-01 a RF-15), 10 Requisitos Não-Funcionais (RNF-01 a RNF-10), regras de negócio e catálogo de atores. |
+| **[RTM.md](RTM.md)** | RTM Bidirecional (Forward & Backward) | Matriz que rastreia cada requisito formal com seu Épico, User Story (BDD), componentes de Backend, Frontend e suíte de testes automatizados no CI/CD. |
 
 ---
 

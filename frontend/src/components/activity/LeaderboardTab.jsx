@@ -53,10 +53,13 @@ const LeaderboardTab = ({ leaderboardData, isLoading, onReturn }) => {
         );
     }
 
+    // Modo Sala de Aula: Oculta nomes reais com pseudônimos para projeção coletiva (Melhoria 51)
+    const [isClassroomMode, setIsClassroomMode] = React.useState(false);
+
     // --- Renderização Principal do Ranking ---
     return (
         <div className="relative pt-16 w-full max-w-3xl mx-auto p-4 text-primary-text">
-            <div className='flex-shrink-0'>
+            <div className='flex items-center justify-between'>
                 <button
                     onClick={onReturn}
                     className="absolute top-4 left-4 z-20 flex items-center gap-2 py-2 px-4 
@@ -66,24 +69,49 @@ const LeaderboardTab = ({ leaderboardData, isLoading, onReturn }) => {
                 >
                     <FaArrowLeft /> Voltar ao Tabuleiro
                 </button>
+
+                <button
+                    type="button"
+                    onClick={() => setIsClassroomMode(!isClassroomMode)}
+                    className={`absolute top-4 right-4 z-20 flex items-center gap-2 py-2 px-4 rounded-full border text-xs font-bold transition-all shadow-md ${
+                        isClassroomMode
+                            ? 'bg-purple-600/30 border-purple-400 text-purple-300'
+                            : 'bg-secondary-bg/80 border-border-color text-secondary-text hover:text-primary-text'
+                    }`}
+                    title="Oculta nomes reais com codinomes para exibição no projetor da sala"
+                >
+                    {isClassroomMode ? '🎭 Modo Sala de Aula: Ativo' : '👓 Modo Sala de Aula'}
+                </button>
             </div>
             <header className="text-center mb-8 pt-8">
                 <h1 className="text-4xl font-bold text-yellow-300 flex items-center justify-center gap-3">
                     <FaTrophy />
                     Hall da Fama
                 </h1>
+                {isClassroomMode && (
+                    <p className="text-xs text-purple-300 mt-2 font-mono">
+                        Nomes mascarados para proteção de privacidade na projeção.
+                    </p>
+                )}
             </header>
 
             {/* Usando uma lista ordenada <ol> para semântica correta */}
             <ol className="space-y-4">
-                {leaderboardData.map(player => (
-                    <RankingItem
-                        key={player.rank}
-                        player={player}
-                        // Verifica se o ID do jogador na lista é o mesmo do usuário logado
-                        isCurrentUser={player.id === user.id}
-                    />
-                ))}
+                {leaderboardData.map(player => {
+                    const displayPlayer = isClassroomMode ? {
+                        ...player,
+                        name: player.id === user.id ? `${player.name} (Você)` : `Aventureiro #${player.rank}`
+                    } : player;
+
+                    return (
+                        <RankingItem
+                            key={player.rank}
+                            player={displayPlayer}
+                            // Verifica se o ID do jogador na lista é o mesmo do usuário logado
+                            isCurrentUser={player.id === user.id}
+                        />
+                    );
+                })}
             </ol>
         </div>
     );

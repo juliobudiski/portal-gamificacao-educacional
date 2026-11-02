@@ -42,10 +42,17 @@ const ItemCard = ({ item, userRole, userPoints, onPurchaseRequest, onDeleteReque
       {/* Descrição */}
       <p className="text-secondary-text text-sm text-center flex-grow relative z-10 leading-relaxed">{item.description}</p>
 
-      {/* Preço */}
-      <div className="flex items-center justify-center gap-2 my-6 text-3xl font-bold text-yellow-400 relative z-10 bg-black/30 py-3 rounded-2xl border border-white/5">
-        <FaCoins className="drop-shadow-[0_0_8px_rgba(250,204,21,0.8)]" />
-        <span className="drop-shadow-lg">{item.price}</span>
+      {/* Preço e Comparativo de Saldo (Melhoria 58) */}
+      <div className="flex flex-col items-center justify-center my-6 relative z-10 bg-black/30 py-3 px-4 rounded-2xl border border-white/5">
+        <div className="flex items-center justify-center gap-2 text-3xl font-bold text-yellow-400">
+          <FaCoins className="drop-shadow-[0_0_8px_rgba(250,204,21,0.8)]" />
+          <span className="drop-shadow-lg">{item.price}</span>
+        </div>
+        {userRole === 'aluno' && !isAffordable && (
+          <span className="text-[11px] font-semibold text-rose-400 mt-1">
+            Faltam {item.price - (userPoints || 0)} moedas
+          </span>
+        )}
       </div>
 
       {/* Botões de Ação */}
@@ -60,7 +67,7 @@ const ItemCard = ({ item, userRole, userPoints, onPurchaseRequest, onDeleteReque
                 : 'bg-secondary-bg text-gray-500 cursor-not-allowed border border-[var(--border-color)]'}`}
           >
             <FaShoppingCart className="text-lg" />
-            {isAffordable ? 'Comprar Item' : 'Saldo Insuficiente'}
+            {isAffordable ? 'Comprar Item' : `Faltam ${item.price - (userPoints || 0)} 🪙`}
           </button>
         )}
         {userRole === 'professor' && (

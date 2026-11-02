@@ -278,13 +278,26 @@ function ActivityBankPage() {
               </p>
             </div>
 
-            <Link
-              to="/professor/criar-atividade"
-              className="inline-flex items-center gap-2.5 px-6 py-3.5 bg-gradient-to-r from-accent-teal to-teal-500 hover:from-teal-500 hover:to-accent-teal text-white font-extrabold text-sm rounded-2xl shadow-lg hover:shadow-teal-500/20 transform hover:-translate-y-0.5 active:translate-y-0 transition-all"
-            >
-              <FaPlusCircle className="text-base" />
-              <span>Criar Nova Atividade</span>
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-3">
+              {publicActivities.length > 0 && (
+                <button
+                  onClick={() => performCopyActivity(publicActivities[0].id)}
+                  className="inline-flex items-center gap-2 px-5 py-3.5 bg-secondary-bg hover:bg-white/10 text-primary-text font-bold text-sm rounded-2xl border border-border-color shadow-sm transition-all"
+                  title="Clonar modelo de exemplo para experimentação"
+                >
+                  <FaRocket className="text-accent-yellow" />
+                  <span>Experimentar Modelo</span>
+                </button>
+              )}
+
+              <Link
+                to="/professor/criar-atividade"
+                className="inline-flex items-center gap-2.5 px-6 py-3.5 bg-gradient-to-r from-accent-teal to-teal-500 hover:from-teal-500 hover:to-accent-teal text-white font-extrabold text-sm rounded-2xl shadow-lg hover:shadow-teal-500/20 transform hover:-translate-y-0.5 active:translate-y-0 transition-all"
+              >
+                <FaPlusCircle className="text-base" />
+                <span>Criar Nova Atividade</span>
+              </Link>
+            </div>
           </div>
 
           {/* Quick Metrics Bar */}

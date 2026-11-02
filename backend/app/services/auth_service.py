@@ -77,6 +77,9 @@ class AuthService:
         password = data.get('password', '')
         raw_name = data.get('name', '')
         role = data.get('role', 'aluno')
+        # Prevenção de Escalação de Privilégios (VULN-02): registro público só permite aluno ou professor
+        if role not in ('aluno', 'professor'):
+            role = 'aluno'
         access_code = data.get('accessCode', '')
 
         # Validação do código de acesso para professores

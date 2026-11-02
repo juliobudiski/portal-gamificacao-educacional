@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import { Users, BookOpen, GraduationCap, User as UserIcon, Info } from 'lucide-react';
+import api from '../../services/api';
 import UserGrowthChart from '../../components/admin/UserGrowthChart';
 import TopActivitiesChart from '../../components/admin/TopActivitiesChart';
 import RecentActivityFeed from '../../components/admin/RecentActivityFeed';
@@ -37,9 +38,6 @@ function DashboardOverviewPage() {
       }
 
       try {
-        const apiPrefix = `${import.meta.env.VITE_API_URL}/api/admin`;
-        const headers = { 'Authorization': `Bearer ${token}` };
-
         const [
           dashboardRes,
           userGrowthRes,
@@ -47,30 +45,22 @@ function DashboardOverviewPage() {
           feedRes,
           activityStatusRes
         ] = await Promise.all([
-          fetch(`${apiPrefix}/dashboard_data`, { headers }),
-          fetch(`${apiPrefix}/stats/user_growth`, { headers }),
-          fetch(`${apiPrefix}/stats/top_activities`, { headers }),
-          fetch(`${apiPrefix}/feed`, { headers }),
-          fetch(`${apiPrefix}/analytics/activity-status`, { headers })
+          api.get('/admin/dashboard_data'),
+          api.get('/admin/stats/user_growth'),
+          api.get('/admin/stats/top_activities'),
+          api.get('/admin/feed'),
+          api.get('/admin/analytics/activity-status')
         ]);
 
-        // Verificação robusta de erros
-        if (!dashboardRes.ok) throw new Error(`Falha ao buscar KPIs: ${dashboardRes.statusText}`);
-        if (!userGrowthRes.ok) throw new Error(`Falha ao buscar dados de crescimento: ${userGrowthRes.statusText}`);
-        if (!topActivitiesRes.ok) throw new Error(`Falha ao buscar top atividades: ${topActivitiesRes.statusText}`);
-        if (!feedRes.ok) throw new Error(`Falha ao buscar feed: ${feedRes.statusText}`);
-        if (!activityStatusRes.ok) throw new Error(`Falha ao buscar status de atividades: ${activityStatusRes.statusText}`);
-
-        // Processa as respostas JSON
-        setDashboardData(await dashboardRes.json());
-        setUserGrowthData(await userGrowthRes.json());
-        setTopActivitiesData(await topActivitiesRes.json());
-        setActivityFeed(await feedRes.json());
-        setActivityStatus(await activityStatusRes.json());
+        setDashboardData(dashboardRes.data);
+        setUserGrowthData(userGrowthRes.data);
+        setTopActivitiesData(topActivitiesRes.data);
+        setActivityFeed(feedRes.data);
+        setActivityStatus(activityStatusRes.data);
 
       } catch (e) {
-        console.error("Erro detalhado:", e);
-        setError(e.message);
+        console.error("Erro detalhado no painel admin:", e);
+        setError(e.response?.data?.message || e.message);
       } finally {
         setLoading(false);
       }

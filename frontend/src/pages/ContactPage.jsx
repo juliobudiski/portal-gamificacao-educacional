@@ -96,31 +96,31 @@ const ContactPage = () => {
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label className="block text-sm font-medium mb-1">Nome</label>
+                            <label className="block text-sm font-medium mb-1 text-primary-text">Nome</label>
                             <input
                                 type="text"
                                 name="name"
                                 required
                                 value={formData.name}
                                 onChange={handleChange}
-                                className="w-full p-3 rounded-lg border border-border-color bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-indigo-500 outline-none transition"
+                                className="w-full p-3 rounded-xl border border-border-color bg-primary-bg text-primary-text focus:ring-2 focus:ring-accent-teal outline-none transition shadow-sm"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-1">E-mail</label>
+                            <label className="block text-sm font-medium mb-1 text-primary-text">E-mail</label>
                             <input
                                 type="email"
                                 name="email"
                                 required
                                 value={formData.email}
                                 onChange={handleChange}
-                                className="w-full p-3 rounded-lg border border-border-color bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-indigo-500 outline-none transition"
+                                className="w-full p-3 rounded-xl border border-border-color bg-primary-bg text-primary-text focus:ring-2 focus:ring-accent-teal outline-none transition shadow-sm"
                             />
                         </div>
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium mb-1">Assunto</label>
+                        <label className="block text-sm font-medium mb-1 text-primary-text">Assunto</label>
                         <input
                             type="text"
                             name="subject"
@@ -128,19 +128,19 @@ const ContactPage = () => {
                             value={formData.subject}
                             onChange={handleChange}
                             placeholder="Ex: Dúvida sobre XP / Bug no Tabuleiro"
-                            className="w-full p-3 rounded-lg border border-border-color bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-indigo-500 outline-none transition"
+                            className="w-full p-3 rounded-xl border border-border-color bg-primary-bg text-primary-text focus:ring-2 focus:ring-accent-teal outline-none transition shadow-sm placeholder:text-secondary-text/60"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium mb-1">Mensagem</label>
+                        <label className="block text-sm font-medium mb-1 text-primary-text">Mensagem</label>
                         <textarea
                             name="message"
                             rows="5"
                             required
                             value={formData.message}
                             onChange={handleChange}
-                            className="w-full p-3 rounded-lg border border-border-color bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-indigo-500 outline-none transition"
+                            className="w-full p-3 rounded-xl border border-border-color bg-primary-bg text-primary-text focus:ring-2 focus:ring-accent-teal outline-none transition shadow-sm resize-none"
                         ></textarea>
                     </div>
 

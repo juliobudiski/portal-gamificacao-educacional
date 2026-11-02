@@ -42,8 +42,8 @@ def get_student_performance():
     class_id = request.args.get('class_id')
     activity_id = request.args.get('activity_id')
     search_term = request.args.get('search')
-    
-    result, error, status = AnalyticsService.get_student_performance(class_id, activity_id, search_term)
+    current_user_id = get_jwt_identity()
+    result, error, status = AnalyticsService.get_student_performance(current_user_id, class_id, activity_id, search_term)
     if error:
         return jsonify(error), status
     return jsonify(result), status

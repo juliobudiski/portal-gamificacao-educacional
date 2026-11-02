@@ -43,6 +43,13 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     (error) => {
+        /**
+         * Interceptor de Resposta Resiliente:
+         * 1. Erros esperados de validação (400, 422) ou autorização (401, 403) são repassados
+         *    diretamente para o componente React tratar via UI/Toast, evitando redirecionamento para crash.
+         * 2. Rotas de telemetria (/log), contato (/contact) ou métricas (/public) falham de modo silencioso (Fail-Open)
+         *    para não interromper a experiência imersiva do aluno no tabuleiro.
+         */
         const status = error?.response?.status;
         const requestUrl = error?.config?.url || '';
 

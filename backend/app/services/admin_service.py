@@ -105,6 +105,15 @@ class AdminService:
         query = query.order_by(EventLog.created_at.desc())
         logs = query.all()
 
+        def _sanitize_csv_cell(val):
+            """Evita CSV / Formula Injection (VULN-22) prefixando com apóstrofo se iniciar com caracteres de fórmula."""
+            if val is None:
+                return ''
+            str_val = str(val)
+            if str_val and str_val[0] in ('=', '+', '-', '@', '\t', '\r'):
+                return f"'{str_val}"
+            return str_val
+
         def generate():
             data = StringIO()
             writer = csv.writer(data, delimiter=';')
@@ -115,15 +124,15 @@ class AdminService:
 
             for log, user_name, user_email, user_role in logs:
                 writer.writerow([
-                    log.id,
-                    log.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-                    user_name,
-                    user_email,
-                    user_role,
-                    log.section,
-                    log.action,
-                    log.details,
-                    log.ip_address
+                    _sanitize_csv_cell(log.id),
+                    _sanitize_csv_cell(log.created_at.strftime('%Y-%m-%d %H:%M:%S')),
+                    _sanitize_csv_cell(user_name),
+                    _sanitize_csv_cell(user_email),
+                    _sanitize_csv_cell(user_role),
+                    _sanitize_csv_cell(log.section),
+                    _sanitize_csv_cell(log.action),
+                    _sanitize_csv_cell(log.details),
+                    _sanitize_csv_cell(log.ip_address)
                 ])
                 yield data.getvalue()
                 data.seek(0)

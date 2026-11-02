@@ -45,8 +45,8 @@ def _initialize_extensions(app):
     CORS(app, resources={r"/api/*": {"origins": "*"}}) 
     socketio.init_app(app)
     
-    # INICIALIZAÇÃO DO SCHEDULER
-    app.config['SCHEDULER_API_ENABLED'] = True 
+    # INICIALIZAÇÃO DO SCHEDULER (API REST pública desabilitada por segurança - VULN-01)
+    app.config['SCHEDULER_API_ENABLED'] = False 
     scheduler.init_app(app)
     
     # Para evitar que múltiplos workers do Gunicorn rodem o scheduler ao mesmo tempo,

@@ -130,9 +130,9 @@ const StudentActivityPage = () => {
               placeholder="Buscar atividade ou matéria..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-secondary-bg border border-border-color rounded-lg py-2 pl-10 pr-4 text-primary-text focus:outline-none focus:border-[#69e8cb] transition-colors"
+              className="w-full bg-secondary-bg border border-border-color rounded-xl py-2.5 pl-10 pr-4 text-primary-text placeholder-secondary-text/60 focus:outline-none focus:ring-2 focus:ring-accent-teal focus:border-transparent transition-all shadow-sm"
             />
-            <FaSearch className="absolute left-3 top-3 text-secondary-text" />
+            <FaSearch className="absolute left-3.5 top-3.5 text-secondary-text" />
           </div>
         </div>
 

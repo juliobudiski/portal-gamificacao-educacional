@@ -22,25 +22,41 @@ export const TutorialProvider = ({ children }) => {
     const [tourKey, setTourKey] = useState(null);
     const [stepIndex, setStepIndex] = useState(0);
 
-    // Configuração de Estilos Dinâmicos (Dark/Light)
+    // Configuração de Estilos Dinâmicos (Dark/Light) com Spotlight e Curvatura Suave (Melhoria 02/09)
     const styles = {
         options: {
             arrowColor: theme === 'dark' ? '#1f2937' : '#fff',
             backgroundColor: theme === 'dark' ? '#1f2937' : '#fff',
-            overlayColor: 'rgba(0, 0, 0, 0.6)',
-            primaryColor: '#6366f1', // Indigo-500 (cor principal do seu tema)
+            overlayColor: 'rgba(0, 0, 0, 0.75)',
+            primaryColor: '#06b6d4', // Ciano vibrante
             textColor: theme === 'dark' ? '#f3f4f6' : '#1f2937',
-            width: 400,
+            width: 420,
             zIndex: 10000,
+            spotlightPadding: 6,
+        },
+        tooltip: {
+            borderRadius: '1.25rem',
+            padding: '1.25rem',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5)',
         },
         tooltipContainer: {
             textAlign: 'left'
         },
         buttonNext: {
-            backgroundColor: '#6366f1',
+            backgroundColor: '#06b6d4',
+            borderRadius: '0.75rem',
+            fontWeight: 700,
+            padding: '0.5rem 1rem',
+            color: '#111827',
         },
         buttonBack: {
             color: theme === 'dark' ? '#9ca3af' : '#4b5563',
+            marginRight: '0.5rem',
+            fontWeight: 600,
+        },
+        buttonSkip: {
+            color: '#ef4444',
+            fontWeight: 600,
         }
     };
 

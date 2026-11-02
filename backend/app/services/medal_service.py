@@ -102,15 +102,17 @@ class FenixBadgeStrategy(BaseBadgeStrategy):
         if not question_text:
             return False
 
-        # Verifica tentativa prévia incorreta com a mesma questão
-        previous_incorrect = StudentResponse.query.filter(
+        # Verifica tentativa prévia incorreta com a mesma questão de forma compatível (PostgreSQL JSONB e SQLite JSON)
+        previous_incorrect_responses = StudentResponse.query.filter(
             StudentResponse.student_id == user.id,
             StudentResponse.activity_id == activity_id,
-            StudentResponse.response_data['question'].astext == question_text,
             StudentResponse.is_correct == False
-        ).first()
+        ).all()
 
-        return previous_incorrect is not None
+        return any(
+            isinstance(r.response_data, dict) and r.response_data.get('question') == question_text
+            for r in previous_incorrect_responses
+        )
 
 
 class PecaChaveBadgeStrategy(BaseBadgeStrategy):

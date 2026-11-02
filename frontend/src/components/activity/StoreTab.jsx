@@ -118,14 +118,14 @@ const AddItemForm = ({ onAddItem, onCancel }) => {
         <div className="bg-secondary-bg/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 mb-8">
             <h3 className="text-xl font-bold mb-4 text-primary-text">Criar Item Personalizado</h3>
             <form onSubmit={handleSubmit} className="space-y-4">
-                <select value={itemType} onChange={e => setItemType(e.target.value)} className="w-full bg-border-color p-2 rounded">
+                <select value={itemType} onChange={e => setItemType(e.target.value)} className="w-full bg-primary-bg border border-border-color text-primary-text p-3 rounded-xl focus:ring-2 focus:ring-accent-teal outline-none transition-all">
                     <option value="title">Título</option>
                     <option value="cosmetic">Cosmético (Cor de Nome)</option>
                     <option value="utility">Utilitário</option>
                 </select>
-                <input type="text" placeholder={itemType === 'title' ? "Texto do Título (ex: Mestre da Atividade)" : "Nome do Item"} value={name} onChange={e => setName(e.target.value)} className="w-full bg-border-color p-2 rounded" required />
-                <input type="text" placeholder="Descrição" value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-border-color p-2 rounded" required />
-                <input type="number" placeholder="Preço em pontos" value={price} onChange={e => setPrice(e.target.value)} className="w-full bg-border-color p-2 rounded" required />
+                <input type="text" placeholder={itemType === 'title' ? "Texto do Título (ex: Mestre da Atividade)" : "Nome do Item"} value={name} onChange={e => setName(e.target.value)} className="w-full bg-primary-bg border border-border-color text-primary-text p-3 rounded-xl focus:ring-2 focus:ring-accent-teal outline-none transition-all" required />
+                <input type="text" placeholder="Descrição" value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-primary-bg border border-border-color text-primary-text p-3 rounded-xl focus:ring-2 focus:ring-accent-teal outline-none transition-all" required />
+                <input type="number" placeholder="Preço em pontos" value={price} onChange={e => setPrice(e.target.value)} className="w-full bg-primary-bg border border-border-color text-primary-text p-3 rounded-xl focus:ring-2 focus:ring-accent-teal outline-none transition-all" required />
                 {itemType === 'cosmetic' && (
                     <div className="bg-black/20 p-4 rounded-lg space-y-4">
                         <h4 className="font-bold">Editor de Efeito Cosmético</h4>

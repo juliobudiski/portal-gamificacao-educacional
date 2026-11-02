@@ -97,7 +97,7 @@ function CreateClassPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-[#1e2226] to-[#2c3135] py-10 px-4 sm:px-6">
+        <div className="min-h-screen bg-primary-bg py-10 px-4 sm:px-6 transition-colors duration-300">
             <div className="max-w-md mx-auto">
                 <button 
                     onClick={() => navigate(-1)} 
@@ -120,8 +120,8 @@ function CreateClassPage() {
                     </h1>
                 </div>
 
-                <div className="relative bg-primary-bg rounded-2xl shadow-2xl overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-r from-accent-purple/10 to-accent-teal/10"></div>
+                <div className="relative bg-secondary-bg rounded-2xl shadow-xl border border-border-color overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-accent-purple/5 to-accent-teal/5 pointer-events-none"></div>
                     <div className="relative p-8 z-10">
                         <form onSubmit={handleSubmit}>
                             <div className="mb-6">
@@ -139,7 +139,7 @@ function CreateClassPage() {
                                         setName(e.target.value);
                                         console.log('[CreateClassPage] Nome da turma alterado para:', e.target.value);
                                     }}
-                                    className="w-full bg-secondary-bg border-2 border-[#4a525a] rounded-xl py-3 px-4 text-secondary-text placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-accent-yellow focus:border-transparent transition duration-300"
+                                    className="w-full bg-primary-bg border border-border-color rounded-xl py-3 px-4 text-primary-text placeholder-secondary-text/60 focus:outline-none focus:ring-2 focus:ring-accent-teal focus:border-transparent transition duration-300 shadow-sm"
                                     placeholder="Digite o nome da turma"
                                     required
                                     disabled={isLoading}
@@ -160,8 +160,8 @@ function CreateClassPage() {
                                         setDescription(e.target.value);
                                         console.log('[CreateClassPage] Descrição alterada para:', e.target.value);
                                     }}
-                                    className="w-full bg-secondary-bg border-2 border-[#4a525a] rounded-xl py-3 px-4 text-secondary-text placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-accent-yellow focus:border-transparent transition duration-300 h-40 resize-none"
-                                    placeholder="Adicione uma descrição para a turma..."
+                                    className="w-full bg-primary-bg border border-border-color rounded-xl py-3 px-4 text-primary-text placeholder-secondary-text/60 focus:outline-none focus:ring-2 focus:ring-accent-teal focus:border-transparent transition duration-300 shadow-sm h-32 resize-none"
+                                    placeholder="Descreva a turma (opcional)"
                                     disabled={isLoading}
                                 ></textarea>
                             </div>

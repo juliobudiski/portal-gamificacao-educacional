@@ -3,10 +3,75 @@
 @tailwind utilities;
 
 @layer base {
-  input[type="text"], input[type="email"], input[type="password"], input[type="number"], textarea, select {
-    @apply dark:bg-primary-bg dark:border-border-color dark:text-primary-text dark:focus:ring-accent-teal dark:focus:border-transparent;
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="search"],
+  input[type="date"],
+  input[type="time"],
+  textarea,
+  select {
+    background-color: var(--background-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    transition: all 0.2s ease-in-out;
+  }
+
+  input[type="text"]:focus,
+  input[type="email"]:focus,
+  input[type="password"]:focus,
+  input[type="number"]:focus,
+  input[type="search"]:focus,
+  input[type="date"]:focus,
+  input[type="time"]:focus,
+  textarea:focus,
+  select:focus {
+    outline: none;
+    border-color: var(--color-accent-teal);
+    box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.35);
+  }
+
+  html.dark input[type="text"],
+  html.dark input[type="email"],
+  html.dark input[type="password"],
+  html.dark input[type="number"],
+  html.dark input[type="search"],
+  html.dark input[type="date"],
+  html.dark input[type="time"],
+  html.dark textarea,
+  html.dark select {
+    background-color: var(--background-primary);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+  }
+
+  html.dark input[type="text"]:focus,
+  html.dark input[type="email"]:focus,
+  html.dark input[type="password"]:focus,
+  html.dark input[type="number"]:focus,
+  html.dark input[type="search"]:focus,
+  html.dark input[type="date"]:focus,
+  html.dark input[type="time"]:focus,
+  html.dark textarea:focus,
+  html.dark select:focus {
+    border-color: var(--color-accent-teal);
+    box-shadow: 0 0 0 2px rgba(105, 232, 203, 0.45);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.65;
+  }
+
+  input[type="checkbox"] {
+    accent-color: var(--color-accent-teal);
+    cursor: pointer;
   }
 }
+
 
 /* Definição de variáveis de cor para o tema claro (padrão).
 */
@@ -158,4 +223,68 @@ body.matrix-mode svg {
   color: #00FF00 !important;
   fill: #00FF00 !important;
 }
+
+/* === ACESSIBILIDADE WCAG 2.2 AA (Melhoria 64 & 68) === */
+
+/* Foco Visível Aprimorado para Navegação por Teclado (Melhoria 64) */
+:focus-visible {
+  outline: 3px solid #06b6d4 !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 5px rgba(6, 182, 212, 0.35) !important;
+}
+
+/* Respeito à Preferência prefers-reduced-motion (Melhoria 68) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Transição Suave de Tema Claro/Escuro (Melhoria 98) */
+html.dark,
+html:not(.dark),
+html.dark body,
+html:not(.dark) body {
+  transition: background-color 300ms ease, color 300ms ease, border-color 300ms ease;
+}
+
+/* Áreas de Toque Mínimas de 44x44px em Elementos Interativos (Melhoria 71) */
+button,
+a,
+input[type="button"],
+input[type="submit"] {
+  min-height: 38px;
+  min-width: 38px;
+}
+
+/* Scrollbars Modernas e Harmonizadas para Claro e Escuro */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* Destaque de Seleção de Texto */
+::selection {
+  background-color: var(--color-accent-teal);
+  color: #ffffff;
+}
+
 
