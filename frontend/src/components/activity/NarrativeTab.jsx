@@ -178,10 +178,59 @@ const NarrativeTab = ({ content, onComplete }) => {
                 {isTyping && <span className="text-xs text-white/70 italic">(clique para pular)</span>}
               </div>
               
-              <p className="text-xl sm:text-2xl text-gray-100 mt-2 leading-relaxed drop-shadow-md">
-                {displayedText}
+              {/* Glossário Técnico & Balão de Fala Dinâmico (Melhoria 35 e 29) */}
+              <div className="text-xl sm:text-2xl text-gray-100 mt-2 leading-relaxed drop-shadow-md">
+                {displayedText.split(' ').map((word, wIdx) => {
+                  const cleanWord = word.replace(/[^a-zA-ZáàâãéèêíïóôõöúçñÁÀÂÃÉÈÍÏÓÔÕÖÚÇÑ]/g, '').toLowerCase();
+                  const GLOSSARY_TERMS = {
+                    'solid': 'Princípios de Design Orientado a Objetos (Single Responsibility, Open/Closed, Liskov, Interface Segregation, Dependency Inversion).',
+                    'refatoração': 'Processo de melhorar o design interno do código sem alterar seu comportamento observável externo.',
+                    'clean': 'Clean Code: Práticas de escrita legível, testável e manutenível.',
+                    'scrum': 'Framework ágil iterativo e incremental para gestão de desenvolvimento de projetos.',
+                    'tdd': 'Test-Driven Development: Ciclo Vermelho-Verde-Refatora onde testes são escritos antes do código.',
+                    'api': 'Application Programming Interface: Contrato formal de comunicação entre sistemas.',
+                    'idor': 'Insecure Direct Object References: Falha de controle de acesso a identificadores diretos.',
+                    'polimorfismo': 'Capacidade de diferentes classes implementarem o mesmo método respondendo de forma distinta.'
+                  };
+
+                  if (GLOSSARY_TERMS[cleanWord]) {
+                    return (
+                      <span key={wIdx} className="group/glossary relative inline-block cursor-help text-accent-teal underline decoration-dotted underline-offset-4 font-semibold mr-1.5">
+                        {word}
+                        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/glossary:flex flex-col bg-slate-900 border border-accent-teal/50 text-white text-xs p-2.5 rounded-xl shadow-2xl z-50 w-56 text-left pointer-events-none animate-fadeIn font-normal">
+                          <span className="text-[10px] uppercase font-bold text-accent-teal mb-0.5">Glossário Técnico</span>
+                          {GLOSSARY_TERMS[cleanWord]}
+                        </span>
+                      </span>
+                    );
+                  }
+                  return <span key={wIdx} className="mr-1.5">{word}</span>;
+                })}
                 {isTyping && <span className="inline-block w-2.5 h-6 bg-accent-teal ml-1 animate-pulse align-middle"></span>}
-              </p>
+              </div>
+
+              {/* Ramificações Cosméticas de Diálogo (Melhoria 31: Escolhas do Aluno) */}
+              {!isTyping && currentLine?.choices && currentLine.choices.length > 0 && (
+                <div className="mt-4 pt-3 border-t border-white/10 flex flex-wrap gap-2">
+                  <span className="text-xs uppercase tracking-wider text-accent-teal font-bold w-full mb-1">
+                    Como você responde?
+                  </span>
+                  {currentLine.choices.map((choice, cIdx) => (
+                    <button
+                      key={cIdx}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (choice.response) {
+                          setDisplayedText(choice.response);
+                        }
+                      }}
+                      className="text-xs sm:text-sm bg-white/10 hover:bg-accent-teal/20 border border-white/20 hover:border-accent-teal px-3 py-1.5 rounded-full text-white transition-all transform hover:scale-105"
+                    >
+                      💬 {choice.text}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}

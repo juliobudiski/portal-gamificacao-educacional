@@ -224,7 +224,7 @@ body.matrix-mode svg {
   fill: #00FF00 !important;
 }
 
-/* === ACESSIBILIDADE WCAG 2.2 AA (Melhoria 64 & 68) === */
+/* === ACESSIBILIDADE WCAG 2.2 AA (Melhoria 64, 65, 67, 68, 69, 71, 72) === */
 
 /* Foco Visível Aprimorado para Navegação por Teclado (Melhoria 64) */
 :focus-visible {
@@ -233,16 +233,54 @@ body.matrix-mode svg {
   box-shadow: 0 0 0 5px rgba(6, 182, 212, 0.35) !important;
 }
 
-/* Respeito à Preferência prefers-reduced-motion (Melhoria 68) */
+/* Suporte a Alto Contraste Extremo (Melhoria 65) */
+html[data-a11y-contrast="high"] {
+  --background-primary: #000000 !important;
+  --background-secondary: #0a0a0a !important;
+  --text-primary: #FFFF00 !important;
+  --text-secondary: #FFFFFF !important;
+  --border-color: #FFFF00 !important;
+  --color-accent-teal: #00FFFF !important;
+  --color-accent-yellow: #FFFF00 !important;
+  --color-accent-purple: #FF00FF !important;
+}
+
+html[data-a11y-contrast="high"] * {
+  border-color: #FFFF00 !important;
+}
+
+/* Escalonamento de Tamanho de Fonte Global (Melhoria 69) */
+html[data-font-scale="medium"] {
+  font-size: 115% !important;
+}
+
+html[data-font-scale="large"] {
+  font-size: 130% !important;
+}
+
+/* Modo para Daltônicos (Melhoria 67) */
+html[data-colorblind="protanopia"] {
+  filter: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"><filter id="protanopia"><feColorMatrix type="matrix" values="0.567, 0.433, 0, 0, 0, 0.558, 0.442, 0, 0, 0, 0, 0.242, 0.758, 0, 0, 0, 0, 0, 1, 0"/></filter></svg>#protanopia');
+}
+
+html[data-colorblind="deuteranopia"] {
+  filter: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"><filter id="deuteranopia"><feColorMatrix type="matrix" values="0.625, 0.375, 0, 0, 0, 0.7, 0.3, 0, 0, 0, 0, 0.3, 0.7, 0, 0, 0, 0, 0, 1, 0"/></filter></svg>#deuteranopia');
+}
+
+html[data-colorblind="tritanopia"] {
+  filter: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"><filter id="tritanopia"><feColorMatrix type="matrix" values="0.95, 0.05, 0, 0, 0, 0, 0.433, 0.567, 0, 0, 0, 0.475, 0.525, 0, 0, 0, 0, 0, 1, 0"/></filter></svg>#tritanopia');
+}
+
+/* Pausa Universal de Animações (Melhoria 72 & 68) */
+html[data-animations-paused="true"] *,
+html[data-animations-paused="true"] *::before,
+html[data-animations-paused="true"] *::after,
 @media (prefers-reduced-motion: reduce) {
-  *,
-  ::before,
-  ::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
+  animation-play-state: paused !important;
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
 }
 
 /* Transição Suave de Tema Claro/Escuro (Melhoria 98) */

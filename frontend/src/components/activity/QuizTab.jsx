@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaClock, FaCheckCircle, FaTimes, FaMedal } from 'react-icons/fa';
+import { FaClock, FaCheckCircle, FaTimes, FaMedal, FaFlag, FaBolt, FaCoins, FaCode } from 'react-icons/fa';
 import { useToast } from '../../context/ToastContext';
 import PropTypes from 'prop-types';
 import { useAuth } from '../../context/AuthContext';
@@ -7,6 +7,7 @@ import { useParams } from 'react-router-dom';
 import backgroundImage from '../../assets/quiz-background.webp';
 import useAnalytics from '../../hooks/useAnalytics';
 import { useActivity } from '../../context/ActivityContext';
+import CodeBlockViewer from '../common/CodeBlockViewer';
 
 /**
  * @component QuizTab
@@ -42,6 +43,9 @@ const QuizTab = ({ content, gameElements, onAnswerCorrect, onComplete, isReplay 
   const [isFinished, setIsFinished] = useState(false);
   const [submittedAnswer, setSubmittedAnswer] = useState(null); // Melhoria 19: Revelação de gabarito
   const [streakCount, setStreakCount] = useState(0); // Melhoria 25: Streak de acertos
+  const [eliminatedOptions, setEliminatedOptions] = useState([]); // Melhoria 22: Power-up 50/50
+  const [flaggedQuestions, setFlaggedQuestions] = useState([]); // Melhoria 26: Revisar mais tarde
+  const [showCodeExample, setShowCodeExample] = useState(false); // Melhoria 24: Snippet de código demonstrativo
 
   // [1] NOVO ESTADO: Proteção contra múltiplos cliques
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -340,6 +344,60 @@ const QuizTab = ({ content, gameElements, onAnswerCorrect, onComplete, isReplay 
               <span className="text-base font-bold text-white tracking-wider">{timeLeft}s</span>
             </div>
           )}
+          {/* BARRA DE POWER-UPS & AJUDAS (Melhorias 22, 24, 26) */}
+          <div className="flex items-center gap-2">
+            {/* Power-up 50/50 (Melhoria 22) */}
+            <button
+              type="button"
+              disabled={isSubmitting || eliminatedOptions.length > 0}
+              onClick={() => {
+                const incorrect = currentQuestion.options.filter(o => o !== currentQuestion.correct_option);
+                // Escolhe 2 incorretas para eliminar
+                const toEliminate = incorrect.slice(0, 2);
+                setEliminatedOptions(toEliminate);
+                showToast("Power-up 50/50 ativado! 2 alternativas eliminadas.", "info");
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 text-purple-300 border border-purple-500/40 text-xs font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+              title="Eliminar 2 alternativas incorretas (50/50)"
+            >
+              <FaBolt className="text-yellow-400" /> 50/50
+            </button>
+
+            {/* Marcador 'Revisar Mais Tarde' (Melhoria 26) */}
+            <button
+              type="button"
+              onClick={() => {
+                const isFlagged = flaggedQuestions.includes(currentIndex);
+                if (isFlagged) {
+                  setFlaggedQuestions(prev => prev.filter(i => i !== currentIndex));
+                  showToast("Marcação removida.", "info");
+                } else {
+                  setFlaggedQuestions(prev => [...prev, currentIndex]);
+                  showToast("Questão marcada para revisão no final!", "success");
+                }
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all ${
+                flaggedQuestions.includes(currentIndex)
+                  ? 'bg-amber-500/30 text-amber-300 border-amber-400'
+                  : 'bg-white/10 hover:bg-white/20 text-gray-300 border-white/20'
+              }`}
+              title="Marcar questão com bandeira para revisar com calma"
+            >
+              <FaFlag className={flaggedQuestions.includes(currentIndex) ? 'text-amber-400' : 'text-gray-400'} />
+              <span>{flaggedQuestions.includes(currentIndex) ? 'Marcada' : 'Revisar'}</span>
+            </button>
+
+            {/* Alternar Código Exemplo (Melhoria 24) */}
+            {currentQuestion.code_snippet && (
+              <button
+                type="button"
+                onClick={() => setShowCodeExample(prev => !prev)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/40 text-xs font-bold transition-all"
+              >
+                <FaCode /> Código
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Pergunta */}
@@ -349,6 +407,16 @@ const QuizTab = ({ content, gameElements, onAnswerCorrect, onComplete, isReplay 
           <p className="text-2xl sm:text-3xl text-white font-medium leading-relaxed text-center drop-shadow-md relative z-10">
             {currentQuestion.text}
           </p>
+
+          {/* Renderização de Código Snippet (Melhoria 24) */}
+          {(currentQuestion.code_snippet || showCodeExample) && (
+            <div className="mt-4 relative z-10">
+              <CodeBlockViewer
+                code={currentQuestion.code_snippet || "// Exemplo de Engenharia de Software\nfunction validarRegraNegocio(dados) {\n  if (!dados.id) throw new Error('ID obrigatório');\n  return true;\n}"}
+                language={currentQuestion.code_language || 'javascript'}
+              />
+            </div>
+          )}
         </div>
 
         {/* Opções com Revelação de Gabarito (Melhoria 19) e Atalhos de Teclado (Melhoria 96) */}
@@ -357,10 +425,13 @@ const QuizTab = ({ content, gameElements, onAnswerCorrect, onComplete, isReplay 
             const isCorrectOption = option === currentQuestion.correct_option;
             const isSelected = selectedAnswer === option;
             const isSubmitted = submittedAnswer !== null;
+            const isEliminated = eliminatedOptions.includes(option);
 
             let optionStyle = 'bg-white/10 hover:bg-white/20 border border-white/20 hover:scale-[1.01] hover:shadow-lg text-gray-100';
 
-            if (isSubmitted) {
+            if (isEliminated) {
+              optionStyle = 'bg-red-950/20 border-red-500/20 text-gray-500 line-through opacity-30 cursor-not-allowed scale-95';
+            } else if (isSubmitted) {
               if (isCorrectOption) {
                 optionStyle = 'bg-green-600/80 border-green-400 text-white shadow-[0_0_25px_rgba(34,197,94,0.6)] scale-[1.02]';
               } else if (isSelected && !isCorrectOption) {
@@ -375,12 +446,13 @@ const QuizTab = ({ content, gameElements, onAnswerCorrect, onComplete, isReplay 
             return (
               <button
                 key={option}
-                disabled={isSubmitting}
+                disabled={isSubmitting || isEliminated}
                 onClick={() => {
+                  if (isEliminated) return;
                   if (!firstClickTimestamp.current) firstClickTimestamp.current = Date.now();
                   setSelectedAnswer(option);
                 }}
-                className={`p-5 rounded-2xl text-left text-lg font-semibold transition-all duration-300 transform outline-none flex items-center justify-between gap-3 ${optionStyle} ${isSubmitting ? 'cursor-not-allowed scale-100' : ''}`}
+                className={`p-5 rounded-2xl text-left text-lg font-semibold transition-all duration-300 transform outline-none flex items-center justify-between gap-3 ${optionStyle} ${isSubmitting || isEliminated ? 'cursor-not-allowed' : ''}`}
               >
                 <div className="flex items-center gap-3">
                   <span className="w-6 h-6 rounded-md bg-white/10 border border-white/20 flex items-center justify-center text-xs font-mono font-bold text-gray-300">

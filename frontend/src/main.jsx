@@ -4,6 +4,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import './index.css';
 import App from './App.jsx';
 import { ThemeProvider } from './context/ThemeContext.jsx';
+import { AccessibilityProvider } from './context/AccessibilityContext.jsx';
 import { HelpModalProvider } from './context/HelpModalContext.jsx';
 import 'react-roulette-pro/dist/index.css';
 import { ToastProvider } from './context/ToastContext';
@@ -22,14 +23,16 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <Router>
       <GlobalErrorBoundary>
         <ThemeProvider>
-          <HelpModalProvider>
-            {/* Envolvendo a aplicação com o ToastProvider */}
-            <ToastProvider>
-              <ConfettiProvider>
-                <App />
-              </ConfettiProvider>
-            </ToastProvider>
-          </HelpModalProvider>
+          <AccessibilityProvider>
+            <HelpModalProvider>
+              {/* Envolvendo a aplicação com o ToastProvider */}
+              <ToastProvider>
+                <ConfettiProvider>
+                  <App />
+                </ConfettiProvider>
+              </ToastProvider>
+            </HelpModalProvider>
+          </AccessibilityProvider>
         </ThemeProvider>
       </GlobalErrorBoundary>
     </Router>

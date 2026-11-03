@@ -219,6 +219,22 @@ const VilaDaAventuraTheme = ({ children }) => {
 
     const boardRef = useRef(null);
     const [boardSize, setBoardSize] = useState(null);
+    // Melhoria 10: Suporte a Pan e Zoom no Tabuleiro
+    const [zoomLevel, setZoomLevel] = useState(1);
+    // Melhoria 14: Botão de Áudio Ambiente / Efeitos
+    const [isMuted, setIsMuted] = useState(() => localStorage.getItem('gamificaedu_audio_muted') === 'true');
+
+    const handleZoomIn = () => setZoomLevel(prev => Math.min(prev + 0.15, 1.8));
+    const handleZoomOut = () => setZoomLevel(prev => Math.max(prev - 0.15, 0.65));
+    const handleResetZoom = () => setZoomLevel(1);
+
+    const toggleAudio = () => {
+        setIsMuted(prev => {
+            const next = !prev;
+            localStorage.setItem('gamificaedu_audio_muted', String(next));
+            return next;
+        });
+    };
 
     // Observer para redimensionamento
     useLayoutEffect(() => {
@@ -313,10 +329,51 @@ const VilaDaAventuraTheme = ({ children }) => {
     }
     const badgeTitle = activity.is_team_activity ? "Sua Equipe:" : "Colegas:";
     return (
-        <div className="rpg-map-board" ref={boardRef} style={dynamicStyles}>
+        <div className="rpg-map-board relative overflow-hidden" ref={boardRef} style={dynamicStyles}>
             <GameHUD progress={userProgress} />
 
-            <div className="progress-path-area" style={{ height: `${requiredHeight}px` }}>
+            {/* Barra Flutuante de Controle do Tabuleiro (Melhorias 10, 13, 14) */}
+            <div className="absolute top-20 right-4 z-50 flex flex-col gap-2 bg-slate-900/80 backdrop-blur-md p-2 rounded-2xl border border-white/20 shadow-xl">
+                <button
+                    onClick={handleZoomIn}
+                    className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/25 text-white flex items-center justify-center font-bold text-lg transition-all"
+                    title="Aproximar Zoom (+)"
+                >
+                    +
+                </button>
+                <button
+                    onClick={handleResetZoom}
+                    className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/25 text-white flex items-center justify-center text-xs font-semibold transition-all"
+                    title="Redefinir Zoom (100%)"
+                >
+                    {Math.round(zoomLevel * 100)}%
+                </button>
+                <button
+                    onClick={handleZoomOut}
+                    className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/25 text-white flex items-center justify-center font-bold text-lg transition-all"
+                    title="Afastar Zoom (-)"
+                >
+                    -
+                </button>
+                <div className="w-full h-px bg-white/15 my-0.5"></div>
+                <button
+                    onClick={toggleAudio}
+                    className={`w-8 h-8 rounded-xl flex items-center justify-center text-sm transition-all ${
+                        isMuted ? 'bg-red-500/20 text-red-300 border border-red-500/40' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                    }`}
+                    title={isMuted ? 'Áudio desativado' : 'Áudio ativado'}
+                >
+                    {isMuted ? '🔇' : '🔊'}
+                </button>
+            </div>
+
+            <div
+                className="progress-path-area transition-transform duration-300 origin-top-left"
+                style={{
+                    height: `${requiredHeight}px`,
+                    transform: `scale(${zoomLevel})`
+                }}
+            >
                 {renderedDecorations.map(deco => (
                     <img key={deco.id} src={deco.src} alt="Decoração" className={`board-decoration ${deco.className}`} style={deco.style} />
                 ))}

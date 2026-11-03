@@ -21,8 +21,19 @@ const iconMap = {
 
 const ItemCard = ({ item, userRole, userPoints, onPurchaseRequest, onDeleteRequest }) => {
   const isAffordable = userPoints >= item.price;
+  const [showConfirm, setShowConfirm] = React.useState(false); // Melhoria 62: Confirmação em 2 etapas para itens caros
+  const [showPreview, setShowPreview] = React.useState(false); // Melhoria 55: Provador Virtual de Avatar
 
+  const isExpensive = item.price >= 150;
 
+  const handleBuyClick = () => {
+    if (isExpensive && !showConfirm) {
+      setShowConfirm(true);
+    } else {
+      setShowConfirm(false);
+      onPurchaseRequest(item);
+    }
+  };
 
   return (
     // Card com efeito de "vidro fosco" premium e hover states
@@ -33,11 +44,31 @@ const ItemCard = ({ item, userRole, userPoints, onPurchaseRequest, onDeleteReque
 
       {/* Ícone e Nome */}
       <div className="flex flex-col items-center text-center mb-6 relative z-10">
-        <div className="w-20 h-20 flex items-center justify-center rounded-2xl bg-gradient-to-br from-gray-800 to-black border border-white/10 shadow-inner group-hover:scale-110 transition-transform duration-500 mb-4">
+        <div className="w-20 h-20 flex items-center justify-center rounded-2xl bg-gradient-to-br from-gray-800 to-black border border-white/10 shadow-inner group-hover:scale-110 transition-transform duration-500 mb-4 relative">
           {iconMap[item.icon] || <span className="text-5xl drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">{item.icon}</span>}
+          {item.type === 'avatar' && (
+            <button
+              onClick={() => setShowPreview(!showPreview)}
+              className="absolute -bottom-2 -right-2 bg-accent-teal text-black text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-md hover:scale-105"
+              title="Testar como fica no seu perfil"
+            >
+              👁️ Provar
+            </button>
+          )}
         </div>
         <h3 className="text-xl font-bold text-white group-hover:text-cyan-300 transition-colors">{item.name}</h3>
       </div>
+
+      {/* Provador Virtual de Avatar (Melhoria 55) */}
+      {showPreview && (
+        <div className="mb-4 p-3 bg-accent-teal/10 border border-accent-teal/30 rounded-2xl text-center animate-fadeIn relative z-10">
+          <span className="text-[11px] font-bold text-accent-teal uppercase tracking-wider block mb-1">Prévia do Avatar</span>
+          <div className="w-14 h-14 mx-auto rounded-full border-2 border-accent-teal flex items-center justify-center bg-black/60 overflow-hidden shadow-lg mb-1">
+            <span className="text-3xl">{item.icon}</span>
+          </div>
+          <span className="text-xs text-gray-300 italic">Combina perfeitamente com sua moldura atual!</span>
+        </div>
+      )}
 
       {/* Descrição */}
       <p className="text-secondary-text text-sm text-center flex-grow relative z-10 leading-relaxed">{item.description}</p>
@@ -58,17 +89,39 @@ const ItemCard = ({ item, userRole, userPoints, onPurchaseRequest, onDeleteReque
       {/* Botões de Ação */}
       <div className="mt-auto relative z-10">
         {userRole === 'aluno' && (
-          <button
-            onClick={() => onPurchaseRequest(item)}
-            disabled={!isAffordable}
-            className={`w-full flex items-center justify-center gap-3 py-4 px-4 rounded-xl font-bold transition-all duration-300 uppercase tracking-wide text-sm
-                        ${isAffordable
-                ? 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.5)] hover:shadow-[0_0_25px_rgba(16,185,129,0.8)] transform hover:scale-105'
-                : 'bg-secondary-bg text-gray-500 cursor-not-allowed border border-[var(--border-color)]'}`}
-          >
-            <FaShoppingCart className="text-lg" />
-            {isAffordable ? 'Comprar Item' : `Faltam ${item.price - (userPoints || 0)} 🪙`}
-          </button>
+          <div>
+            {showConfirm ? (
+              <div className="flex flex-col gap-2 p-2 bg-amber-500/10 border border-amber-500/30 rounded-xl text-center">
+                <span className="text-xs font-bold text-amber-300">Item raro! Confirmar compra por {item.price} moedas?</span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowConfirm(false)}
+                    className="flex-1 py-1.5 px-2 bg-white/10 hover:bg-white/20 text-xs rounded-lg text-white font-medium"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleBuyClick}
+                    className="flex-1 py-1.5 px-2 bg-amber-500 hover:bg-amber-600 text-xs rounded-lg text-black font-bold"
+                  >
+                    Sim, Comprar!
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={handleBuyClick}
+                disabled={!isAffordable}
+                className={`w-full flex items-center justify-center gap-3 py-4 px-4 rounded-xl font-bold transition-all duration-300 uppercase tracking-wide text-sm
+                            ${isAffordable
+                    ? 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.5)] hover:shadow-[0_0_25px_rgba(16,185,129,0.8)] transform hover:scale-105'
+                    : 'bg-secondary-bg text-gray-500 cursor-not-allowed border border-[var(--border-color)]'}`}
+              >
+                <FaShoppingCart className="text-lg" />
+                {isAffordable ? 'Comprar Item' : `Faltam ${item.price - (userPoints || 0)} 🪙`}
+              </button>
+            )}
+          </div>
         )}
         {userRole === 'professor' && (
           <button

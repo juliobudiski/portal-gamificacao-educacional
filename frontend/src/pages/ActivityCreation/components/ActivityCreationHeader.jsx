@@ -88,6 +88,13 @@ function ActivityCreationHeader({ isEditMode, showInitialSelection, autoSaveStat
                 >
                   <FaQuestionCircle /> Guia do Passo {currentStep}
                 </button>
+
+                {/* Atalho Desfazer / Refazer (Melhoria 41) */}
+                <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 text-gray-300 text-[11px] font-medium" title="Atalhos rápidos do teclado para edição">
+                  <span>⌨️ Desfazer/Refazer:</span>
+                  <kbd className="px-1.5 py-0.5 bg-black/40 rounded border border-white/20 text-[10px] font-mono">Ctrl+Z</kbd>
+                  <kbd className="px-1.5 py-0.5 bg-black/40 rounded border border-white/20 text-[10px] font-mono">Ctrl+Y</kbd>
+                </div>
               </div>
             )}
         </div>

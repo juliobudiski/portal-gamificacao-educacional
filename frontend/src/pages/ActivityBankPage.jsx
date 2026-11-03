@@ -35,6 +35,7 @@ function ActivityBankPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [assignmentFilter, setAssignmentFilter] = useState('all'); // 'all', 'assigned', 'unassigned'
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list' (Melhoria 54: Alternância Grade/Lista)
 
   // Modal de Confirmação
   const [modalConfig, setModalConfig] = useState({
@@ -397,21 +398,46 @@ function ActivityBankPage() {
               </button>
             </div>
 
-            {/* Checkbox Selecionar Todos */}
-            {activeTab !== 'public' && currentList.length > 0 && (
-              <div 
-                onClick={handleSelectAll}
-                className="flex items-center gap-2 cursor-pointer px-3 py-1.5 rounded-xl bg-primary-bg border border-border-color hover:border-accent-teal transition-all text-xs font-semibold text-secondary-text"
-              >
-                <input
-                  type="checkbox"
-                  checked={isAllSelected}
-                  onChange={() => {}}
-                  className="h-4 w-4 rounded text-accent-teal focus:ring-accent-teal cursor-pointer"
-                />
-                <span>Selecionar Todos</span>
+            {/* Botões Grid / Lista e Selecionar Todos (Melhoria 54) */}
+            <div className="flex items-center gap-2">
+              <div className="flex bg-primary-bg p-1 rounded-xl border border-border-color">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('grid')}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                    viewMode === 'grid' ? 'bg-accent-teal text-white shadow-sm' : 'text-secondary-text hover:text-primary-text'
+                  }`}
+                  title="Exibição em Grade"
+                >
+                  ▦ Grade
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('list')}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                    viewMode === 'list' ? 'bg-accent-teal text-white shadow-sm' : 'text-secondary-text hover:text-primary-text'
+                  }`}
+                  title="Exibição em Lista Compacta"
+                >
+                  ☰ Lista
+                </button>
               </div>
-            )}
+
+              {activeTab !== 'public' && currentList.length > 0 && (
+                <div 
+                  onClick={handleSelectAll}
+                  className="flex items-center gap-2 cursor-pointer px-3 py-1.5 rounded-xl bg-primary-bg border border-border-color hover:border-accent-teal transition-all text-xs font-semibold text-secondary-text"
+                >
+                  <input
+                    type="checkbox"
+                    checked={isAllSelected}
+                    onChange={() => {}}
+                    className="h-4 w-4 rounded text-accent-teal focus:ring-accent-teal cursor-pointer"
+                  />
+                  <span>Selecionar Todos</span>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Sub-Filtros para "Minhas Atividades" */}
@@ -506,7 +532,7 @@ function ActivityBankPage() {
           <div>
             {/* Renderização da Aba Ativa */}
             {currentList.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "flex flex-col gap-4"}>
                 {activeTab === 'drafts' ? (
                   /* Cards Especiais de Rascunhos */
                   currentList.map(draft => (

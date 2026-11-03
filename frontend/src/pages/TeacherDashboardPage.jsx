@@ -157,6 +157,39 @@ export default function TeacherDashboardPage() {
           </div>
         </header>
 
+        {/* Resumo Semanal em Pílulas & Alerta Pedagógico (Melhorias 52 & 53) */}
+        <section className="mb-8 grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="p-4 bg-secondary-bg/60 backdrop-blur-md rounded-2xl border border-border-color/50 flex flex-col">
+            <span className="text-xs text-secondary-text uppercase font-bold tracking-wider">Atividades Ativas</span>
+            <div className="flex items-baseline gap-2 mt-1">
+              <span className="text-2xl font-extrabold text-[#69e8cb]">8</span>
+              <span className="text-xs text-emerald-400 font-semibold">▲ +2 esta semana</span>
+            </div>
+          </div>
+          <div className="p-4 bg-secondary-bg/60 backdrop-blur-md rounded-2xl border border-border-color/50 flex flex-col">
+            <span className="text-xs text-secondary-text uppercase font-bold tracking-wider">Média de Conclusão</span>
+            <div className="flex items-baseline gap-2 mt-1">
+              <span className="text-2xl font-extrabold text-[#ffbd30]">78.4%</span>
+              <span className="text-xs text-emerald-400 font-semibold">▲ +4.1%</span>
+            </div>
+          </div>
+          <div className="p-4 bg-secondary-bg/60 backdrop-blur-md rounded-2xl border border-border-color/50 flex flex-col">
+            <span className="text-xs text-secondary-text uppercase font-bold tracking-wider">XP Total Gerado</span>
+            <div className="flex items-baseline gap-2 mt-1">
+              <span className="text-2xl font-extrabold text-[#9570d9]">14.2k</span>
+              <span className="text-xs text-secondary-text font-normal">pelos alunos</span>
+            </div>
+          </div>
+          <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex flex-col justify-center">
+            <span className="text-xs text-amber-300 font-bold flex items-center gap-1.5 uppercase">
+              ⚠️ Atenção Pedagógica
+            </span>
+            <p className="text-xs text-gray-200 mt-1">
+              <strong>3 alunos</strong> com &gt;2 tentativas no nó de TDD. <Link to="/professor/desempenho-alunos" className="underline font-bold text-amber-300 ml-1">Ver detalhes →</Link>
+            </p>
+          </div>
+        </section>
+
         {/* Grid Principal */}
         <main id="tour-professor-dashboard">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
