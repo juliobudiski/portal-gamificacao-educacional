@@ -26,10 +26,12 @@ skills_involved:
 ## 2. Critérios de Aceitação BDD (Gherkin 4D)
 
 ### 2.1 Caminho Feliz (Happy Path)
-#### Cenário 1: Central de Ajuda Flutuante com Busca (Melhoria 04)
-- **Dado** que qualquer usuário (aluno ou professor) está navegando na aplicação,
+#### Cenário 1: Central de Ajuda Flutuante Inteligente com Busca e Abas (Melhoria 04)
+- **Dado** que qualquer usuário (aluno, professor ou visitante) está navegando na aplicação,
 - **Quando** ele clica no botão flutuante de ajuda no canto inferior direito,
-- **Então** um modal suave deve abrir com busca instantânea de dúvidas e botão direto de "Reiniciar Tour".
+- **Então** um modal suave deve abrir com navegação por 4 abas (FAQs com busca instantânea e sanfonas, Atalhos Rápidos por perfil, Tutoriais Interativos com múltiplos pontos de partida, e Canal Direto de Suporte),
+- **E** o botão de tema claro/escuro não deve colidir nem se sobrepor ao widget de ajuda, estando integrado à barra de navegação superior e móvel,
+- **E** o painel de ajuda deve responder à tecla `ESC` ou clique externo para fechamento acessível.
 
 #### Cenário 2: Checklist Interativo de Boas-Vindas no Dashboard do Aluno (Melhoria 08)
 - **Dado** que um estudante acessa o Dashboard do Aluno,

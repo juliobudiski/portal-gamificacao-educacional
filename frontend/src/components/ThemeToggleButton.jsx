@@ -12,14 +12,15 @@ import { Sun, Moon } from 'lucide-react';
  */
 
 
-const ThemeToggleButton = () => {
+const ThemeToggleButton = ({ className = '' }) => {
     const { theme, toggleTheme } = useTheme();
 
     return (
         <button
             onClick={toggleTheme}
-            className="fixed bottom-5 right-5 z-[100] p-3 bg-gray-200 dark:bg-primary-bg text-primary-text dark:text-secondary-text rounded-full shadow-lg transition-all duration-300 hover:scale-110 hover:bg-accent-yellow dark:hover:bg-accent-yellow focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-yellow"
+            className={`p-3 bg-gray-200 dark:bg-primary-bg text-primary-text dark:text-secondary-text rounded-full shadow-lg transition-all duration-300 hover:scale-110 hover:bg-accent-yellow dark:hover:bg-accent-yellow focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-yellow ${className || 'fixed bottom-24 right-6 z-40'}`}
             aria-label="Alternar tema"
+            title={theme === 'light' ? 'Mudar para tema escuro' : 'Mudar para tema claro'}
         >
             {theme === 'light' ? (
                 <Moon className="w-6 h-6" /> // Mostra o ícone da lua no modo claro

@@ -5,6 +5,7 @@ import {
   Home, LogIn, UserPlus, User, BookOpen, LayoutDashboard, 
   PlusCircle, Users, BarChart2, Award, LogOut, Info, Settings, ShieldCheck 
 } from 'lucide-react';
+import ThemeToggleButton from './ThemeToggleButton';
 
 /**
  * @component Header
@@ -273,6 +274,11 @@ function Header({ handleTeacherTour, handleStudentTour, isActivityPage }) {
               )}
             </>
           )}
+
+          {/* Botão de Alternar Modo Claro / Escuro no Cabeçalho Desktop */}
+          <li className="ml-1 sm:ml-2">
+            <ThemeToggleButton className="static p-2.5 rounded-xl bg-primary-bg/70 hover:bg-primary-bg border border-border-color text-primary-text transition-all duration-300 hover:scale-105 shadow-sm inline-flex items-center justify-center" />
+          </li>
         </ul>
       </nav>
 
@@ -332,6 +338,10 @@ function Header({ handleTeacherTour, handleStudentTour, isActivityPage }) {
             <User size={18} />
             <span>Perfil</span>
           </Link>
+
+          <div className="flex flex-col items-center justify-center">
+            <ThemeToggleButton className="static p-1.5 rounded-lg bg-primary-bg/70 text-primary-text transition-all duration-200 shadow-none border border-border-color/60" />
+          </div>
         </div>
       )}
     </header>

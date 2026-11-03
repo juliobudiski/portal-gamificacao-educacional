@@ -10,7 +10,6 @@ import PrivateRoute from './components/PrivateRoute';
 import ScrollToTop from './components/ScrollToTop';
 import Footer from './components/Footer';
 import Header from './components/Header';
-import ThemeToggleButton from './components/ThemeToggleButton'; // <-- IMPORTAR O BOTÃO
 import { ActivityCreationProvider } from './context/ActivityCreationContext';
 
 // --- IMPORTAÇÃO DAS PÁGINAS ---
@@ -349,8 +348,6 @@ function AppContent() {
     <div className={`w-full bg-primary-bg flex flex-col transition-colors duration-300 h-full ${isActivityPage ? 'overflow-hidden' : 'overflow-y-auto custom-scrollbar'
       }`}>
       <ScrollToTop />
-      {/* Adiciona o botão de toggle do tema aqui */}
-      <ThemeToggleButton />
       {showLocationPrompt && <GeolocationPrompt onAccept={handleUserAcceptedPrompt} />}
       {/* O cabeçalho já tem cores que funcionam bem em ambos os temas */}
       <Header 
