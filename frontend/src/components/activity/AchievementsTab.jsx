@@ -60,8 +60,15 @@ const useAchievements = (token, activityId) => {
 
                 if (isMounted) {
                     if (DEBUG) console.debug('[useAchievements] Dados recebidos:', { medals: medalsData.length, unlocked: unlockedData.length });
-                    setAllMedals(medalsData);
-                    setUnlockedMedalIds(unlockedData);
+                    const normalizedMedals = (medalsData || []).map(m => {
+                        let img = m.imageUrl || '/medals/default.webp';
+                        if (!img.startsWith('http') && !img.startsWith('/')) {
+                            img = '/' + img;
+                        }
+                        return { ...m, imageUrl: img };
+                    });
+                    setAllMedals(normalizedMedals);
+                    setUnlockedMedalIds(unlockedData || []);
                 }
             } catch (err) {
                 if (isMounted) {

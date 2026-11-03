@@ -296,7 +296,14 @@ export default function StudentDashboardPage() {
   const tipIndex = Math.floor(Date.now() / 86400000) % DAILY_TIPS.length;
   const currentTip = DAILY_TIPS[tipIndex];
   const { global_level_info, total_achievements } = dashboardData.performance;
-  const badgesList = dashboardData?.badges || dashboardData?.performance?.badges || [];
+  const rawBadges = dashboardData?.badges || dashboardData?.performance?.badges || [];
+  const badgesList = rawBadges.map(b => {
+    let img = b.imageUrl || b.image_url || '/medals/default.webp';
+    if (!img.startsWith('http') && !img.startsWith('/')) {
+      img = '/' + img;
+    }
+    return { ...b, imageUrl: img };
+  });
   const unlockedCount = badgesList.filter(b => b.is_unlocked).length || total_achievements || 0;
   const progressPercent = (global_level_info.xp_current / global_level_info.xp_to_next_level) * 100;
 

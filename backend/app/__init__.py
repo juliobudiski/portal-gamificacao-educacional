@@ -60,6 +60,16 @@ def _initialize_extensions(app):
 
 def _register_blueprints_and_routes(app):
     """Isola os registros de rotas, mantendo o Factory limpo."""
+    frontend_dist_env = os.environ.get('FRONTEND_DIST_DIR')
+    candidate_paths = [
+        frontend_dist_env,
+        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'frontend_dist'),
+        '/app/frontend/dist',
+        '/app/frontend',
+        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '..', 'frontend', 'dist'),
+    ]
+    frontend_dist = next((p for p in candidate_paths if p and os.path.exists(p)), candidate_paths[1])
+
     with app.app_context():
         from .routes import register_blueprints
         register_blueprints(app)
@@ -67,8 +77,23 @@ def _register_blueprints_and_routes(app):
         
     @app.route('/medals/<path:filename>')
     def serve_medal_image(filename):
-        directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'medals')
-        return send_from_directory(directory, filename)
+        # 1. Procura em backend static/medals
+        static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'medals')
+        if os.path.exists(os.path.join(static_dir, filename)):
+            return send_from_directory(static_dir, filename)
+
+        # 2. Procura em frontend_dist/medals
+        dist_medals = os.path.join(frontend_dist, 'medals')
+        if os.path.exists(os.path.join(dist_medals, filename)):
+            return send_from_directory(dist_medals, filename)
+
+        # 3. Fallback inteligente: se o arquivo não existir, retorna default.webp
+        if os.path.exists(os.path.join(static_dir, 'default.webp')):
+            return send_from_directory(static_dir, 'default.webp')
+        if os.path.exists(os.path.join(dist_medals, 'default.webp')):
+            return send_from_directory(dist_medals, 'default.webp')
+
+        return jsonify({"error": "Medal image not found"}), 404
     
     @app.route('/api/public/stats', methods=['GET'])
     def get_public_stats():
@@ -152,16 +177,6 @@ def _register_blueprints_and_routes(app):
     def internal_server_error(e):
         app.logger.error(f"Internal Server Error: {str(e)}")
         return jsonify({"message": "Erro interno no servidor."}), 500
-
-    frontend_dist_env = os.environ.get('FRONTEND_DIST_DIR')
-    candidate_paths = [
-        frontend_dist_env,
-        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'frontend_dist'),
-        '/app/frontend/dist',
-        '/app/frontend',
-        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '..', 'frontend', 'dist'),
-    ]
-    frontend_dist = next((p for p in candidate_paths if p and os.path.exists(p)), candidate_paths[1])
 
     @app.route('/', defaults={'path': ''})
     @app.route('/<path:path>')

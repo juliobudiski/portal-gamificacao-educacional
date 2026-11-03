@@ -39,6 +39,10 @@ const MedalDetailModal = ({ medal, isUnlocked, onClose }) => {
                     <img
                         src={medal.imageUrl}
                         alt={medal.name}
+                        onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = '/medals/default.webp';
+                        }}
                         className={`w-48 h-48 object-contain transition-all duration-500 drop-shadow-lg ${isUnlocked ? 'filter-none scale-105' : 'filter brightness-0 invert opacity-30 contrast-200'}`}
                     />
                     {!isUnlocked && (
