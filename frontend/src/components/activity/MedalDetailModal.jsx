@@ -34,13 +34,18 @@ const MedalDetailModal = ({ medal, isUnlocked, onClose }) => {
                     &times;
                 </button>
 
-                {/* Imagem com container para evitar layout shift */}
-                <div className="flex justify-center mb-6">
+                {/* Imagem com container para evitar layout shift e silhueta (Melhoria 60) */}
+                <div className="flex justify-center mb-6 relative">
                     <img
                         src={medal.imageUrl}
                         alt={medal.name}
-                        className={`w-48 h-48 object-contain transition-all duration-500 drop-shadow-lg ${isUnlocked ? 'filter-none' : 'filter grayscale opacity-70'}`}
+                        className={`w-48 h-48 object-contain transition-all duration-500 drop-shadow-lg ${isUnlocked ? 'filter-none scale-105' : 'filter brightness-0 invert opacity-30 contrast-200'}`}
                     />
+                    {!isUnlocked && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="text-3xl filter drop-shadow">🔒</span>
+                        </div>
+                    )}
                 </div>
 
                 <h2 className={`text-3xl font-bold mb-2 ${isUnlocked ? 'text-yellow-400 drop-shadow-md' : 'text-secondary-text'}`}>
@@ -48,15 +53,22 @@ const MedalDetailModal = ({ medal, isUnlocked, onClose }) => {
                 </h2>
 
                 {/* Badge de Status */}
-                <div className="mb-6">
+                <div className="mb-6 flex items-center justify-center gap-2">
                     <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${isUnlocked ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/50' : 'bg-hover-bg-color0 text-secondary-text border border-[var(--border-color)]'}`}>
-                        {isUnlocked ? 'Desbloqueada' : 'Bloqueada'}
+                        {isUnlocked ? '🏆 Desbloqueada' : '🔒 Bloqueada'}
                     </span>
+                    {!isUnlocked && (
+                        <span className="text-xs text-accent-teal font-semibold">
+                            (Dica de Desbloqueio abaixo)
+                        </span>
+                    )}
                 </div>
 
                 <div className="text-left bg-black/20 p-4 rounded-lg border border-white/5">
                     <p className="text-sm text-secondary-text">
-                        <span className="font-bold text-primary-text block mb-1">Como obter:</span>
+                        <span className="font-bold text-primary-text block mb-1">
+                            {isUnlocked ? 'Critério Cumprido:' : '🎯 Requisito para Desbloquear:'}
+                        </span>
                         {medal.description}
                     </p>
 

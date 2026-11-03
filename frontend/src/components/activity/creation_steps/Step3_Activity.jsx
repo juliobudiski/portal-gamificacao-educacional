@@ -13,6 +13,7 @@ import {
   FaTrophy
 } from 'react-icons/fa';
 import { useHelpModal } from "../../../context/HelpModalContext";
+import StepHelpButton from "../../common/StepHelpButton";
 
 /**
  * @component Step3_Activity
@@ -103,6 +104,11 @@ function Step3_ActivityPlanning({ activityData, handleInputChange, setActivityDa
             Descreva as características e a logística da atividade. Essas informações são cruciais para um bom planejamento.
           </p>
         </div>
+        <StepHelpButton 
+          contentKey="planejamento_atividade" 
+          title="Guia de Logística" 
+          subtitle="Dinâmica de equipe e ambiente" 
+        />
       </div>
 
       <div

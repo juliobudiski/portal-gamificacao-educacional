@@ -20,6 +20,7 @@ import {
   FaCheckCircle,
 } from 'react-icons/fa';
 import { useHelpModal } from "../../../context/HelpModalContext";
+import StepHelpButton from "../../common/StepHelpButton";
 /**
  * Step7_RewardedActions
  * 
@@ -80,13 +81,11 @@ function Step7_RewardedActions({ activityData, handleInputChange, setActivityDat
             Defina quais comportamentos e conquistas dos alunos serão recompensados. Ações claras incentivam o engajamento direcionado.
           </p>
         </div>
-        <button
-          onClick={() => openHelp('acoes_recompensadas')} // Chama pelo ID
-          className="group flex items-center justify-center w-12 h-12 rounded-full bg-primary-bg border border-border-color hover:border-accent-teal/50 hover:bg-accent-teal/10 transition-all duration-300 shadow-sm"
-          title="Ajuda sobre este passo"
-        >
-          <FaInfoCircle className="text-xl text-secondary-text group-hover:text-accent-teal transition-colors" />
-        </button>
+        <StepHelpButton 
+          contentKey="acoes_recompensadas" 
+          title="Ações Recompensadas" 
+          subtitle="Comportamentos & metas valorizadas" 
+        />
       </div>
 
       {/* SEÇÃO 2: Seleção de Ações com Cards */}

@@ -22,6 +22,7 @@ import {
   FaCheckCircle,
 } from 'react-icons/fa';
 import { useHelpModal } from "../../../context/HelpModalContext";
+import StepHelpButton from "../../common/StepHelpButton";
 /**
  * Step6_RewardsOffered
  * 
@@ -84,13 +85,11 @@ function Step6_RewardsOffered({ activityData, handleInputChange, setActivityData
             Escolha os incentivos para motivar seus alunos. Recompensas bem pensadas aumentam o engajamento e a sensação de progresso.
           </p>
         </div>
-        <button
-          onClick={() => openHelp('recompensas_oferecidas')} // Chama pelo ID
-          className="group flex items-center justify-center w-12 h-12 rounded-full bg-primary-bg border border-border-color hover:border-accent-teal/50 hover:bg-accent-teal/10 transition-all duration-300 shadow-sm"
-          title="Ajuda sobre este passo"
-        >
-          <FaInfoCircle className="text-xl text-secondary-text group-hover:text-accent-teal transition-colors" />
-        </button>
+        <StepHelpButton 
+          contentKey="recompensas_oferecidas" 
+          title="Recompensas" 
+          subtitle="Incentivos, moedas e badges" 
+        />
       </div>
 
       {/* SEÇÃO 2: Seleção de Recompensas com Cards */}

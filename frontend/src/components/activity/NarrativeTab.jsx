@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlay, FaArrowRight, FaArrowLeft } from 'react-icons/fa';
+import { FaPlay, FaArrowRight, FaArrowLeft, FaHistory, FaTimes } from 'react-icons/fa';
 import PropTypes from 'prop-types';
 import { useAuth } from '../../context/AuthContext';
 import { useParams } from 'react-router-dom';
@@ -21,9 +21,69 @@ const NarrativeTab = ({ content, onComplete }) => {
   const { scenario = '', characters = [], dialogue = [] } = content || {};
 
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
+  const [displayedText, setDisplayedText] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false); // Melhoria 30: Histórico de Diálogos
+  const [isAutoPlay, setIsAutoPlay] = useState(false); // Melhoria 32: Modo Auto-Play com Pausa
   const { user } = useAuth();
   const { activityId } = useParams();
   const { logEvent } = useAnalytics("narrative", user.token, activityId);
+
+  // Narração por Voz Sintetizada (Melhoria 33: Text-to-Speech)
+  const speakCurrentLine = () => {
+    if (!('speechSynthesis' in window) || !currentLine?.text) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(currentLine.text);
+    utterance.lang = 'pt-BR';
+    utterance.rate = 1.0;
+    window.speechSynthesis.speak(utterance);
+  };
+
+  // Efeito Auto-Play (Melhoria 32: Avanço automático a cada 4 segundos)
+  useEffect(() => {
+    if (!isAutoPlay || isTyping) return;
+
+    const timer = setTimeout(() => {
+      if (currentLineIndex < dialogue.length - 1) {
+        setCurrentLineIndex(prev => prev + 1);
+      } else {
+        setIsAutoPlay(false);
+      }
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, [isAutoPlay, isTyping, currentLineIndex, dialogue.length]);
+
+  const currentLine = dialogue[currentLineIndex];
+
+  // Efeito Máquina de Escrever (Melhoria 28: Typewriter Effect)
+  useEffect(() => {
+    if (!currentLine?.text) return;
+
+    setDisplayedText('');
+    setIsTyping(true);
+    let index = 0;
+    const fullText = currentLine.text;
+
+    const timer = setInterval(() => {
+      index++;
+      if (index <= fullText.length) {
+        setDisplayedText(fullText.slice(0, index));
+      } else {
+        setIsTyping(false);
+        clearInterval(timer);
+      }
+    }, 20);
+
+    return () => clearInterval(timer);
+  }, [currentLineIndex, currentLine?.text]);
+
+  const handleSkipTyping = () => {
+    if (isTyping && currentLine?.text) {
+      setDisplayedText(currentLine.text);
+      setIsTyping(false);
+    }
+  };
 
   useEffect(() => {
     if (user?.role === 'aluno') {
@@ -52,7 +112,6 @@ const NarrativeTab = ({ content, onComplete }) => {
     );
   }
 
-  const currentLine = dialogue[currentLineIndex];
   const currentCharacter = characters.find(c => c.role === currentLine?.characterRole);
 
   const goToNextLine = () => {
@@ -111,15 +170,17 @@ const NarrativeTab = ({ content, onComplete }) => {
 
         {/* Caixa de Diálogo (Glassmorphism sobreposta na parte inferior) */}
         {currentLine && (
-          <div className="absolute bottom-4 left-4 right-4 sm:bottom-8 sm:left-12 sm:right-12 z-30">
-            <div className="bg-black/60 backdrop-blur-md p-6 sm:p-8 rounded-2xl border-t-2 border-l-2 border-white/20 border-b border-r border-white/5 shadow-2xl relative">
+          <div className="absolute bottom-4 left-4 right-4 sm:bottom-8 sm:left-12 sm:right-12 z-30" onClick={handleSkipTyping}>
+            <div className="bg-black/60 backdrop-blur-md p-6 sm:p-8 rounded-2xl border-t-2 border-l-2 border-white/20 border-b border-r border-white/5 shadow-2xl relative cursor-pointer group/dialogue">
               {/* Nome do Personagem Flutuante */}
-              <div className="absolute -top-5 left-6 bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-2 rounded-full shadow-lg border border-white/20">
+              <div className="absolute -top-5 left-6 bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-2 rounded-full shadow-lg border border-white/20 flex items-center gap-2">
                 <h3 className="text-xl font-bold text-white tracking-wider">{currentLine.characterRole}</h3>
+                {isTyping && <span className="text-xs text-white/70 italic">(clique para pular)</span>}
               </div>
               
               <p className="text-xl sm:text-2xl text-gray-100 mt-2 leading-relaxed drop-shadow-md">
-                {currentLine.text}
+                {displayedText}
+                {isTyping && <span className="inline-block w-2.5 h-6 bg-accent-teal ml-1 animate-pulse align-middle"></span>}
               </p>
             </div>
           </div>
@@ -136,13 +197,77 @@ const NarrativeTab = ({ content, onComplete }) => {
           <FaArrowLeft className="mr-3" /> Anterior
         </button>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
           <div className="flex gap-1">
              {dialogue.map((_, i) => (
                 <div key={i} className={`h-2 rounded-full transition-all duration-300 ${i === currentLineIndex ? 'w-6 bg-indigo-500' : 'w-2 bg-gray-600'}`}></div>
              ))}
           </div>
+
+          {/* Botão de Histórico (Melhoria 30: Histórico de Diálogos) */}
+          <button
+            onClick={() => setIsHistoryOpen(true)}
+            className="p-2.5 bg-white/5 hover:bg-white/15 border border-white/10 rounded-full text-secondary-text hover:text-white transition-all flex items-center gap-1.5 text-xs font-semibold"
+            title="Ver histórico de falas"
+          >
+            <FaHistory /> <span className="hidden sm:inline">Histórico</span>
+          </button>
+
+          {/* Botão Auto-Play (Melhoria 32) */}
+          <button
+            onClick={() => setIsAutoPlay(!isAutoPlay)}
+            className={`p-2.5 border rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
+              isAutoPlay
+                ? 'bg-accent-teal/30 border-accent-teal text-accent-teal'
+                : 'bg-white/5 hover:bg-white/15 border-white/10 text-secondary-text hover:text-white'
+            }`}
+            title="Avanço automático a cada 4 segundos"
+          >
+            <span>{isAutoPlay ? '⏸️ Pausar' : '▶️ Auto'}</span>
+          </button>
+
+          {/* Botão Text-to-Speech (Melhoria 33: Narração por Voz) */}
+          <button
+            onClick={speakCurrentLine}
+            className="p-2.5 bg-white/5 hover:bg-white/15 border border-white/10 rounded-full text-secondary-text hover:text-white transition-all flex items-center gap-1.5 text-xs font-semibold"
+            title="Ouvir leitura em voz alta"
+          >
+            <span>🔊 Ouvir</span>
+          </button>
         </div>
+
+        {/* Modal / Gaveta de Histórico de Diálogos */}
+        {isHistoryOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fadeIn">
+            <div className="bg-secondary-bg border border-accent-teal/40 rounded-3xl p-6 max-w-xl w-full max-h-[80vh] flex flex-col shadow-2xl">
+              <div className="flex justify-between items-center border-b border-border-color pb-4 mb-4">
+                <div className="flex items-center gap-2">
+                  <FaHistory className="text-accent-teal" />
+                  <h3 className="font-bold text-lg text-primary-text">Histórico da Narrativa</h3>
+                </div>
+                <button
+                  onClick={() => setIsHistoryOpen(false)}
+                  className="text-secondary-text hover:text-primary-text p-1.5 rounded-lg hover:bg-white/10"
+                >
+                  <FaTimes size={18} />
+                </button>
+              </div>
+
+              <div className="overflow-y-auto space-y-3 flex-1 pr-1">
+                {dialogue.slice(0, currentLineIndex + 1).map((line, idx) => (
+                  <div key={idx} className="bg-primary-bg/70 p-3.5 rounded-2xl border border-border-color/60">
+                    <span className="text-xs font-extrabold text-accent-purple uppercase tracking-wider block mb-1">
+                      {line.characterRole}
+                    </span>
+                    <p className="text-sm text-primary-text leading-relaxed">
+                      {line.text}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {currentLineIndex < dialogue.length - 1 ? (
           <button

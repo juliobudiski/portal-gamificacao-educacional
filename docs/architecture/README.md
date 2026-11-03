@@ -15,6 +15,7 @@ docs/architecture/
 │   └── ...
 ├── c4_context_container_diagrams.md     # C4 Nível 1 (Contexto) e Nível 2 (Contêineres)
 ├── c4_component_hexagonal_backend.md    # C4 Nível 3 (Arquitetura Hexagonal: Portas & Adaptadores)
+├── frontend_architecture.md             # Arquitetura, Telas e Componentes do Frontend
 ├── data_model_erd.md                    # Dicionário de Dados e Diagrama ERD (32 tabelas normalizadas)
 ├── contextual_recommendation_engine.md  # Motor de Recomendação Contextual (MDC/MUI/SAD)
 ├── ai_multi_model_fallback.md           # Cascata Multi-Modelo Gemini com tolerância a falhas

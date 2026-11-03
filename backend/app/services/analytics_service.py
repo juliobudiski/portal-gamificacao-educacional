@@ -71,13 +71,18 @@ class AnalyticsService:
         return total_possible_points
 
     @staticmethod
-    def get_student_performance(class_id, activity_id, search_term):
+    def get_student_performance(current_user_id, class_id, activity_id, search_term):
         """
         Agrega e compila o desempenho de todos os alunos de uma turma específica,
         filtrando por uma atividade se fornecida.
         Retorna pontuação, precisão de respostas, número de tentativas e XP global.
+        Proteção BOLA/IDOR (VULN-12): Garante que apenas o professor dono da turma ou admin possa visualizar.
         """
         try:
+            user = User.query.get(current_user_id)
+            if not user or (user.role != 'professor' and user.role != 'admin'):
+                return None, {'message': 'Acesso negado. Apenas professores podem acessar esta rota.'}, 403
+
             if not class_id:
                 return None, {'error': 'Class ID is required'}, 400
 
@@ -90,6 +95,9 @@ class AnalyticsService:
             target_class = Class.query.get(class_id)
             if not target_class: 
                  return None, {"message": "Turma não encontrada."}, 404
+
+            if user.role != 'admin' and target_class.professor_id != user.id:
+                return None, {"message": "Acesso não autorizado aos dados desta turma."}, 403
 
             # Busca alunos matriculados na turma e aplica pesquisa por nome se houver
             query = db.session.query(User).join(Enrollment).filter(Enrollment.class_id == class_id)
@@ -209,10 +217,13 @@ class AnalyticsService:
     def check_feedback_eligibility(user_id):
         """
         Verifica se o usuário já atendeu aos requisitos mínimos para ser convidado
-        a preencher o formulário de feedback (NPS) do sistema (ex: Professor já criou
-        pelo menos 1 atividade ou Aluno gerou 5 eventos no log).
+        a preencher o formulário de feedback do sistema:
+        - Professor: já criou pelo menos 1 atividade e possui ao menos 1 turma.
+        - Aluno: já completou pelo menos 1 atividade (status='completed') ou gerou mais de 10 eventos com progresso.
         """
         user = User.query.get(user_id)
+        if not user:
+            return {"show_modal": False}, None, 404
 
         if SystemFeedback.query.filter_by(user_id=user.id).first():
             return {"show_modal": False}, None, 200
@@ -221,12 +232,18 @@ class AnalyticsService:
         
         if user.role == 'professor':
             activity_count = Activity.query.filter_by(professor_id=user.id).count()
-            if activity_count >= 1:
+            class_count = Class.query.filter_by(professor_id=user.id).count()
+            if activity_count >= 1 and class_count >= 1:
                 show_modal = True
                 
         elif user.role == 'aluno':
-            log_count = EventLog.query.filter_by(user_id=user.id).count()
-            if log_count >= 5: 
+            # Validação robusta: aluno deve ter completado pelo menos uma atividade
+            has_completed_activity = ActivityProgress.query.filter_by(
+                student_id=user.id,
+                status='completed'
+            ).first() is not None
+
+            if has_completed_activity:
                 show_modal = True
 
         return {"show_modal": show_modal, "role": user.role}, None, 200

@@ -58,10 +58,7 @@ def send_message():
         return jsonify(result), status
     except Exception as e:
         error_trace = traceback.format_exc()
-        sys.stderr.write(f"\n[CRITICAL CONTACT API ERROR]\n{error_trace}\n")
-        sys.stderr.flush()
         current_app.logger.error(f"[CONTACT API FAILURE] {str(e)}:\n{error_trace}")
         return jsonify({
-            "error": str(e),
-            "trace": error_trace
+            "message": "Erro ao processar mensagem de contato. Tente novamente mais tarde."
         }), 500

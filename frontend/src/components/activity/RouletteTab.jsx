@@ -244,13 +244,41 @@ const RouletteTab = ({ onReturn, onSpin }) => {
         </div>
       </div>
 
-      {/* Modal de Revelação de Prêmio */}
+      {/* Modal de Revelação de Prêmio (Melhoria 57: Feedback de Prêmio Raro com Raios Dourados) */}
       {revealedPrize && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 animate-fadeIn">
-          <div className="bg-gradient-to-br from-yellow-900 to-black border-2 border-yellow-400 p-12 rounded-3xl shadow-[0_0_80px_rgba(250,204,21,0.4)] text-center prize-reveal-box flex flex-col items-center">
-            <FaGift className="text-7xl text-yellow-400 mb-6 drop-shadow-[0_0_20px_rgba(250,204,21,0.8)] animate-bounce" />
-            <h2 className="text-3xl font-medium text-yellow-100 mb-4 tracking-wide uppercase">Você ganhou:</h2>
-            <p className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-yellow-500 drop-shadow-lg">{revealedPrize.label}</p>
+        <div 
+          className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-50 animate-fadeIn p-4 cursor-pointer"
+          onClick={() => setRevealedPrize(null)}
+        >
+          <div 
+            className="relative bg-gradient-to-br from-yellow-950 via-black to-yellow-900 border-2 border-yellow-400 p-8 md:p-12 rounded-3xl shadow-[0_0_100px_rgba(250,204,21,0.6)] text-center prize-reveal-box flex flex-col items-center max-w-lg w-full overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Efeito de Raios de Luz Dourados Girando */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-yellow-500/20 via-transparent to-transparent animate-spin duration-1000 pointer-events-none"></div>
+
+            <div className="relative z-10 flex flex-col items-center">
+              <div className="w-24 h-24 rounded-full bg-yellow-400/20 border-2 border-yellow-400/60 flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(250,204,21,0.5)]">
+                <FaGift className="text-5xl text-yellow-300 drop-shadow-[0_0_15px_rgba(250,204,21,0.9)] animate-bounce" />
+              </div>
+              
+              <span className="text-xs font-black uppercase tracking-widest text-yellow-400/80 mb-2 px-3 py-1 bg-yellow-500/10 rounded-full border border-yellow-500/30">
+                ✨ Prêmio Especial Desbloqueado ✨
+              </span>
+
+              <h2 className="text-2xl font-bold text-yellow-100 mb-2 tracking-wide uppercase">Você Conquistou:</h2>
+              <p className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-yellow-400 to-yellow-100 drop-shadow-lg mb-8 leading-tight">
+                {revealedPrize.label}
+              </p>
+
+              <button
+                type="button"
+                onClick={() => setRevealedPrize(null)}
+                className="px-8 py-3 rounded-xl bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-950 font-black text-sm uppercase tracking-wider hover:brightness-110 shadow-[0_0_20px_rgba(250,204,21,0.4)] transition-all transform hover:scale-105"
+              >
+                Coletar e Continuar
+              </button>
+            </div>
           </div>
         </div>
       )}

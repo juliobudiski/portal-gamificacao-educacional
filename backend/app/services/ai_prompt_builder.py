@@ -7,6 +7,16 @@ garantindo que o conteúdo gerado siga regras estritas de progressão curricular
 
 from typing import Dict, List, Tuple
 
+def escape_prompt_tag(text: str) -> str:
+    """
+    Higieniza strings para inclusão dentro de delimitadores <user_input>.
+    Impede que o atacante feche a tag com </user_input> para escapar do isolamento (VULN-20).
+    """
+    if text is None:
+        return ""
+    val = str(text)
+    return val.replace('</user_input>', '').replace('<user_input>', '')
+
 def build_prompt(step_type: str, step_idx: int, total_steps: int, context: Dict, config: Dict, execution_trace: Dict) -> Tuple[str, str]:
     """
     Constrói o prompt completo combinando a persona da IA, a fase da história 
@@ -14,8 +24,8 @@ def build_prompt(step_type: str, step_idx: int, total_steps: int, context: Dict,
     Assegura que a IA não ensine o tópico inteiro de uma vez, 
     mas sim fragmente o conhecimento ao longo dos passos.
     """
-    teaching_focus = config.get('teachingFocus') or context.get('title', 'Tópico não definido')
-    target_audience = config.get('targetAudience', 'Junior')
+    teaching_focus = escape_prompt_tag(config.get('teachingFocus') or context.get('title', 'Tópico não definido'))
+    target_audience = escape_prompt_tag(config.get('targetAudience', 'Junior'))
     characters_list = config.get('charactersList', [])
     
     formatted_cast = "\n".join([
@@ -57,8 +67,8 @@ def build_prompt(step_type: str, step_idx: int, total_steps: int, context: Dict,
     >>> {pacing_instruction} <<<
     
     --- MEMÓRIA (O que já aconteceu) ---
-    Último Evento Narrativo: <user_input>{execution_trace.get('last_narrative_event', 'Início da jornada.')}</user_input>
-    Último Conceito Ensinado: <user_input>{execution_trace.get('last_taught_concept', 'Nenhum.')}</user_input>
+    Último Evento Narrativo: <user_input>{escape_prompt_tag(execution_trace.get('last_narrative_event', 'Início da jornada.'))}</user_input>
+    Último Conceito Ensinado: <user_input>{escape_prompt_tag(execution_trace.get('last_taught_concept', 'Nenhum.'))}</user_input>
     
     REGRA DE CONTINUIDADE: 
     1. Se o campo "Último Conceito Ensinado" não for "Nenhum", assuma que o aluno JÁ SABE isso. Não repita explicações. Construa EM CIMA desse conhecimento.

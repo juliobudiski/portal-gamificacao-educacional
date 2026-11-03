@@ -1,6 +1,6 @@
-import React, { lazy, Suspense } from 'react';
+import React, { lazy, Suspense, useState } from 'react';
 import { useActivity } from '../../context/ActivityContext';
-import { FaSpinner } from 'react-icons/fa'; // Certifique-se de ter react-icons ou use outro ícone
+import { FaSpinner, FaList, FaMapMarkedAlt, FaCheckCircle, FaLock, FaPlay } from 'react-icons/fa';
 
 // Importação dos temas
 const VilaDaAventuraTheme = lazy(() => import('./themes/VilaDaAventuraTheme'));
@@ -9,12 +9,8 @@ const FlowchartTheme = lazy(() => import('./themes/FlowchartTheme'));
 /**
  * @component GameBoardViewer
  * @description
- * Container component responsible for rendering the correct visual theme for the game board.
- * 
- * Architectural Decisions:
- * - Lazy Loading: Uses React `lazy` and `Suspense` to dynamically load the specific theme component, reducing the initial bundle size.
- * - Context-Driven Loading: Consumes `useActivity` context to display a progress bar while heavy image assets are pre-loaded.
- * - Factory Pattern: Uses a `themeMap` dictionary to dynamically resolve the React component to render based on the `themeName` string.
+ * Container component responsible for rendering the correct visual theme for the game board,
+ * with an accessible linear list fallback for students with visual impairments or slow connections.
  */
 const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === 'true';
 
@@ -24,12 +20,15 @@ const themeMap = {
 };
 
 function GameBoardViewer({ children }) {
-    // 1. Consumimos os estados de carregamento do hook useAssetLoader (via Contexto)
+    const [isListView, setIsListView] = useState(false); // Melhoria 18: Modo Compacto em Lista
     const {
         activity,
         isAssetsLoading,
         assetsProgress,
-        estimatedTimeRemaining
+        estimatedTimeRemaining,
+        currentView,
+        getStepStatus,
+        handleStepClick
     } = useActivity();
 
     const themeName = activity?.gamificationDesign?.theme || 'vila_da_aventura';
@@ -61,14 +60,95 @@ function GameBoardViewer({ children }) {
         );
     }
 
-    // 3. Renderização do Tabuleiro (Só acontece quando LOADING = FALSE)
+    const steps = activity?.gamificationDesign?.progression_path || [];
+
+    // 3. Renderização do Tabuleiro (Gráfico ou Lista Acessível)
     return (
-        <div className="animate-fade-in w-full">
-            <Suspense fallback={<div className="text-center text-white p-10">Carregando lógica do tema...</div>}>
-                <ThemeComponent>
-                    {children}
-                </ThemeComponent>
-            </Suspense>
+        <div className="animate-fade-in w-full space-y-4">
+            {/* Barra de Acessibilidade / Alternância de Modo */}
+            {currentView === 'board' && (
+                <div className="flex justify-end items-center gap-2">
+                    <button
+                        onClick={() => setIsListView(!isListView)}
+                        className="px-4 py-2 bg-secondary-bg/90 hover:bg-secondary-bg border border-border-color text-primary-text rounded-2xl text-xs font-bold flex items-center gap-2 shadow-md transition-all active:scale-95"
+                        title="Alternar entre mapa gráfico e lista acessível"
+                        aria-label="Alternar modo de visualização"
+                    >
+                        {isListView ? (
+                            <><FaMapMarkedAlt className="text-accent-teal text-sm" /> Ver Mapa Gráfico</>
+                        ) : (
+                            <><FaList className="text-accent-yellow text-sm" /> Modo Lista Acessível</>
+                        )}
+                    </button>
+                </div>
+            )}
+
+            {isListView && currentView === 'board' ? (
+                <div className="bg-secondary-bg border border-border-color rounded-3xl p-6 shadow-xl max-w-4xl mx-auto space-y-4">
+                    <div className="border-b border-border-color pb-3">
+                        <h2 className="text-2xl font-bold text-primary-text">Lista Linear de Desafios</h2>
+                        <p className="text-sm text-secondary-text">Modo acessível de alto contraste e navegação direta.</p>
+                    </div>
+
+                    <div className="space-y-3">
+                        {steps.map((step, idx) => {
+                            const status = getStepStatus(step);
+                            const isClickable = status === 'active' || status === 'completed';
+
+                            return (
+                                <div
+                                    key={step.id || idx}
+                                    className={`p-4 rounded-2xl border transition-all flex items-center justify-between gap-4 ${
+                                        status === 'completed'
+                                            ? 'bg-green-500/10 border-green-500/30'
+                                            : status === 'active'
+                                            ? 'bg-accent-yellow/10 border-accent-yellow/40 shadow-md'
+                                            : 'bg-primary-bg/40 border-border-color/40 opacity-60'
+                                    }`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm bg-primary-bg border border-border-color">
+                                            {status === 'completed' ? (
+                                                <FaCheckCircle className="text-green-400" />
+                                            ) : status === 'active' ? (
+                                                <FaPlay className="text-accent-yellow text-xs ml-0.5" />
+                                            ) : (
+                                                <FaLock className="text-gray-400 text-xs" />
+                                            )}
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-primary-text text-base">
+                                                {idx + 1}. {step.content?.title || step.type}
+                                            </h3>
+                                            <p className="text-xs text-secondary-text capitalize">
+                                                Tipo: {step.type} • Recompensa: +{step.content?.points || 10} XP
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        onClick={() => isClickable && handleStepClick(step)}
+                                        disabled={!isClickable}
+                                        className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-transform active:scale-95 ${
+                                            isClickable
+                                                ? 'bg-accent-teal hover:bg-teal-600 text-white shadow'
+                                                : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                                        }`}
+                                    >
+                                        {status === 'completed' ? 'Revisar' : status === 'active' ? 'Iniciar' : 'Bloqueado'}
+                                    </button>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            ) : (
+                <Suspense fallback={<div className="text-center text-white p-10">Carregando lógica do tema...</div>}>
+                    <ThemeComponent>
+                        {children}
+                    </ThemeComponent>
+                </Suspense>
+            )}
 
             {/* Estilo inline para garantir a animação de entrada sem arquivos CSS extras */}
             <style>{`

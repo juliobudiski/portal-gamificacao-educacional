@@ -6,6 +6,7 @@ import {
   FaPrint, FaInfoCircle, FaCheckCircle
 } from 'react-icons/fa';
 import { useHelpModal } from "../../../context/HelpModalContext";
+import StepHelpButton from "../../common/StepHelpButton";
 
 // Importe o componente que criamos para a folha A4
 import PrintableActivity from '../../PrintableActivity';
@@ -80,13 +81,11 @@ function Step8_RulesAndSharing({ activityData, handleInputChange, setActivityDat
             Defina as regras que guiarão a atividade. Boas regras criam um ambiente justo, divertido e produtivo para todos.
           </p>
         </div>
-        <button
-          onClick={() => openHelp('regras_gamificacao')}
-          className="group flex items-center justify-center w-12 h-12 rounded-full bg-primary-bg border border-border-color hover:border-accent-teal/50 hover:bg-accent-teal/10 transition-all duration-300 shadow-sm"
-          title="Ajuda sobre este passo"
-        >
-          <FaInfoCircle className="text-xl text-secondary-text group-hover:text-accent-teal transition-colors" />
-        </button>
+        <StepHelpButton 
+          contentKey="regras_gamificacao" 
+          title="Regras da Atividade" 
+          subtitle="Normas, prazos & transparência" 
+        />
       </div>
 
       {/* SEÇÃO 2: Seleção de Regras Gerais com Cards */}

@@ -81,6 +81,7 @@ EXPECTED_20_BADGES: Set[str] = {
 # Approved canonical files allowed in root directory
 CANONICAL_ROOT_ALLOWED_FILES: Set[str] = {
     "README.md",
+    "AGENTS.md",
     "package.json",
     "vercel.json",
     "conftest.py",

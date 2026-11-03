@@ -8,6 +8,7 @@ import {
 } from 'react-icons/fa';
 import { BookOpen, Target, Lightbulb, TrendingUp, Lock } from 'lucide-react';
 import FeedbackModal from '../components/FeedbackModal';
+import WelcomeChecklistWidget from '../components/dashboard/WelcomeChecklistWidget';
 import { useAuthOperations } from '../hooks/useAuthOperations';
 import { useTutorial } from '../context/TutorialContext';
 import { STUDENT_DASHBOARD_STEPS } from '../data/tutorialSteps';
@@ -121,18 +122,22 @@ const BadgeCard = ({ badge }) => {
 
   return (
     <div
-      className={`group relative rounded-2xl p-4 transition-all duration-300 flex flex-col items-center text-center ${
+      className={`group relative rounded-2xl p-4 transition-all duration-300 flex flex-col items-center text-center perspective-1000 ${
         isUnlocked
-          ? 'bg-secondary-bg/80 border border-accent-yellow/40 hover:border-accent-yellow shadow-lg hover:shadow-accent-yellow/20 hover:-translate-y-1'
+          ? 'bg-secondary-bg/80 border border-accent-yellow/40 hover:border-accent-yellow shadow-lg hover:shadow-accent-yellow/30 hover:-translate-y-2 hover:rotate-1'
           : 'bg-secondary-bg/30 border border-border-color/30 opacity-40 grayscale hover:opacity-75 transition-opacity'
       }`}
     >
       <div className="relative mb-3 flex items-center justify-center">
+        {/* Efeito de Brilho Metálico (Melhoria 59) */}
+        {isUnlocked && (
+          <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-yellow-400/20 via-transparent to-white/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+        )}
         <img
           src={badge.imageUrl}
           alt={badge.name}
-          className={`w-16 h-16 object-contain transition-transform duration-300 group-hover:scale-110 ${
-            !isUnlocked ? 'filter contrast-75' : 'drop-shadow-[0_0_12px_rgba(255,189,48,0.45)]'
+          className={`w-16 h-16 object-contain transition-transform duration-500 group-hover:scale-125 group-hover:rotate-6 ${
+            !isUnlocked ? 'filter contrast-75' : 'drop-shadow-[0_0_15px_rgba(255,189,48,0.6)]'
           }`}
           onError={(e) => {
             e.target.onerror = null;
@@ -304,6 +309,13 @@ export default function StudentDashboardPage() {
       <div className="p-4 md:p-8 relative z-10 max-w-7xl mx-auto">
         <FeedbackModal isOpen={showFeedback} onClose={() => setShowFeedback(false)} userRole="aluno" />
         
+        {/* Widget: Checklist Interativo de Boas-Vindas (Melhoria 08) */}
+        <WelcomeChecklistWidget
+          user={user}
+          performance={dashboardData?.performance}
+          enrolledClassesCount={dashboardData?.enrolled_classes?.length || 0}
+        />
+
         {/* Banner: Dica do Dia */}
         <div className="bg-secondary-bg/60 backdrop-blur-md border border-accent-purple/30 rounded-3xl p-5 md:p-6 flex flex-col md:flex-row items-center justify-between shadow-2xl mb-12 hover:border-accent-purple/60 transition-colors duration-500">
           <div className="flex items-center gap-5 w-full">
@@ -438,7 +450,7 @@ export default function StudentDashboardPage() {
                       </div>
                     </div>
 
-                    {/* Barra de XP */}
+                    {/* Barra de XP com Marcos de Nível (Melhoria 61) */}
                     <div>
                       <div className="flex justify-between text-sm font-bold mb-2">
                         <span className="text-secondary-text uppercase tracking-wider">Experiência</span>
@@ -450,6 +462,15 @@ export default function StudentDashboardPage() {
                            style={{ width: `${progressPercent}%` }}
                         >
                         </div>
+                      </div>
+                      {/* Marcos de Nível Gamificados */}
+                      <div className="flex justify-between items-center text-[10px] font-bold text-secondary-text mt-2 px-1">
+                        <span className="flex items-center gap-1 text-accent-teal">
+                          <span>📍</span> Nv. {global_level_info.level}
+                        </span>
+                        <span className="flex items-center gap-1 text-accent-yellow" title="Próxima recompensa no marco de nível">
+                          <span>🎁</span> Nv. {Math.ceil((global_level_info.level + 1) / 5) * 5} (Recompensa Especial)
+                        </span>
                       </div>
                     </div>
 

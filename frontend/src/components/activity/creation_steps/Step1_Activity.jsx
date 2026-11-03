@@ -7,6 +7,7 @@ import {
   FaBookReader, FaHeartbeat, FaCheckCircle
 } from 'react-icons/fa';
 import { useHelpModal } from "../../../context/HelpModalContext";
+import StepHelpButton from "../../common/StepHelpButton";
 
 /**
  * @component Step1_Activity
@@ -119,13 +120,11 @@ function Step1_InitialDetails({ activityData, handleInputChange, setActivityData
             Comece definindo o escopo e os desafios da sua atividade.
           </p>
         </div>
-        <button
-          onClick={() => openHelp('analise_preliminar')}
-          className="group flex items-center justify-center w-12 h-12 rounded-full bg-primary-bg border border-border-color hover:border-accent-teal/50 hover:bg-accent-teal/10 transition-all duration-300 shadow-sm"
-          title="Ajuda sobre este passo"
-        >
-          <FaInfoCircle className="text-xl text-secondary-text group-hover:text-accent-teal transition-colors" />
-        </button>
+        <StepHelpButton 
+          contentKey="analise_preliminar" 
+          title="Guia do Cenário" 
+          subtitle="Competências & diagnóstico inicial" 
+        />
       </div>
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">

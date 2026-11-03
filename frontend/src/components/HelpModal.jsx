@@ -62,22 +62,32 @@ const HelpModal = ({ isOpen, contentKey, onClose }) => {
                 <div className="h-1.5 w-full rounded-t-xl bg-gradient-to-r from-accent-purple via-accent-teal to-accent-purple" />
 
                 {/* Cabeçalho */}
-                <div className="flex items-center justify-between px-6 py-5 border-b border-border-color">
-                    <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent-purple/10 text-accent-purple">
-                            <FaLightbulb />
+                <div className="flex items-center justify-between px-6 py-5 border-b border-border-color bg-primary-bg/30">
+                    <div className="flex items-center gap-3.5">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-teal/15 text-accent-teal border border-accent-teal/30 shadow-sm">
+                            <FaLightbulb className="text-xl text-accent-yellow" />
                         </div>
-                        <h3 className="text-xl font-bold text-primary-text tracking-tight">
-                            {data.title}
-                        </h3>
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <h3 className="text-xl font-extrabold text-primary-text tracking-tight">
+                                    {data.title}
+                                </h3>
+                                <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded-full bg-accent-teal/15 text-accent-teal border border-accent-teal/30">
+                                    Pedagogia & Design
+                                </span>
+                            </div>
+                            <p className="text-xs text-secondary-text mt-0.5">
+                                Recomendações fundamentadas na literatura científica e boas práticas de gamificação
+                            </p>
+                        </div>
                     </div>
 
                     <button
                         onClick={onClose}
                         className="
-                            group rounded-lg p-2 transition-all duration-200
-                            hover:bg-danger-bg/10 hover:text-danger
-                            text-secondary-text
+                            group rounded-xl p-2.5 transition-all duration-200
+                            hover:bg-danger/10 hover:text-danger
+                            text-secondary-text border border-transparent hover:border-danger/30
                         "
                         aria-label="Fechar ajuda"
                     >

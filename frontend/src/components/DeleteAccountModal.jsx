@@ -28,7 +28,7 @@ const DeleteAccountModal = ({ onConfirm, onCancel, password, setPassword, messag
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
-                        className="mt-1 block w-full px-4 py-3 bg-primary-bg border border-[#4a525a] text-secondary-text rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+                        className="mt-1 block w-full px-4 py-3 bg-secondary-bg border border-border-color text-primary-text rounded-xl focus:ring-2 focus:ring-danger focus:border-transparent transition-all shadow-inner"
                         placeholder="Digite sua senha"
                     />
                 </div>

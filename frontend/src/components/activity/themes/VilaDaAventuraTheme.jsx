@@ -351,7 +351,28 @@ const VilaDaAventuraTheme = ({ children }) => {
                     const rivalsHere = rivalsPositions[step.id];
 
                     return (
-                        <div key={step.id} className="path-node-wrapper" style={{ top: `${position.y}px`, left: `${position.x}px` }} onClick={() => (status === 'active' || status === 'completed') && handleStepClick(step)}>
+                        <div
+                            key={step.id}
+                            className="path-node-wrapper group/node"
+                            style={{ top: `${position.y}px`, left: `${position.x}px` }}
+                            onClick={() => (status === 'active' || status === 'completed') && handleStepClick(step)}
+                        >
+                            {/* Tooltip de Prévia do Nó (Melhoria 16: Prévia ao Passar o Mouse) */}
+                            <div className="hidden group-hover/node:flex flex-col absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-52 bg-gray-950/95 backdrop-blur-md text-white text-xs p-3 rounded-2xl shadow-2xl border border-accent-teal/40 z-50 pointer-events-none transition-all duration-200">
+                                <span className="font-bold text-accent-teal uppercase tracking-wider text-[10px] mb-1">
+                                    {config.name || 'Desafio'}
+                                </span>
+                                <span className="font-semibold text-primary-text text-sm mb-1 line-clamp-2">
+                                    {step.content?.title || 'Passo da Trilha'}
+                                </span>
+                                <div className="flex items-center justify-between text-[11px] text-secondary-text pt-2 border-t border-white/10 mt-1">
+                                    <span>Status: <strong className={status === 'completed' ? 'text-green-400' : status === 'active' ? 'text-yellow-400' : 'text-gray-400'}>
+                                        {status === 'completed' ? 'Concluído' : status === 'active' ? 'Disponível' : 'Bloqueado'}
+                                    </strong></span>
+                                    <span>+{step.content?.points || 10} XP</span>
+                                </div>
+                            </div>
+
                             <div className={`path-node path-node--${status}`}>
                                 <img className="path-node-image" src={config.icon} alt={config.name} />
                                 {status === 'completed' && <div className="path-node-completed-check">✔</div>}

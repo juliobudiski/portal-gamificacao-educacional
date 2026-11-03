@@ -104,6 +104,51 @@ export const helpContent = {
         ),
     },
 
+    planejamento_atividade: {
+        title: "Ajuda - Planejamento da Atividade & Logística",
+        content: (
+            <>
+                <div className="space-y-4 text-primary-text text-justify">
+                    <div className="mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
+                        <h4 className="font-bold text-lg text-accent-teal mb-2">Estrutura Logística & Dinâmica Pedagógica</h4>
+                        <p className="mb-3">
+                            A etapa de planejamento define o ecossistema no qual os alunos interagem com a atividade gamificada. A dinâmica escolhida influencia diretamente a carga cognitiva e a sensação de pertencimento e autonomia.
+                        </p>
+                        <ul className="list-disc pl-5 space-y-2 text-gray-700 dark:text-gray-300">
+                            <li>
+                                <strong>Individual vs. Equipe:</strong> Atividades individuais favorecem a autorregulação e autoeficácia imediata. Atividades em equipe mobilizam inteligência coletiva, negociação e aprendizagem cooperativa (Johnson & Johnson), mitigando o isolamento do estudante.
+                            </li>
+                            <li>
+                                <strong>Ambiente Operacional:</strong> Ambientes com laboratório viabilizam feedback síncrono e instrumentação automatizada; ambientes desplugados ou online exigem regras autossuficientes e tolerância a atrasos de comunicação.
+                            </li>
+                        </ul>
+                    </div>
+
+                    <h5 className="font-bold text-base text-accent-purple mb-1">Características da Atividade:</h5>
+                    <ul className="list-disc pl-5 space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                        <li><strong>Formativa vs. Somativa:</strong> Atividades formativas priorizam feedback rápido e baixo risco de punição (estimulando o erro como ferramenta pedagógica). Atividades somativas requerem clareza absoluta de critérios e rubricas transparentes.</li>
+                        <li><strong>Níveis Progressivos (Scaffolding):</strong> Comece com tarefas de baixa complexidade (aquecimento) e aumente progressivamente o desafio (Teoria do Fluxo de Csikszentmihalyi), evitando tanto o tédio quanto a frustração/ansiedade.</li>
+                        <li><strong>Foco em Projetos:</strong> Estimula a contextualização autêntica de problemas de Engenharia de Software e resolução de demandas do mundo real.</li>
+                    </ul>
+
+                    <div className="mt-4 p-4 rounded-xl text-sm border-l-4 bg-accent-teal/10 border-accent-teal text-gray-700 dark:text-gray-200">
+                        <strong className="text-accent-teal font-bold uppercase tracking-wide">Recomendação Pedagógica: </strong>{' '}
+                        Caso selecione dinâmica em equipe, certifique-se de prever papéis claros e métricas de responsabilidade compartilhada para evitar o efeito "carona" (social loafing).
+                    </div>
+                </div>
+
+                <div className="mt-6 border-t pt-4 border-gray-200 dark:border-gray-700">
+                    <h4 className="font-bold text-primary-text mb-2">Leitura Complementar:</h4>
+                    <ul className="list-disc pl-5 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                        <li>DICHEVA, Darina et al. Gamification in education: A systematic mapping study. Educational Technology & Society, 2015.</li>
+                        <li>TODA, Armando M. et al. Analysing gamification elements in educational environments using an ontology for gamification. Computers & Education, 2019.</li>
+                        <li>SWELLER, John. Cognitive load theory and educational technology. Educational Technology Research and Development, 2020.</li>
+                    </ul>
+                </div>
+            </>
+        ),
+    },
+
     elementos_jogos: {
         title: "Ajuda - Elementos de Jogos",
         content: (

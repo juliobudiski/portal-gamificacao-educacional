@@ -40,6 +40,8 @@ const QuizTab = ({ content, gameElements, onAnswerCorrect, onComplete, isReplay 
   const [feedback, setFeedback] = useState({ type: '', message: '' });
   const [timeLeft, setTimeLeft] = useState(30);
   const [isFinished, setIsFinished] = useState(false);
+  const [submittedAnswer, setSubmittedAnswer] = useState(null); // Melhoria 19: Revelação de gabarito
+  const [streakCount, setStreakCount] = useState(0); // Melhoria 25: Streak de acertos
 
   // [1] NOVO ESTADO: Proteção contra múltiplos cliques
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -91,6 +93,15 @@ const QuizTab = ({ content, gameElements, onAnswerCorrect, onComplete, isReplay 
       }
     }
 
+    // Atualiza streak (Melhoria 25: Feedback de Streak)
+    if (isCorrect) {
+      setStreakCount(prev => prev + 1);
+    } else {
+      setStreakCount(0);
+    }
+
+    setSubmittedAnswer(answer);
+
     const feedbackMessage = isCorrect
       ? (isReplay ? 'Resposta Correta!' : `+${points} Pontos!`)
       : 'Resposta Incorreta!';
@@ -135,10 +146,11 @@ const QuizTab = ({ content, gameElements, onAnswerCorrect, onComplete, isReplay 
       }
     }
 
-    // Delay para feedback visual
+    // Delay para feedback visual e leitura da justificativa pedagógica
     setTimeout(() => {
       setFeedback({ type: '', message: '' });
       setSelectedAnswer(null);
+      setSubmittedAnswer(null);
 
       if (currentIndex < questions.length - 1) {
         setCurrentIndex(prev => prev + 1);
@@ -149,7 +161,7 @@ const QuizTab = ({ content, gameElements, onAnswerCorrect, onComplete, isReplay 
         handleFinishQuiz();
         // Não destravamos isSubmitting aqui para evitar cliques durante o unmount
       }
-    }, 2000);
+    }, 3500);
   };
 
   // Timer Effect
@@ -191,6 +203,29 @@ const QuizTab = ({ content, gameElements, onAnswerCorrect, onComplete, isReplay 
       }
     };
   }, [currentIndex, isFinished]);
+
+  // Atalhos de Teclado (Melhoria 96: 1-4 para alternativas, Enter para confirmar)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (isSubmitting || isFinished) return;
+      const key = e.key;
+
+      if (['1', '2', '3', '4'].includes(key)) {
+        const optionIdx = parseInt(key, 10) - 1;
+        const currentOptions = questions[currentIndex]?.options || [];
+        if (currentOptions[optionIdx]) {
+          setSelectedAnswer(currentOptions[optionIdx]);
+        }
+      } else if (key === 'Enter') {
+        if (selectedAnswer) {
+          handleSubmit(selectedAnswer);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentIndex, questions, selectedAnswer, isSubmitting, isFinished]);
 
   if (isFinished) {
     return (
@@ -235,13 +270,23 @@ const QuizTab = ({ content, gameElements, onAnswerCorrect, onComplete, isReplay 
           </div>
         )}
 
-        {/* Modal de Feedback (Sucesso/Erro) */}
+        {/* Modal de Feedback (Sucesso/Erro com Justificativa Pedagógica - Melhoria 21) */}
         {feedback.message && (
-          <div className={`fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fadeIn`}>
-             <div className={`p-8 rounded-3xl shadow-2xl transform scale-110 flex flex-col items-center gap-4 border-2 transition-all duration-300
-                ${feedback.type === 'success' ? 'bg-green-900/90 border-green-400 shadow-[0_0_60px_rgba(74,222,128,0.4)]' : 'bg-red-900/90 border-red-400 shadow-[0_0_60px_rgba(248,113,113,0.4)]'}`}>
-                {feedback.type === 'success' ? <FaCheckCircle className="text-7xl text-green-400 drop-shadow-[0_0_15px_rgba(74,222,128,0.8)]" /> : <FaTimes className="text-7xl text-red-400 drop-shadow-[0_0_15px_rgba(248,113,113,0.8)]" />}
-                <h2 className={`text-4xl font-bold text-white drop-shadow-lg text-center`}>{feedback.message}</h2>
+          <div className={`fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fadeIn p-4`}>
+             <div className={`p-6 sm:p-8 rounded-3xl shadow-2xl transform scale-105 flex flex-col items-center gap-4 border-2 transition-all duration-300 max-w-lg w-full text-center
+                ${feedback.type === 'success' ? 'bg-green-950/95 border-green-400 shadow-[0_0_60px_rgba(74,222,128,0.4)]' : 'bg-red-950/95 border-red-400 shadow-[0_0_60px_rgba(248,113,113,0.4)]'}`}>
+                {feedback.type === 'success' ? <FaCheckCircle className="text-6xl text-green-400 drop-shadow-[0_0_15px_rgba(74,222,128,0.8)]" /> : <FaTimes className="text-6xl text-red-400 drop-shadow-[0_0_15px_rgba(248,113,113,0.8)]" />}
+                <h2 className="text-3xl font-bold text-white drop-shadow-lg">{feedback.message}</h2>
+
+                {/* Justificativa Pedagógica Expandida */}
+                <div className="bg-black/40 border border-white/10 rounded-2xl p-4 w-full text-left mt-2">
+                  <span className="text-[11px] font-bold text-accent-teal uppercase tracking-wider block mb-1">
+                    📖 Justificativa Pedagógica:
+                  </span>
+                  <p className="text-sm text-gray-200 leading-relaxed">
+                    {currentQuestion.justification || currentQuestion.explanation || `A resposta correta é "${currentQuestion.correct_option}", pois atende aos critérios fundamentais estabelecidos na questão.`}
+                  </p>
+                </div>
              </div>
           </div>
         )}
@@ -252,12 +297,47 @@ const QuizTab = ({ content, gameElements, onAnswerCorrect, onComplete, isReplay 
              <span className="text-cyan-400 font-bold tracking-wider text-xs uppercase mb-1">Progresso</span>
              <span className="text-xl sm:text-2xl font-bold text-white tracking-widest">{currentIndex + 1} <span className="text-secondary-text text-lg">/ {questions.length}</span></span>
           </div>
+
+          {/* Melhoria 25: Feedback de Streak */}
+          {streakCount >= 2 && (
+            <div className="bg-gradient-to-r from-orange-500/30 to-amber-500/30 border border-orange-400/50 px-4 py-2 rounded-full flex items-center gap-2 animate-bounce">
+              <span className="text-lg">🔥</span>
+              <span className="text-xs sm:text-sm font-extrabold text-orange-300 uppercase tracking-wider">
+                {streakCount} em sequência!
+              </span>
+            </div>
+          )}
           
           {isTimed && currentQuestion.timeLimit && (
-            <div className={`px-6 py-3 rounded-full border flex items-center gap-3 text-2xl font-bold shadow-lg transition-colors duration-500
-               ${timeLeft <= 10 ? 'bg-red-500/80 border-red-400 text-white animate-pulse shadow-[0_0_20px_rgba(239,68,68,0.6)]' : 'bg-black/40 border-white/10 text-yellow-400'}`}>
-              <FaClock className={timeLeft <= 10 ? "animate-bounce" : ""} /> 
-              <span>{timeLeft}s</span>
+            <div className="bg-black/40 border border-white/10 px-5 py-2.5 rounded-full flex items-center gap-3 shadow-lg">
+              <div className="relative w-7 h-7 flex items-center justify-center">
+                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                  <path
+                    className="text-white/10"
+                    strokeWidth="3.5"
+                    stroke="currentColor"
+                    fill="none"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <path
+                    className={`transition-all duration-1000 ease-linear ${
+                      timeLeft > (currentQuestion.timeLimit * 0.5)
+                        ? 'text-accent-teal'
+                        : timeLeft > (currentQuestion.timeLimit * 0.25)
+                        ? 'text-accent-yellow'
+                        : 'text-red-400'
+                    }`}
+                    strokeDasharray={`${(timeLeft / currentQuestion.timeLimit) * 100}, 100`}
+                    strokeWidth="3.5"
+                    strokeLinecap="round"
+                    stroke="currentColor"
+                    fill="none"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                </svg>
+                <FaClock className="text-[10px] absolute text-white/70" />
+              </div>
+              <span className="text-base font-bold text-white tracking-wider">{timeLeft}s</span>
             </div>
           )}
         </div>
@@ -271,29 +351,57 @@ const QuizTab = ({ content, gameElements, onAnswerCorrect, onComplete, isReplay 
           </p>
         </div>
 
-        {/* Opções */}
+        {/* Opções com Revelação de Gabarito (Melhoria 19) e Atalhos de Teclado (Melhoria 96) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow content-start">
-          {currentQuestion.options.map(option => (
-            <button
-              key={option}
-              disabled={isSubmitting}
-              onClick={() => {
-                if (!firstClickTimestamp.current) firstClickTimestamp.current = Date.now();
-                setSelectedAnswer(option);
-              }}
-              className={`p-5 rounded-2xl text-left text-lg font-semibold transition-all duration-300 transform outline-none
-                ${selectedAnswer === option 
-                  ? 'bg-gradient-to-r from-yellow-500 to-orange-500 shadow-[0_0_20px_rgba(234,179,8,0.5)] scale-[1.02] border-transparent text-white' 
-                  : 'bg-white/10 hover:bg-white/20 border border-white/20 hover:scale-[1.01] hover:shadow-lg text-gray-100'}
-                ${isSubmitting ? 'cursor-not-allowed opacity-70 scale-100' : ''} 
-              `}>
-              {option}
-            </button>
-          ))}
+          {currentQuestion.options.map((option, idx) => {
+            const isCorrectOption = option === currentQuestion.correct_option;
+            const isSelected = selectedAnswer === option;
+            const isSubmitted = submittedAnswer !== null;
+
+            let optionStyle = 'bg-white/10 hover:bg-white/20 border border-white/20 hover:scale-[1.01] hover:shadow-lg text-gray-100';
+
+            if (isSubmitted) {
+              if (isCorrectOption) {
+                optionStyle = 'bg-green-600/80 border-green-400 text-white shadow-[0_0_25px_rgba(34,197,94,0.6)] scale-[1.02]';
+              } else if (isSelected && !isCorrectOption) {
+                optionStyle = 'bg-red-600/80 border-red-400 text-white shadow-[0_0_25px_rgba(239,68,68,0.6)]';
+              } else {
+                optionStyle = 'bg-white/5 border-white/10 text-gray-400 opacity-50';
+              }
+            } else if (isSelected) {
+              optionStyle = 'bg-gradient-to-r from-yellow-500 to-orange-500 shadow-[0_0_20px_rgba(234,179,8,0.5)] scale-[1.02] border-transparent text-white';
+            }
+
+            return (
+              <button
+                key={option}
+                disabled={isSubmitting}
+                onClick={() => {
+                  if (!firstClickTimestamp.current) firstClickTimestamp.current = Date.now();
+                  setSelectedAnswer(option);
+                }}
+                className={`p-5 rounded-2xl text-left text-lg font-semibold transition-all duration-300 transform outline-none flex items-center justify-between gap-3 ${optionStyle} ${isSubmitting ? 'cursor-not-allowed scale-100' : ''}`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="w-6 h-6 rounded-md bg-white/10 border border-white/20 flex items-center justify-center text-xs font-mono font-bold text-gray-300">
+                    {idx + 1}
+                  </span>
+                  <span>{option}</span>
+                </div>
+                {isSubmitted && isCorrectOption && <span className="text-xl font-bold">✔</span>}
+                {isSubmitted && isSelected && !isCorrectOption && <span className="text-xl font-bold">✖</span>}
+              </button>
+            );
+          })}
         </div>
 
-        {/* Botão Confirmar */}
-        <div className="mt-8 pt-6 border-t border-white/10 flex justify-center">
+        {/* Botão Confirmar (Melhoria 27: Aviso Preventivo) */}
+        <div className="mt-8 pt-6 border-t border-white/10 flex flex-col items-center gap-2">
+          {!selectedAnswer && !isSubmitting && (
+            <span className="text-xs text-amber-300/80 font-medium animate-pulse">
+              ⚠️ Selecione uma das alternativas acima para confirmar.
+            </span>
+          )}
           <button
             onClick={() => handleSubmit(selectedAnswer)}
             disabled={!selectedAnswer || isSubmitting}

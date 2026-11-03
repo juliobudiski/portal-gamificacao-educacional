@@ -192,6 +192,7 @@ const ForumTab = ({ onReturn }) => {
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [topics, setTopics] = useState([]);
     const [selectedTopic, setSelectedTopic] = useState(null);
+    const [topicFilter, setTopicFilter] = useState('all'); // Melhoria 85: Filtro por status (all, resolved, open)
 
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -448,18 +449,53 @@ const ForumTab = ({ onReturn }) => {
                                     <FaPlus /> <span>Novo Tópico</span>
                                 </button>
                             </div>
+
+                            {/* ABAS DE FILTRO POR STATUS (Melhoria 85) */}
+                            <div className="flex items-center gap-2 mt-4">
+                                <span className="text-xs font-bold uppercase tracking-wider text-secondary-text mr-1">Filtrar:</span>
+                                {[
+                                    { id: 'all', label: 'Todos' },
+                                    { id: 'resolved', label: '🏆 Resolvidos' },
+                                    { id: 'open', label: '💬 Em Aberto' },
+                                ].map(tab => (
+                                    <button
+                                        key={tab.id}
+                                        type="button"
+                                        onClick={() => setTopicFilter(tab.id)}
+                                        className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${
+                                            topicFilter === tab.id
+                                                ? 'bg-accent-teal text-primary-bg border-accent-teal shadow-md'
+                                                : 'bg-secondary-bg/80 text-secondary-text border-border-color hover:border-accent-teal/50'
+                                        }`}
+                                    >
+                                        {tab.label}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
 
                         <div className="flex-grow overflow-y-auto space-y-3 pr-2 custom-scrollbar pb-2">
-                            {topics.length > 0 ? (
-                                topics.map(topic => <TopicListItem key={topic.id} topic={topic} onSelect={fetchTopicDetails} />)
-                            ) : (
-                                <div className="flex flex-col items-center justify-center h-48 text-secondary-text opacity-70 border-2 border-dashed border-border-color rounded-2xl bg-secondary-bg/30">
-                                    <FaComments className="text-5xl mb-3 text-accent-teal" />
-                                    <p className="text-lg font-bold text-primary-text">Nenhum tópico criado neste canal.</p>
-                                    <p className="text-sm mt-1">Clique no botão acima para iniciar a primeira discussão!</p>
-                                </div>
-                            )}
+                            {(() => {
+                                const filteredTopics = topics.filter(t => {
+                                    if (topicFilter === 'resolved') return Boolean(t.best_answer_id);
+                                    if (topicFilter === 'open') return !t.best_answer_id;
+                                    return true;
+                                });
+
+                                if (filteredTopics.length === 0) {
+                                    return (
+                                        <div className="flex flex-col items-center justify-center h-48 text-secondary-text opacity-70 border-2 border-dashed border-border-color rounded-2xl bg-secondary-bg/30">
+                                            <FaComments className="text-5xl mb-3 text-accent-teal" />
+                                            <p className="text-lg font-bold text-primary-text">Nenhum tópico encontrado.</p>
+                                            <p className="text-sm mt-1">Nenhuma discussão corresponde ao filtro selecionado.</p>
+                                        </div>
+                                    );
+                                }
+
+                                return filteredTopics.map(topic => (
+                                    <TopicListItem key={topic.id} topic={topic} onSelect={fetchTopicDetails} />
+                                ));
+                            })()}
                         </div>
                     </div>
                 );

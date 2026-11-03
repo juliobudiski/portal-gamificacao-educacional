@@ -32,9 +32,8 @@ def spin_roulette(user, progress, activity_id, is_retry=False):
     Tenta garantir que o prêmio ganho não seja repetido (ex: Avatares ou Títulos),
     girando novamente (re-roll) até 20 vezes nos bastidores.
     """
-    # --- [MODO TESTE] COOLDOWN DESATIVADO ---
-    # Para ativar o cooldown diário, remova a checagem is_retry
-    if not is_retry and progress.last_spin_date:
+    # Enforce Cooldown Diário (VULN-16): Impede bypass client-side de giros ilimitados
+    if progress.last_spin_date:
         last_spin = progress.last_spin_date.date()
         today = datetime.utcnow().date()
         if last_spin == today:

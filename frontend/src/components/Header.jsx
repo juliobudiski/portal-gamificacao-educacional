@@ -116,6 +116,7 @@ function Header({ handleTeacherTour, handleStudentTour, isActivityPage }) {
             <>
               <li className="relative">
                 <button
+                  id="tour-profile-menu"
                   onClick={() => {
                     setIsProfileMenuOpen(!isProfileMenuOpen);
                     setIsTeacherMenuOpen(false);
@@ -199,7 +200,7 @@ function Header({ handleTeacherTour, handleStudentTour, isActivityPage }) {
 
               {user?.role === 'professor' && (
                 <li className="relative">
-                  <button id="tour-profile-menu"
+                  <button id="tour-teacher-menu"
                     onClick={() => {
                       setIsTeacherMenuOpen(!isTeacherMenuOpen);
                       setIsStudentMenuOpen(false);
@@ -274,6 +275,65 @@ function Header({ handleTeacherTour, handleStudentTour, isActivityPage }) {
           )}
         </ul>
       </nav>
+
+      {/* BARRA DE NAVEGAÇÃO INFERIOR MÓVEL (Melhoria 73: Bottom Navigation Bar) */}
+      {isAuthenticated && (
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-secondary-bg/95 backdrop-blur-xl border-t border-border-color shadow-[0_-4px_20px_rgba(0,0,0,0.15)] px-4 py-2 flex justify-around items-center">
+          <Link
+            to="/"
+            className="flex flex-col items-center gap-1 text-[11px] font-bold text-secondary-text hover:text-accent-teal transition-colors"
+          >
+            <Home size={18} />
+            <span>Início</span>
+          </Link>
+
+          {user?.role === 'aluno' && (
+            <>
+              <Link
+                to="/aluno/dashboard"
+                className="flex flex-col items-center gap-1 text-[11px] font-bold text-secondary-text hover:text-accent-yellow transition-colors"
+              >
+                <LayoutDashboard size={18} />
+                <span>Missões</span>
+              </Link>
+              <Link
+                to="/aluno/entrar-turma"
+                className="flex flex-col items-center gap-1 text-[11px] font-bold text-secondary-text hover:text-accent-teal transition-colors"
+              >
+                <Users size={18} />
+                <span>Turmas</span>
+              </Link>
+            </>
+          )}
+
+          {user?.role === 'professor' && (
+            <>
+              <Link
+                to="/professor/dashboard"
+                className="flex flex-col items-center gap-1 text-[11px] font-bold text-secondary-text hover:text-accent-teal transition-colors"
+              >
+                <LayoutDashboard size={18} />
+                <span>Painel</span>
+              </Link>
+              <Link
+                to="/professor/criar-atividade"
+                className="flex flex-col items-center gap-1 text-[11px] font-bold text-accent-yellow transition-colors"
+              >
+                <PlusCircle size={18} />
+                <span>Criar</span>
+              </Link>
+            </>
+          )}
+
+          <Link
+            to="/perfil"
+            className="flex flex-col items-center gap-1 text-[11px] font-bold text-secondary-text hover:text-accent-purple transition-colors"
+          >
+            <User size={18} />
+            <span>Perfil</span>
+          </Link>
+        </div>
+      )}
     </header>
   );
 }

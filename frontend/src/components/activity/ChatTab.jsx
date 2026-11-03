@@ -22,6 +22,7 @@ const ChatTab = ({ onReturn }) => {
   const { showToast } = useToast(); // Usamos o toast para feedback amigável
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
+  const [typingUsers, setTypingUsers] = useState({});
   const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
 
@@ -72,14 +73,34 @@ const ChatTab = ({ onReturn }) => {
       ));
     });
 
+    socket.on('typing_status', (data) => {
+      if (data.user_id !== user.id) {
+        setTypingUsers(prev => ({ ...prev, [data.user_id]: data.user_name }));
+        setTimeout(() => {
+          setTypingUsers(prev => {
+            const next = { ...prev };
+            delete next[data.user_id];
+            return next;
+          });
+        }, 3000);
+      }
+    });
+
     socket.on('error_message', (data) => {
-      showToast(data.msg || "Erro ao enviar mensagem.", "error");
+      showToast(data.msg || "Por favor, mantenha a comunicação construtiva e amigável.", "warning");
     });
 
     return () => {
       socket.disconnect();
     };
   }, [activityId, user.token, user.id]);
+
+  const handleInputChange = (e) => {
+    setNewMessage(e.target.value);
+    if (socketRef.current) {
+      socketRef.current.emit('typing', { activity_id: activityId, user_id: user.id, user_name: user.name });
+    }
+  };
 
   const handleSendMessage = (e) => {
     e.preventDefault();
@@ -231,6 +252,14 @@ const ChatTab = ({ onReturn }) => {
       </div>
 
       <form onSubmit={handleSendMessage} className="flex-shrink-0 flex flex-col gap-2 relative z-10">
+        {/* Indicador de Digitação em Tempo Real (Melhoria 84) */}
+        {Object.keys(typingUsers).length > 0 && (
+          <div className="text-xs text-teal-400 italic px-2 animate-pulse flex items-center gap-1.5">
+            <span className="inline-block w-2 h-2 rounded-full bg-teal-400 animate-ping"></span>
+            {Object.values(typingUsers).join(', ')} {Object.keys(typingUsers).length === 1 ? 'está digitando...' : 'estão digitando...'}
+          </div>
+        )}
+
         <div className="flex justify-between text-[11px] font-bold px-2 uppercase tracking-wider">
           <span className="text-gray-500">{newMessage.length}/500</span>
           {newMessage.length >= 500 && <span className="text-red-400 animate-pulse">Limite atingido!</span>}
@@ -240,7 +269,7 @@ const ChatTab = ({ onReturn }) => {
           <input
             type="text"
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
+            onChange={handleInputChange}
             placeholder="Transmitir mensagem na rede..."
             maxLength={500}
             className={`flex-grow p-4 rounded-xl focus:outline-none 

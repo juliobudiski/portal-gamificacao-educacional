@@ -58,8 +58,8 @@ export const TEACHER_DASHBOARD_STEPS = [
         content: 'Veja quais professores estão engajando mais alunos na plataforma.',
     },
     {
-        target: '#tour-profile-menu',
-        content: 'Aqui ficam os atalhos.',
+        target: '#tour-teacher-menu',
+        content: 'Aqui ficam os atalhos rápidos do professor para turmas, atividades e métricas.',
     },
 
     {
@@ -86,7 +86,7 @@ export const ACTIVITY_SELECTION_STEPS = [
     },
     {
         target: '#tour-choose-scratch',
-        content: 'Ou escolha um modelo pronto. Clique em um template para continuar!',
+        content: 'Ou explore modelos prontos clicando aqui para abrir a galeria de templates!',
         hideFooter: true,
         spotlightClicks: true,
         placement: 'top',

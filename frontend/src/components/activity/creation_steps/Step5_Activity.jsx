@@ -8,6 +8,7 @@ import {
   FaStar, FaProjectDiagram, FaCodeBranch, FaUsers, FaComments, FaExclamationTriangle, FaInfoCircle
 } from 'react-icons/fa';
 import { useHelpModal } from "../../../context/HelpModalContext";
+import StepHelpButton from "../../common/StepHelpButton";
 import api from '../../../services/api';
 
 /**
@@ -252,13 +253,11 @@ function Step5_GameElements({ activityData, handleInputChange, setActivityData }
             O sistema analisou o perfil da sua turma e organizou os elementos abaixo para potencializar o engajamento.
           </p>
         </div>
-        <button
-          onClick={() => openHelp('elementos_jogos')}
-          className="group flex items-center justify-center w-12 h-12 rounded-full bg-primary-bg border border-border-color hover:border-accent-teal/50 hover:bg-accent-teal/10 transition-all duration-300 shadow-sm"
-          title="Ajuda sobre este passo"
-        >
-          <FaInfoCircle className="text-xl text-secondary-text group-hover:text-accent-teal transition-colors" />
-        </button>
+        <StepHelpButton 
+          contentKey="elementos_jogos" 
+          title="Mecânicas de Jogo" 
+          subtitle="Recomendações e affordances" 
+        />
       </div>
 
       {clusters.recommended.length > 0 && (

@@ -863,3 +863,40 @@ def delete_expired_drafts(days_old=7):
     
     db.session.commit()
     return deleted_count
+
+def log_activity_event_service(user_id, activity_id, event_type, details=None):
+    """
+    Registra um evento de atividade e aciona o motor de medalhas correspondente.
+    """
+    from flask import jsonify
+    from .medal_service import MedalService
+
+    try:
+        activity = Activity.query.get(activity_id)
+        if not activity:
+            return jsonify({"message": "Atividade não encontrada."}), 404
+
+        _log_system_event(
+            user_id=user_id,
+            action=event_type,
+            activity_id=activity_id,
+            details=details or {}
+        )
+
+        new_medals = []
+        try:
+            new_medals = MedalService.check_and_award_medals(
+                user_id=user_id,
+                activity_id=activity_id,
+                event_type=event_type
+            )
+        except Exception as e:
+            logger.warning(f"Falha ao avaliar medalhas para evento {event_type}: {str(e)}")
+
+        return jsonify({
+            "message": "Evento registrado com sucesso.",
+            "new_medals": new_medals or []
+        }), 200
+    except Exception as e:
+        logger.error(f"Erro ao registrar evento de atividade: {str(e)}", exc_info=True)
+        return jsonify({"message": f"Erro interno ao registrar evento: {str(e)}"}), 500

@@ -6,7 +6,7 @@ sanitização (prevenção de XSS) e com o AIService para moderação proativa
 de discurso de ódio.
 """
 from flask import current_app
-from ..models import db, ForumTopic, ForumPost, ForumCategory, TopicLike, PostLike
+from ..models import db, ForumTopic, ForumPost, ForumCategory, TopicLike, PostLike, Activity
 from ..utils.text_sanitizer import clean_text, censor_text, detect_prompt_injection
 from ..services.ai_service import ai_service
 from sqlalchemy import case
@@ -118,3 +118,30 @@ class ForumService:
         db.session.add(new_post)
         db.session.commit()
         return new_post.to_dict(), None, 201
+
+    @staticmethod
+    def set_best_answer_service(user_id, topic_id, post_id):
+        """
+        Marca uma resposta específica como a melhor resposta do tópico.
+        Permissão: Autor do tópico ou Professor dono da atividade correspondente.
+        """
+        user_id = int(user_id)
+        topic = ForumTopic.query.get(topic_id)
+        if not topic:
+            return None, {"message": "Tópico não encontrado."}, 404
+
+        post = ForumPost.query.get(post_id)
+        if not post or post.topic_id != topic.id:
+            return None, {"message": "Resposta não encontrada ou não pertence a este tópico."}, 404
+
+        activity = Activity.query.get(topic.activity_id)
+        is_topic_author = (topic.author_id == user_id)
+        is_activity_teacher = (activity and activity.professor_id == user_id)
+
+        if not (is_topic_author or is_activity_teacher):
+            return None, {"message": "Apenas o autor do tópico ou o professor da atividade podem eleger a melhor resposta."}, 403
+
+        topic.best_answer_id = post.id
+        db.session.commit()
+        return {"message": "Melhor resposta definida com sucesso!", "best_answer_id": post.id}, None, 200
+

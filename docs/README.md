@@ -63,11 +63,30 @@ docs/
 │   │   └── ADR-023-mvp-cosmetics-scope-cut.md # Definição de Escopo MVP e Feature Cut
 │   ├── c4_context_container_diagrams.md       # C4 Nível 1 (Contexto) e Nível 2 (Contêineres)
 │   ├── c4_component_hexagonal_backend.md      # C4 Nível 3 (Arquitetura Hexagonal: Portas & Adaptadores)
+│   ├── frontend_architecture.md               # Especificação Arquitetural e Componentes do Frontend
 │   ├── data_model_erd.md                      # Dicionário de dados e ERD Mermaid (32 tabelas)
 │   ├── contextual_recommendation_engine.md    # Motor de Recomendação Contextual (MDC/MUI/SAD)
 │   ├── ai_multi_model_fallback.md             # Cascata Multi-Modelo Gemini com tolerância a falhas
 │   ├── ai_draft_generation_pipeline.md        # Pipeline de IA e WebSockets (existente preservado)
 │   └── squad_meetings_ai_pipeline_review.md   # Atas das 10 reuniões técnicas da squad
+│
+├── frontend/                                  # 🖥️ DOCUMENTAÇÃO TÉCNICA E FUNCIONAL DO FRONTEND
+│   ├── README.md                              # Índice mestre e visão geral de 39 telas
+│   ├── public_and_auth_screens.md             # Telas Públicas, Autenticação, Onboarding e Perfil
+│   ├── student_experience.md                  # Área do Aluno: Dashboard, Atividades e Tabuleiro
+│   ├── teacher_authoring.md                   # Área do Professor: Wizard em 8 Etapas e Editores
+│   ├── admin_console.md                       # Console Administrativo, Telemetria e Gestão
+│   ├── components_and_design_system.md        # Design System, Temas, Contextos e Modais
+│   └── ui_ux_future_improvements_99.md        # Catálogo de 99 Melhorias Estratégicas de UI/UX
+│
+├── api/                                       # 🔌 ESPECIFICAÇÃO DE APIS REST & WEBSOCKETS
+│   ├── README.md                              # Índice geral das APIs, RBAC e WebSockets
+│   ├── api_auth.md                            # Autenticação JWT, Registro, OAuth e Health Check
+│   ├── api_activities.md                      # Gestão de Atividades, Wizard e Motor MDC
+│   ├── api_classes.md                         # Gestão de Turmas e Matrícula por Código
+│   ├── api_progress.md                        # Progresso no Tabuleiro e Roleta Diária
+│   ├── api_analytics_admin.md                 # Relatórios de Desempenho e Console de Admin
+│   └── api_content_and_social.md              # Editores de Conteúdo, Medalhas, Fórum e Chat
 │
 ├── backlog/                                   # 📋 BACKLOG ÁGIL & HISTÓRIAS BDD
 │   ├── README.md                              # Visão geral do backlog de produto e matriz geral
