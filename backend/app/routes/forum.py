@@ -173,12 +173,12 @@ def toggle_post_like(post_id):
         return jsonify({"message": "Like removido.", "liked": False}), 200
     else:
         # Se não existe, adiciona (curtir)
-        if not ForumPost.query.get(post_id):
+        if not db.session.get(ForumPost, post_id):
             return jsonify({"message": "Post não encontrado."}), 404
         new_like = PostLike(user_id=user_id, post_id=post_id)
         db.session.add(new_like)
         db.session.commit()
-        return jsonify({"message": "Like adicionado.", "liked": True}), 201# Temporary file to inject the logic
+        return jsonify({"message": "Like adicionado.", "liked": True}), 201
 import json
 from ..models import db, ActivityProgress, User
 

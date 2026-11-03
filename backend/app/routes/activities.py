@@ -41,7 +41,7 @@ def submit_answer(activity_id):
     """
     logger.info(f"[submit_answer] Iniciando submissão para atividade {activity_id}")
     current_user_id = get_jwt_identity()
-    user = User.query.get(current_user_id)
+    user = db.session.get(User, current_user_id)
     
     if user.role != 'aluno':
         return jsonify({"message": "Apenas alunos podem submeter respostas."}), 403
@@ -56,7 +56,7 @@ def submit_answer(activity_id):
 
         # Verifica o estado atual de progresso do aluno nesta atividade
         progress = ActivityProgress.query.filter_by(student_id=user.id, activity_id=activity_id).first()
-        activity = Activity.query.get(activity_id)
+        activity = db.session.get(Activity, activity_id)
 
         # Se for o primeiro acesso/resposta, inicializa o registro de progresso
         if not progress:

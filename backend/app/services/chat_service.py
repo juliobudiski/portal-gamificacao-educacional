@@ -124,7 +124,7 @@ class ChatService:
         conversation = Conversation.query.filter_by(activity_id=activity_id).first()
         if not conversation:
             # Cria a conversa caso o frontend envie mensagem antes de chamar a rota GET /messages
-            activity = Activity.query.get(activity_id)
+            activity = db.session.get(Activity, activity_id)
             if not activity:
                 return None, "Atividade não encontrada."
             conversation = Conversation(type='group', activity_id=activity.id)
@@ -149,7 +149,7 @@ class ChatService:
         Se a mensagem atingir o limite (ex: 5 denúncias de usuários diferentes),
         ela é ocultada do chat publicamente (auto-moderação).
         """
-        message = ChatMessage.query.get(msg_id)
+        message = db.session.get(ChatMessage, msg_id)
         if not message:
             return None, "Mensagem não encontrada.", 404
             

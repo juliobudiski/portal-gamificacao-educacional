@@ -4,7 +4,7 @@ Gerencia a lógica de gamificação vinculada ao aluno: cálculo dinâmico de XP
 rastreamento do avanço nos passos do tabuleiro (board) e posicionamento multiplayer
 em tempo real (quem está em qual casa).
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from flask import current_app
 from ..models import db, User, ActivityProgress, Activity, Enrollment, Team
 
@@ -166,16 +166,16 @@ class ProgressService:
         inicia o registro de progresso se for o primeiro acesso, calcula o nível e as 
         estatísticas finais para o frontend montar a tela da atividade.
         """
-        user = User.query.get(user_id)
+        user = db.session.get(User, user_id)
         if not user or user.role != 'aluno':
             raise Exception("Acesso negado: Apenas alunos podem ver o progresso.")
 
         progress = ActivityProgress.query.filter_by(student_id=user.id, activity_id=activity_id).first()
-        activity = Activity.query.get(activity_id)
+        activity = db.session.get(Activity, activity_id)
         if not activity:
             raise Exception("Atividade não encontrada.")
 
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         if activity.available_from and now < activity.available_from:
             raise Exception(f"Esta atividade estará disponível em {activity.available_from.strftime('%d/%m/%Y às %H:%M')}.")
         

@@ -254,7 +254,7 @@ def join_class():
     current_user_id = get_jwt_identity()
     current_app.logger.info(f"Usuário ID {current_user_id} tentando entrar em uma turma.")
 
-    user = User.query.get(current_user_id)
+    user = db.session.get(User, current_user_id)
 
     if not user or user.role != 'aluno':
         current_app.logger.warning(f"Acesso negado para ID {current_user_id} na entrada de turma. Role: {user.role if user else 'N/A'}")

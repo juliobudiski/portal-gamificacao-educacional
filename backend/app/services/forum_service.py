@@ -70,7 +70,7 @@ class ForumService:
                 "detail": "Discurso de ódio ou assédio detectado."
             }, 400
         
-        category = ForumCategory.query.get(category_id)
+        category = db.session.get(ForumCategory, category_id)
         if not category:
             return None, {"message": "Categoria não encontrada."}, 404
 
@@ -110,7 +110,7 @@ class ForumService:
                     "reason": ai_check.get('reason', 'Conteúdo ofensivo detectado.'),
                 }, 400
 
-        topic = ForumTopic.query.get(topic_id)
+        topic = db.session.get(ForumTopic, topic_id)
         if not topic:
             return None, {"message": "Tópico não encontrado."}, 404
 
@@ -126,15 +126,15 @@ class ForumService:
         Permissão: Autor do tópico ou Professor dono da atividade correspondente.
         """
         user_id = int(user_id)
-        topic = ForumTopic.query.get(topic_id)
+        topic = db.session.get(ForumTopic, topic_id)
         if not topic:
             return None, {"message": "Tópico não encontrado."}, 404
 
-        post = ForumPost.query.get(post_id)
+        post = db.session.get(ForumPost, post_id)
         if not post or post.topic_id != topic.id:
             return None, {"message": "Resposta não encontrada ou não pertence a este tópico."}, 404
 
-        activity = Activity.query.get(topic.activity_id)
+        activity = db.session.get(Activity, topic.activity_id)
         is_topic_author = (topic.author_id == user_id)
         is_activity_teacher = (activity and activity.professor_id == user_id)
 

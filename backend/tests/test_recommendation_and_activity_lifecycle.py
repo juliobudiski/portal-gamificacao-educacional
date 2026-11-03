@@ -183,7 +183,7 @@ class TestActivityCreationLifecycle:
         assert created_activity["isPublic"] is True
 
         # Valida que tags foram persistidas
-        stored_activity = Activity.query.get(created_activity["id"])
+        stored_activity = db_session.get(Activity, created_activity["id"])
         tags_names = [t.name for t in stored_activity.tags]
         assert "Arquitetura" in tags_names
         assert "TDD" in tags_names

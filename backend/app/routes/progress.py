@@ -11,7 +11,7 @@ from ..models import db, Title, UserUnlockedTitle, Purchase, StoreItem, User, Ac
 from sqlalchemy.orm import joinedload
 from flask_cors import cross_origin 
 progress_bp = Blueprint('progress', __name__)
-from datetime import datetime, timedelta # Adicione timedelta
+from datetime import datetime, timedelta, timezone
 import random # Adicione random
 from sqlalchemy.orm.attributes import flag_modified
 from ..services.medal_service import MedalService
@@ -82,7 +82,7 @@ def get_leaderboard(activity_id):
             # A linha abaixo foi removida na última versão, mas é bom garantir que não está mais aí
             # StoreItem.item_type != 'title', 
             Purchase.is_consumed == False,
-            ((Purchase.expires_at == None) | (Purchase.expires_at > datetime.utcnow()))
+            ((Purchase.expires_at == None) | (Purchase.expires_at > datetime.now(timezone.utc)))
         ).order_by(Purchase.purchase_date.desc()).all()
         
         
@@ -198,7 +198,7 @@ def get_analytics(activity_id):
 def purchase_store_item(activity_id):
     """Processa a compra de um item da loja por um aluno."""
     user_id = get_jwt_identity()
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
     
     if not user or user.role != 'aluno':
         return jsonify({"message": "Apenas alunos podem comprar itens."}), 403
@@ -208,7 +208,7 @@ def purchase_store_item(activity_id):
     if not item_id:
         return jsonify({"message": "O ID do item é obrigatório."}), 400
 
-    item = StoreItem.query.get(item_id)
+    item = db.session.get(StoreItem, item_id)
     progress = ActivityProgress.query.filter_by(student_id=user_id, activity_id=activity_id).first()
 
     if not item or not progress:
@@ -423,7 +423,7 @@ def update_activity_progress(activity_id):
 @jwt_required()
 def spin_roulette_for_activity(activity_id):
     user_id = get_jwt_identity()
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
     
     data = request.get_json() or {}
     is_retry = data.get('is_retry', False)
