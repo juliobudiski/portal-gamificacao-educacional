@@ -6,6 +6,7 @@ import {
   PlusCircle, Users, BarChart2, Award, LogOut, Info, Settings, ShieldCheck 
 } from 'lucide-react';
 import ThemeToggleButton from './ThemeToggleButton';
+import ConnectionStatusBadge from './common/ConnectionStatusBadge';
 
 /**
  * @component Header
@@ -274,6 +275,11 @@ function Header({ handleTeacherTour, handleStudentTour, isActivityPage }) {
               )}
             </>
           )}
+
+          {/* Status de Conexão Online/Offline (#97) */}
+          <li className="ml-1 sm:ml-2">
+            <ConnectionStatusBadge />
+          </li>
 
           {/* Botão de Alternar Modo Claro / Escuro no Cabeçalho Desktop */}
           <li className="ml-1 sm:ml-2">

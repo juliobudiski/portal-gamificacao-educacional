@@ -8,6 +8,7 @@ import backgroundImage from '../../assets/quiz-background.webp';
 import useAnalytics from '../../hooks/useAnalytics';
 import { useActivity } from '../../context/ActivityContext';
 import CodeBlockViewer from '../common/CodeBlockViewer';
+import useKeyboardShortcuts from '../../hooks/useKeyboardShortcuts';
 
 /**
  * @component QuizTab
@@ -208,28 +209,22 @@ const QuizTab = ({ content, gameElements, onAnswerCorrect, onComplete, isReplay 
     };
   }, [currentIndex, isFinished]);
 
-  // Atalhos de Teclado (Melhoria 96: 1-4 para alternativas, Enter para confirmar)
-  useEffect(() => {
-    const handleKeyDown = (e) => {
+  // Atalhos de Teclado (Melhoria 96: 1-4 para alternativas, Enter/Espaço para confirmar)
+  useKeyboardShortcuts({
+    onNumberKey: (num) => {
       if (isSubmitting || isFinished) return;
-      const key = e.key;
-
-      if (['1', '2', '3', '4'].includes(key)) {
-        const optionIdx = parseInt(key, 10) - 1;
-        const currentOptions = questions[currentIndex]?.options || [];
-        if (currentOptions[optionIdx]) {
-          setSelectedAnswer(currentOptions[optionIdx]);
-        }
-      } else if (key === 'Enter') {
-        if (selectedAnswer) {
-          handleSubmit(selectedAnswer);
-        }
+      const optionIdx = num - 1;
+      const currentOptions = questions[currentIndex]?.options || [];
+      if (currentOptions[optionIdx]) {
+        setSelectedAnswer(currentOptions[optionIdx]);
       }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentIndex, questions, selectedAnswer, isSubmitting, isFinished]);
+    },
+    onSpace: () => {
+      if (!isSubmitting && !isFinished && selectedAnswer) {
+        handleSubmit(selectedAnswer);
+      }
+    }
+  });
 
   if (isFinished) {
     return (

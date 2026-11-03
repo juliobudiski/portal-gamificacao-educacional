@@ -12,6 +12,7 @@ import WelcomeChecklistWidget from '../components/dashboard/WelcomeChecklistWidg
 import { useAuthOperations } from '../hooks/useAuthOperations';
 import { useTutorial } from '../context/TutorialContext';
 import { STUDENT_DASHBOARD_STEPS } from '../data/tutorialSteps';
+import SkeletonCard from '../components/common/SkeletonCard';
 
 const DAILY_TIPS = [
   "Divida problemas grandes em partes pequenas antes de começar a codificar.",
@@ -258,10 +259,14 @@ export default function StudentDashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-primary-bg flex items-center justify-center">
-        <div className="flex flex-col items-center">
-          <div className="w-16 h-16 border-4 border-accent-teal border-t-transparent rounded-full animate-spin"></div>
-          <p className="mt-4 text-secondary-text font-medium uppercase tracking-widest">Carregando Dados...</p>
+      <div className="min-h-screen bg-primary-bg p-6 max-w-7xl mx-auto space-y-8 animate-fade-in">
+        <div className="space-y-4">
+          <div className="h-10 bg-secondary-bg/60 rounded-2xl w-64 animate-pulse" />
+          <div className="h-5 bg-secondary-bg/40 rounded-xl w-96 animate-pulse" />
+        </div>
+        <div>
+          <h2 className="text-xl font-bold text-primary-text mb-4">Carregando Missões...</h2>
+          <SkeletonCard type="activity" count={3} />
         </div>
       </div>
     );

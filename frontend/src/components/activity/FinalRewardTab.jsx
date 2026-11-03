@@ -2,6 +2,7 @@
 import React, { useState, useContext } from 'react';
 import { FaTrophy, FaCheckCircle, FaSpinner, FaStar } from 'react-icons/fa';
 import { AuthContext } from '../../context/AuthContext'; // Importe para ter o token
+import FinalCelebrationModal from './FinalCelebrationModal';
 
 /**
  * @component FinalRewardTab
@@ -14,6 +15,7 @@ import { AuthContext } from '../../context/AuthContext'; // Importe para ter o t
  */
 const FinalRewardTab = ({ reward, activityId, onCollect, onReturnToBoard }) => {
     const [isCollecting, setIsCollecting] = useState(false);
+    const [showCelebration, setShowCelebration] = useState(false); // Melhoria 95 e 99: Celebração da trilha com baú dourado
     const [rating, setRating] = useState(0); // Estado para a nota (0 a 5)
     const [hover, setHover] = useState(null); // Estado para o efeito visual de passar o mouse
     const { user } = useContext(AuthContext); // Pega o token do contexto
@@ -48,13 +50,18 @@ const FinalRewardTab = ({ reward, activityId, onCollect, onReturnToBoard }) => {
                 await submitRating();
             }
 
-            // 2. Coleta a recompensa (XP, Moedas)
-            await onCollect();
+            // 2. Abre celebração com confetes e baú dourado (#95, #99)
+            setShowCelebration(true);
 
         } catch (error) {
             console.error("Falha no processo final:", error);
             setIsCollecting(false);
         }
+    };
+
+    const handleConfirmCelebration = async () => {
+        setShowCelebration(false);
+        await onCollect();
     };
 
     return (
@@ -115,6 +122,15 @@ const FinalRewardTab = ({ reward, activityId, onCollect, onReturnToBoard }) => {
                     </>
                 )}
             </button>
+
+            {/* Modal de Celebração de Conclusão de Trilha (#95, #99) */}
+            <FinalCelebrationModal
+                isOpen={showCelebration}
+                onClose={handleConfirmCelebration}
+                score={reward?.points || 100}
+                coins={reward?.coins || 50}
+                medalName={reward?.badgeName || 'Medalha do Explorador'}
+            />
         </div>
     );
 };

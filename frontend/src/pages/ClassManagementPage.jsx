@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import ConfirmationModal from '../components/ConfirmationModal';
+import ClassShareModal from '../components/common/ClassShareModal';
 
 /**
  * ClassListPage
@@ -17,6 +18,7 @@ function ClassListPage() {
     const [message, setMessage] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [copiedCode, setCopiedCode] = useState(null);
+    const [sharingModalClass, setSharingModalClass] = useState(null); // Modal completo de compartilhamento (Melhoria 82, 83)
     // Estado para controlar o Modal de Confirmação
     const [modalConfig, setModalConfig] = useState({
         isOpen: false,
@@ -320,28 +322,30 @@ function ClassListPage() {
                                                     </span>
                                                 </div>
 
-                                                <div className="flex items-center gap-1.5">
-                                                    {/* Botão Copiar com Feedback (Melhoria 82) */}
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleCopyCode(cls.enrollment_code)}
-                                                        className="px-2.5 py-1 rounded-lg bg-secondary-bg hover:bg-accent-teal/20 text-secondary-text hover:text-accent-teal text-xs font-bold border border-border-color transition-all"
-                                                        title="Copiar código para a área de transferência"
-                                                    >
-                                                        {copiedCode === cls.enrollment_code ? 'Copiado!' : 'Copiar'}
-                                                    </button>
+                                                    <div className="flex items-center gap-1.5">
+                                                        {/* Botão Copiar com Feedback (Melhoria 82) */}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleCopyCode(cls.enrollment_code)}
+                                                            className="px-2.5 py-1 rounded-lg bg-secondary-bg hover:bg-accent-teal/20 text-secondary-text hover:text-accent-teal text-xs font-bold border border-border-color transition-all"
+                                                            title="Copiar código para a área de transferência"
+                                                        >
+                                                            {copiedCode === cls.enrollment_code ? 'Copiado!' : 'Copiar'}
+                                                        </button>
 
-                                                    {/* Compartilhar WhatsApp (Melhoria 83) */}
-                                                    <a
-                                                        href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`Olá! Participe da nossa turma "${cls.name}" no Gamefica.Edu com o código: ${cls.enrollment_code}`)}`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="px-2 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 text-xs font-bold border border-emerald-500/30 transition-all"
-                                                        title="Compartilhar no WhatsApp"
-                                                    >
-                                                        WhatsApp
-                                                    </a>
-                                                </div>
+                                                        {/* Modal de Compartilhamento Direto e WhatsApp (Melhorias 82 e 83) */}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setSharingModalClass(cls)}
+                                                            className="px-2 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 text-xs font-bold border border-emerald-500/30 transition-all flex items-center gap-1"
+                                                            title="Compartilhar Turma (WhatsApp, Google Classroom, Copiar)"
+                                                        >
+                                                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                                                            </svg>
+                                                            Compartilhar
+                                                        </button>
+                                                    </div>
                                             </div>
                                         </div>
                                     )}
@@ -415,6 +419,14 @@ function ClassListPage() {
                     </div>
                 )}
             </div>
+
+            {/* Modal de Compartilhamento da Turma (Melhorias 82 e 83) */}
+            <ClassShareModal
+                isOpen={Boolean(sharingModalClass)}
+                onClose={() => setSharingModalClass(null)}
+                className={sharingModalClass?.name}
+                classCode={sharingModalClass?.enrollment_code}
+            />
 
             <ConfirmationModal
                 isOpen={modalConfig.isOpen}

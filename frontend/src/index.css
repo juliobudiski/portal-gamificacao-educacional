@@ -274,13 +274,24 @@ html[data-colorblind="tritanopia"] {
 /* Pausa Universal de Animações (Melhoria 72 & 68) */
 html[data-animations-paused="true"] *,
 html[data-animations-paused="true"] *::before,
-html[data-animations-paused="true"] *::after,
-@media (prefers-reduced-motion: reduce) {
+html[data-animations-paused="true"] *::after {
   animation-play-state: paused !important;
   animation-duration: 0.01ms !important;
   animation-iteration-count: 1 !important;
   transition-duration: 0.01ms !important;
   scroll-behavior: auto !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-play-state: paused !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Transição Suave de Tema Claro/Escuro (Melhoria 98) */
@@ -292,12 +303,22 @@ html:not(.dark) body {
 }
 
 /* Áreas de Toque Mínimas de 44x44px em Elementos Interativos (Melhoria 71) */
-button,
-a,
-input[type="button"],
-input[type="submit"] {
-  min-height: 38px;
-  min-width: 38px;
+.touch-target-44 {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Prevenção de Zoom Involuntário em iOS para Inputs Móveis (Melhoria 79) */
+@media screen and (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="search"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
 }
 
 /* Scrollbars Modernas e Harmonizadas para Claro e Escuro */

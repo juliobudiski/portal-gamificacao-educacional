@@ -56,6 +56,7 @@ import { ACTIVITY_SELECTION_STEPS } from './data/tutorialSteps';
 import useKonamiCode from './hooks/useKonamiCode';
 import HelpFloatingWidget from './components/common/HelpFloatingWidget';
 import AccessibilityBar from './components/common/AccessibilityBar';
+import BottomNavBar from './components/common/BottomNavBar';
 
 // --- 2. COMPONENTES AUXILIARES ---
 const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === 'true';
@@ -432,6 +433,7 @@ function AppContent() {
 
       {!isActivityPage && <AccessibilityBar />}
       {!isActivityPage && <HelpFloatingWidget />}
+      {!isActivityPage && <BottomNavBar />}
       {!isActivityPage && <Footer />}
     </div>
   );
