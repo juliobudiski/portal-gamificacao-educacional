@@ -146,8 +146,8 @@ flowchart LR
 1. **Ambiente Local e Branches Dedicadas:**
    - Nenhuma tarefa de investigação, refatoração ou testes deve operar na branch `main`.
    - Todas as modificações devem ser confinadas à branch de feature/desenvolvimento ativa (ex.: `feature/squad-improvements-bdd-tdd`).
-2. **Proibição de Deploys Não Autorizados:**
-   - Agentes estão proibidos de executar comandos de push para remotos de produção ou disparar webhooks de deploy sem revisão humana explícita.
+2. **Deploy e Operações em Produção (VPS):**
+   - Agentes podem executar rotinas de deploy, sincronização de bundles e reinício de serviços na VPS quando solicitados explicitamente pelo usuário, utilizando as credenciais e túneis SSH configurados na máquina local.
 3. **Hermeticidade dos Testes:**
    - Testes não devem acessar serviços externos de produção (bancos Neon de produção, contas SMTP reais). Utilizar bancos de teste SQLite em memória ou instâncias efêmeras locais.
 4. **Blindagem e Confinamento de Diretórios (Path Jail):**
