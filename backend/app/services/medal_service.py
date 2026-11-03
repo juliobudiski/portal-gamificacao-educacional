@@ -43,7 +43,7 @@ class ExploradorBadgeStrategy(BaseBadgeStrategy):
         if not activity_id:
             return False
         progress = ActivityProgress.query.filter_by(student_id=user.id, activity_id=activity_id).first()
-        activity = Activity.query.get(activity_id)
+        activity = db.session.get(Activity, activity_id)
 
         if not all([progress, activity, activity.gamification_design]):
             return False
@@ -171,7 +171,7 @@ class MedalService:
         Garante Idempotência absoluta e isolamento transacional para nunca quebrar o fluxo principal.
         """
         try:
-            user = User.query.get(user_id)
+            user = db.session.get(User, user_id)
             if not user:
                 return []
 

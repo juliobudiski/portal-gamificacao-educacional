@@ -5,7 +5,7 @@ Inclui a Roda da Fortuna diária (prêmios fixos) e a Slot Machine (Caça-Níque
 onde o aluno pode apostar suas próprias moedas. Usa geração randômica segura (secrets).
 """
 import secrets
-from datetime import datetime
+from datetime import datetime, timezone
 from app.models import db, Title, UserUnlockedTitle, RouletteWin, SlotWin
 from sqlalchemy.orm.attributes import flag_modified
 
@@ -35,7 +35,7 @@ def spin_roulette(user, progress, activity_id, is_retry=False):
     # Enforce Cooldown Diário (VULN-16): Impede bypass client-side de giros ilimitados
     if progress.last_spin_date:
         last_spin = progress.last_spin_date.date()
-        today = datetime.utcnow().date()
+        today = datetime.now(timezone.utc).date()
         if last_spin == today:
             return {"error": "Você já girou a roleta hoje! Volte amanhã.", "status": 400}
 
@@ -104,7 +104,7 @@ def spin_roulette(user, progress, activity_id, is_retry=False):
         db.session.add(new_unlock)
         progress.equipped_title_id = title_obj.id
 
-    progress.last_spin_date = datetime.utcnow()
+    progress.last_spin_date = datetime.now(timezone.utc)
     new_win = RouletteWin(user_id=user.id, activity_id=activity_id, prize_label=prize['label'])
     db.session.add(new_win)
     db.session.commit()

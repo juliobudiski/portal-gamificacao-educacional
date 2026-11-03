@@ -9,8 +9,8 @@ def user_lookup_callback(_jwt_header, jwt_data):
     identity = jwt_data.get("sub")
     if not identity:
         return None
-    from ..models import User
-    return User.query.get(identity)
+    from ..models import db, User
+    return db.session.get(User, identity)
 
 @jwt.invalid_token_loader
 def invalid_token_callback(reason):

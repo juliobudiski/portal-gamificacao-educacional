@@ -140,7 +140,7 @@ def create_activity(user, data):
     activity = None
     
     if existing_id:
-        activity = Activity.query.get(existing_id)
+        activity = db.session.get(Activity, existing_id)
         # Verifica se existe e se pertence ao professor
         if activity and activity.professor_id == user.id:
             logger.info(f"Atualizando rascunho existente ID {activity.id} para oficial.")
@@ -252,7 +252,7 @@ def update_activity_structure(user, activity_id, data):
 
 def update_activity(user, activity_id, data):
     """Atualiza uma atividade existente."""
-    activity = Activity.query.get(activity_id)
+    activity = db.session.get(Activity, activity_id)
 
     if not activity:
         return {"message": "Atividade não encontrada"}, 404
@@ -750,7 +750,7 @@ def get_user_drafts(user_id):
 
 def publish_draft(user, activity_id, data):
     """Finaliza o rascunho transformando-o em atividade oficial."""
-    activity = Activity.query.get(activity_id)
+    activity = db.session.get(Activity, activity_id)
     if not activity or activity.professor_id != user.id:
         return {"message": "Rascunho não encontrado."}, 404
         
@@ -872,7 +872,7 @@ def log_activity_event_service(user_id, activity_id, event_type, details=None):
     from .medal_service import MedalService
 
     try:
-        activity = Activity.query.get(activity_id)
+        activity = db.session.get(Activity, activity_id)
         if not activity:
             return jsonify({"message": "Atividade não encontrada."}), 404
 

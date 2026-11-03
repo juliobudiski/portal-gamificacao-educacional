@@ -160,7 +160,7 @@ class TestGameElementsPerspectives:
         activity_id = activity_data["id"]
 
         # 2. Verifica se as entidades relacionais foram sincronizadas corretamente
-        activity = Activity.query.get(activity_id)
+        activity = db_session.get(Activity, activity_id)
         assert activity is not None
         assert activity.professor_id == prof.id
 
@@ -182,7 +182,7 @@ class TestGameElementsPerspectives:
         # 3. Publicação do rascunho
         res_publish = client.post(f"/api/activities/{activity_id}/publish", json={}, headers=prof_headers)
         assert res_publish.status_code == 200
-        assert Activity.query.get(activity_id).is_draft is False
+        assert db_session.get(Activity, activity_id).is_draft is False
 
     def test_student_and_teacher_game_elements_interaction(
         self, client, db_session, setup_environment
