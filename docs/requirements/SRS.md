@@ -152,6 +152,13 @@ O GamificaEdu provê:
 - **Saídas:** Estrutura completa da atividade gerada (narrativa, passos, quizzes e gabarito) pronta para revisão no Wizard.
 - **Prioridade:** Importante (Should Have).
 
+### [RF-16] Central de Documentação Docente e FAQ Contextual Pesquisável
+- **Descrição:** O sistema deve prover aos docentes e administradores autenticados uma Central de Conhecimento e FAQ estruturada segundo o framework Diátaxis (inspirada no *Overleaf Learn*), apresentando árvore taxonômica de módulos, leitor rico com sumário âncora (*On This Page*), busca instantânea por palavras-chave/sinônimos (`Ctrl+K`), *deep-linking* contextual a partir dos modais de ajuda do Wizard e mecanismo de micro-feedback de utilidade por artigo.
+- **Entradas:** Navegação por categoria/artigo (`sectionSlug`, `articleSlug`), consulta textual de busca, filtros de FAQ e votos de utilidade (`helpful: true | false`).
+- **Processamento:** Resolução determinística no motor de índice invertido client-side (`TeacherDocsSearchEngine`), sanitização anti-PII/LGPD da consulta de busca e despacho assíncrono de telemetria científica via `EventLog`.
+- **Saídas:** Artigo ou resposta de FAQ renderizado em 3 colunas com destaque de trechos relevantes, links acionáveis para fluxos da plataforma e confirmação de voto registrado.
+- **Prioridade:** Importante (Should Have).
+
 ---
 
 ## 4. Requisitos Não-Funcionais (RNF) — ISO/IEC 25010
@@ -168,6 +175,7 @@ O GamificaEdu provê:
 | **[RNF-08]** | **Manutenibilidade & Arquitetura** | O backend deve seguir estritamente o padrão de Arquitetura Hexagonal (Ports & Adapters) e Application Factory, separando regras de domínio de adaptadores de infraestrutura e frameworks. |
 | **[RNF-09]** | **Usabilidade e Acessibilidade** | A interface frontend deve ser responsiva (desktop e dispositivos móveis) e seguir diretrizes de contraste e navegabilidade por teclado baseadas no padrão WCAG 2.1 nível AA. |
 | **[RNF-10]** | **Testabilidade & CI/CD** | 100% dos requisitos funcionais devem possuir testes herméticos automatizados (Pytest/Jest), com gates de qualidade obrigatórios bloqueando deploys na branch `main` caso haja falhas. |
+| **[RNF-11]** | **Busca Local Instantânea & Ergonomia Documental** | O motor de busca da Central de Documentação Docente deve executar consultas textuais normalizadas em tempo inferior a 16 ms no cliente sem bloquear a thread principal, isolado via *code-splitting* (`React.lazy`) e sem risco de ReDoS ou vazamento de PII em telemetria. |
 
 ---
 

@@ -1,6 +1,6 @@
 # Registro de Decisões de Arquitetura (ADRs)
 
-Este catálogo consolida as **23 Decisões de Arquitetura (ADRs)** tomadas no ciclo evolutivo do **Portal GamificaEdu**, abrangendo decisões de backend, dados relacionais, frontend reativo, algoritmos de recomendação contextual e infraestrutura em nuvem.
+Este catálogo consolida as **24 Decisões de Arquitetura (ADRs)** tomadas no ciclo evolutivo do **Portal GamificaEdu**, abrangendo decisões de backend, dados relacionais, frontend reativo, algoritmos de recomendação contextual e infraestrutura em nuvem.
 
 | ID | Título da Decisão | Categoria | Status | Data |
 |---|---|---|---|---|
@@ -27,11 +27,12 @@ Este catálogo consolida as **23 Decisões de Arquitetura (ADRs)** tomadas no ci
 | [ADR-021](ADR-021-multi-model-gemini-fallback.md) | Estratégia Multi-Modelo com Fallback de Cotas no Google Gemini | Infraestrutura e Ferramentas | `Aceito` | 2025-12-05 |
 | [ADR-022](ADR-022-render-neon-cloud-stack.md) | Stack de Produção Cloud: Vercel, Render e Neon PostgreSQL | Infraestrutura e Ferramentas | `Aceito` | 2026-01-27 |
 | [ADR-023](ADR-023-mvp-cosmetics-scope-cut.md) | Definição de Escopo MVP: Foco em Cosméticos e Simplificação de Regras | Gamificação e Regras de Negócio | `Aceito` | 2026-01-27 |
+| [ADR-024](ADR-024-docs-as-code-teacher-knowledge-hub.md) | Arquitetura Docs-as-Code e Índice Invertido Client-Side para Central Docente | Frontend, UX e Conhecimento | `Aceito` | 2026-11-25 |
 
 ---
 ## Distribuição por Domínio Técnico
 - **Backend e Persistência:** ADR-001, ADR-002, ADR-003, ADR-006, ADR-007
-- **Frontend e Experiência do Usuário (UX):** ADR-008, ADR-009, ADR-010, ADR-011, ADR-012, ADR-013
+- **Frontend e Experiência do Usuário (UX):** ADR-008, ADR-009, ADR-010, ADR-011, ADR-012, ADR-013, ADR-024
 - **Gamificação e Regras de Negócio:** ADR-004, ADR-005, ADR-017, ADR-018, ADR-019, ADR-023
 - **Comunicação Social e Redes:** ADR-014
 - **Análise de Dados e Telemetria:** ADR-015, ADR-016

@@ -1,9 +1,9 @@
 // frontend/src/App.jsx
 
 // --- 1. IMPORTAÇÕES ---
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, Suspense, lazy } from 'react';
 import PropTypes from 'prop-types';
-import { Routes, Route, Link, useNavigate, Outlet } from 'react-router-dom';
+import { Routes, Route, Link, useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import useAnalytics from './hooks/useAnalytics';
 import PrivateRoute from './components/PrivateRoute';
@@ -57,6 +57,9 @@ import useKonamiCode from './hooks/useKonamiCode';
 import HelpFloatingWidget from './components/common/HelpFloatingWidget';
 import AccessibilityBar from './components/common/AccessibilityBar';
 import BottomNavBar from './components/common/BottomNavBar';
+import DocsSearchModal from './components/docs/DocsSearchModal';
+
+const TeacherDocsPage = lazy(() => import('./pages/TeacherDocsPage'));
 
 // --- 2. COMPONENTES AUXILIARES ---
 const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === 'true';
@@ -110,16 +113,37 @@ GeolocationPrompt.propTypes = {
 function AppContent() {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
+  const routerLocation = useLocation();
   const { logEvent } = useAnalytics('session', user?.token);
   const { startTour } = useTutorial();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isTeacherMenuOpen, setIsTeacherMenuOpen] = useState(false);
   const [isStudentMenuOpen, setIsStudentMenuOpen] = useState(false);
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
+  const [isGlobalDocsSearchOpen, setIsGlobalDocsSearchOpen] = useState(false);
   const locationRequestedRef = useRef(false);
   const checkRunRef = useRef(false);
   const hasRegisteredHitRef = useRef(false); // NOVO: Ref para controle de hit global
   const [loadingAuth, setLoadingAuth] = useState(true); // Começa true até a verificação inicial
+
+  const canAccessTeacherDocs = Boolean(
+    isAuthenticated && (user?.role === 'professor' || user?.role === 'admin')
+  );
+
+  // Atalho Global Ctrl+K / Cmd+K para professores/admins fora da página de documentação (onde já há modal local)
+  useEffect(() => {
+    if (!canAccessTeacherDocs) return;
+    if (routerLocation.pathname.startsWith('/professor/documentacao')) return;
+
+    const handleGlobalDocsShortcut = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsGlobalDocsSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleGlobalDocsShortcut);
+    return () => window.removeEventListener('keydown', handleGlobalDocsShortcut);
+  }, [canAccessTeacherDocs, routerLocation.pathname]);
 
   // Easter Egg: Konami Code
   const isMatrixMode = useKonamiCode('exevo gran mas vis');
@@ -147,7 +171,7 @@ function AppContent() {
 
   // --- LÓGICA DE LAYOUT IMERSIVO SIMPLIFICADA ---
   // Verifica APENAS se é uma página de atividade jogável (/activities/ID)
-  const isActivityPage = /^\/activities\/\d+/.test(location.pathname);
+  const isActivityPage = /^\/activities\/\d+/.test(routerLocation.pathname);
 
   const closeAllMenus = () => {
     setIsProfileMenuOpen(false);
@@ -406,6 +430,25 @@ function AppContent() {
             <Route path="/professor/desempenho-alunos" element={<StudentPerformancePage />} />
           </Route>
 
+          <Route element={<PrivateRoute allowedRoles={['professor', 'admin']} />}>
+            <Route
+              path="/professor/documentacao"
+              element={
+                <Suspense fallback={<div className="py-16 text-center text-secondary-text font-semibold">Carregando Central de Documentação...</div>}>
+                  <TeacherDocsPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/professor/documentacao/:categorySlug/:articleSlug"
+              element={
+                <Suspense fallback={<div className="py-16 text-center text-secondary-text font-semibold">Carregando capítulo...</div>}>
+                  <TeacherDocsPage />
+                </Suspense>
+              }
+            />
+          </Route>
+
           <Route element={<PrivateRoute allowedRoles={['aluno']} />}>
             <Route path="/aluno/dashboard" element={<StudentDashboardPage />} />
             <Route path="/aluno/entrar-turma" element={<JoinClassPage />} />
@@ -431,8 +474,16 @@ function AppContent() {
         </Routes>
       </main>
 
+      {canAccessTeacherDocs && (
+        <DocsSearchModal
+          isOpen={isGlobalDocsSearchOpen}
+          onClose={() => setIsGlobalDocsSearchOpen(false)}
+          onLogTelemetry={(action, details) => logEvent(action, details, 'teacher_docs')}
+        />
+      )}
+
       {!isActivityPage && <AccessibilityBar />}
-      {!isActivityPage && <HelpFloatingWidget />}
+      {!isActivityPage && <HelpFloatingWidget onOpenDocsSearch={() => setIsGlobalDocsSearchOpen(true)} />}
       {!isActivityPage && <BottomNavBar />}
       {!isActivityPage && <Footer />}
     </div>

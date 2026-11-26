@@ -116,3 +116,20 @@ Quando o professor clica para editar o conteúdo interno de um nó do tabuleiro,
   - Tabela consolidada com nome do aluno, e-mail, status da atividade, pontuação obtida, acurácia e total de tentativas em quizzes.
   - Filtros por turma, atividade e busca textual por estudante.
   - Indicadores globais da turma: média de pontuação, taxa de conclusão e aproveitamento geral.
+
+---
+
+## 6. Central de Documentação Docente & FAQ Estilo Overleaf Learn (`TeacherDocsPage.jsx`)
+
+- **Rotas:** `/professor/documentacao` e `/professor/documentacao/:categorySlug/:articleSlug`
+- **Acesso (RBAC):** Privado (`allowedRoles={['professor', 'admin']}`), carregado sob demanda via `React.lazy`.
+- **Rastreabilidade:** `US-26`, `RF-16`, `RNF-11` e [`ADR-024`](../architecture/adrs/ADR-024-docs-as-code-teacher-knowledge-hub.md).
+- **Arquitetura de Domínio (`frontend/src/domain/teacherDocs/`):**
+  - `teacherDocsCatalog.js`: Catálogo *Docs-as-Code* estruturado segundo o framework **Diátaxis** (*Tutorials, How-To Guides, Explanation, Reference & FAQ*) com 6 módulos temáticos, capítulos detalhados e FAQs categorizadas.
+  - `TeacherDocsSearchEngine.js`: Motor orientado a objetos de índice invertido client-side (`< 16ms`), imune a ReDoS, tolerante a ausência de acentos e integrado ao sanitizador LGPD (`sanitizeSearchQueryForTelemetry`).
+- **4 Pontos de Entrada Omnichannel:**
+  1. Menu superior **Professor -> Documentação & FAQ** em [`Header.jsx`](../../frontend/src/components/Header.jsx);
+  2. Card dedicado no **Painel do Professor** ([`TeacherDashboardPage.jsx`](../../frontend/src/pages/TeacherDashboardPage.jsx));
+  3. CTA destacado no [`HelpFloatingWidget.jsx`](../../frontend/src/components/common/HelpFloatingWidget.jsx) e Command Palette global **`Ctrl+K` / `Cmd+K`** ([`DocsSearchModal.jsx`](../../frontend/src/components/docs/DocsSearchModal.jsx));
+  4. Botão contextual *"Ler na Documentação Completa"* nos 9 modais do Wizard ([`HelpModal.jsx`](../../frontend/src/components/HelpModal.jsx)), abrindo em nova aba durante edições para preservar rascunhos.
+

@@ -6,6 +6,7 @@ import {
     Zap, Lightbulb, CheckCircle2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import PropTypes from 'prop-types';
 import { useTutorial } from '../../context/TutorialContext';
 import { useAuth } from '../../context/AuthContext';
 import { 
@@ -24,7 +25,7 @@ import {
  * - Acesso direto ao canal de Suporte & Fale Conosco (/contact) com pré-preenchimento.
  * - Posicionamento responsivo sem sobreposição (bottom-20 em mobile e bottom-6 em desktop).
  */
-export default function HelpFloatingWidget() {
+export default function HelpFloatingWidget({ onOpenDocsSearch }) {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [activeTab, setActiveTab] = useState('faq'); // 'faq' | 'shortcuts' | 'tours' | 'support'
@@ -34,6 +35,7 @@ export default function HelpFloatingWidget() {
 
     const { startTour } = useTutorial();
     const { user, isAuthenticated } = useAuth();
+    const isTeacherOrAdmin = Boolean(isAuthenticated && (user?.role === 'professor' || user?.role === 'admin'));
 
     // Fecha ao pressionar ESC ou clicar fora do widget
     useEffect(() => {
@@ -236,6 +238,37 @@ export default function HelpFloatingWidget() {
                         {/* ABA 1: PERGUNTAS FREQUENTES (FAQ) */}
                         {activeTab === 'faq' && (
                             <div className="space-y-3">
+                                {isTeacherOrAdmin && (
+                                    <div className="p-3 rounded-2xl bg-gradient-to-r from-accent-teal/15 to-accent-purple/15 border border-accent-teal/40 space-y-2">
+                                        <div className="flex items-center justify-between gap-2">
+                                            <span className="text-xs font-extrabold text-primary-text flex items-center gap-1.5">
+                                                <BookOpen size={14} className="text-accent-teal" />
+                                                Manual Completo &amp; FAQ Docente
+                                            </span>
+                                            {onOpenDocsSearch && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setIsOpen(false);
+                                                        onOpenDocsSearch();
+                                                    }}
+                                                    className="px-2 py-0.5 rounded bg-secondary-bg border border-border-color text-[10px] font-mono font-bold text-accent-teal hover:border-accent-teal"
+                                                    title="Busca rápida na documentação (Ctrl+K)"
+                                                >
+                                                    Ctrl+K
+                                                </button>
+                                            )}
+                                        </div>
+                                        <Link
+                                            to="/professor/documentacao"
+                                            onClick={() => setIsOpen(false)}
+                                            className="w-full py-2 px-3 rounded-xl bg-accent-teal text-gray-950 text-xs font-extrabold flex items-center justify-center gap-1.5 hover:bg-accent-teal/90 transition-all shadow-sm"
+                                        >
+                                            Abrir Central de Documentação Completa <ExternalLink size={13} />
+                                        </Link>
+                                    </div>
+                                )}
+
                                 {/* Campo de Busca */}
                                 <div className="relative">
                                     <Search className="absolute left-3.5 top-2.5 text-secondary-text" size={16} />
@@ -398,6 +431,21 @@ export default function HelpFloatingWidget() {
                                                             <div>
                                                                 <span className="text-xs font-bold text-primary-text block">Criar Nova Atividade</span>
                                                                 <span className="text-[10px] text-secondary-text">Quizzes, narrativas e tabuleiros</span>
+                                                            </div>
+                                                        </div>
+                                                        <ExternalLink size={14} className="text-secondary-text group-hover:text-accent-teal" />
+                                                    </Link>
+
+                                                    <Link
+                                                        to="/professor/documentacao"
+                                                        onClick={() => setIsOpen(false)}
+                                                        className="flex items-center justify-between p-3 rounded-xl bg-primary-bg/70 hover:bg-accent-teal/10 border border-border-color hover:border-accent-teal/40 transition-all group"
+                                                    >
+                                                        <div className="flex items-center gap-2.5">
+                                                            <BookOpen size={18} className="text-accent-purple" />
+                                                            <div>
+                                                                <span className="text-xs font-bold text-primary-text block">Documentação &amp; FAQ Docente</span>
+                                                                <span className="text-[10px] text-secondary-text">Manuais passo a passo estilo Overleaf</span>
                                                             </div>
                                                         </div>
                                                         <ExternalLink size={14} className="text-secondary-text group-hover:text-accent-teal" />
@@ -569,4 +617,8 @@ export default function HelpFloatingWidget() {
         </aside>
     );
 }
+
+HelpFloatingWidget.propTypes = {
+    onOpenDocsSearch: PropTypes.func
+};
 

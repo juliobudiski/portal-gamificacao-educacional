@@ -16,6 +16,7 @@ Compreende o assistente (Wizard) de 8 etapas no padrão Container/Presentational
 
 - [[US-03-wizard-criacao-atividades-8-etapas.md]]
 - [[US-04-motor-recomendacao-contextual-mrc.md]]
+- [[US-26-central-documentacao-e-faq-professor.md]]
 
 ---
 
