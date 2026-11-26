@@ -1,6 +1,9 @@
 import React, { useEffect } from 'react';
-import { FaTimes, FaLightbulb } from 'react-icons/fa'; // Ícones para fechar e ilustrar ajuda
+import PropTypes from 'prop-types';
+import { Link, useLocation } from 'react-router-dom';
+import { FaTimes, FaLightbulb, FaExternalLinkAlt, FaBookOpen } from 'react-icons/fa'; // Ícones para fechar e ilustrar ajuda
 import { helpContent } from '../data/helpContent';
+import { teacherDocsEngine } from '../domain/teacherDocs';
 
 /**
  * @component HelpModal
@@ -10,10 +13,15 @@ import { helpContent } from '../data/helpContent';
  * Architectural Decisions:
  * - Content Decoupling: Imports `helpContent` dictionary statically, separating large text blocks from the UI layout structure.
  * - Side Effects Management: Uses `useEffect` strictly for DOM/Window manipulation, cleaning up on unmount to prevent memory leaks.
+ * - Deep-Linking to Teacher Docs (US-26): Resolves `contentKey` against `WIZARD_HELP_TO_DOCS_MAP` and opens in a new tab when inside the Wizard/Editor to protect unsaved draft state.
  */
 const HelpModal = ({ isOpen, contentKey, onClose }) => {
+    const location = useLocation();
     // Se não estiver aberto ou não tiver chave válida, não renderiza nada no DOM
     const data = contentKey ? helpContent[contentKey] : null;
+    const docsDeepLink = contentKey ? teacherDocsEngine.resolveWizardHelpLink(contentKey) : null;
+    const isInsideEditorOrWizard =
+        location.pathname.includes('/criar-atividade') || location.pathname.includes('/edit');
 
     // Fecha com a tecla ESC
     useEffect(() => {
@@ -103,8 +111,35 @@ const HelpModal = ({ isOpen, contentKey, onClose }) => {
                     </div>
                 </div>
 
-                {/* Rodapé */}
-                <div className="px-6 py-5 bg-primary-bg/50 border-t border-border-color rounded-b-xl flex justify-end">
+                {/* Rodapé com Deep-Link Contextual para a Documentação Docente (US-26) */}
+                <div className="px-6 py-5 bg-primary-bg/50 border-t border-border-color rounded-b-xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                    {docsDeepLink ? (
+                        isInsideEditorOrWizard ? (
+                            <a
+                                href={docsDeepLink.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold bg-accent-purple/15 hover:bg-accent-purple/25 text-accent-purple border border-accent-purple/30 transition-all"
+                                title={`Abre "${docsDeepLink.label}" em nova aba sem perder seu rascunho`}
+                            >
+                                <FaBookOpen className="w-3.5 h-3.5" />
+                                <span>Ler na Documentação Completa</span>
+                                <FaExternalLinkAlt className="w-3 h-3 opacity-80" />
+                            </a>
+                        ) : (
+                            <Link
+                                to={docsDeepLink.url}
+                                onClick={onClose}
+                                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold bg-accent-purple/15 hover:bg-accent-purple/25 text-accent-purple border border-accent-purple/30 transition-all"
+                            >
+                                <FaBookOpen className="w-3.5 h-3.5" />
+                                <span>Ler na Documentação Completa</span>
+                            </Link>
+                        )
+                    ) : (
+                        <div />
+                    )}
+
                     <button
                         type="button"
                         onClick={onClose}
@@ -124,6 +159,12 @@ const HelpModal = ({ isOpen, contentKey, onClose }) => {
             </div>
         </div>
     );
+};
+
+HelpModal.propTypes = {
+    isOpen: PropTypes.bool,
+    contentKey: PropTypes.string,
+    onClose: PropTypes.func.isRequired
 };
 
 export default HelpModal;

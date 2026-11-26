@@ -9,7 +9,7 @@ Este diretório estrutura o backlog ágil do **Portal GamificaEdu**, composto po
 | Épico | Título | Histórias Vinculadas |
 |---|---|---|
 | [EPIC-01](epics/EPIC-01-autenticacao-e-perfis.md) | Autenticação, Autorização e Perfis Acadêmicos | [US-01-login-e-recuperacao-senha](user-stories/US-01-login-e-recuperacao-senha.md), [US-02-perfil-e-coleta-demografica-pesquisa](user-stories/US-02-perfil-e-coleta-demografica-pesquisa.md) |
-| [EPIC-02](epics/EPIC-02-criacao-e-gestao-de-atividades.md) | Criação e Gestão Pedagógica de Atividades | [US-03-wizard-criacao-atividades-8-etapas](user-stories/US-03-wizard-criacao-atividades-8-etapas.md), [US-04-motor-recomendacao-contextual-mrc](user-stories/US-04-motor-recomendacao-contextual-mrc.md) |
+| [EPIC-02](epics/EPIC-02-criacao-e-gestao-de-atividades.md) | Criação e Gestão Pedagógica de Atividades | [US-03-wizard-criacao-atividades-8-etapas](user-stories/US-03-wizard-criacao-atividades-8-etapas.md), [US-04-motor-recomendacao-contextual-mrc](user-stories/US-04-motor-recomendacao-contextual-mrc.md), [US-26-central-documentacao-e-faq-professor](user-stories/US-26-central-documentacao-e-faq-professor.md) |
 | [EPIC-03](epics/EPIC-03-gestao-de-turmas-e-agendamento.md) | Gestão de Turmas, Matrículas e Agendamento | [US-05-gestao-de-turmas-e-codigo-ingresso](user-stories/US-05-gestao-de-turmas-e-codigo-ingresso.md), [US-06-agendamento-e-bloqueio-pos-prazo](user-stories/US-06-agendamento-e-bloqueio-pos-prazo.md) |
 | [EPIC-04](epics/EPIC-04-execucao-gamificada-tabuleiro.md) | Execução da Trilha de Aprendizagem em Tabuleiro | [US-07-execucao-tabuleiro-e-conteudo-por-passo](user-stories/US-07-execucao-tabuleiro-e-conteudo-por-passo.md), [US-08-separacao-xp-vitalicio-e-moedas-loja](user-stories/US-08-separacao-xp-vitalicio-e-moedas-loja.md) |
 | [EPIC-05](epics/EPIC-05-comunicacao-forum-e-chat.md) | Comunicação Social: Fórum Estruturado e Chat Realtime | [US-12-forum-moderado-e-categorias-automaticas](user-stories/US-12-forum-moderado-e-categorias-automaticas.md), [US-13-chat-da-turma-tempo-real](user-stories/US-13-chat-da-turma-tempo-real.md) |
@@ -19,9 +19,9 @@ Este diretório estrutura o backlog ágil do **Portal GamificaEdu**, composto po
 
 ---
 
-## 2. Matriz Geral de Histórias de Usuário (US-01 a US-15)
+## 2. Matriz Geral de Histórias de Usuário (Core & Evoluções)
 
-| ID | Título da História | Épico | Prioridade | Portas Principais | Testes Pytest |
+| ID | Título da História | Épico | Prioridade | Portas Principais | Testes Pytest / Node |
 |---|---|---|---|---|---|
 | [US-01](user-stories/US-01-login-e-recuperacao-senha.md) | Autenticação de Usuários e Recuperação Segura de Senha | `EPIC-01-autenticacao-e-perfis` | `HIGH` | `IAuthenticateUserUseCase` | `test_api_contracts_bdd.py` |
 | [US-02](user-stories/US-02-perfil-e-coleta-demografica-pesquisa.md) | Gestão de Perfil e Coleta Demográfica de Pesquisa (DSR) | `EPIC-01-autenticacao-e-perfis` | `MEDIUM` | `IUpdateUserProfileUseCase` | `test_api_contracts_bdd.py` |
@@ -38,6 +38,7 @@ Este diretório estrutura o backlog ágil do **Portal GamificaEdu**, composto po
 | [US-13](user-stories/US-13-chat-da-turma-tempo-real.md) | Chat da Turma em Tempo Real via WebSockets (Socket.IO) | `EPIC-05-comunicacao-forum-e-chat` | `MEDIUM` | `ISendChatMessageUseCase` | `test_api_contracts_bdd.py` |
 | [US-14](user-stories/US-14-relatorios-desempenho-professor.md) | Painel Analítico de Desempenho e Telemetria Científica (Lazy Loading) | `EPIC-07-analytics-e-telemetria` | `MEDIUM` | `IGetClassAnalyticsUseCase` | `test_api_contracts_bdd.py` |
 | [US-15](user-stories/US-15-geracao-rascunhos-ia-gemini.md) | Geração Assistida de Rascunhos Pedagógicos com Fallback Multi-Modelo Gemini | `EPIC-08-orquestracao-de-conteudo-ia` | `HIGH` | `IAIEnginePort` | `test_ai_draft_pipeline.py` |
+| [US-26](user-stories/US-26-central-documentacao-e-faq-professor.md) | Central de Documentação Docente e FAQ Interativo Estilo Overleaf Learn | `EPIC-02-criacao-e-gestao-de-atividades` | `HIGH` | `ITeacherKnowledgeSearchPort` | `test_teacher_docs_engine.test.js`, `test_teacher_docs_telemetry_bdd.py` |
 
 ---
 

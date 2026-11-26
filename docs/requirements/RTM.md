@@ -40,6 +40,7 @@ A **Matriz de Rastreabilidade de Requisitos (Requirements Traceability Matrix - 
 | **RF-13** | Chat da Turma em Tempo Real | `EPIC-05` | `US-13` | `chat.py` | `chat_service.py` | `components/ChatDrawer.jsx` | `test_api_contracts_bdd.py` | `VERIFIED` |
 | **RF-14** | Analytics e Telemetria Docente | `EPIC-07` | `US-14` | `analytics.py`, `rankings.py`, `log.py` | `analytics_service.py`, `ranking_service.py`, `log_service.py` | `pages/TeacherAnalytics.jsx`, `components/Rankings.jsx` | `test_ranking_anonymization.py` | `VERIFIED` |
 | **RF-15** | Rascunhos de Atividades com IA Gemini | `EPIC-08` | `US-15` | `content_editor.py` | `ai_service.py`, `ai_prompt_builder.py` | `components/ai/AIDraftGeneratorModal.jsx` | `test_ai_draft_pipeline.py`, `test_resilience_sre.py` | `VERIFIED` |
+| **RF-16** | Central de Documentação Docente & FAQ (Overleaf Learn) | `EPIC-02` | `US-26` | `log.py` | `log_service.py` | `pages/TeacherDocsPage.jsx`, `domain/teacherDocs/`, `components/docs/DocsSearchModal.jsx` | `test_teacher_docs_engine.test.js`, `test_teacher_docs_telemetry_bdd.py` | `VERIFIED` |
 
 ---
 
@@ -56,15 +57,16 @@ A **Matriz de Rastreabilidade de Requisitos (Requirements Traceability Matrix - 
 | **RNF-07** | Privacidade e LGPD | `ADR-015` | Anonimização determinística de ranking estudantil (`Aluno #XXXX`) | `backend/app/services/ranking_service.py` | `test_ranking_anonymization.py` | `VERIFIED` |
 | **RNF-08** | Manutenibilidade & Arquitetura Limpa | `ADR-001` | Padrão Application Factory e Separação em Camadas (Hexagonal) | `backend/app/__init__.py`, `backend/app/domain/` | Testes herméticos isolados da infra | `VERIFIED` |
 | **RNF-09** | Usabilidade e Acessibilidade | `ADR-008`, `ADR-011` | Interface com semântica acessível, feedback imediato e contraste WCAG | `frontend/src/styles/`, `frontend/src/components/` | ESLint estático no CI frontend | `VERIFIED` |
-| **RNF-10** | Testabilidade e CI/CD | `ADR-018` | Pipeline GitHub Actions com Branch Protection e pre-push hook | `.github/workflows/ci.yml`, `.git/hooks/pre-push` | 43 testes automatizados passando no CI | `VERIFIED` |
+| **RNF-10** | Testabilidade e CI/CD | `ADR-018` | Pipeline GitHub Actions com Branch Protection e pre-push hook | `.github/workflows/ci.yml`, `.git/hooks/pre-push` | Suíte hermética passando no CI | `VERIFIED` |
+| **RNF-11** | Busca Local Instantânea & Ergonomia Documental | `ADR-024` | Índice invertido OO linear `< 16ms`, `React.lazy` e sanitizador anti-PII/ReDoS | `frontend/src/domain/teacherDocs/TeacherDocsSearchEngine.js` | `test_teacher_docs_engine.test.js` + `audit_rtm.py` | `VERIFIED` |
 
 ---
 
 ## 4. Mapeamento Bidirecional: Suíte de Testes Automatizados vs Requisitos
 
-Todos os 43 testes herméticos que compõem o Quality Gate do CI/CD estão associados a seus respectivos requisitos:
+Todos os testes herméticos que compõem o Quality Gate do CI/CD estão associados a seus respectivos requisitos:
 
-| Arquivo de Teste (`backend/tests/`) | Qtd Testes | Requisitos Cobertos | Cenários Verificados |
+| Arquivo de Teste (`backend/tests/` & `frontend/src/`) | Qtd Testes | Requisitos Cobertos | Cenários Verificados |
 | :--- | :--- | :--- | :--- |
 | **`test_api_contracts_bdd.py`** | 10 | RF-01, RF-02, RF-05, RF-12, RF-13, RNF-01 | Contratos BDD: Login válido/inválido, RBAC de professor vs aluno, matrícula via código, fórum e mensageria. |
 | **`test_domain_rules.py`** | 12 | RF-06, RF-07, RF-08, RF-09, RF-10, RF-11, RNF-05 | Regras de Domínio: Separação estrita de XP vitalício e moedas, compras de cosméticos, catálogo de medalhas e cooldown da roleta. |
@@ -72,6 +74,9 @@ Todos os 43 testes herméticos que compõem o Quality Gate do CI/CD estão assoc
 | **`test_ranking_anonymization.py`** | 4 | RF-14, RNF-07 | LGPD e Privacidade: Anonimização e mascaramento consistente de nomes em rankings públicos de alunos. |
 | **`test_ai_draft_pipeline.py`** | 5 | RF-15, RNF-01, RNF-06 | Pipeline de IA: Validação de prompts contra injeção, geração de passos/quizzes e sincronização de rascunhos. |
 | **`test_resilience_sre.py`** | 4 | RF-15, RNF-06 | Engenharia de Confiabilidade: Timeout de 45s, cascata sequencial de modelos Gemini e tolerância a falhas. |
+| **`test_game_elements_perspectives.py`** | 6 | RF-03, RF-04, RNF-08 | Dupla perspectiva pedagógica/estudantil dos elementos de gamificação (`US-24`). |
+| **`test_teacher_docs_telemetry_bdd.py`** | 4 | RF-16, RNF-01, RNF-07 | Telemetria científica de leitura/busca/votos de utilidade da Central Docente no `EventLog` e proteção JWT. |
+| **`test_teacher_docs_engine.test.js`** | 6 | RF-16, RNF-09, RNF-11 | Domínio OO Docs-as-Code: integridade Diátaxis, 9 chaves Wizard, busca `< 16ms` sem acentos e sanitização anti-ReDoS/LGPD. |
 
 ---
 

@@ -6,7 +6,7 @@ import { TEACHER_DASHBOARD_STEPS } from '../data/tutorialSteps';
 import { useTutorial } from '../context/TutorialContext';
 import { useAuthOperations } from '../hooks/useAuthOperations';
 import FeedbackModal from '../components/FeedbackModal';
-import { Users, PlusCircle, BookOpen, BarChart2, Award, Settings, ChevronRight } from 'lucide-react';
+import { Users, PlusCircle, BookOpen, BarChart2, Award, Settings, ChevronRight, HelpCircle } from 'lucide-react';
 
 /**
  * TeacherDashboardPage
@@ -108,6 +108,17 @@ export default function TeacherDashboardPage() {
       bg: "bg-[#ffbd30]/10",
       borderHover: "hover:border-[#ffbd30]/50",
       shadowHover: "hover:shadow-[#ffbd30]/20"
+    },
+    {
+      id: "tour-dash-docs",
+      title: "Documentação & FAQ",
+      description: "Manuais estilo Overleaf, guias do Motor MDC, IA e respostas rápidas.",
+      icon: HelpCircle,
+      link: "/professor/documentacao",
+      color: "text-[#69e8cb]",
+      bg: "bg-[#69e8cb]/10",
+      borderHover: "hover:border-[#69e8cb]/50",
+      shadowHover: "hover:shadow-[#69e8cb]/20"
     },
     {
       id: "tour-dash-settings",

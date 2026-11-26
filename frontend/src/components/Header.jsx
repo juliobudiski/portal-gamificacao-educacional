@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
   Home, LogIn, UserPlus, User, BookOpen, LayoutDashboard, 
-  PlusCircle, Users, BarChart2, Award, LogOut, Info, Settings, ShieldCheck 
+  PlusCircle, Users, BarChart2, Award, LogOut, Info, Settings, ShieldCheck, HelpCircle 
 } from 'lucide-react';
 import ThemeToggleButton from './ThemeToggleButton';
 import ConnectionStatusBadge from './common/ConnectionStatusBadge';
@@ -226,6 +226,7 @@ function Header({ handleTeacherTour, handleStudentTour, isActivityPage }) {
                       <li><Link to="/professor/banco-atividades" className="flex items-center px-5 py-4 text-secondary-text hover:bg-secondary-bg hover:text-primary-text transition-colors" onClick={closeAllMenus}><BookOpen size={18} className="mr-3 text-accent-purple" /><span className="font-medium">Banco de Atividades</span></Link></li>
                       <li><Link to="/professor/gerenciar-turmas" className="flex items-center px-5 py-4 text-secondary-text hover:bg-secondary-bg hover:text-primary-text transition-colors" onClick={closeAllMenus}><Users size={18} className="mr-3 text-accent-yellow" /><span className="font-medium">Gerenciar Turmas</span></Link></li>
                       <li><Link to="/professor/desempenho-alunos" className="flex items-center px-5 py-4 text-secondary-text hover:bg-secondary-bg hover:text-primary-text transition-colors" onClick={closeAllMenus}><BarChart2 size={18} className="mr-3 text-accent-teal" /><span className="font-medium">Desempenho Alunos</span></Link></li>
+                      <li className="border-t border-border-color/60"><Link to="/professor/documentacao" className="flex items-center px-5 py-4 text-secondary-text hover:bg-accent-teal/10 hover:text-accent-teal transition-colors" onClick={closeAllMenus}><HelpCircle size={18} className="mr-3 text-accent-purple" /><span className="font-bold">Documentação &amp; FAQ</span></Link></li>
                     </ul>
                   )}
                 </li>
